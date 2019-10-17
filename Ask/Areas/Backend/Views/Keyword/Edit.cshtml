@@ -1,0 +1,93 @@
+﻿@using Newtonsoft.Json;
+@using WorkV3.Areas.Backend.ViewModels
+@model KeywordSaveViewModel
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var editData = Html.Raw(JsonConvert.SerializeObject(Model));
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+}
+
+    <div class="groove groove-1" id="app">
+        <form ref="formRef" id="AddForm" method="post" action="@Url.Action("Edit", "Keyword")" @@submit="submitForm">
+            <div class="card shadow-none">
+                <div class="lightbox-top-bar">
+                    <div class="lightbox-top-bar-title">熱門關鍵字編輯</div>
+                </div>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="input-field">
+                                <input name="Text" type="text" placeholder="關鍵字" v-model="keyword">
+                                <input type="hidden" name="ID" value="@Model.ID" />
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="control-bar">
+                    <div class="float-L m-3">
+                        <input type="checkbox" id="published" v-model="isIssue" name="IsIssue" value="true" />
+                        <label for="published">刊登</label>
+                        <input type="hidden" name="IsIssue" value="false" />
+                    </div>
+                    <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+                    <a ref="saveBtn" class="btn-bulid" href="javascript:" @@click="submitForm"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </form>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/script/vue/vue.js"></script>
+    <script type="text/javascript">
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                keywordData: @editData,
+                keywordId: 0,
+                keyword: '',
+                isIssue: false,
+            },
+            methods: {
+                submitForm() {
+                    $.ajax({
+                        url: '@Url.Action("Edit", "Keyword")',
+                        data: {
+                            ID: this.keywordId,
+                            Text: this.keyword,
+                            IsIssue: this.isIssue,
+                        },
+                        type: 'post',
+                        success(data) { 
+                            if(data === '0')
+                                Component.alert('關鍵字已存在');
+
+                            parent.app.refreshData();
+                            parent.$.colorbox.close();
+                        }
+                    });
+                    //AddForm.submit();
+                },
+            },
+            created(){
+                this.keywordId = this.keywordData.ID;
+                this.keyword = this.keywordData.Text;
+                this.isIssue = this.keywordData.IsIssue;
+            },
+            computed: {
+            },
+            watch: {
+            },
+        });
+        Vue.config.devtools = false;
+    </script>
+}

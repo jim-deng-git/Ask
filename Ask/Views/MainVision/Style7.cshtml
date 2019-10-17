@@ -1,0 +1,138 @@
+﻿@model IEnumerable<MainVisionModel>
+
+@{ 
+    SitePage sitePage = ViewBag.SitePage;
+    string uploadUrl = ViewBag.UploadVPath;
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(sitePage.SiteID, sitePage.MenuID);
+    string rootUrl = Href("~/");
+}
+
+@if (Model?.Count() > 0) {
+    <link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />
+    <link href="~/css/Cards/MainVision/style7.css" rel="stylesheet" />
+    <link href="~/css/vendor/jquery.YTPlayer/jquery.mb.YTPlayer.min.css" rel="stylesheet" />
+    <script src="~/script/jquery.YTPlayer/jquery.mb.YTPlayer.min.js"></script>
+    <script src="~/script/swiper/swiper.jquery.js"></script>
+    
+    <div class="card-mainVision" data-style="7">
+        <div class="swiper-containerImg">
+            <div class="swiper-wrapper">
+                @foreach (MainVisionModel item in Model) {
+                    string icon = string.IsNullOrWhiteSpace(item.Icon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Icon).Img;
+                    string hover_icon = string.IsNullOrWhiteSpace(item.HoverIcon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.HoverIcon).Img;
+                    if (item.Type == "Image") {
+                        string img = WorkLib.uCheck.IsMobile() ? item.ImgM : item.Img;
+                        if (!string.IsNullOrWhiteSpace(img)){
+                            string imgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(img).Img;
+                            if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, imgFileName))){
+                                imgFileName = string.Format("R_{0}", imgFileName);
+                            }
+                            img = uploadUrl + Server.UrlPathEncode(imgFileName);
+                            <div class="swiper-slide">
+                                <div class="mainVisionImg @(string.IsNullOrEmpty(item.Link)? "":"openLink" )" data-target="@(item.IsOpenNew?"_blank":"")" data-href="@item.Link" style="background-image: url(@img);"></div>
+                            </div>
+                        }
+                    }else{
+                        string videoImg = item.VideoImg, videoImgFileName = "";
+                        if (WorkLib.uCheck.IsMobile() && !string.IsNullOrWhiteSpace(item.VideoImgM)){
+                            videoImg = item.VideoImgM;
+                        }
+                        if (item.VideoImgIsCustom && !string.IsNullOrWhiteSpace(videoImg) && videoImg[0] == '{'){
+                            videoImgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(videoImg).Img;
+                            if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, videoImgFileName))){
+                                videoImgFileName = string.Format("R_{0}", videoImgFileName);
+                            }
+                            videoImg = uploadUrl + Server.UrlPathEncode(videoImgFileName);
+                        }
+                        @* if (!string.IsNullOrWhiteSpace(videoImg)){
+                        } *@
+                        <div class="swiper-slide swiperVideo">
+                            <div class="mainVisionVideo" id="@item.ID" data-youtubr-id='@(item.VideoID)'></div>
+                            <div id="customElement_@item.ID" class="player" data-property=""></div>
+                        </div>
+                        <script>
+                            $(document).ready(function(){
+                                setTimeout(function(){
+                                    var Play = $('#@item.ID').parent('.swiper-slide').hasClass('swiper-slide-active')? true : false
+                                    var youtubeID = $('#@item.ID').data('youtubrId')
+                                    var YTPlayerOptions = $('#customElement_@item.ID').data('property',"{videoURL:'" + youtubeID + "'}")
+                                    var myPlayer;
+                                    var options = {
+                                        containment:'#@item.ID', 
+                                        mute: true, //靜音
+                                        ratio: '4/3', //影片比例
+                                        quality: 'highres', //畫質
+                                        playOnlyIfVisible: true, 
+                                        showControls: false, //顯示影像控制器
+                                        autoPlay: Play, //自動播放
+                                        loop: true, //循環
+                                        startAt: 0, //影片開始位置
+                                        opacity: 1, 
+                                        vol: 50, //音量
+                                        anchor: 'center，center'
+                                    }; 
+                                    $("#customElement_@item.ID").YTPlayer(options);
+                                    var headerH = $("#header").outerHeight();
+                                        windowH = $(window).height();
+                                    $('#@item.ID, .mainVisionImg').css('height',windowH);
+                                },0)
+                            });
+                        </script>
+                    }
+                }
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+        
+        <div class="GeometryColor">
+            <img src="~/Websites/ELITEDREAM/images/GeometryColor.png" alt="">
+        </div>
+        <div class="swiper-containerText">
+            <div class="swiper-wrapper">
+                @foreach (MainVisionModel item in Model) {
+                    <div class="swiper-slide">
+                        <div class="mainVision-text">
+                            <div class="title">@item.Title</div>
+                            <div class="info">
+                                @Html.Raw(item.Content)
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var swiperImg = new Swiper('.card-mainVision[data-style="7"] .swiper-containerImg', {
+                nextButton: '.swiper-button-next',
+                prevButton: '.swiper-button-prev',
+                effect : 'fade',
+                fade: {
+                    crossFade: true,
+                },
+                onSlideChangeEnd: function(swiper){
+                    var $active = $('.swiper-containerImg .swiper-slide-active')
+                    $('.swiperVideo .player').each(function(){
+                        $(this).YTPPause();
+                    })
+                    if($active.hasClass('swiperVideo')){
+                        var playerID = $active.find('.player').attr('id');
+                        $('#'+ playerID ).YTPPlay();
+                    }
+                }
+            }); 
+            var swiperText = new Swiper('.card-mainVision[data-style="7"] .swiper-containerText', {
+                effect : 'fade',
+                fade: {
+                    crossFade: true,
+                }
+            }); 
+            swiperImg.params.control = swiperText;//需要在swiperText初始化后，swiperImg控制swiperText
+            swiperText.params.control = swiperImg;//需要在swiperImg初始化后，swiperText控制swiperImg
+        });
+    </script>
+    
+
+}

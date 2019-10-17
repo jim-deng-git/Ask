@@ -1,0 +1,488 @@
+﻿@model List<AdsCustomizeModel>
+@{
+    ViewBag.Title = "自訂廣告管理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, Advertisement_ID = ViewBag.Advertisement_ID };
+
+    AdsCustomizeSearchModel search = ViewBag.Search;
+    search.FilterIssueSetType = search.FilterIssueSetType == null ? new string[0] : search.FilterIssueSetType;
+
+    Pagination pagination = ViewBag.Pagination;
+
+    bool hasComputerVer = ViewBag.HasComputerVer;
+}
+@section FArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+
+        $(function () {
+
+            $(".fixTable").stickyTableHeaders();
+
+            var listObj = Component.dataList('listTable');
+
+            listObj.sorted = function (sortItems) {
+                var url = '@Url.Action("AdsCustomizeSort", "Advertisement")';
+                $.post(url, { 'items': sortItems }, function () {
+                    location.replace(location.href);
+                });
+            }
+
+            listObj.deleted = function (delIds) {
+                Component.confirm('確定刪除選定廣告？', function(isOk){
+                    if(!isOk)
+                        return;
+
+                    var url = '@Url.Action("AdsCustomizeDel", "Advertisement")';
+                    $.post(url , { 'ids': delIds }, function () {
+                        location.replace('@Html.Raw(Url.Action("AdsCustomizeIndex", siteQuery))&page=' + @pagination.PageIndex);
+                    });
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    $('#listTable').find('span.info').html('');
+                }
+            }
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                }
+            }
+            listObj.statusChange = function (id) {
+                var url = '@Url.Action("AdsCustomizeToggleIssue", "Advertisement")';
+                $.get(url+ '/' + id );
+            }
+            listObj.selected = function (action, selectIds) {
+                if (!selectIds || selectIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+
+                if (action == 'copy' && selectIds.length) {
+                    var url = '@Url.Action("AdsCustomizeCopy")';
+                    Component.confirm('確定複製選擇的資料？', function (isOK) {
+                        if (isOK) {
+                            $.post( url, { ids: selectIds, siteId: @(ViewBag.SiteID), menuId: '@(ViewBag.MenuID)', AdvertisementID: @(ViewBag.Advertisement_ID) }, function () {
+                                Component.alert('已複製完成', function(){
+                                    location.reload();
+                                });
+                            });
+                        }
+                    });
+                }
+            }
+            $('#listTable').on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+            $('.ad-image').each(function () {
+                var _width=$(this).data('img-width'),
+                    _height=$(this).data('img-height'),
+                    _padding=(_height/_width)*100;
+                $(this).find('span').css('padding-bottom',_padding+'%');
+            });
+
+            $("input[name^='AdvertisementType']").click(function(){
+                if(this.id=="ad_all"){
+                    $("input[name='AdvertisementType']").prop("checked",false);
+                }else{
+                    $("#ad_all").prop("checked",false);
+                }
+            });
+
+            function setCbxSelectEvent(name) {
+                $("input[name^=" + name + "]").change(function () {
+                    if (this.id === (name + "_All") && this.checked) {
+                        $("input[name=" + name + "]").prop("checked", false);
+                    } else {
+                        var CbxItemCount = $("input[name=" + name + "]").length;
+                        var CurSelectCount = $("input[name=" + name + "]:checked").length;
+                        if (CurSelectCount === CbxItemCount) {
+                            document.getElementById(name + "_All").checked = true;
+                            $("input[name=" + name + "]").prop("checked", false);
+                        } else {
+                            document.getElementById(name + "_All").checked = false;
+                        }
+                    }
+                });
+            }
+            setCbxSelectEvent("FilterIssueSetType");
+            //setCbxSelectEvent("FilterCost");
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $("#searchForm");
+            form.submit();
+        });
+
+        $(window).on('load', function() {
+            if ($('#SearchBox').length) {
+
+                var $SearchBoxH = $('#SearchBox').outerHeight();
+                if ($('#SearchBox').hasClass('pushup')) {
+                    // $('.fixTable, .pagination').css({
+                    //     top: $SearchBoxH
+                    // });
+
+                    $('#closeSerach').on('click', function() {
+                        $('#SearchBox').removeClass('pushup');
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    });
+                } else {
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                }
+
+                $('#openSearch').on('click', function() {
+                    $('#SearchBox').toggleClass('pushup');
+                    if ($('#SearchBox').hasClass('pushup')) {
+                        // $('.fixTable, .pagination').css({
+                        //     top: $SearchBoxH
+                        // });
+                    } else {
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    }
+                });
+            }
+            @if(ViewBag.IsSearchMode == null)
+            {
+                <text>
+               $("#closeSerach")[0].click();
+                </text>
+            }
+        });
+
+    </script>
+}
+<style>
+    .ad-image {
+        max-width: 300px;
+        background: #f2f2f2;
+        border: 1px solid #bfbfbf;
+    }
+
+        .ad-image > span {
+            display: block;
+            width: 100%;
+            height: 0px;
+            overflow: hidden;
+        }
+</style>
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="SearchBox" class="search-box pushup">
+            <form id="searchForm" action="@Url.Action("AdsCustomizeIndex", siteQuery)" method="post" enctype="multipart/form-data">
+                <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input id="" type="text" name="keyword" value="@search.keyword" placeholder="請輸入廣告主企業名稱、聯絡人姓名、職稱、電話、Email、相關資訊、廣告說明等關鍵字">
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">刊登期間</div>
+                            <div class="input-field inline">
+                                <input type='text' name="IssueTimeStart" value="@search.IssueTimeStart.ToString("yyyy/MM/dd HH:ss")" class="input-cal datetimepicker">
+                            </div>~
+                            <div class="input-field inline">
+                                <input type='text' name="IssueTimeEnd" value="@search.IssueTimeStart.ToString("yyyy/MM/dd HH:ss")" class="input-cal datetimepicker">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">計價方式</div>
+                            <div class="radio-box inline">
+                                <div>
+                                    <input class="select-all" name="FilterIssueSetType_All" type="checkbox" id="FilterIssueSetType_All" @(search.FilterIssueSetType.Length == 0 ? "checked=checked" : "") />
+                                    <label for="FilterIssueSetType_All">全選</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" name="FilterIssueSetType" id="@IssueSetType.IssueTime" value="@IssueSetType.IssueTime" @(search.FilterIssueSetType.Any(m=>m == IssueSetType.IssueTime) ? "checked=checked" : "") />
+                                    <label for="@IssueSetType.IssueTime">刊登期間計價</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" name="FilterIssueSetType" id="@IssueSetType.Click" value="@IssueSetType.Click" @(search.FilterIssueSetType.Any(m=>m == IssueSetType.Click) ? "checked=checked" : "") />
+                                    <label for="@IssueSetType.Click">點擊瀏覽計價</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" name="FilterIssueSetType" id="@IssueSetType.Free" value="@IssueSetType.Free" @(search.FilterIssueSetType.Any(m=>m == IssueSetType.Free) ? "checked=checked" : "") />
+                                    <label for="@IssueSetType.Free">免費</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">刊登金額</div>
+                            <div class="input-field inline mini m-v-none">
+                                <input class="text-C" id="CostMin" type="text" name="CostMin" value="@search.CostMin">
+                                <span class="info">-</span>
+                                <input class="text-C" id="CostMax" type="text" name="CostMax" value="@search.CostMax">
+                            </div>
+                            <div class="radio-box inline">
+                                <div>
+                                    <input class="with-gap" name="FilterCost" type="radio" id="@CostSearchType.Total" value="@CostSearchType.Total" @(string.IsNullOrWhiteSpace(search.FilterCost) ? "checked=checked" : search.FilterCost == CostSearchType.Total ? "checked=checked" :"") >
+                                    <label for="@CostSearchType.Total">總額篩選</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="FilterCost" type="radio" id="@CostSearchType.Month" value="@CostSearchType.Month" @(search.FilterCost == CostSearchType.Month ?  "checked=checked"  : "" )>
+                                    <label for="@CostSearchType.Month">每月金額篩選</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="FilterCost" type="radio" id="@CostSearchType.Day" value="@CostSearchType.Day" @(search.FilterCost == CostSearchType.Day ?  "checked=checked"  : "" )>
+                                    <label for="@CostSearchType.Day">每日金額篩選</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-3">
+                            <div class="title inline">點擊次數</div>
+                            <div class="input-field inline mini">
+                                <input class="text-C" id="click-lower-limit" name="ClickCountMin" type="text" value="@search.ClickCountMin">
+                                <span class="info">-</span>
+                                <input class="text-C" id="click-upper-limit" name="ClickCountMax" type="text" value="@search.ClickCountMax">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="title inline">瀏覽次數</div>
+                            <div class="input-field inline mini">
+                                <input class="text-C" id="views-lower-limit" name="BrowseCountMin" type="text" value="@search.BrowseCountMin">
+                                <span class="info">-</span>
+                                <input class="text-C" id="views-upper-limit" name="BrowseCountMax" type="text" value="@search.BrowseCountMax">
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="float-R m-L-4">
+                    <a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a>
+                </div>
+            </form>
+        </div>
+
+        <table id="listTable" class="fixTable m-T-12">
+            <caption>
+                <a class="btn-grey-darken-4-o transparent goBack" href="@Url.Action("Index")">
+                    <i class="cc cc-arrow-left"></i>
+                </a>自訂廣告管理
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="copy" data-select="true" title="複製"><i class="cc cc-content-copy"></i></a>
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info" href="@Url.Action("AdsCustomizeEdit", siteQuery)" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i>篩選</a>
+                    
+                    <span data-for="copy" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+
+                    @*<a class="btn-grey-o" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <!-- 複製的確定 -->
+        <a class="btn-grey-darken-4-o" href="javascript:" data-activates="dropdown-copy"><i class="cc cc-check"></i>確定</a>
+        <!-- 複製的確定END -->*@
+
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th width="5%">序</th>
+                    <th>廣告說明</th>
+                    <th>廣告圖片@(hasComputerVer? "(電腦)": "")</th>
+                    <th>廣告主</th>
+                    <th>刊登期間</th>
+                    <th>
+                        刊登廣告總額
+                        <br>
+                        <span class="font-grey">每月/日金額</span>
+                    </th>
+                    <th>
+                        點擊量
+                        <br>
+                        <span class="font-grey">點擊廣告總額</span>
+                    </th>
+                    <th>
+                        瀏覽人次
+                        <br>
+                        <span class="font-grey">瀏覽廣告總額</span>
+                    </th>
+                    <th>刊登</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count(); i++)
+                {
+                    var item = Model.ElementAt(i);
+                    string pic = hasComputerVer ? item.PCPicture : item.MobilePicture;
+                    ResourceImagesModels ImgModel = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(pic);
+                    AdvertisersModel AdvertiserData = item.QueryAndGetAdvertiser;
+                    AdsCustomizeAccountSet AccountSet = new AdsCustomizeAccountSet();
+                    long? totalClickCount = item.AdsCustomizeAccountSet.Sum(m => m.QueryClicks);
+                    long? totalBrowseCount = item.AdsCustomizeAccountSet.Sum(m => m.QueryVisits);
+                    long totalClickFee = item.AdsCustomizeAccountSet.Sum(m => m.GetClickFee);
+                    long totalBrowseFee = item.AdsCustomizeAccountSet.Sum(m => m.GetVisitFee);
+                    DateTime startDate = item.AdsCustomizeAccountSet.Min(m => m.IssueStart)?? DateTime.Now;
+                    DateTime endDate = item.AdsCustomizeAccountSet.Max(m => m.IssueEnd)?? DateTime.Now;
+                    if (item.AdsCustomizeAccountSet.Any())
+                    {
+                        AccountSet = item.AdsCustomizeAccountSet.OrderByDescending(m => m.IssueStart <= DateTime.Now && m.IssueEnd >= DateTime.Now).FirstOrDefault();
+                    }
+                    string IssueStartStr = AccountSet.IssueStart.HasValue ? AccountSet.IssueStart.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+                    string IssueEndStr = AccountSet.IssueEnd.HasValue ? AccountSet.IssueEnd.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+                    string IssueDate = "";
+                    if (AccountSet.IssueStart.ToString("yyyy/MM/dd") == AccountSet.IssueEnd.ToString("yyyy/MM/dd"))
+                    {
+                        IssueDate = $@"{AccountSet.IssueStart.ToString("yyyy/MM/dd")}<br />{AccountSet.IssueStart.ToString("HH:mm")} ~ {AccountSet.IssueEnd.ToString("HH:mm")}";
+                    }
+                    else
+                    {
+                        IssueDate = $"{IssueStartStr} ~ {IssueEndStr}";
+                    }
+                    AdvertisementModel AdvertisementData = item.QueryRelationAdvertisement;
+
+                    <tr data-id="@item.ID">
+                        <td class="sort">@pagination.GetItemIndex(i)</td>
+                        <td class="name">@item.Description</td>
+                        <td class="">
+                            @if (ImgModel != null)
+                            {
+                                int? height = AdvertisementData.ComputerHeight;
+                                int? width = AdvertisementData.ComputerWidth;
+                                <img src="@(ViewBag.UploadUrl + ImgModel.Img)" alt="@(item.Description + " 的圖片")" @(height != null ? "height='" + height / 10 + "'" : "" ) @(width != null ? "width='" + width / 10 + "'" : "" ) />
+                            }
+                        </td>
+                        <td class="text-L">
+                            @AdvertiserData.CompanyName
+                            <p class="font-grey font-sm">
+                                @AdvertiserData.ContactPerson
+                                <br>@AdvertiserData.ContactPhone
+                            </p>
+                        </td>
+                        <td class="text-L">
+                            <p class="font-grey font-sm">
+                                @Html.Raw(IssueDate)
+                            </p>
+                        </td>
+                        <td class="text-L">
+                            @if (AccountSet.IssueSetType != IssueSetType.Click)
+                            {
+                                string NTD = string.Empty;
+                                if (AccountSet.CostOfPeriod.HasValue)
+                                {
+                                    long cost = Convert.ToInt64(AccountSet.CostOfPeriod);
+                                    if (cost > 0)
+                                    {
+                                        NTD = string.Format("NT$ {0}", cost.ToString("#,0"));
+                                    }
+                                    if (!string.IsNullOrWhiteSpace(NTD))
+                                    {
+                                        <text>
+                                            @NTD
+                                            <p class="font-grey font-sm">
+                                                @if (AccountSet.GetCostPerMonth != 0)
+                            {
+                                                    <text>
+                                                        NT$ @AccountSet.GetCostPerMonth.ToString("#,0") /月
+                                                        <br>
+                                                    </text>
+                                                }
+                                                @if (AccountSet.GetCostPerDays != 0)
+                            {
+                                                    <text>
+                                                        NT$ @AccountSet.GetCostPerDays.ToString("#,0") /日
+                                                        <br>
+                                                    </text>
+                                                }
+                                            </p>
+                                        </text>
+                                    }
+                                }
+                            }
+                        </td>
+                        <td>
+                            <a class="font-black" href="@Url.Action("Detail", "AdvertisementStatistics", new { startDate = startDate.ToString("yyyy/MM/dd"), endDate = endDate.ToString("yyyy/MM/dd"), type = DetailType.Click, previousPage = HttpContext.Current.Request.Url.AbsoluteUri, AdsCustomId = item.ID })">
+                                @(totalClickCount.HasValue ? Convert.ToInt64(totalClickCount).ToString("#,0") : "0" )
+                            </a>
+                            <p class="font-grey font-sm">
+                                @if (AccountSet.IssueSetType == IssueSetType.Click)
+                                {
+                                    string currency = string.Empty;
+                                    if (AccountSet.BillingByClickCurrency.ToLower() == "ntd")
+                                    {
+                                        currency = "NT$";
+                                    }
+                                    else if (AccountSet.BillingByClickCurrency.ToLower() == "usd")
+                                    {
+                                        currency = "US$";
+                                    }
+
+                                    @($"{currency}{totalClickFee.ToString("#,0")}")
+                                }
+                            </p>
+                        </td>
+
+                        <td>
+                            <a class="font-black" href="@Url.Action("Detail", "AdvertisementStatistics", new { startDate = startDate.ToString("yyyy/MM/dd"), endDate = endDate.ToString("yyyy/MM/dd"), type = DetailType.Browsing, previousPage = HttpContext.Current.Request.Url.AbsoluteUri, AdsCustomId = item.ID })">
+                                @(totalBrowseCount.HasValue ? Convert.ToInt64(totalBrowseCount).ToString("#,0") : "0" )
+                            </a>
+                            <p class="font-grey font-sm">
+                                @if (AccountSet.IssueSetType == IssueSetType.Click)
+                                {
+                                    string currency = string.Empty;
+                                    if (AccountSet.BillingByBrowseCurrency.ToLower() == "ntd")
+                                    {
+                                        currency = "NT$";
+                                    }
+                                    else if (AccountSet.BillingByBrowseCurrency.ToLower() == "usd")
+                                    {
+                                        currency = "US$";
+                                    }
+
+                                    @($"{currency}{totalBrowseFee.ToString("#,0")}")
+                                }
+                            </p>
+                        </td>
+                        <td class="icon">
+                            <a class="btn-grey-darken-4-o transparent square showStatus" href="#"><i class="cc cc-eye@(item.IsIssue?"":"-off font-red")"></i></a>
+                        </td>
+                        <td class="icon edit">
+                            <a class="btn-grey-darken-4-o transparent square" href="@Url.Action("AdsCustomizeEdit",new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, Advertisement_ID = ViewBag.Advertisement_ID,id = item.ID})">
+                                <i class="cc cc-edit-o"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>

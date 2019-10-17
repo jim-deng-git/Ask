@@ -1,0 +1,444 @@
+﻿@model WorkV3.Models.FieldModel
+@{
+    ViewBag.Title = "行政區 / 地址";
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    string uploadUrl = ViewBag.UploadUrl;
+    string CustomFolder = ViewBag.CustomFolder;
+
+    string youtubeImgUrl = Request.Url.Scheme + "://img.youtube.com/vi/";
+
+    var query = new { formId = ViewBag.FormID };
+}
+
+<div class="groove groove-1">
+    <form id="editForm" action="@Url.Action("FieldSetting", query)&type=address" method="post" enctype="multipart/form-data">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">行政區 / 地址</div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline no-label">標題</div>
+                    <div class="input-field inline no-label">
+                        <input type="text" id="Title" name="Title" value="@Model.Title" class="validate[required]" />
+                    </div>
+                    <div class="radio-box inline">
+                        <div>
+                            @Html.CheckBoxFor(m => m.IsDescription)
+                            <label for="IsDescription">完整說明</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="hide checked-instructions">
+                    <div class="col-1">
+                        <div class="title inline no-label">說明文字</div>
+                        <div class="input-field full no-label">
+                            <textarea id="Description" name="Description" class="materialize-textarea">@Model.Description</textarea>
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <div class="title inline">搭配</div>
+                        <div class="radio-box inline full" data-radioGroup="MatchGroup">
+                            <div>
+                                <input class="with-gap" type="radio" checked="checked" value="no">
+                                <label for="LayoutText">無搭配</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" type="radio" value="image">
+                                <label for="LayoutImage">搭配圖片</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" type="radio" value="video">
+                                <label for="LayoutVideo">搭配影片</label>
+                            </div>
+                            <input type="hidden" name="Match" value="@(string.IsNullOrWhiteSpace(Model.Match) ? "no" : Model.Match)" />
+                        </div>
+                    </div>
+                    <div style="display: none;" class="matchGroup image">
+                        <div class="col-1">
+                            <div class="input-field">
+                                <input type="file" id="fImage" name="fImage" />
+                                <input type="hidden" id="Image" name="Image" value='@(string.IsNullOrWhiteSpace(Model.Image) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.Image }))' />
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: none;" class="matchGroup video">
+                        <div class="col-1">
+                            <ul class="forms m-none">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title">影片種類</div>
+                                        <div class="radio-box inline full" data-radioGroup="VideoTypeGroup">
+                                            <div>
+                                                <input class="with-item transparent" type="radio" value="youtube" />
+                                                <i class="cc cc-youtube"></i>
+                                                <label>Youtube</label>
+                                            </div>
+                                            <div>
+                                                <input class="with-item transparent" type="radio" value="vimeo" />
+                                                <i class="cc cc-vimeo"></i>
+                                                <label for="video-vimeo">Vimeo</label>
+                                            </div>
+                                            <div>
+                                                <input class="with-item transparent" type="radio" value="custom" />
+                                                <i class="cc cc-upload-o"></i>
+                                                <label>自行上傳</label>
+                                            </div>
+                                            <input type="hidden" name="VideoType" value="@Model.VideoType" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div style="display:none;" class="videoTypeGroup youtube">
+                                        <div class="col-1">
+                                            <div class="title">影片網址</div>
+                                            <div class="input-field">
+                                                <input type="text" id="youtubeId" name="youtubeId" placeholder="請填入Youtube影片 ID" class="validate[required]" />
+                                            </div>
+                                            <a class="tooltip" title="YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE，輸入ndGUClIX9ZE"><i class="cc cc-attention"></i></a>
+                                        </div>
+                                        <div class="col-1">
+                                            <div class="preview">
+                                                <iframe id="youtubePreview" frameborder="0" allowfullscreen></iframe>
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
+                                            <div class="title">影片截圖</div>
+                                            <div id="youtubeThumb" class="radio-box inline full with-img"></div>
+                                            <div class="radio-box inline full">
+                                                <div>
+                                                    <input type="checkbox" id="isYoutubeCustomImg" name="isYoutubeCustomImg" value="1" />
+                                                    <label for="isYoutubeCustomImg">自行上傳圖片</label>
+                                                </div>
+                                            </div>
+                                            <div class="input-field inline full">
+                                                <input type="file" id="youtubeCustomImg" name="youtubeCustomImg" />
+                                                <input type="hidden" id="youtubeCustomImgVal" name="VideoCustomPhoto" value='@(string.IsNullOrWhiteSpace(Model.VideoCustomPhoto) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.VideoCustomPhoto }))' />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div style="display:none;" class="videoTypeGroup vimeo">
+                                        <div class="col-1">
+                                            <div class="title inline no-label">影片網址</div>
+                                            <div class="input-field inline full no-label">
+                                                <input type="text" id="vimeoId" name="vimeoId" placeholder="請填入vimeo影片 ID" class="validate[required]" />
+                                            </div>
+                                            <a class="tooltip tooltipstered" title="Vimeo影片網址範例：https://player.vimeo.com/video/15205149，輸入15205149"><i class="cc cc-attention"></i></a>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="preview">
+                                                <iframe id="vimeoPreview" frameborder="0" allowfullscreen></iframe>
+                                            </div>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="title m-T-6">影片截圖</div>
+                                            <div id="vimeoThumb" class="radio-box inline full with-img"></div>
+                                            <div class="radio-box inline full">
+                                                <div>
+                                                    <input type="checkbox" id="isVimeoCustomImg" name="isVimeoCustomImg" value="1" />
+                                                    <label for="isVimeoCustomImg">自行上傳圖片</label>
+                                                </div>
+                                            </div>
+                                            <div class="input-field inline full">
+                                                <input type="file" id="vimeoCustomImg" name="vimeoCustomImg" />
+                                                <input type="hidden" id="vimeoCustomImgVal" name="vimeoCustomImgVal" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div style="display:none;" class="videoTypeGroup custom">
+                                        <div class="col-1">
+                                            <input type="file" id="videoUpload" name="videoUpload" data-field="video" />
+                                            <input type="hidden" name="Video" value="" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <input type="hidden" name="VideoPhoto" id="VideoPhoto" value="" />
+                                    <input type="hidden" name="VideoID" id="VideoID" value="" />
+                                    <input type="hidden" name="IsVideoPhotoCustom" value="false" />
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-1">
+                    <div class="title inline no-label">寬度</div>
+                    <div class="radio-box inline" data-radioGroup="Width">
+                        @{ FieldWidth[] widths = (FieldWidth[])Enum.GetValues(typeof(FieldWidth)); }
+                        @foreach (FieldWidth item in widths)
+                        {
+                            <div>
+                                <input type="radio" class="with-gap" value="@((int)item)">
+                                <label>@item.Description()</label>
+                            </div>
+                        }
+                        <input type="hidden" id="Width" name="Width" value="@Model.Width" />
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="title inline no-label">名單列表</div>
+                    <div class="radio-box inline">
+                        <div>
+                            @Html.CheckBoxFor(m => m.ShowInList)
+                            <label for="ShowInList">在名單列表顯示</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="title inline no-label">設定</div>
+                    <div class="radio-box inline">
+                        <div>
+                            @Html.CheckBoxFor(m => m.Requied)
+                            <label for="Requied">必填</label>
+                        </div>
+                        <div>
+                            @Html.CheckBoxFor(m => m.Range)
+                            <label for="Range">可選範圍</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1 hide Range">
+                    <div class="title inline no-label">可選範圍</div>
+                    <div class="radio-box inline" data-radioGroup="RangeLevel">
+                        @{ FieldAddressRange[] ranges = (FieldAddressRange[])Enum.GetValues(typeof(FieldAddressRange)); }
+                        @foreach (FieldAddressRange item in ranges)
+                        {
+                            <div>
+                                <input type="radio" class="with-gap" value="@((int)item)">
+                                <label>@item.Description()</label>
+                            </div>
+                        }
+                        <input type="hidden" id="RangeLevel" name="RangeLevel" value="@(Model.RangeLevel ?? 1)" />
+                    </div>
+                </div>
+                <div class="col-1 hide Range">
+                    <div class="title inline no-label">範圍限制</div>
+                    <div class="radio-box inline full">
+                        @{ int[] rangeHierarchy = Model.GetRangeHierarchy(); }
+                        <input type="hidden" id="Regions" value='@(rangeHierarchy?.Length > 0 ? Newtonsoft.Json.JsonConvert.SerializeObject(rangeHierarchy) : string.Empty)' />
+                    </div>
+                    <input type="hidden" id="RangeLimit" name="RangeLimit" />
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft(); Component.closeRight();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+        <input type="hidden" name="ID" value="@Model.ID" />
+        <input type="hidden" name="TypeID" value="@Model.TypeID" />
+    </form>
+</div>
+
+@section FArea {
+    <link href="~/Css/Cards/Form/style1.css" rel="stylesheet" />
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    @BundleConfig.JWPlayer()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        Component.radioList('[data-radioGroup]');
+        Component.singleImageUpload('#fImage', '@(Href("~/"))', '@uploadUrl', true);
+
+        $('div[data-radioGroup="RangeLevel"]').each(function () {
+            var showLevel = $(this).find(':checked').val();
+            showLevel = showLevel ? (showLevel - 0) : 1;
+            var regionObj = Component.worldRegion('#Regions', '@Html.Raw(Url.Action("Regions", "Common"))', { showLevel: showLevel });
+
+            $(this).on('click', 'input', function () {
+                regionObj.setShowLevel($(this).val() - 0);
+            });
+
+            $('#editForm').submit(function () {
+                var regions = regionObj.getVal();
+                $('#RangeLimit').val(regions[regions.length - 1]);
+            });
+        });
+
+        $('#IsDescription').click(function () {
+            if (this.checked)
+                $(this).closest('div.col-1').next().slideDown();
+            else
+                $(this).closest('div.col-1').next().slideUp();
+        }).triggerHandler('click');
+
+        $('#Range').each(function () {
+            $(this).click(function () {
+                if (this.checked)
+                    $(this).closest('div.col-1').nextAll('.' + this.id).slideDown();
+                else
+                    $(this).closest('div.col-1').nextAll('.' + this.id).slideUp();
+            });
+
+            if (this.checked)
+                $(this).triggerHandler('click');
+        });
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                if ($('#isYoutubeCustomImg').is(':checked') && $('input[name="VideoTypeGroup"]').val() == 'youtube' ||
+                    $('#isVimeoCustomImg').is(':checked') && $('input[name="VideoTypeGroup"]').val() == 'vimeo') {
+                    $('input[name="IsVideoPhotoCustom"]').val(true);
+                }
+                form.submit();
+            }
+        });
+
+        $('[data-radioGroup="MatchGroup"]').on('click', ':radio', function () {
+            var val = this.value;
+            $('.matchGroup').hide();
+            $('.' + val).slideDown();
+        }).find(':radio:checked').click();
+
+        $('[data-radioGroup="VideoTypeGroup"]').on('click', ':radio', function () {
+            var val = this.value;
+            $('.videoTypeGroup').hide();
+            $('.' + val).fadeIn();
+        }).find(':radio:checked').click();
+
+        function initVideo() {
+            function setVideoVal(videoType, video, videoPhoto,videoCustomPhoto, videoId) {
+                if (videoType == 'youtube') {
+                    $('#youtubeId').val(videoId);
+                    //if (/\.(jpe?g|png|gif)$/i.test(videoPhoto)) {
+                    var isVideoPhotoCustom = @(Model.IsVideoPhotoCustom? "1": "0");
+                    if (isVideoPhotoCustom) {
+                        $('#isYoutubeCustomImg').prop('checked', true);
+                        if (videoCustomPhoto)
+                            $('#youtubeCustomImgVal').val(`{"ID": 1, "Img": "${videoCustomPhoto}" }`);
+                    } else {
+                        checkSavedThumbnail(videoPhoto);
+                    }
+                } else if (videoType == 'vimeo') {
+                    $('#vimeoId').val(video);
+                    var isVideoPhotoCustom = @(Model.IsVideoPhotoCustom? "1": "0");
+                    if (isVideoPhotoCustom) {
+                        $('#isVimeoCustomImg').prop('checked', true);
+                        if (videoCustomPhoto)
+                            $('#vimeoCustomImgVal').val(`{"ID": 1, "Img": "${videoCustomPhoto}" }`);
+                    }
+                } else if (videoType == 'custom') {
+                    $('#videoUpload').data('video', video);
+                }
+            }
+
+            @if(Model.Match == "video") {
+                @:setVideoVal('@Model.VideoType', '@Model.Video', '@Model.VideoPhoto', '@Model.VideoCustomPhoto', '@Model.VideoID');
+                                                } else if(Model.Match == "image") {
+                    @:$('#Image').val('{"ID": 1, "Img": "@Model.Image"}');
+                                                }
+
+            Component.singleImageUpload('#youtubeCustomImg', '@(Href("~/"))', '@uploadUrl', true);
+            Component.singleImageUpload('#vimeoCustomImg', '@(Href("~/"))', '@uploadUrl', true);
+            Component.singleVideoUpload('#videoUpload', '@Html.Raw(Url.Action("FileUploadCustomize", "Common", new { siteId = siteId, sourceNo = 0, CustomFolder = CustomFolder }))', '@uploadUrl', $('#videoUpload').data('video'));
+
+            $('[data-radioGroup="VideoTypeGroup"]').on('click', ':radio', function () {
+                var val = this.value;
+                $('.videoTypeGroup').hide();
+                $('.' + val).fadeIn();
+            }).find(':radio:checked').click();
+
+            $('#youtubeId').change(function () {
+                var v = $.trim(this.value);
+                if (v) {
+                    $('#youtubePreview').prop('src', 'https://www.youtube.com/embed/' + v);
+                    $('#VideoID').val(v);
+
+                    var shotUrl = `@youtubeImgUrl${v}/0.jpg`;
+                    var shotUrl1 = `@youtubeImgUrl${v}/1.jpg`;
+                    var shotUrl2 = `@youtubeImgUrl${v}/2.jpg`;
+                    var shotUrl3 = `@youtubeImgUrl${v}/3.jpg`;
+
+                    var imgHtml = getScreenshotHtml(shotUrl, 0, 'checked') + getScreenshotHtml(shotUrl1, 1,'') + getScreenshotHtml(shotUrl2, 2,'') + getScreenshotHtml(shotUrl3, 3,'');
+                    $('#youtubeThumb').html(imgHtml);
+                    $('#VideoPhoto').val($('#videoImg_0').val());
+                    checkSavedThumbnail('@Model.VideoPhoto');
+
+                    $('input[name="youtubeImg"]').on('click', function () {
+                        $('#VideoPhoto').val($(this).val());
+                    });
+                } else {
+                    $('#youtubePreview').prop('src', '');
+                    $('#youtubeThumb').html('');
+                }
+            }).triggerHandler('change');
+
+            $('#isYoutubeCustomImg,#isVimeoCustomImg').each(function () {
+                $(this).click(function () {
+                    var outerDiv = $(this).closest('div.radio-box');
+                    if (this.checked) {
+                        outerDiv.prev().slideUp();
+                        outerDiv.next().slideDown();
+                    } else {
+                        outerDiv.prev().slideDown();
+                        outerDiv.next().slideUp();
+                    }
+                }).triggerHandler('click');
+            });
+
+            $('#vimeoId').change(function () {
+                var v = $.trim(this.value);
+                if (v) {
+                    $('#vimeoPreview').prop('src', 'http://player.vimeo.com/video/' + v);
+                    $('#VideoID').val(v);
+
+                    $.get('http://vimeo.com/api/v2/video/' + v + '.json ', function (vimeoVideo) {
+                        if (vimeoVideo.length) {
+                            vimeoVideo = vimeoVideo[0];
+                            var thumbUrl = vimeoVideo.thumbnail_large;
+
+                            var imgHtml =
+                                '<div>' +
+                                '   <input class="with-item video-img" name="vimeoImg" type="radio" id="vimeoImg" value="' + thumbUrl + '" checked="checked" />' +
+                                '   <img src="' + thumbUrl + '" />' +
+                                '   <label for="vimeoImg"></label>' +
+                                '</div>';
+                            $('#vimeoThumb').html(imgHtml);
+                        }
+                    });
+                } else {
+                    $('#vimeoPreview').prop('src', '');
+                    $('#vimeoThumb').html('');
+                }
+            }).triggerHandler('change');
+        }
+        initVideo();
+
+        function checkSavedThumbnail(videoPhoto) {
+            $('input[name="youtubeImg"]').filter(function () {
+                return this.value == videoPhoto;
+            }).prop('checked', true);
+        }
+
+        function getScreenshotHtml(url, index, chk) {
+            return `<div class="col-3 p-none">
+                    <input class="with-item video-img" name="youtubeImg" type="radio" id="videoImg_${index}" value="${url}" ${chk} />
+                    <img src="${url}" />
+                    <label for="videoImg_${index}"></label>
+                </div>`;
+        }
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+        parent.setField('@Model.ID');
+        setTimeout(function () {
+            Component.closeLeft();
+            Component.closeRight();
+        }, 100);
+            </text>
+        }
+    </script>
+}
+
+

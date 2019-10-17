@@ -1,0 +1,135 @@
+﻿@model WorkV3.Areas.Backend.Models.SocialRelationModels
+@{
+    ViewBag.Title = "社群分享設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long SiteId = (long)ViewBag.SiteID;
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+}
+@section FArea {
+    @BundleConfig.JWPlayer()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+     @if (ViewBag.Exit as bool? == true) {
+        <text>
+        Component.alert('資料已儲存', function () {
+            parent.refreshShareList();
+            parent.$.colorbox.close();
+        });
+        </text>
+    }
+    </script>
+}
+
+<div class="groove groove-1">
+    <form id="editForm" name="editForm" method="post" action="@Url.Action("ChannelEdit", new { SiteID=SiteId})" enctype="multipart/form-data">
+        <div class="card shadow-none">
+            <div class="lightbox-top-bar">
+                <div class="lightbox-top-bar-title">社群分享設定</div>
+            </div>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <a id="SocialTypeError"></a>
+                        <div class="input-field inline full m-none socialSelect">
+                            <select name="SocialType" id="SocialType" >
+                                <option value="" selected>請選擇社群</option>
+                                <option value="@((int)WorkV3.Models.MemberType.FB)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_fb.png);")>Facebook</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Twitter)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_twitter.png);">Twitter</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Google)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_googleplus.png);">Google +</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Line)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_line.png);">Line</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Pinterest)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_pinterest.png);">Pinterest</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Bloger)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_Bloger.png);">Bloger</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Plurk)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_plurk.png);">Plurk</option>
+                                <option value="@((int)WorkV3.Models.MemberType.LinkedIn)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_linkedin.png);">LinkedIn</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Weibo)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_weibo.png);">微博</option>
+                                <option value="@((int)WorkV3.Models.MemberType.QQ)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_qq.png);">QQ</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Baidu)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_baidu.png);">百度</option>
+                                <option value="@((int)WorkV3.Models.MemberType.Renren)" data-class="avatar" data-style="background-image: url(../../images/temp/logo_renren.png);">人人網</option>
+                            </select>
+                        </div>
+                        @if (Model != null)
+                        {
+                            <script type="text/javascript">
+                                $("#SocialType").val("@((int)Model.SocialType)");
+                                $("#SocialType").trigger("change");
+                            </script>
+                        }
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="input-field m-none no-label">
+                            <input id="LinkTitle" type="text" placeholder="顯示名稱" value="@Model.LinkTitle" name="LinkTitle" class="validate[required]" />
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="input-field m-none no-label">
+                            <input id="LinkUrl" type="text" value="@(Model != null?Model.LinkUrl:"http://")" name="LinkUrl" class="validate[required]" />
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="control-bar">
+                <div class="float-L m-3">
+                    <input type="checkbox" id="IsOpen" name="IsOpen" value="True" @(Model != null ? (Model.IsOpen ? "checked=\"checked\"" : string.Empty) : "checked=\"checked\"") />
+                    <label for="IsOpen">刊登</label>
+                </div>
+                <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+                <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+                <input type="hidden" id="RelationType" name="RelationType" value="@((int)WorkV3.Areas.Backend.Models.RelationType.Share)"/>
+                <input type="hidden" id="ID" name="ID" value="@(Model != null ? Model.ID: "0")" />
+                <input type="hidden" id="SocialTitle" name="SocialTitle" value="@(Model != null ? Model.SocialTitle: "")" />
+                <input type="hidden" id="LinkUrl" name="LinkUrl" value="@(Model != null ? Model.LinkUrl: "")" />
+                <input type="hidden" id="LinkTitle" name="LinkTitle" value="@(Model != null ? Model.LinkTitle: "")" />
+            </div>
+        </div>
+        </form>
+</div>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+
+    $(function () {
+        $.widget("custom.iconselectmenu", $.ui.selectmenu, {
+            _renderItem: function (ul, item) {
+                var li = $("<li>"),
+                  wrapper = $("<div>", { text: item.label });
+
+                $("<span>", {
+                    style: item.element.attr("data-style"),
+                    "class": "ui-icon " + item.element.attr("data-class")
+                })
+                  .appendTo(wrapper);
+
+                return li.append(wrapper).appendTo(ul);
+            }
+        });
+
+        $("#SocialType")
+          .iconselectmenu()
+          .iconselectmenu("menuWidget")
+            .addClass("ui-menu-icons avatar");
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            var values = $("#SocialType").val();
+            if (values == "") {
+                Component.showElementError("#SocialTypeError", '* 請選擇');
+                $("#SocialTypeError").focus();
+                return;
+            }
+            form.submit();
+        });
+        $('#btnCancel').click(function () {
+            parent.$.colorbox.close();
+        });
+    });
+</script>

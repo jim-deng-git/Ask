@@ -1,0 +1,99 @@
+﻿@model WorkV3.ViewModels.PointsRecordViewModel
+@{
+    ViewBag.Title = "點數記錄";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    long menuId = ViewBag.MenuID;
+    long siteId = ViewBag.SiteID;
+}
+
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <table class="fixTable" id="listTable">
+            <caption class="border-B">
+                <a class="btn-grey-darken-4-o transparent goBack" href="javascript:window.history.go(-1)"><i class="cc cc-arrow-left"></i></a>
+                @Model.Name 點數記錄
+                <span class="info">目前尚餘點數<span class="font-gold">@Model.Total</span>點</span>
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square tooltip-info openEdit-c" href="@Url.Action("Edit",new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, memberID = ViewBag.MemberID})" title="新增"><i class="cc cc-plus"></i></a>
+
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    @*<a class="btn-grey-o" href="javascript:"><i class="cc cc-close"></i>取消</a>*@
+                    <!-- 刪除的確定 -->
+                    @*<a class="btn-grey-darken-4-o data-del" href="javascript:"><i class="cc cc-check"></i>確定</a>*@
+                    <!-- 刪除的確定END -->
+                </div>
+            </caption>
+            <tbody>
+                @if (Model.Points != null)
+                {
+                    int i = 0;
+                    foreach (var item in Model.Points)
+                    {
+                        <tr  data-id="@item.ID">
+                            <td class="sort edit">@pagination.GetItemIndex(i)</td>
+                            <td class="text-L">@item.CreateTime.ToString(WebInfo.DateTimeNotS).Replace("-", "/")</td>
+                            @{
+                                string remark = item.Remark;
+                                if (item.IsManually)
+                                {
+                                    if (item.PointType == 0)
+                                    {
+                                        remark = "平台管理者協助增加點數";
+                                    }
+                                    else if (item.PointType == 1)
+                                    {
+                                        remark = "平台管理者主動扣除點數";
+                                    }
+                                }
+                            }
+                            <td class="text-L">@remark</td>
+                            <td class="text-L">@item.Description</td>
+                            <td class="text-R"><span class="font-lg @(item.Point.ToString().StartsWith("-") ? "font-grey" : "font-gold")">@item.Point</span>點</td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript">   
+    var listObj = Component.dataList('listTable');
+
+    listObj.deleted = function (delIds) {
+        console.log(delIds);
+        Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+            if (isConfirm) {
+                $.post('PointsDel', { 'ids': delIds }, function () {
+                    refreshList();
+                });
+            }
+        }, 'warning');
+    }
+    listObj.canceled = function (action) {
+        if (action == "del") {
+            $('#listTable').find('span.info').html('');
+        }
+    }
+    $('#listTable').on('click', 'tbody :checkbox', function () {
+        var tbodyElm = $(this).closest('tbody');
+        var selectedNum = tbodyElm.find(':checked').length;
+        tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+    });
+    function refreshList() {
+        location.replace(location.href);
+    }
+</script>
+

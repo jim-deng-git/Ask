@@ -1,0 +1,154 @@
+﻿@model AdvertisersModel
+@{
+    ViewBag.Title = "報別編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string uploadUrl = ViewBag.UploadUrl;
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    //var siteQuery = new { siteId = siteId, menuId = menuId };
+}
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+
+    $(function () {
+        $("#SaveBtn").on('click', function (e) {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+    });
+
+    $('[data-radioGroup]').each(function () {
+        var $this = $(this);
+        Component.radioList($this);
+
+        var groupName = $this.attr('data-radioGroup');
+        if (groupName == 'ContactPersonGender') {
+            $this.find(':radio').click(function () {
+                if (this.value == 'F')
+                    $('#sort-Time-box').slideDown();
+                else
+                    $('#sort-Time-box').slideUp();
+
+                if (this.value == 'M')
+                    $('#sort-Hot-box').slideDown();
+                else
+                    $('#sort-Hot-box').slideUp();
+
+            }).filter(':checked').triggerHandler('click');
+        }
+    });
+
+    @if ((ViewBag.Exit as bool?) == true)
+    {
+    <text>
+    Component.alert('廣告主已儲存', function () {
+        if (parent.refreshList) {
+            parent.refreshList();
+        }
+        parent.$.colorbox.close();
+    });
+    </text>
+    }
+    </script>
+}
+@using (Html.BeginForm("AdvertisersEdit", "AdvertisementSet", FormMethod.Post, new { enctype = "multipart/form-data", @Id = "editForm" }))
+{
+    <div class="groove groove-1">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title-admin-page bg-transparent">
+                        廣告主編輯
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">企業名稱</div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.CompanyName, new { @Class = "validate[required]", @Maxlength = "100" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">聯絡人</div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.ContactPerson, new { @Class = "validate[required]", @Maxlength = "50" })
+                    </div>
+                    <div class="radio-box inline" data-radioGroup="ContactPersonGender">
+                        @{ string[] sortModes = { "F", "M" }; }
+                        @foreach (string mode in sortModes)
+                        {
+                            <div>
+                                <input type="radio" class="with-gap" value="@mode" />
+                                <label>@(mode == "F" ? "女士" : "先生")</label>
+                            </div>
+                        }
+                        <input type="hidden" id="ContactPersonGender" name="Gender" value="@(Model!=null? Model.Gender : "")" />
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">職稱</div>
+                    <div class="input-field inline full">
+                        @Html.TextBoxFor(m => m.JobTitle, new { @Maxlength = "50" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">連絡電話</div>
+                    <div class="input-field inline full">
+                        @Html.TextBoxFor(m => m.ContactPhone, new { @Class = "validate[required]", @Maxlength = "30" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">E-mail</div>
+                    <div class="input-field inline full">
+                        @Html.TextBoxFor(m => m.Email)
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">網址</div>
+                    <div class="input-field inline full">
+                        @Html.TextBoxFor(m => m.WebSite, new { @Placeholder = "http://" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">相關資訊</div>
+                    <div class="input-field inline full img-text-height">
+                        @Html.TextAreaFor(m => m.Description, new { @Contenteditable = "true" })
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(m => m.IsIssue)
+                    <label for="IsIssue">刊登</label>
+                </div>
+            </div>
+            @Html.HiddenFor(m => m.ID)
+            @Html.HiddenFor(m => m.Sort)
+            @Html.HiddenFor(m => m.SiteID, new { @Value = siteId })
+            @Html.HiddenFor(m => m.MenuID, new { @Value = menuId })
+            @*@Html.HiddenFor(m => m.OpenObject, new { @Value = WorkV3.Areas.Backend.Models.OpenObject.All.ToString() })*@
+            <a class="btn-cancel" href="#" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="SaveBtn" class="btn-bulid" href="#"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+}

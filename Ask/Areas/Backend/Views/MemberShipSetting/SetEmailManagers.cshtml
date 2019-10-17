@@ -1,0 +1,186 @@
+﻿@{
+    long siteId = ViewBag.SiteID;
+    ViewBag.Title = "選擇管理員";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    List<WorkV3.Areas.Backend.Models.MemberModels> managerList = ViewBag.Managers;
+}
+
+@BundleConfig.Component()
+<div class="zone zone-full">
+    <div class="wrapper">
+        <div class="groove groove-1">
+            <ul class="forms">
+                <li>
+                    <div class="title no-label">選擇管理員<span class="required">*</span></div>
+                    <div class="input-field no-label">
+                        <input id="SearchWord" name="SearchWord" type="text" placeholder="關鍵字搜尋" value="" />
+                    </div>
+                </li>
+                <li>
+                    <div class="radio-box">
+                        @if (managerList != null && managerList.Count > 0)
+                        {
+                            foreach (WorkV3.Areas.Backend.Models.MemberModels manager in managerList)
+                            {
+                                if (string.IsNullOrWhiteSpace(manager.Name) &&
+                                    string.IsNullOrWhiteSpace(manager.Email))
+                                {
+                                    continue;
+                                }
+                                <div>
+                                    <input class="with-chip selectmemeber" type="checkbox" id="@manager.Id" data-value="@manager.Id" value="@manager.Id">
+                                    <label for="@manager.Id" class="mail-info">
+                                        @*<img src="../../../../images/temp/yuna.jpg" alt="">*@
+                                        @manager.Name @manager.Email
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+                </li>
+            </ul>
+            <div class="control-bar">
+                <div style="display: none;">
+                    <div id="addTag" class="float-box">
+                        <div class="title">請輸入自訂的Email</div>
+                        <input id="CustomEmail" name="CustomEmail" type="text" placeholder="輸入完畢請按下Enter" value="" />
+                    </div>
+                </div>
+                <a class="btn-grey-o set-left openInlineEdit cboxElement" href="#addTag">
+                    <i class="cc cc-plus"></i>快速新增
+                </a>
+                <a class="btn-cancel" href="javascript:" id="aCancel"><i class="cc cc-close"></i>取消</a>
+                <a class="btn-bulid" href="javascript:" id="aSelect"><i class="cc cc-check"></i>選入</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="cboxOverlay" style="display: none;"></div><div id="colorbox" class="" role="dialog" tabindex="-1" style="display: none;"><div id="cboxWrapper"><div><div id="cboxTopLeft" style="float: left;"></div><div id="cboxTopCenter" style="float: left;"></div><div id="cboxTopRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxMiddleLeft" style="float: left;"></div><div id="cboxContent" style="float: left;"><div id="cboxTitle" style="float: left;"></div><div id="cboxCurrent" style="float: left;"></div><button type="button" id="cboxPrevious"></button><button type="button" id="cboxNext"></button><button type="button" id="cboxSlideshow"></button><div id="cboxLoadingOverlay" style="float: left;"></div><div id="cboxLoadingGraphic" style="float: left;"></div></div><div id="cboxMiddleRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxBottomLeft" style="float: left;"></div><div id="cboxBottomCenter" style="float: left;"></div><div id="cboxBottomRight" style="float: left;"></div></div></div><div style="position: absolute; width: 9999px; visibility: hidden; display: none; max-width: none;"></div></div><div class="hiddendiv common"></div>
+<input id="selectManagers" type="hidden" />
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".selectmemeber").bind("click", function () {
+
+            var selID = "";
+            $(".selectmemeber").each(function () {
+//                console.log($(this));
+                if($(this).prop("checked"))
+                {
+                    if (selID != "")
+                        selID += ",";
+                    selID += $(this).val();
+                }
+            });
+            $("#selectManagers").val(selID);
+        });
+        $("#aSelect").bind("click", function () {
+            var selectIDs = $("#selectManagers").val();
+            if (selectIDs == "") {
+                Component.alert('請選擇通知管理員', function () {
+                });
+            }
+            else {
+                saveManagerSelect(selectIDs);
+            }
+        });
+        $("#aCancel").bind("click", function () {
+            parent.document.body.click();
+        });
+        $("#SearchWord").bind("keyup", function () {
+            var keyword = $(this).val();
+            $(".mail-info").each(function () {
+                if (keyword.trim() == "") {
+                    $(this).parent().show();
+                }
+                else {
+                    if ($(this).html().indexOf(keyword) >= 0) {
+                        $(this).parent().show();
+                    }
+                    else {
+                        $(this).parent().hide();
+                    }
+                }
+            });
+        });
+        $("#CustomEmail").bind("keypress", function (e) {
+            var code = e.keyCode || e.which;
+            if (code == 13) { //Enter keycode
+                var email = $(this).val();
+                var checkresult = checkEmail(email);
+                if (!checkresult) {
+                    Component.alert("Email格式錯誤", function () {
+                    });
+                }
+                else {
+                    saveManagerEmail(email);
+                }
+            }
+        });
+    });
+
+    function checkEmail(fieldvalue) {
+        var emails = fieldvalue.split(';');
+        for (var i = 0, len = emails.length; i < len; ++i) {
+            var email = $.trim(emails[i]);
+            if (email && !/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(email))
+                return false;
+        }
+        return true;
+    }
+    function saveManagerEmail(email)
+    {
+        var formData = new FormData();
+        formData.append("SiteID",  "@siteId");
+        formData.append("Email", email);
+        $.ajax({
+            url: "@Url.Action("UpgradeSelectEmail", "MemberShipSetting")",
+            data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                if (data!= null) {
+                    Component.alert('資料已儲存', function () {
+                        parent.loadSelectManagers();
+                        parent.document.body.click();
+                    });
+                }
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+    }
+    function saveManagerSelect(selectManagers)
+    {
+        var formData = new FormData();
+        formData.append("SiteID",  "@siteId");
+        formData.append("selectManagers", selectManagers);
+        $.ajax({
+            url: "@Url.Action("UpgradeSelectManagers", "MemberShipSetting")",
+            data: formData,
+        type: "POST",
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+        async: false,
+        success: function (data) {
+            if (data!= null) {
+                Component.alert('資料已儲存', function () {
+                    parent.loadSelectManagers();
+                    parent.document.body.click();
+                });
+            }
+        },
+        fail: function () {
+            console.log("refresh fail ");
+        }
+    });
+    }
+
+</script>

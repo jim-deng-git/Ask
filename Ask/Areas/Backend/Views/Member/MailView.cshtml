@@ -1,0 +1,93 @@
+﻿@model WorkV3.Models.MemberShipMailModel
+@{
+    ViewBag.Title = "信件預覽";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+<div class="groove groove-1">
+    <div class="lightbox-top-bar">
+        <div class="lightbox-top-bar-title">信件內容預覽：</div>
+    </div>
+    <ul class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title">主旨<span class="required">*</span></div>
+                <div class="text-value">@Model.MailSubject</div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title">內文<span class="required">*</span></div>
+                <div class="text-value">@Html.Raw(Model.MailBody)</div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">寄件人</div>
+                <div class="input-field inline">@Model.Sender</div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">寄件人Email</div>
+                <div class="input-field inline full">@Model.SenderEmail</div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">附件</div>
+                <div class="fileuploader fileuploader-theme-thumbnails normal">
+                    <div class="fileuploader-items file">
+                        @if (!string.IsNullOrWhiteSpace(Model.Files)) {
+                            ResourceFilesModels[] files = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels[]>(Model.Files);
+                            if (files.Count() > 0) {
+                        <ul class="fileuploader-items-list">
+                            @foreach (ResourceFilesModels file in files) {
+                                string ext = System.IO.Path.GetExtension(file.FileInfo);
+                                ext = string.IsNullOrWhiteSpace(ext) ? string.Empty : ext.Substring(1);
+                            <li class="fileuploader-item">
+                                <div class="columns">
+                                    <div class="column-thumbnail">
+                                        <div class="fileuploader-item-image fileupload-no-thumbnail">
+                                            <div style="background-color: #f23c0f" class="fileuploader-item-icon">
+                                                <i>@ext</i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column-title">
+                                        <div class="title-name" title="name"><a href="@(uploadUrl + Server.UrlPathEncode(file.FileInfo))" download>@file.FileInfo</a></div>
+                                        <span>@file.GetSizeDesc()</span>
+                                    </div>
+                                </div>
+                            </li>
+                            }
+                        </ul>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title">代碼說明</div>
+                <div class="input-field font-grey font-xs">
+                    <span class="font-grey font-darken-3">MemberName：</span>會員姓名<br />
+                    <span class="font-grey font-darken-3">MemberID：</span>會員帳號<br />
+                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱<br />
+                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期<br />
+                    <span class="font-grey font-darken-3">RegStatus：</span>申請狀態 (待審核、通過、退回、停權)<br />
+                    <span class="font-grey font-darken-3">GetEmail：</span>我已收到通知信
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar">
+        <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();"><i class="cc cc-close"></i>關閉</a>        
+    </div>
+</div>
+    
+@section FArea { 
+    @BundleConfig.Component()    
+}

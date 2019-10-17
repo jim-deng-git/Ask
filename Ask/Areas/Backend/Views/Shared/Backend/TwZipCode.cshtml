@@ -1,0 +1,75 @@
+﻿
+<div class="input-field inline m-R-8">
+    <select name="City" id="City">
+        <option value="" selected>選擇縣市</option>
+    </select>
+</div>
+<div class="input-field inline m-R-8">
+    <select name="Borough" id="Borough">
+        <option value="" selected>選擇行政區</option>
+    </select>
+</div>
+
+<script id="CityOptionTmpl" type="text/x-jquery-tmpl">
+    <option value="${ZipCode}">${Title}</option>
+</script>
+<script type="text/javascript">
+
+    function bindCity() {
+        $.ajax({
+            type: "post",//提交方式
+            async: false,
+            url: "@Url.Action("CityList", "Public", new { area = "Backend" })",//获取数据的函数
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("調用目標發生異常！");
+            },//查询失败
+            success: function (RsData) {//查询成功,data为返回的数据
+                var data = $.parseJSON(RsData);
+                $("#City").empty();
+                if (data.length > 0) {
+                    var optionAll = "<option value=''>選擇縣市</option>";
+                    $(optionAll).appendTo("#City");
+                    $("#CityOptionTmpl").tmpl(data).appendTo("#City");
+                }
+            }
+        });
+        //縣市
+        $("#City").val($("#hidCity").val());
+        BindBorough($("#City"));
+    }
+    function BindBorough(objCity) {
+        if ($(objCity).val() != "") {
+            $.ajax({
+                type: "post",//提交方式
+                data: "ZipCode=" + $(objCity).val(),
+                async: false,
+                url: "@Url.Action("GetBoroughList", "Public", new { area = "Backend" })",//获取数据的函数
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert("調用目標發生異常！");
+                },//查询失败
+                success: function (RsData) {//查询成功,data为返回的数据
+                    var data = $.parseJSON(RsData);
+                    $("#Borough").empty();
+                    var optionAll = "<option value=''>選擇行政區</option>";
+                    $(optionAll).appendTo("#Borough");
+                    if (data.length > 0) {
+                        $("#CityOptionTmpl").tmpl(data).appendTo("#Borough");
+                    }
+                    //行政區
+                    $("#Borough").val($("#hidBorough").val());
+                }
+            });
+        }
+        else {
+            $("#Borough").empty();
+            $("<option value=''>選擇行政區</option>").appendTo("#Borough");
+        }
+        $('select').material_select();
+    }
+
+    $(function () {
+        bindCity();
+        $("#City").change(function () { BindBorough($(this)); });
+        $("#Borough").change(function () { $('select').material_select(); });
+    });
+</script>

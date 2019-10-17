@@ -1,0 +1,918 @@
+﻿@model List<MenusModels>
+@using Newtonsoft.Json;
+@{
+    SitesModels SiteItem = ViewBag.SitesInfo;
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    List<SiteLangMenuModel> SiteLang = ViewBag.SiteLang;
+    SitePage searchPage = ViewBag.SearchPage;
+    List<WorkV3.Areas.Backend.ViewModels.KeywordViewModel> keywords = ViewBag.Keywords;
+
+    var dataJson = Html.Raw(JsonConvert.SerializeObject(keywords));   // neil 20180331 新增關鍵字搜尋
+    bool IsEnabledMember = (bool)ViewBag.IsEnabledMember;
+ }
+@helper CreateMenu(IEnumerable<MenusModels> allMenus, IEnumerable<MenusModels> currentMenus) {   
+PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+if (currentMenus?.Count() > 0) {
+    foreach(MenusModels item in currentMenus) {
+        string url = item.MenuCode == "SingleLink" ? item.LinkInfo : item.PageSN;
+        string target = (item.MenuCode == "SingleLink" && item.RLClickType == 2) ? "_blank" : "_self";
+
+        IEnumerable<MenusModels> subMenus = allMenus.Where(dr => dr.ParentID == item.Id);
+            <li class="@(item.Id == pageCache.MenuID ? "current-menu" : string.Empty)">
+                <a href="@url" target="@target">@item.Title</a>
+                @if(subMenus?.Count() > 0) {
+                <ul class="sub-menu">
+                    @CreateMenu(allMenus, subMenus)
+                </ul>
+                }
+            </li>
+        }
+    }
+}
+
+@* CSS換位置 carrie 20171006 *@
+<link rel="stylesheet" href="~/css/Cards/Header/style8.css" type="text/css" />        
+<div id="header" class="header card-header" data-style="8">
+    <div class="header-wrapper">
+        <!-- nav -->
+        <div class="header-nav">
+            <div class="nav">
+                @{ List<MenusModels> firstAreaMenus = Model.Where(m => m.AreaID == 1).ToList(); }
+                <ul class="nav-menu">
+                    @CreateMenu(firstAreaMenus, firstAreaMenus.Where(m => m.ParentID == 0))
+                </ul>
+                @if (SiteLang.Count > 0)
+                {
+                    <div class="nav-dropdown lang">
+                        <div class="dropdown-default-text"><i class="cc cc-globe"></i>Language</div>
+                        <ul>
+                            @for (int i = 0; i < SiteLang.Count; i++)
+                            {
+                                if (@SiteLang[i].Translate == false)
+                                {
+                                    <li><a href="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                                }
+                                else
+                                {
+                                    <li><a id="TrnTCSCLink" data-ahref="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                                }
+
+                            }
+                        </ul>
+                    </div>
+                }
+
+                @{ Member curUser = Member.Current;
+                    string memberID = " ";
+                    if (curUser != null)
+                    {
+                        memberID = curUser.ID.ToString();
+                    }
+                 }
+                @if (curUser != null && IsEnabledMember) {
+                                                    @*<div class="header-chat">
+            <div class="nav-chat">
+                <a href="javascript:;" id="chatIcon">
+                    <i class="cc cc-comment-o cc-flip-horizontal font-lg"></i>
+                    @{  int notRead = 0;
+                        foreach (var chatRoom in ChatRoomList)
+                        {
+                            notRead += chatRoom.NotRead;
+                        }
+                        if (notRead != 0)
+                        {
+                            <span class="number font-xxs" id="notReadIcon">
+                                @notRead
+                            </span>
+                        }
+                    }
+                </a>
+                <div id="header-chat-list" style="display: none;">
+                    <div class="chat-utility">
+                        <div class="tab-list">
+                            <a href="javascript:;" class="active">最新訊息</a>
+                            <a href="javascript:;" class="groupThread">群組</a>
+                        </div>
+                        <a href="javascript:;" class="chat-list-close">
+                            <i class="cc cc-close"></i>
+                        </a>
+                    </div>
+                    <ul class="chat-list threadList active">
+                        @if (ChatRoomList != null && ChatRoomList.Count() != 0)
+                        {
+                            foreach (var chatRoom in ChatRoomList)
+                            {
+                                if (!string.IsNullOrEmpty(chatRoom.RoomContent))
+                                {
+                                    <li id="@chatRoom.ChatRoomID" onclick="isReadMsg(this)">
+                                        <a class="chat-delete" id="@chatRoom.ChatRoomID" title="刪除對話" onclick="DeleteChat(this)">
+                                            <i class="cc cc-trash-o"></i>
+                                        </a>
+                                        <a class="openEdit-m chat-message chat-with-store @(chatRoom.NotRead == 0 ? "" : "is-unread")" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Chat", RoomID = chatRoom.ChatRoomID }))" roomID="@chatRoom.ChatRoomID" target="_blank">
+                                            <!--SiteID = 1 暫時設定-->
+                                            <!-- 有訊息未讀加上is-unread -->
+                                            <div class="chat-profile">
+                                                <div class="img bg-img" style="background-image: url('@(!string.IsNullOrEmpty(chatRoom.Img) ? chatRoom.Img : "")')"></div>
+                                            </div>
+                                            <div class="chat-content">
+                                                <div class="chat-time">@chatRoom.Time.ToString("HH:mm")</div>
+                                                <div class="chat-number">@chatRoom.NotRead</div>
+                                                <div class="chat-title">@chatRoom.Title</div>
+                                                <div class="chat-description">
+                                                    @chatRoom.RoomContent
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                    <ul class="chat-list groupThreadLis">
+                        @if (ChatRoomList != null && ChatRoomList.Count() != 0)
+                        {
+                            foreach (var chatRoom in ChatRoomList)
+                            {
+                                if (!string.IsNullOrEmpty(chatRoom.RoomContent))
+                                {
+                                    <li id="@chatRoom.ChatRoomID" onclick="isReadMsg(this)">
+                                        <a class="chat-delete" id="@chatRoom.ChatRoomID" title="刪除對話" onclick="DeleteChat(this)">
+                                            <i class="cc cc-trash-o"></i>
+                                        </a>
+                                        <a class="openEdit-m chat-message chat-with-store @(chatRoom.NotRead == 0 ? "" : "is-unread")" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Chat", RoomID = chatRoom.ChatRoomID }))" roomID="@chatRoom.ChatRoomID" target="_blank">
+                                            <!--SiteID = 1 暫時設定-->
+                                            <!-- 有訊息未讀加上is-unread -->
+                                            <div class="chat-profile">
+                                                <div class="img bg-img" style="background-image: url('@(!string.IsNullOrEmpty(chatRoom.Img) ? chatRoom.Img : "")')"></div>
+                                            </div>
+                                            <div class="chat-content">
+                                                <div class="chat-time">@chatRoom.Time.ToString("HH:mm")</div>
+                                                <div class="chat-number">@chatRoom.NotRead</div>
+                                                <div class="chat-title">@chatRoom.Title</div>
+                                                <div class="chat-description">
+                                                    @chatRoom.RoomContent
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+            <script>
+                $(function(){
+                    var chatIcon = $(".header .nav-chat>a"),
+                        chatClose = $("#header-chat-list .chat-list-close");
+
+                    chatIcon.off("click").on("click", function(){
+                        if($('.chat-list>li').length == 0){
+                            parent.window.swal({
+                                text: '無任何聊天訊息',
+                                type: 'warning',
+                                confirmButtonText: '確定',
+                                animation: false,
+                                customClass: 'animated fadeIn'
+                            });
+                        }
+                        else
+                        {
+                            $(this).next('div[id=header-chat-list]').toggle();
+                        }
+                    });
+                    chatClose.off("click").on("click", function(){
+                        $(this).parents('div[id=header-chat-list]').hide();
+                    });
+                    // $(document).off("mouseup").on('mouseup', function(e){
+                    // var _con = $("div[id='header-chat-list']") ;
+                    //    if(!_con.is(e.target) && _con.has(e.target).length === 0){
+                    //        _con.hide();
+                    //    }
+                    // });
+                    $('body').off("mouseup").on('mouseup', function(e){
+                         var _con = $("div[id='header-chat-list']") ;
+                         if(!_con.is(e.target) && _con.has(e.target).length === 0){
+                           _con.hide();
+                       }
+                    });
+
+                    // 20190411 yulin 給iframe用的關閉聊天室
+                    $(document).on('closeChatNav', function(e) {
+                         var _con = $("div[id='header-chat-list']") ;
+                         if(!_con.is(e.target) && _con.has(e.target).length === 0){
+                           _con.hide();
+                       }
+                    });
+                    var $chatTab = $('.tab-list').find('a'),
+                        $chatList = $('.chat-list');
+                    $chatTab.off("click").on('click', function(){
+                        if($(this).hasClass('groupThread')){
+                            $chatTab.removeClass('active');
+                            $(this).addClass('active');
+                            $chatList.removeClass('active');
+                            $('.groupThreadList').addClass('active');
+                        }else{
+                            $chatTab.removeClass('active');
+                            $(this).addClass('active');
+                            $chatList.removeClass('active');
+                            $('.threadList').addClass('active');
+                        }
+                    })
+                })
+            </script>
+        </div>*@
+
+                    @* 購物車 > 0 時請拿掉 is-empty 的 class -- 20180706 yulin *@
+                    <div class="nav-cart">
+                        <a class="btn-cart transparent is-empty" href="javascript:" id="cartInfo">
+                            <i class="cc cc-cart-o cc-lg"></i>
+                            <span class="number font-xxs" id="cartInfoCount"></span>
+                        </a>
+                    </div>
+                }
+
+                @if (searchPage != null && SiteItem.IsSearchEnabled) {
+                <div class="search-box">
+                    <a class="search-btn" href="javascript:"><i class="cc cc-search"></i></a>
+                </div>                
+                }
+
+                @if (curUser != null && IsEnabledMember) {
+                    <div class="nav-dropdown member">
+                        <div class="dropdown-default-text inline p-L-4" id="MemberLoginInfo">
+                        
+                        @{
+                            WorkV3.Models.MemberShipModels member = WorkV3.Models.DataAccess.MemberShipDAO.GetItem(curUser.ID);
+                            if (member != null && !string.IsNullOrEmpty(member.Photo))
+                            {
+                                <img src="@((member.Photo.StartsWith("http")?"":ViewBag.VMemberPath) + member.Photo)" id="imgMemberPhoto" />
+                            }
+                        }
+                        @curUser.Name, 您好</div>
+                        <ul>
+                            @if (curUser.Type == MemberType.Web)
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                               @* 太報客製 隱藏選單 carrie 20180307
+                               <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MyInfo" })">資料維護</a></li>*@
+                            }
+                            else
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                @* 太報客製 隱藏選單 carrie 20180307
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MySocialInfo" })">社群資料</a></li>*@
+                            }
+                            <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">登出</a></li>
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="header-content">
+            <div class="menu-toggle">
+                <div class="hamburger-wrap">
+                    <div class="menu-toggle-hamburger"></div>
+                </div>
+                <h1 class="header-logo">
+                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN="Index" })" title="@SiteItem.Title">
+                        <!--電腦版 – 原色LOGO -->
+                        <img class="normal" src="@ViewBag.VPath@SiteItem.Logo" title="@SiteItem.Title" alt="@SiteItem.Title" data-shrink="@ViewBag.VPath@SiteItem.Logoshrink" data-logo="@ViewBag.VPath@SiteItem.Logo" />
+                        <!--電腦版 – 對比色LOGO-->
+                        <img class="shrink" src="@ViewBag.VPath@SiteItem.Logoshrink" title="@SiteItem.Title" alt="@SiteItem.Title" />
+                        <!--手機版的 LOGO-->
+                        @*<img class="mobile" src="@ViewBag.VPath@SiteItem.LogoMobile" title="@SiteItem.Title" alt="@SiteItem.Title" />*@
+                    </a>
+                </h1>
+            </div>
+            @if (SiteItem != null)
+            {
+                List<SitesModels.socialSettingCont> social = ViewBag.social;
+                if (social.Count > 0)
+                {
+                    <ul class="nav-social">
+                        @for (int i = 0; i < social.Count; i++)
+                        {
+                            <li><a href="@social[i].URL" target="_blank"><i class="cc @social[i].icon"></i></a></li>
+
+                        }
+                    </ul>
+                }
+            }
+        </div>
+        <div class="mobile-cart">
+            <div class="nav-cart">
+                @* 購物車 > 0 時請拿掉 is-empty 的 class -- 20180706 yulin *@
+                <!-- <a class="btn-cart transparent is-empty" href="StoreStep1"> -->
+                <a class="btn-cart transparent" href="StoreStep1">
+                    <i class="cc cc-cart-o font-hg"></i>
+                    <span class="number font-xxs">1</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="mobile-chat">
+            <!--#include file="../../Chat/ChatNav.aspx"-->
+        </div>
+
+        @if (searchPage != null && SiteItem.IsSearchEnabled) {
+        <div class="mobile-search-box">
+            <a class="search-btn" href="javascript:"><i class="cc cc-search"></i></a>
+        </div>
+        }
+        <div class="mobile-menu">
+            <div class="menu-logo">
+                <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN="Index" })" title="@SiteItem.Title">
+                    <img class="normal" src="@ViewBag.VPath@SiteItem.Logo" title="@SiteItem.Title" alt="@SiteItem.Title" data-shrink="@ViewBag.VPath@SiteItem.Logoshrink" data-logo="@ViewBag.VPath@SiteItem.Logo" />
+
+                </a>
+            </div>
+            <div class="menu-main">
+                <div class="nav">
+                    <ul class="nav-menu">
+                        @CreateMenu(firstAreaMenus, firstAreaMenus.Where(m => m.ParentID == 0))
+                    </ul>
+                </div>
+                <div class="menu">
+                    @{ List<MenusModels> mainMenus = Model.Where(dr => dr.AreaID == 2).ToList(); }
+                    <ul class="main-menu">
+                        @CreateMenu(mainMenus, mainMenus.Where(m => m.ParentID == 0))             
+                        @*<li><a href="@Url.RouteUrl("FrontSitePage", new { SiteSN = SiteItem.SN, PageSN = "ShopList" })">商城</a></li>*@       
+                        @if (curUser == null && IsEnabledMember) {
+                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">會員</a></li>
+                        } else {
+
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="main bottom">
+                @if (curUser != null && IsEnabledMember) {
+                    <div class="nav-dropdown member">
+                        <div class="dropdown-default-text">
+                            @if (curUser.Type == MemberType.Web)
+                            {
+                                @*<img src="~/images/temp/cube3.jpg" /> carrie 20171228 *@
+                            }
+                            else
+                            {
+                                @*<img src="~/images/temp/cube3.jpg" /> carrie 20171228 *@
+                            }
+                            @curUser.Name, 您好</div>
+                        <ul>
+                            @*<li><a href="~/Taisounds/Member.aspx">會員主頁</a></li>*@
+                            @if (curUser.Type == MemberType.Web)
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                @* 太報客製 隱藏選單 carrie 20180307
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MyInfo" })">資料維護</a></li>*@
+                            }
+                            else
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                @* 太報客製 隱藏選單 carrie 20180307
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MySocialInfo" })">社群資料</a></li>*@
+                            }
+                            <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">登出</a></li>
+                        </ul>
+                    </div>
+                }
+
+                @if (SiteLang.Count > 0)
+                {
+                    <div class="lang">
+                        <div class="dropdown-default-text"><i class="cc cc-globe"></i>Language</div>
+                        <ul>
+                            @for (int i = 0; i < SiteLang.Count; i++) 
+                            { 
+                                <li><a href="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                            }
+                        </ul>
+                    </div>
+                }
+                @if (SiteItem != null) {
+                    List<SitesModels.socialSettingCont> social = ViewBag.social;
+                    if (social.Count > 0) {
+                <ul class="nav-social">
+                        @for (int i = 0; i < social.Count; i++) {
+                    <li><a href="@social[i].URL" target="_blank"><i class="cc @social[i].icon"></i></a></li>
+                        }
+                </ul>
+                    }
+                }
+
+                @{
+                    Html.RenderAction("Head", "Channels");
+                }
+            </div>
+        </div>
+
+        @if (searchPage != null) {
+        <!-- search -->            
+        <div class="webSearch"> 
+            <a class="btn-grey-lighten-1-o btn-large square transparent search-colse-btn" href="javascript:"><i class="cc cc-close"></i></a>               
+            <div class="content">
+                <input type="text" placeholder="請輸入關鍵字" id="txtSearch" oninput="getCurrentKeywordList()">
+                <a id="btnSiteFullSearch" class="btn-grey-lighten-1-o btn-large square transparent" href="javascript:"><i class="cc cc-search"></i></a>                    
+                <script type="text/javascript">
+
+
+                    let keywords = @dataJson;   @* neil 20180331 新增關鍵字搜尋 *@
+
+                    $(function () {
+                        getCurrentKeywordList();   @* neil 20180331 新增關鍵字搜尋 *@
+                        GetCart();
+
+                    $('#btnSiteFullSearch').click(function () {
+                        var inputElm = $(this).prevAll('input:first');
+                        var v = inputElm.val();
+                        if (!v) {
+                            swal({
+                                text: '請輸入關鍵字',
+                                type: 'warning',
+                                customClass: 'animated fadeIn',
+                                onOpen: function () {
+                                    $('body').removeClass('blur-body');
+                                },
+                                onClose: function () {
+                                    $('body').addClass('blur-body');
+                                }
+                            });
+                        } else {
+                            location.href = '@Url.Action("Index", "Home", new { SiteSN = searchPage.SiteSN, PageSN = searchPage.PageSN })?key=' + encodeURIComponent(v);
+                        }
+                    });
+
+                    $('#txtSearch').keydown(function (event) {
+                        if (event.keyCode == 13) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            $('#btnSiteFullSearch').click();
+                        }
+                    });
+                    });
+
+                    @* neil 20180331 新增關鍵字搜尋 start *@
+                    function getKeywordItemString(keyword){
+                        return `<li><a>${keyword}</a></li>`;
+                    }
+
+                    function getCurrentKeywordList(){
+                        let input = $('#txtSearch').val();
+                        let filteredKeywords = [];
+
+                        if(input === '')
+                            filteredKeywords = keywords;
+                        else
+                            filteredKeywords= keywords.filter(item => item.Text.includes(input))
+
+                        // 如果找不到相似關鍵字的話就不顯示
+                        if(filteredKeywords.length === 0)
+                        {
+                            return;
+                        }
+
+                        let list = '';
+
+                        filteredKeywords.forEach(item => {
+                            list += getKeywordItemString(item.Text);
+                        });
+
+                        let html = `
+                        <div class="searchresults">
+                            <ul id="custom-keywords">
+                                <div>快速連結</div>
+                                ${list}
+                            </ul>
+                        </div>
+                            `;
+
+                        $('.searchresults').remove();
+                        $('.webSearch > .content').after(html);
+
+                        $('#custom-keywords li a').on('click', function() {
+                            $('#txtSearch').val($(this).text());
+                            $('#btnSiteFullSearch').click();
+                        });
+                    }
+                    @* neil 20180331 新增關鍵字搜尋 end *@
+                    function GetCart()
+                    {
+                        $.get("@Url.Action("GetCartJson", "Cart", new { SiteID=ViewBag.SiteID})", function(data){
+                            var totalEshopProductCount = 0;
+                            if(data!= null)
+                            {
+                                if(data.Stores != undefined){
+                                    for(var i=0;i<data.Stores.length;i++)
+                                    {
+                                        totalEshopProductCount +=  data.Stores[i].EshopProducts.length;
+                                        //for(var j=0;j<data.Stores[i].EshopProducts.length;j++)
+                                        //{
+                                        //    totalEshopProductCount +=  data.Stores[i].EshopProducts[j].Count;
+                                        //}
+                                    }
+                                }
+                                
+                            }
+                            var cartInfoCss = $("#cartInfo").attr("class");
+                            if(cartInfoCss!= undefined){
+                                if(totalEshopProductCount >0)
+                                {
+                                    if(cartInfoCss.indexOf("is-empty") >= 0 )
+                                    {
+                                        $("#cartInfo").attr("class", cartInfoCss.replace("is-empty", "").trim());
+                                    }
+                                    $("#cartInfoCount").html(totalEshopProductCount);
+                                    $("#cartInfo").attr("href", "@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "BillingList" })");
+                                }
+                                else
+                                {
+                                    if(cartInfoCss.indexOf("is-empty") < 0 )
+                                    {
+                                        $("#cartInfo").attr("class", cartInfoCss+" is-empty");
+                                    }
+                                    $("#cartInfoCount").html("");
+                                    $("#cartInfo").attr("href", "#");
+                                }
+                            }
+                        });
+                    }
+                </script>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/Cards/Header/style8.css" type="text/css" />
+<script type="text/javascript" src="~/script/waypoints/jquery.waypoints.js"></script>
+<script type="text/javascript" src="~/script/header/style8/header.js"></script>
+
+<script>
+    function onResizeWindow(){
+        var headerHeight = $(".header").innerHeight(),
+            pageHeight = $(window).height(),
+            menu = $(".mobile-menu"),
+            menuHeight = pageHeight - headerHeight;
+
+        menu.css({
+            "top": headerHeight,
+            "height": menuHeight,
+        })
+    }
+
+    setTimeout(function(){
+        var headerHeight = $(".header").innerHeight(),
+            pageHeight = $(window).height(),
+            menu = $(".mobile-menu"),
+            menuHeight = pageHeight - headerHeight;
+
+        menu.css({
+            "top": headerHeight,
+            "height": pageHeight - headerHeight,
+        })
+    }, 1300);
+
+    window.addEventListener('resize', function () {
+        var timer;
+        timer = window.setTimeout(function () {
+            onResizeWindow();
+        }, 100); 
+    });
+
+    $(function(){
+        var addCart = $(".btn-cart");
+        addCart.click(function(e){
+            e.preventDefault();
+            $(this).toggleClass("is-empty");
+            return false;
+        })
+    })
+</script>
+<!--自訂頁首內容-->
+@if (SiteItem.HeaderCustomized)
+{
+    <div>
+        @SiteItem.HeaderCont
+    </div>
+}
+<script type="text/javascript" src="~/script/waypoints/jquery.waypoints.js"></script>
+<script type="text/javascript" src="~/script/header/style4/header.js"></script>
+<script>
+    function onResizeWindow(){
+        var headerHeight = $(".header").innerHeight(),
+            pageHeight = $(window).height(),
+            menu = $(".mobile-menu"),
+            menuHeight = pageHeight - headerHeight;
+
+        menu.css({
+            "top": headerHeight,
+            "height": menuHeight,
+        })
+    }
+    setTimeout(function(){
+        var headerHeight = $(".header").innerHeight(),
+            pageHeight = $(window).height(),
+            menu = $(".mobile-menu"),
+            menuHeight = pageHeight - headerHeight;
+
+        menu.css({
+            "top": headerHeight,
+            "height": pageHeight - headerHeight,
+        })
+    }, 1200);
+
+    window.addEventListener('resize', function () {
+        var timer;
+        timer = window.setTimeout(function () {
+            onResizeWindow();
+        }, 100); 
+    });
+    $(function(){
+        var addCart = $(".btn-cart");
+        addCart.click(function(e){
+            e.preventDefault();
+            $(this).toggleClass("is-empty");
+            return false;
+        })
+    })
+</script>
+<script>
+    $(function(){
+        var chatIcon = $(".header .nav-chat>a"),
+            chatClose = $("#header-chat-list .chat-list-close");
+
+        chatIcon.off("click").on("click", function(){
+            if($('.chat-list>li').length == 0){
+                parent.window.swal({
+                    text: '無任何聊天訊息',
+                    type: 'warning',
+                    confirmButtonText: '確定',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                });
+            }
+            else
+            {
+                $(this).next('div[id=header-chat-list]').toggle();
+            }
+        });
+        chatClose.off("click").on("click", function(){
+            $(this).parents('div[id=header-chat-list]').hide();
+        });
+        $(document).off("mouseup").on('mouseup', function(e){
+        var _con = $("div[id='header-chat-list']") ;
+        if(!_con.is(e.target) && _con.has(e.target).length === 0){
+            _con.hide();
+        }
+    });
+    var $chatTab = $('.tab-list').find('a'),
+        $chatList = $('.chat-list');
+    $chatTab.off("click").on('click', function(){
+        if($(this).hasClass('groupThread')){
+            $chatTab.removeClass('active');
+            $(this).addClass('active');
+            $chatList.removeClass('active');
+            $('.groupThreadList').addClass('active');
+        }else{
+            $chatTab.removeClass('active');
+            $(this).addClass('active');
+            $chatList.removeClass('active');
+            $('.threadList').addClass('active');
+        }
+    })
+    })
+</script>
+<script type="text/javascript">
+    @*
+    //聊天室控制Script---------start
+    $(function (){
+        var chatRoomList = JSON.parse('@Html.Raw(ListJsonStr)');
+        var chat = $.connection.chatHub;
+
+        //接收訊息
+        //chat.client.addMessage = function (groupID, memberIDStr, idStr, name, img, memberType, message, messageType, isRead, chatRoomImg, chatTitle, chatRoomType) {
+        chat.client.addMessage = function (data) {
+            var type = '';
+            if (data.ChatRoomType == '@((int)ChatRoomType.Single)' || data.ChatRoomType == '@((int)ChatRoomType.OneByOne)')
+            {
+                type = 'threadList';
+            }
+            else if (data.ChatRoomType == '@((int)ChatRoomType.Group)')
+            {
+                type = 'groupThreadList';
+            }
+
+            var chatRoomElm = $('.chat-list.' + type).find('#' + data.GroupID);
+            var TimeNow = new Date();
+            var yyyy = TimeNow.toLocaleDateString().slice(0, 4);                            //西元年
+            var MM = (TimeNow.getMonth() + 1 < 10 ? '0' : '') + (TimeNow.getMonth() + 1);   //月
+            var dd = (TimeNow.getDate() < 10 ? '0' : '') + TimeNow.getDate();               //日
+            var hh = (TimeNow.getHours() < 10 ? '0' : '') + TimeNow.getHours();             //時
+            var mm = (TimeNow.getMinutes() < 10 ? '0' : '') + TimeNow.getMinutes();         //分
+
+            if (data.ChatRoomType == '@((int)ChatRoomType.OneByOne)')
+            {
+                data.ChatRoomTitle = data.Name;
+                data.ChatRoomImg = '@memberUploadUrl' + data.Img;
+            }
+            else
+            {
+                data.ChatRoomImg = '@RecruitsUploadUrl' + data.ChatRoomImg;
+            }
+
+            if (data.ChatRoomType == '@((int)ChatRoomType.Group)') {
+                data.Message = data.Name + ': ' + data.Message;
+            }
+
+            chatRoomElm.find('.chat-time').html(hh + ':' + mm);
+            chatRoomElm.find('.chat-title').html(data.ChatRoomTitle);
+            chatRoomElm.find('.chat-description').html(data.Message);
+
+            //沒有聊天室時，清單新增聊天室
+            if (chatRoomElm.length == 0) {
+                var chatNumber = '0', isUnRead = '';
+                if(data.MemberID != '@memberID')
+                {
+                    chatNumber = '1';
+                    isUnRead = 'is-unread';
+                }
+
+                $('.chat-list.' + type).prepend('' +
+                    '<li id="' + data.GroupID + '" onclick="isReadMsg(this)">' +
+                        '<a class="chat-delete" id="' + data.GroupID + '" title="刪除對話" onclick="DeleteChat(this)">' +
+                            '<i class="cc cc-trash-o"></i>' +
+                        '</a>' +
+                        '<a class="openEdit-m chat-message chat-with-store ' + isUnRead +'" href="' + '@Html.Raw(Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Chat"}))' + '?RoomID=' + data.GroupID + '" roomID="' + data.GroupID + '" target="_blank">' +
+                            '<div class="chat-profile">' +
+                                '<div class="img bg-img" style="background-image: url(\'' + data.ChatRoomImg + '\')"></div>' +
+                            '</div>' +
+                            '<div class="chat-content">' +
+                                '<div class="chat-time">' + hh + ':' + mm + '</div>' +
+                                '<div class="chat-number">' + chatNumber + '</div>' +
+                                '<div class="chat-title">' + data.ChatRoomTitle + '</div>' +
+                                '<div class="chat-description">' + data.Message + '</div>' +
+                            '</div>' +
+                        '</a>' +
+                    '</li>');
+            }
+
+            var curMemberIDStr = '@memberID';
+            //撈取所有在聊天室內的會員
+            $.post('@Url.Action("getInRoomMembers", "Chat")', { 'ChatRoomID':data.GroupID },
+                function(result){
+                    if(curMemberIDStr != ' ' && curMemberIDStr != data.MemberID)
+                    {
+                        if($.inArray(curMemberIDStr, result) == -1)    //判斷當前會員是在否聊天內
+                        {
+                            var notRead = chatRoomElm.find('.chat-number').html();
+                            var notReadAll = parseInt($('#notReadIcon').html());
+
+                            if (notRead == 0)
+                            {
+                                chatRoomElm.find('.chat-message').addClass("is-unread");
+                            }
+                            chatRoomElm.find('.chat-number').html(parseInt(notRead) + 1);
+
+                            var total = 0;
+                            $('.chat-number').each(function () {
+                                var v = parseInt($(this).text());
+                                total += v;
+                            });
+
+                            if(!notReadAll)    //找不到此元件
+                            {
+                                $('#chatIcon').append('<span class="number font-xxs">' + total + '</span>');
+                            }
+                            else
+                            {
+                                $('#notReadIcon').html(total);
+                            }
+                        }
+
+                        //最新的訊息移到最前面
+                        if (chatRoomElm.length != 0) {
+                            var newListElm = chatRoomElm.html();
+                            chatRoomElm.remove();
+                            $('.chat-list.' + type).prepend('' +
+                                '<li id="' + data.GroupID + '" onclick="isReadMsg(this)">' +
+                                    newListElm +
+                                '</li>');
+                        }
+                    }
+
+                    //重新讀取colorbox套件
+                    $('.openEdit-m').colorbox({
+                        width: "95%",
+                        height: "95%",
+                        maxWidth: "600",
+                        iframe: true,
+                        fadeOut: 100,
+                        right: "20"
+                    });
+                }
+            );
+        }
+
+        //更新已讀
+        //chat.client.updateIsRead = function (Result, groupID, memberID, chatRoomType) {
+        chat.client.updateIsRead = function (data) {
+            var type = '';
+            if (data.ChatRoomType == '@((int)ChatRoomType.Single)' || data.ChatRoomType == '@((int)ChatRoomType.OneByOne)') {
+                type = 'threadList';
+            }
+            else if (data.ChatRoomType == '@((int)ChatRoomType.Group)') {
+                type = 'groupThreadList';
+            }
+
+            var curMemberIDStr = '@memberID';
+            if(curMemberIDStr != ' ' && curMemberIDStr == data.MemberID)
+            {
+                var chatRoomElm = $('.chat-list.' + type).find('#' + data.GroupID);
+                reFreshList(chatRoomElm);
+            }
+        }
+
+        //連線至聊天室
+        $.connection.hub.start().done(function () {
+            if(chatRoomList != null)
+            {
+                chatRoomList.forEach(function (chatRoom) {
+                    chat.server.joinGroup(chatRoom.IDStr);
+                });
+            }
+        });
+
+        //有創新聊天室時，連線至新聊天室
+        //chat.client.newChat = function (groupID, chatManagersID, memberShipID) {
+        chat.client.newChat = function (data) {
+            if (data.MemberShipID == '@memberID') {
+                chat.server.joinGroup(data.GroupID);
+            }
+        }
+
+        $('.openEdit-m').colorbox({
+            width: "95%",
+            height: "95%",
+            maxWidth: "600",
+            iframe: true,
+            fadeOut: 100,
+            right: "20"
+        });
+    })
+
+    function isReadMsg(e) {
+        var chatRoomElm = $('.chat-list').find('#' + e.id);
+        reFreshList(chatRoomElm);
+    }
+
+    function reFreshList(chatRoomElm){
+        chatRoomElm.find('.chat-number').html(0);
+        chatRoomElm.find('.chat-message').removeClass("is-unread");
+
+        var total = 0;
+        $('.chat-number').each(function () {
+            var v = parseInt($(this).text());
+            total += v;
+        });
+
+        if (total == 0)
+        {
+            $('#chatIcon').html('<i class="cc cc-comment-o cc-flip-horizontal font-lg"></i>');
+        }
+        else
+        {
+            $('#chatIcon').find('.number').html(total);
+        }
+    }
+
+    function DeleteChat(e){
+        parent.window.swal({
+            text: '確定要刪除該筆聊天內容？',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '刪除',
+            cancelButtonText: '取消',
+            animation: false,
+            customClass: 'animated fadeIn'
+        }).catch(swal.noop).then(function (isConfirm) {
+            if(isConfirm) {
+                $.post('@Url.Action("DelMsg", "Chat")', { 'ChatRoomID' : e.id , 'MemberID' : '@memberID' });
+                if ($('#' + e.id + '.chat-delete').parent().parent().hasClass('groupThreadList'))
+                {
+                    $('.chat-list.groupThreadList li#' + e.id).find('.chat-description').text('');
+                }
+                else
+                {
+                    $('.chat-list.threadList').find('#' + e.id).remove();
+                }
+            }
+        });
+    }
+    //聊天室控制Script---------end
+    *@
+</script>

@@ -1,0 +1,655 @@
+﻿@model WorkV3.ViewModels.PageCommentViewModel
+@{
+    WorkV3.ViewModels.CommentType replyType = Model.ReplyType;
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    Member curUser = Member.Current;
+    if (replyType != WorkV3.ViewModels.CommentType.Closed)
+    {
+<div class="comment m-T-12 p-T-12">
+    @if (replyType == WorkV3.ViewModels.CommentType.All || replyType == WorkV3.ViewModels.CommentType.MemberOnly)
+    {
+                <!-- 如果回文是 開放匿名回文 跟 開放會員回文 -->
+        <div class="commentBtn">
+            <i class="cc cc-comment-o"></i>
+            <span>回文</span>
+        </div>
+                <div class="comment-content">
+                    <div class="comment-title">@Model.ReplyTitle</div>
+                    <ul>
+                        <li class="comment-edit">
+                            <form method="post" id="editForm" action="@Url.Action("Index", "PageComments", new {SiteID=Model.SiteID,  PageSN = Model.PageSN, Url = Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = pageCache.PageSN }) })" >
+                                <div class="comment-content">
+                                    <div class="userName">
+                                        <div class="input-field inline">
+                                            <input type="text" placeholder="暱稱" id="PosterName" name="PosterName" class="validate[required]" value="@(curUser != null ? curUser.Name : "")" @((replyType!= WorkV3.ViewModels.CommentType.All)?"readonly":"")>
+                                        </div>
+                                    </div>
+                                    <div class="content">
+                                        <textarea class="materialize-textarea validate[required]" placeholder="留言內容" id="CommentContent" name="CommentContent"></textarea>
+                                    </div>
+                                    <div class="text-R margin-T-8">
+                                        <a class="btn-custom-o rounded rounded-huge btn-small" name="btnSave" id="btnSave">送出</a>
+                                    </div>
+                                </div>
+                                @Html.HiddenFor(m => m.FBID)
+                                @Html.HiddenFor(m => m.PageSN)
+                                @Html.HiddenFor(m => m.ReplyTitle)
+                                @Html.HiddenFor(m => m.ReplyType)
+                                @Html.HiddenFor(m => m.RowCount)
+                            </form>
+                        </li>
+</ul>
+                    <ul class="comment-list">
+                    </ul>
+                    <div class="text-R m-B-8"><a class="btn-grey-darken-2-o transparent right p-none" href="javascript:" id="aMoreReply"><i class="cc cc-arrow-right"></i>更多回文</a></div>
+                </div>
+    }
+    @if (replyType == WorkV3.ViewModels.CommentType.FB)
+    {
+                <!-- 如果回文是fb -->
+        <div class="comment-title">@Model.ReplyTitle</div>
+                <div id="fb-root"></div>
+                <script>
+                    (function (d, s, id) {
+                        var js, fjs = d.getElementsByTagName(s)[0];
+                        if (d.getElementById(id)) return;
+                        js = d.createElement(s);
+                        js.id = id;
+                        js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.7";
+                        fjs.parentNode.insertBefore(js, fjs);
+                    }(document, 'script', 'facebook-jssdk'));
+</script>
+                <!-- <div class="fb-like" data-href="https://www.facebook.com/taisounds/?fref=ts" data-layout="box_count" data-action="like" data-size="small" data-show-faces="false" data-share="false"></div> -->
+                <div class="fb-comments" data-href="@WorkLib.uUrl.GetURL(false)@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = pageCache.PageSN })" data-width="100%" data-numposts="5" data-order-by="reverse_time"></div>
+    }
+</div>
+    }
+    @BundleConfig.Validate()
+    <script>
+        var index = 0, rowCount = @Model.RowCount, totalShowCount = 0;
+        var defaultName= "@(curUser!= null?curUser.Name:"")";
+
+        $(function () {
+            LoadCommentList('@Model.PageSN', index, rowCount);
+            $("#aMoreReply").bind("click", function(){
+                LoadCommentList('@Model.PageSN', index, rowCount);
+            });
+            $(".comment-edit").hide();
+            $(".commentBtn").bind("click", function(){
+                @if (replyType == WorkV3.ViewModels.CommentType.MemberOnly)
+                {
+                    if (curUser != null)
+                    {
+                    <text>
+                $(".comment-edit").show();
+                </text>
+                    }
+                    else
+                    {
+                    <text>
+                Component.alert('請先登入會員！', function () {
+                    location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                });
+                </text>
+                    }
+                }
+                @if (replyType == WorkV3.ViewModels.CommentType.All)
+                {
+                    <text>
+                $(".comment-edit").show();
+                </text>
+                }
+            });
+
+        });
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                var formData = new FormData();
+                //console.log('@Model.PageSN');
+                formData.append("SiteID", '@Model.SiteID');
+                formData.append("PageSN", '@Model.PageSN');
+                formData.append("ReplyType", @((int)Model.ReplyType));
+                formData.append("Url", '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = pageCache.PageSN })');
+                formData.append("PosterName", $("#PosterName").val());
+                formData.append("CommentContent", $("#CommentContent").val());
+                $.ajax({
+                    url: "@Url.Action("PostComments", "PageComments")",
+                    data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        if(data != null)
+                        {
+                            if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Success)))
+                            {
+                                Component.alert("回覆發表成功!", function(){
+                                //location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                                    ResetCommentList();
+                                    index = 0;
+                                    LoadCommentList('@Model.PageSN', index, rowCount);
+                                    $("#PosterName").val(defaultName);
+                                    $("#CommentContent").val("");
+                            });
+                        }
+                        else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.MustLogin)))
+                            {
+                            Component.alert(data.Message, function(){
+                                location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                        });
+                    }
+                else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NoRepeat)))
+                {
+                    Component.alert(data.Message);
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NotSupport)))
+                {
+                    Component.alert(data.Message, function(){
+                        location.href = '@Url.Action("Index", "Home")';
+                    });
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Fail)))
+                {
+                    Component.alert(data.Message);
+                }
+            }
+        },
+            fail: function () {
+                // console.log("load fail ");
+            }
+        });
+        //form.submit();
+        }
+        });
+
+        function ResetCommentList()
+        {
+            $(".comment-list").html("");
+        }
+        function LoadCommentList(PageSN, Index, RowCount) {
+            var formData = new FormData();
+            formData.append("SiteID", '@Model.SiteID');
+            formData.append("PageSN", PageSN);
+            formData.append("index", Index);
+            formData.append("rowCount", RowCount);
+            $.ajax({
+                url: "@Url.Action("GetComments", "PageComments")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if(data != null)
+                    {
+                        var target = $(".comment-list");
+                        //                        console.log(data);
+                        for(var i=0;i<data.CommentList.length;i++)
+                        {
+                            //console.log(data.CommentList);
+                            AddReplyItems(target, data.CommentList[i].CommentID.toString(), data.CommentList[i].PosterName, data.CommentList[i].CommentContent, "",
+                                data.CommentList[i].PostDateDiff, data.CommentList[i].GoodCount, data.CommentList[i].ChildCommentList, data.CommentList[i].MemberShipID
+                                , data.CommentList[i].IsAddedGood, data.CommentList[i].Photo, data.CommentList[i].MemberType);
+                            totalShowCount++;
+                        }
+                        if(totalShowCount>= data.TotalRowCount)
+                            $("#aMoreReply").hide();
+                    }
+                    index++;
+                },
+                fail: function () {
+                    //console.log("load fail ");
+                }
+            });
+        }
+        function AddReplyItems(targetContainer, id, poster, content, img, dateDiff, goodCount, childCommentList, OwnerID, IsAddedGood, photo, memberType)
+        {
+            var more_html = "<a class='btn-blue-o transparent btn-mini margin-L-4' href='javascript:ShowMoreContent(\"{ID}\");'>更多</a>";
+            more_html += "<text id='SourceMore_{ID}' style='display:none'>{Content}</text>";
+            var content_pre = content.replace(/(?:\r\n|\r|\n)/g, '<br />');
+            var content_more = "";
+            if(content.length > 100)
+            {
+                content_pre = content.substring(0,100)+"...";
+                content_more = more_html.replace("{ID}", id).replace("{ID}", id).replace("{Content}", content);
+            }
+            var replyItem = " <li>";
+            var memberID = "@(curUser != null ? curUser.ID.ToString():"")";
+            var userCover = "<i class='cc cc-user-o'></i>";
+            var memberNameClass= "";
+            var goodCss = "cc cc-favorite-o";
+            if(IsAddedGood)
+                goodCss = "cc cc-favorite font-red";
+            replyItem += "<div class='comment-content {memberNameClass}'>";
+            replyItem += "<div class='userImg'>{UserCover}</div>";
+            @* move down fay 20180309 replyItem += "<div class='good'><a href='javascript:void(0)' onclick='GoodAdd(\"{ID}\")'>讚</a><span id='GoodCount_{ID}'>{GoodCount}</span></div>";*@
+            replyItem += "<div class='time'><span>{Minutes}</span>前</div><div class='userName'>{UserName}</div>";
+            replyItem += "<div class='content' id='content_{ID}'>{ContentPre}{ContentMore}</div>";
+            @*replyItem += "<div class='good'><a href='javascript:void(0)' onclick='GoodAdd(\"{ID}\")'></a><span id='GoodCount_{ID}'>{GoodCount}</span></div>";
+            replyItem += "<div class='childreply text-R m-B-8' id='childreply_{ID}' ><a class='btn-grey-darken-4-o' onclick='ReplyComment(\"{ID}\")' id='btnReplyComment_{ID}'>回覆此留言</a></div>";*@
+            @*edit reply style fay 20180312*@
+            replyItem += "<div class='good d-inline-block'><a href='javascript:void(0)' onclick='GoodAdd(\"{ID}\")'><i class='{GoodCss}' id='GoodIcon_{ID}'></i></a><span id='GoodCount_{ID}'>{GoodCount}</span><span>個讚</span></div>";
+            replyItem += "<div class='childreply d-inline-block m-L-4 font-sm' id='childreply_{ID}' ><a onclick='ReplyComment(\"{ID}\")' id='btnReplyComment_{ID}'>回覆</a></div>";
+
+            if(memberID == OwnerID)
+            {
+                replyItem += "<div class='childreply d-inline-block m-L-4 font-sm'><a onclick='EditComment(\"{ID}\", false)' id='btnEidt_{ID}'>編輯</a></div>";
+                replyItem += "<div class='childreply d-inline-block m-L-4 font-sm'><a onclick='DeleteComment(\"{ID}\")' id='btnDelete_{ID}'>刪除</a></div>";
+            }
+            if(OwnerID!= null && OwnerID != "")
+            {
+                memberNameClass="member-comment";
+                if(memberType == "FB")
+                    memberNameClass="member-social";
+            }
+            if(photo!= null && photo!= "")
+            {
+                userCover = "<img src='"+photo+"' />";
+            }
+            replyItem += "</div>";
+            replyItem += "<ul id='child_comment_list_{ID}' class='reply-comment m-T-8'> @*add class fay 20180309*@";
+            replyItem += "</ul>";
+            replyItem += "</li>";
+            $(targetContainer).append(replyItem.replace("{Minutes}", dateDiff.toString())
+                .replace("{UserName}", poster.toString())
+                .replace("{ContentPre}", content_pre)
+                .replace(/(?:{ID})/g, id)
+                .replace("{GoodCount}", goodCount)
+                .replace("{ContentMore}", content_more)
+                .replace(/(?:{GoodCss})/g, goodCss)
+                .replace(/(?:{memberNameClass})/g, memberNameClass)
+                .replace(/(?:{UserCover})/g, userCover));
+
+            if(childCommentList!= null && childCommentList.length > 0)
+            {
+                //console.log(childCommentList);
+                for(var i=0;i<childCommentList.length;i++)
+                {
+                    AddChildItems($("#child_comment_list_"+id),
+                        childCommentList[i].CommentID.toString(),
+                        childCommentList[i].PosterName,
+                        childCommentList[i].CommentContent, "",
+                        childCommentList[i].PostDateDiff,
+                        childCommentList[i].GoodCount,
+                        childCommentList[i].ChildCommentList,
+                        childCommentList[i].MemberShipID,
+                        childCommentList[i].IsAddedGood,
+                        childCommentList[i].Photo,
+                        childCommentList[i].MemberType);
+                }
+            }
+
+            // fay 20180312
+            $(function() {
+                $("i[id^=GoodIcon_]").click(function() {
+                    if($(this).attr("class").indexOf("cc-favorite-o")>=0)
+                    {
+                        $( this).removeClass("cc-favorite-o");
+                        $( this ).addClass( "font-red" );
+                        $( this ).addClass( "cc-favorite" );
+                    }
+                    else
+                    {
+                        $( this).removeClass("font-red");
+                        $( this ).removeClass( "cc-favorite" );
+                        $( this ).addClass( "cc-favorite-o" );
+                    }
+                });
+            });
+
+        }
+        function AddChildItems(targetContainer, id, poster, content, img, dateDiff, goodCount, childCommentList, OwnerID, IsAddedGood, photo, memberType)
+        {
+            var more_html = "<a class='btn-blue-o transparent btn-mini margin-L-4' href='javascript:ShowMoreContent(\"{ID}\");'>更多</a>";
+            more_html += "<text id='SourceMore_{ID}' style='display:none'>{Content}</text>";
+            var content_pre = content.replace(/(?:\r\n|\r|\n)/g, '<br />');
+            var content_more = "";
+            if(content.length > 100)
+            {
+                content_pre = content.substring(0,100)+"...";
+                content_more = more_html.replace("{ID}", id).replace("{ID}", id).replace("{Content}", content);
+            }
+            var userCover = "<i class='cc cc-user-o'></i>";
+            var memberID = "@(curUser != null ? curUser.ID.ToString():"")";
+            var memberNameClass = "";
+            var goodCss = "cc cc-favorite-o";
+            if(IsAddedGood)
+                goodCss = "cc cc-favorite font-red";
+            var replyItem = " <li>";
+            replyItem += "<div class='comment-content {memberNameClass}'>";
+            replyItem += "<div class='userImg'>{UserCover}</div>";
+            @* move down fay 20180309 replyItem += "<div class='good'><a href='javascript:void(0)' onclick='GoodAdd(\"{ID}\")'>讚</a><span id='GoodCount_{ID}'>{GoodCount}</span></div>";*@
+            replyItem += "<div class='time'><span>{Minutes}</span>前</div><div class='userName'>{UserName}</div>";
+            replyItem += "<div class='content' id='content_{ID}'>{ContentPre}{ContentMore}</div>";
+            replyItem += "<div class='good'><a href='javascript:void(0)' onclick='GoodAdd(\"{ID}\")'>@*fay20180312讚*@<i class='{GoodCss}' id='GoodIcon_{ID}'></i></a><span id='GoodCount_{ID}'>{GoodCount}</span><span class='font-sm'>個讚</span></div>"; @*move to here fay 20180309/edit LIKE fay 20180312*@;
+
+            if(memberID == OwnerID)
+            {
+                replyItem += "<div class='d-inline-block m-L-4 font-sm'><a onclick='EditComment(\"{ID}\", true)' id='btnEidt_{ID}'>編輯</a></div>";
+                replyItem += "<div class='d-inline-block m-L-4 font-sm'><a onclick='DeleteComment(\"{ID}\")' id='btnDelete_{ID}'>刪除</a></div>";
+            }
+            if(OwnerID != null && OwnerID!= "")
+            {
+                memberNameClass="member-comment";
+                if(memberType == "FB")
+                    memberNameClass="member-social";
+            }
+            if(photo!= null && photo!= "")
+            {
+                userCover = "<img src='"+photo+"' />";
+            }
+            replyItem += "</div>";
+            replyItem += "</li>";
+            $(targetContainer).append(replyItem.replace("{Minutes}", dateDiff.toString())
+                .replace("{UserName}", poster.toString())
+                .replace("{ContentPre}", content_pre)
+                .replace(/(?:{ID})/g, id)
+                .replace("{GoodCount}", goodCount)
+                .replace("{ContentMore}", content_more)
+                .replace(/(?:{GoodCss})/g, goodCss)
+                .replace(/(?:{memberNameClass})/g, memberNameClass)
+                .replace(/(?:{UserCover})/g, userCover));
+            $(function() {
+                $("i[id^=GoodIcon_]").click(function() {
+                    if($(this).attr("class").indexOf("cc-favorite-o")>=0)
+                    {
+                        $( this).removeClass("cc-favorite-o");
+                        $( this ).addClass( "font-red" );
+                        $( this ).addClass( "cc-favorite" );
+                    }
+                    else
+                    {
+                        $( this).removeClass("font-red");
+                        $( this ).removeClass( "cc-favorite" );
+                        $( this ).addClass( "cc-favorite-o" );
+                    }
+                });
+            });
+        }
+
+        function ShowMoreContent(targetID)
+        {
+            $('#content_'+targetID).html($('#SourceMore_'+targetID).html());
+        }
+        function  ReplyComment(parentID)
+        {
+            var formHtmlStr = "<form id=editForm_{ID}><div class='comment-content'>";
+            formHtmlStr +=      "<div class='userName'>";
+            formHtmlStr +=          "<div class='input-field inline'>";
+            formHtmlStr +=              "<input type='text' placeholder='暱稱' id='PosterName_{ID}' name='PosterName{ID}' class='validate[required]' value='@(curUser!= null ?curUser.Name:"")' @((replyType!= WorkV3.ViewModels.CommentType.All)?"readonly":"")>";
+            formHtmlStr +=          "</div>";
+            formHtmlStr +=      "</div>";
+            formHtmlStr +=      "<div class='content'>";
+            formHtmlStr +=      "       <textarea class='materialize-textarea validate[required]' placeholder='留言內容' id='CommentContent_{ID}' name='CommentContent_{ID}'></textarea>";
+            formHtmlStr +=      "</div>";
+            formHtmlStr +=      "<div class='text-R margin-T-8'>";
+            @*formHtmlStr +=          "<a class='btn-grey-lighten-1 block' name='btnSave_{ID}' id='btnSave_{ID}' onclick='SentReplyComment(\"{ID}\")'>送出</a>";
+            formHtmlStr +=          "<a class='btn-grey-lighten-1 block' name='btnCancel_{ID}' id='btnCancel_{ID}' onclick='CancelReplyComment(\"{ID}\")'>取消</a>";*@
+            formHtmlStr +=          "<a class='btn-grey-lighten-1-o rounded rounded-huge btn-small' name='btnCancel_{ID}' id='btnCancel_{ID}' onclick='CancelReplyComment(\"{ID}\")'>取消</a>";
+            formHtmlStr +=          "<a class='btn-custom-o rounded rounded-huge btn-small m-L-3' name='btnSave_{ID}' id='btnSave_{ID}' onclick='SentReplyComment(\"{ID}\")'>送出</a>";
+            formHtmlStr +=      "</div>";
+            formHtmlStr +=      "</form>";
+            $("#btnReplyComment_"+parentID).hide();
+            //$("#childreply_"+parentID).append(formHtmlStr.replace(/(?:{ID})/g, parentID));
+            //fay 20180312
+            $("#childreply_"+parentID).parent().append(formHtmlStr.replace(/(?:{ID})/g, parentID));
+        }
+        function  EditComment(ID, isChild)
+        {
+            var url = "@Url.Action("GetSingleComment", "PageComments")"+"?ID="+ID+"&SiteID=@Model.SiteID";
+            var formHtmlStr = "";
+            $.get(url, function( data ) {
+                formHtmlStr = "<form id=editComentForm_{ID}><div class='comment-content'>";
+                formHtmlStr +=      "<div class='userName'>";
+                formHtmlStr +=          "<div class='input-field inline'>";
+                formHtmlStr +=              "<input type='text' placeholder='暱稱' id='EditPosterName_{ID}' name='PosterName{ID}' class='validate[required]' value='"+data.PosterName+"' @((replyType!= WorkV3.ViewModels.CommentType.All)?"readonly":"")>";
+                formHtmlStr +=          "</div>";
+                formHtmlStr +=      "</div>";
+                formHtmlStr +=      "<div class='content'>";
+                formHtmlStr +=      "       <textarea class='materialize-textarea validate[required]' placeholder='留言內容' id='EditCommentContent_{ID}' name='CommentContent_{ID}'>"+data.CommentContent+"</textarea>";
+                formHtmlStr +=      "</div>";
+                formHtmlStr +=      "<div class='text-R margin-T-8'>";
+                formHtmlStr +=          "<a class='btn-grey-lighten-1-o rounded rounded-huge btn-small' name='btnEditCancel_{ID}' id='btnCancel_{ID}' onclick='CancelEditComment(\"{ID}\")'>取消</a>";
+                formHtmlStr +=          "<a class='btn-custom-o rounded rounded-huge btn-small m-L-3' name='btnEditSave_{ID}' id='btnSave_{ID}' onclick='SentEditComment(\"{ID}\")'>送出</a>";
+                formHtmlStr +=      "</div>";
+                formHtmlStr +=      "</form>";
+
+                $("#content_"+ID).hide();
+                $("#content_"+ID).nextAll().css("visibility","hidden" );
+                //$("#childreply_"+parentID).append(formHtmlStr.replace(/(?:{ID})/g, parentID));
+                //fay 20180312
+                if(!isChild)
+                    $("#childreply_"+ID).parent().append(formHtmlStr.replace(/(?:{ID})/g, ID));
+                else
+                    $("#content_"+ID).nextAll().last().before(formHtmlStr.replace(/(?:{ID})/g, ID));
+            });
+        }
+        function  DeleteComment(commentID)
+        {
+            var formData = new FormData();
+            formData.append("SiteID", '@Model.SiteID');
+            formData.append("ReplyType", @((int)Model.ReplyType));
+            formData.append("ID", commentID);
+            $.ajax({
+                url: "@Url.Action("DeleteComments", "PageComments")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if(data != null)
+                    {
+                        if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Success)))
+                        {
+                            Component.alert("留言刪除成功!", function(){
+                                ResetCommentList();
+                                index = 0;
+                                LoadCommentList('@Model.PageSN', index, rowCount);
+                                $("#PosterName_"+parentID).val(defaultName);
+                                $("#CommentContent_"+parentID).val("");
+                        });
+                    }
+                    else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.MustLogin)))
+                        {
+                        Component.alert(data.Message, function(){
+                            location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                    });
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NoRepeat)))
+            {
+                Component.alert(data.Message);
+            }
+        else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NotSupport)))
+            {
+                Component.alert(data.Message, function(){
+                    location.href = '@Url.Action("Index", "Home")';
+                });
+            }
+        else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Fail)))
+            {
+                Component.alert(data.Message);
+            }
+        }
+        },
+        fail: function () {
+            // console.log("load fail ");
+        }
+        });
+        //form.submit();
+        }
+        function  CancelEditComment(ID)
+        {
+            $("#content_"+ID).show();
+            $("#content_"+ID).nextAll().css("visibility","" );
+            $('#editComentForm_'+ID).remove();
+        }
+        function  SentEditComment(ID)
+        {
+            var form = $('#editComentForm_'+ID);
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                var formData = new FormData();
+                formData.append("ReplyType", @((int)Model.ReplyType));
+                formData.append("ID", ID);
+                formData.append("SiteID", '@Model.SiteID');
+                formData.append("PosterName", $("#EditPosterName_"+ID).val());
+                formData.append("CommentContent", $("#EditCommentContent_"+ID).val());
+                $.ajax({
+                    url: "@Url.Action("PostEditComments", "PageComments")",
+                    data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        if(data != null)
+                        {
+                            if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Success)))
+                            {
+                                Component.alert("留言儲存發表成功!", function(){
+                                    ResetCommentList();
+                                    index = 0;
+                                    LoadCommentList('@Model.PageSN', index, rowCount);
+                                    $("#EditPosterName_"+ID).val(defaultName);
+                                    $("#EditCommentContent_"+ID).val("");
+                            });
+                        }
+                        else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.MustLogin)))
+                            {
+                            Component.alert(data.Message, function(){
+                                location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                        });
+                    }
+                else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NoRepeat)))
+                {
+                    Component.alert(data.Message);
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NotSupport)))
+                {
+                    Component.alert(data.Message, function(){
+                        location.href = '@Url.Action("Index", "Home")';
+                    });
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Fail)))
+                {
+                    Component.alert(data.Message);
+                }
+            }
+        },
+        fail: function () {
+            // console.log("load fail ");
+        }
+        });
+        //form.submit();
+        }
+        $("#content_"+ID).show();
+        $("#content_"+ID).nextAll().css("visibility","" );
+        $('#editComentForm_'+ID).remove();
+        }
+        function  CancelReplyComment(parentID)
+        {
+            $("#btnReplyComment_"+parentID).show();
+            //$("#childreply_"+parentID).html("<a onclick='ReplyComment(\""+parentID+"\")' id='btnReplyComment_"+parentID+"'>回覆</a>");
+            //fay 20180312
+            $('#editForm_'+parentID).remove();
+        }
+        function  SentReplyComment(parentID)
+        {
+            var form = $('#editForm_'+parentID);
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                var formData = new FormData();
+                formData.append("PageSN", "@Model.PageSN");
+                formData.append("SiteID", '@Model.SiteID');
+                formData.append("ReplyType", @((int)Model.ReplyType));
+                formData.append("Url", '@Url= Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = pageCache.PageSN })');
+                formData.append("ParentID", parentID);
+                formData.append("PosterName", $("#PosterName_"+parentID).val());
+                formData.append("CommentContent", $("#CommentContent_"+parentID).val());
+                $.ajax({
+                    url: "@Url.Action("PostReplyComments", "PageComments")",
+                    data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        if(data != null)
+                        {
+                            if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Success)))
+                            {
+                                Component.alert("留言回文發表成功!", function(){
+                                //location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                                    ResetCommentList();
+                                    index = 0;
+                                    LoadCommentList('@Model.PageSN', index, rowCount);
+                                    $("#PosterName_"+parentID).val(defaultName);
+                                    $("#CommentContent_"+parentID).val("");
+                            });
+                        }
+                        else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.MustLogin)))
+                            {
+                            Component.alert(data.Message, function(){
+                                location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                        });
+                    }
+                else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NoRepeat)))
+                {
+                    Component.alert(data.Message);
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.NotSupport)))
+                {
+                    Component.alert(data.Message, function(){
+                        location.href = '@Url.Action("Index", "Home")';
+                    });
+                }
+            else if(data.Result == @((int)(WorkV3.Controllers.HandlerResult.Fail)))
+                {
+                    Component.alert(data.Message);
+                }
+            }
+        },
+        fail: function () {
+            // console.log("load fail ");
+        }
+        });
+        //form.submit();
+        }
+        }
+        function GoodAdd(ID)
+        {
+            $.post("@Url.Action("AddGood", "PageComments")", { 'replyType': @((int)Model.ReplyType), 'CommentID': ID, 'SiteID':'@Model.SiteID'}, function (result) {
+                //console.log(result);
+                if(result.Result == @((int)(WorkV3.Controllers.HandlerResult.Success)))
+                {
+                    $('#GoodCount_'+ID).html(result.ResultCount);
+
+            }
+            else if(result.Result == @((int)(WorkV3.Controllers.HandlerResult.MustLogin)))
+            {
+                    Component.alert(result.Message, function(){
+                        location.href = '@Url.Action("Index", "Home", new { SiteSN = pageCache.SiteSN, PageSN = "Login", prev = HttpUtility.UrlEncode(Request.Url.AbsoluteUri) })';
+                    });
+        }
+        else if(result.Result == @((int)(WorkV3.Controllers.HandlerResult.NoRepeat)))
+        {
+            Component.alert(result.Message);
+        }
+        else if(result.Result == @((int)(WorkV3.Controllers.HandlerResult.NotSupport)))
+        {
+            Component.alert(result.Message, function(){
+                location.href = '@Url.Action("Index", "Home")';
+            });
+        }
+        });
+        }
+
+    </script>
+    }

@@ -1,0 +1,220 @@
+﻿@model WorkV3.Models.ImageTextModel
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+}
+
+<div class="groove groove-1">
+    @using (Html.BeginForm("Edit", "ImageText", siteQuery, FormMethod.Post, new { enctype = "multipart/form-data", id = "editForm" }))
+    {
+        @Html.ValidationSummary(false, "", new { @class = "validationSummary", style = "display:none;" })
+        @Html.HiddenFor(m => m.ID)
+        @Html.HiddenFor(m => m.CardNo)
+        @Html.HiddenFor(m => m.Sort)
+        @Html.HiddenFor(m => m.ClickType)
+        @Html.HiddenFor(m => m.ClickEvent)
+        @Html.HiddenFor(m => m.Creator)
+        @Html.HiddenFor(m => m.CreateTime)
+
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">標題</div>
+                    <div class="input-field">
+                        @Html.TextBoxFor(m => m.Title)
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">連結</div>
+                    <div id="outsideLink-box" class="input-field inline full">
+                        @Html.TextBoxFor(m => m.Link, new { @class = "m-B-none validate[funcCall[checkLink]]", placeholder = "http://" })
+                    </div>
+                    <div class="radio-box inline full">
+                        <div>
+                            @Html.CheckBoxFor(x => x.IsOpenNew)
+                            <label for="IsOpenNew">另開</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">點擊數</div>
+                    <div class="radio-box inline">
+                        @Html.CheckBoxFor(m => m.ShowClicks)
+                        <label for="ShowClicks">顯示</label>                        
+                    </div>                    
+                    <div class="input-field inline">
+                        <input type="text" id="StartClicks" name="StartClicks" value="@Model.StartClicks" class="inline" placeholder="初始值" />
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">內文</div>
+                    <div class="input-field img-text-height">
+                        @Html.TextAreaFor(x => x.Description, new { contenteditable = "true" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title">上傳圖片</div>
+                    <div class="input-field m-T-none">
+                        <input type="file" id="ImgFile" name="ImgFile" />
+                        <input type="hidden" id="Img" name="Img" value='@Model.Img' />
+                        <input type="hidden" id="ImgFileBase64" name="ImgFileBase64" />
+                        <input type="hidden" id="ImgFileBase64" name="ImgFileBase64_Resize" />
+                    </div>
+                </div>
+            </li>            
+            <li id="ClickEventAdmin">
+                <div class="col-1">
+                    <div class="tool-btn horizontal click-to-toggle">
+                        <a class="btn-with-item empty square">
+                            <i class="cc cc-plus"></i>
+                        </a>
+                        <ul>
+                            <li><a class="btn-with-item square click" href="@Url.Action("ImgEdit", "Click", siteQuery)"><i class="cc cc-image" data-value="img"></i>搭配圖片</a></li>
+                            <li><a class="btn-with-item square click" href="@Url.Action("VideoEdit", "Click", siteQuery)"><i class="cc cc-video" data-value="video"></i>搭配影片</a></li>
+                            <li><a class="btn-with-item square click" href="@Url.Action("VoiceEdit", "Click", siteQuery)"><i class="cc cc-music" data-value="voice"></i>搭配聲音</a></li>
+                            <li><a class="btn-with-item square click" href="@Url.Action("FileEdit", "Click", siteQuery)"><i class="cc cc-download" data-value="file"></i>搭配檔案</a></li>
+                            <li><a class="btn-with-item square click" href="@Url.Action("LinkEdit", "Click", siteQuery)"><i class="cc cc-link-variant" data-value="link"></i>搭配連結</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li id="ClickEventPreview"></li>
+        </ul>
+
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(m => m.IsIssue)
+                    <label for="IsIssue">刊登</label>
+                </div>
+            </div>
+            <div id="publishedTime" class="bar-item float-L" style="display:none;">
+                <div class="input-field inline m-T-none">
+                    @Html.TextBoxFor(m => m.IssueStart, new { @class = "input-cal datetimepicker", placeholder = "開始時間" })
+                </div>
+                <div class="input-field inline m-T-none">
+                    @Html.TextBoxFor(m => m.IssueEnd, new { @class = "input-cal datetimepicker", placeholder = "結束時間" })
+                </div>
+                <div class="radio-box inline m-R-4">
+                    @Html.CheckBoxFor(m => m.Period)
+                    <label for="Period">間歇性刊登</label>
+                    <a class="btn-grey-darken-2-o transparent p-none dropdown-button" href="javascript:" data-activates="rangePublishedTime"><i class="cc cc-chevron-down"></i></a>
+                    <div id="rangePublishedTime" class="float-box top dropdown-content btnStyle closeOnClick" style="display:none;">
+                        <div class="radio-box inline m-T-2">
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Sun)
+                                <label for="Sun">週日</label>
+                            </div>
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Mon)
+                                <label for="Mon">週一</label>
+                            </div>
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Tue)
+                                <label for="Tue">週二</label>
+                            </div>
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Wed)
+                                <label for="Wed">週三</label>
+                            </div>
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Thu)
+                                <label for="Thu">週四</label>
+                            </div>
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Fri)
+                                <label for="Fri">週五</label>
+                            </div>
+                            <div class="">
+                                @Html.CheckBoxFor(m => m.Sat)
+                                <label for="Sat">週六</label>
+                            </div>
+                        </div>
+                        <div class="input-field inline m-T-none">
+                            @Html.TextBoxFor(m => m.DailyStart, new { @class = "input-cal datetimepicker", placeholder = "每日開始時間" })
+                        </div>
+                        <div class="input-field inline m-T-none">
+                            @Html.TextBoxFor(m => m.DailyEnd, new { @class = "input-cal datetimepicker", placeholder = "每日結束時間" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 華山客製的刊登 END -->
+
+            @*<a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>*@
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    }
+</div>
+
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        function Callbacks() {
+            @if (ViewBag.IsValid as bool? == false)
+            {
+            <text>
+            var msg = [];
+            $(".validationSummary li").each(function () {
+                msg.push($(this).text());
+            });
+            Component.alert(msg.join("\r\n"));
+            </text>
+            }
+
+            @if (ViewBag.EditResult != null )
+            {
+            <text>
+            Component.alert("@Html.Raw(ViewBag.EditResult)");
+            </text>
+            }
+        }
+
+        $(function () {
+            Component.singleImageUpload('#ImgFile', '@(Href("~/"))', '@ViewBag.UploadVPath');
+            Component.editor("Description");
+            Component.click("#editForm", '@(Href("~/"))', '@ViewBag.SiteID', '@ViewBag.MenuID');
+
+            // 刊登相關設定
+
+            $("#IsIssue").change(function () {
+                if (this.checked)
+                    $('#publishedTime').fadeIn();
+                else
+                    $('#publishedTime').fadeOut();
+            }).trigger("change");
+
+            // 刊登相關設定 End
+
+            $('#btnSave').click(function () {
+                var form = $("#editForm");
+                if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    form.submit();
+                }
+            });
+
+            Callbacks();
+        });
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (v && !/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+    </script>
+}

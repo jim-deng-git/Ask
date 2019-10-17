@@ -1,0 +1,153 @@
+﻿@model IEnumerable<ParagraphModels>
+@{
+    Layout = null;
+    bool IsSingleImgUpload = ViewBag.IsSingleImgUpload;
+
+}
+
+@foreach (ParagraphModels p in Model) {
+<li class="paragraph">
+    <input type="hidden" data-field="ID" value="@p.ID" />
+    <a class="btn-grey-o square btn-large transparent tooltip" data-sort="up" href="javascript:" title="向上"><i class="cc cc-arrow-up"></i></a>
+    <a class="btn-grey-o square btn-large transparent tooltip" data-sort="down" href="javascript:" title="向下"><i class="cc cc-arrow-down"></i></a>
+    <a class="btn-del square btn-large transparent paragraph-del tooltip delParagraph" href="javascript:" title="刪除段落"><i class="cc cc-trash-o"></i></a>
+    <ul class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title">子標題</div>
+                <div class="input-field">
+                    <input type="text" data-field="Title" value="@p.Title">
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="input-field">
+                    <textarea contenteditable="true" data-field="Contents" placeholder="請輸入段落內文">
+                        @(string.IsNullOrWhiteSpace(p.Contents) ? "請填入段落內文" : p.Contents)
+                    </textarea>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="tool-btn horizontal click-to-toggle">
+
+                    @if(!IsSingleImgUpload)
+                    {
+                        <a class="btn-with-item empty square">
+                            <i class="cc cc-plus"></i>
+                        </a>
+                        <ul>
+                        @{
+                            var query = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, SourceNo = p.ID };
+
+                            foreach (var item in ViewBag.matchTypeBtnItems as List<KeyValuePair<string, string>>)
+                            {
+                                <text>
+                               <li><a class="btn-with-item square match" href="@Url.Action(item.Key+"Edit", "Common", query)"><i class="cc cc-@item.Value" data-value="@item.Key.ToLower()"></i>搭配@(WorkV3.Areas.Backend.Models.DataAccess.ParagraphDAO.GetMatchTypeStr(item.Key.ToLower()))</a></li>
+                                </text>
+                            }
+                        }
+
+                        @*<li><a class="btn-with-item square match" href="@Url.Action("ImgEdit", "Common", query)"><i class="cc cc-image" data-value="img"></i>搭配圖片</a></li>
+                        <li><a class="btn-with-item square match" href="@Url.Action("VideoEdit", "Common", query)"><i class="cc cc-video" data-value="video"></i>搭配影片</a></li>
+                        <!-- <li><a class="btn-with-item square match" href="@Url.Action("VoiceEdit", "Common", query)"><i class="cc cc-music" data-value="voice"></i>搭配聲音</a></li> -->
+                        <li><a class="btn-with-item square match" href="@Url.Action("FileEdit", "Common", query)"><i class="cc cc-download" data-value="file"></i>搭配檔案</a></li>
+                        <!-- <li><a class="btn-with-item square match" href="@Url.Action("LinkEdit", "Common", query)"><i class="cc cc-link-variant" data-value="link"></i>搭配連結</a></li> -->
+                        <!-- LinkEdit-p.aspx -->*@
+
+                       </ul>
+                    }
+                    else
+                    {
+                        <iframe src="@Url.Action("SingleImageUpload",new { SiteID=ViewBag.SiteID,MenuID=ViewBag.MenuID,sourceNo=p.ID })" frameborder="0" width="350" height="350"></iframe>
+                    }
+                    <input type="hidden" data-field="MatchType" value="@(!IsSingleImgUpload? p.MatchType : "img")" />
+                    <input type="hidden" data-field="IsOriginalSize" value="@(p.IsOriginalSize)" />
+                    <input type="hidden" data-field="SizeType" value="@(p.SizeType)" />
+                </div>
+            </div>
+        </li>
+        <li class="matchContent"></li>        
+        <li style="display:none;">
+            <div class="col-1">
+                <div class="title">圖文配置</div>
+                <div class="radio-box inline full" data-group="pos_@p.ID">
+
+                    @{
+                        foreach (var item in ViewBag.posBtnItems as List<KeyValuePair<string, string>>)
+                        {
+                            var iconCss = "cc-image-" + item.Key.Replace("_", "-");
+                            if (item.Value == "名言" || item.Value == "經歷")
+                            {
+                                iconCss = item.Key.Replace("_", " - ");
+                            }
+                                <text>
+                                    <div id="pos@(item.Key)">
+                                        <input class="with-item" type="radio" value="@(item.Value)" />
+                                        <i class="cc @iconCss"></i>
+                                        <label>@(item.Value)</label>
+                                    </div>
+                                </text>
+                        }
+
+                    }
+
+                    @*<div id="postop">
+                        <input class="with-item" type="radio" value="圖片在上" />
+                        <i class="cc cc-image-top"></i>
+                        <label>圖片在上</label>
+                    </div>
+                    <div id="posbottom">
+                        <input class="with-item" type="radio" value="圖片在下" />
+                        <i class="cc cc-image-bottom"></i>
+                        <label>圖片在下</label>
+                    </div>
+                    <div id="poscenter">
+                        <input class="with-item" type="radio" value="圖片在標題下方" />
+                        <i class="cc cc-image-center"></i>
+                        <label>圖片在標題下方</label>
+                    </div>
+                    <div id="posfloat-left">
+                        <input class="with-item" type="radio" value="文繞圖" />
+                        <i class="cc cc-image-float-left"></i>
+                        <label>文繞圖</label
+                    </div>>*@
+                    <input type="hidden" data-field="ImgPos" value="@p.ImgPos" />
+                </div>
+                <div class="radio-box inline full" data-group="align_@p.ID">
+                    @{ 
+                        foreach (var item in ViewBag.alignBtnItems as List<KeyValuePair<string, string>>)
+                        {
+                            <text>
+                            <div id="align@(item.Key)">
+                                <input class="with-item" type="radio" value="@(item.Value)" />
+                                <i class="cc cc-format-float-@(item.Key.Replace("_","-"))"></i>
+                                <label>@(item.Value)</label>
+                            </div>
+                            </text>
+                        }
+                    }
+                    @*<div id="alignleft">
+                        <input class="with-item" type="radio" value="圖片置左" />
+                        <i class="cc cc-format-float-left"></i>
+                        <label>圖片置左</label>
+                    </div>
+                    <div id="alignright">
+                        <input class="with-item" type="radio" value="圖片置右" />
+                        <i class="cc cc-format-float-right"></i>
+                        <label>圖片置右</label>
+                    </div>
+                    <div id="aligncenter">
+                        <input class="with-item" type="radio" value="圖片置中" />
+                        <i class="cc cc-format-float-center"></i>
+                        <label>圖片置中</label>
+                    </div>*@
+                    <input type="hidden" data-field="ImgAlign" value="@p.ImgAlign" />
+                </div>
+            </div>            
+        </li>
+    </ul>    
+</li>
+                        }

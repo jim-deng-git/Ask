@@ -1,0 +1,89 @@
+@charset "UTF-8"
+
+=button-variant($background, $border, $color)
+    $active-background: darken($background, 20%)
+    $active-border: darken($border, 12%)
+
+    color: $color
+    background-color: $background
+    border-color: $border
+
+    // +box-shadow($btn-box-shadow)
+
+    &:link, &:visited, &.visited
+        color: $color
+        background-color: $background
+        border-color: $border
+
+    // Hover and focus styles are shared
+
+    //+hover-focus checng 20190327 susan
+    +hover 
+        color: $color
+        background-color: $active-background
+        border-color: $active-border
+
+
+    // &:focus, &.focus
+    // // Avoid using mixin so we can pass custom focus shadow properly
+    // // @if $enable-shadows
+    // //     box-shadow: $btn-box-shadow, 0 0 0 2px rgba($border, 0.5)
+    // // @else
+    // //     box-shadow: 0 0 0 2px rgba($border, 0.5)
+
+    // Disabled comes first so active can properly restyle
+    &.disabled, &:disabled
+        background-color: $background
+        border-color: $border
+
+    //hid 20190327 susan
+    //&:active, &.active
+        //color: $color
+        //background-color: $active-background
+        //border-color: $active-border
+
+        // +box-shadow($btn-active-box-shadow)
+
+// @mixin button-outline-variant($color, $color-hover: #ffffff)
+=button-outline-variant($color, $color-hover: #ffffff)
+    $active-color: lighten($color, 25%)
+
+    color: $color
+    background-color: transparent
+    border-color: $color
+
+    &:link, &:visited, &.visited
+        color: $color
+        background-color: transparent
+        border-color: $color
+
+    +hover
+        color: $active-color
+
+        // background-color: $color
+        border-color: $active-color
+
+
+    // &:focus, &.focus
+    //     box-shadow: 0 0 0 2px rgba($color, 0.5)
+
+    &.disabled, &:disabled
+        color: $color
+
+        // background-color: transparent
+
+    //hid 20190327 susan
+    //&:active, &.active
+        //color: $active-color
+
+        // background-color: $color
+        //border-color: $active-color
+
+// Button sizes
+=button-size($padding-y, $padding-x, $line-height, $border-radius)
+    padding: $padding-y $padding-x
+
+    // font-size: $font-size
+    line-height: $line-height
+
+    // +border-radius($border-radius)

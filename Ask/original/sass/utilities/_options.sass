@@ -1,0 +1,224 @@
+﻿[class*='col-']
+    display: inline-block
+    vertical-align: top
+    box-sizing: border-box
+    margin: 0 -2px
+
+    +breakpoint(pad-portrait)
+        margin-left: 0
+        margin-right: 0
+
+//add susan 20190424 處理col-上層的左右空間(因為col設定了margin: 0 -2px，左右會被裁掉)
+.colConfig
+    margin-left: 2px !important
+    margin-right: 2px !important
+
+@for $i from 1 through $col-number
+    .col-#{$i}
+        width: 100% / $i !important
+
+        +breakpoint(pad-portrait)
+            width: size(100) !important
+            // 20181109 yulin RWD
+            padding-right: 0
+
+//add susan 20190408 沒有斷點變化的col
+@for $i from 1 through $col-number
+    .col-ms-#{$i}
+        width: 100% / $i !important
+        margin: 0
+        padding-right: 15px
+        padding-left: 15px
+        
+.row-ms //add susan 20190408 處理col-ms上層的左右空間
+    margin-right: -15px
+    margin-left: -15px
+
+.inline-box-solve //add 20180408 susan解決同行時，多於空白字元 
+    font-size: 0
+    * 
+        font-size: initial
+
+//partner
+.col-5-partner
+    width: 80%
+
+    +breakpoint(pad-portrait)
+        width: size(100)
+        // 20181109 yulin RWD
+        padding-right: 0
+
+.col-4-partner
+    width: 75%
+
+    +breakpoint(pad-portrait)
+        width: size(100)
+        // 20181109 yulin RWD
+        padding-right: 0
+
+.col-3-partner
+    width: 66.66667%
+
+    +breakpoint(pad-portrait)
+        width: size(100)
+        // 20181109 yulin RWD
+        padding-right: 0
+
+//percent
+.col-60-percent
+    width: 60%
+
+    +breakpoint(pad-portrait)
+        width: size(100)
+        // 20181109 yulin RWD
+        padding-right: 0
+
+.col-40-percent
+    width: 40%
+
+    +breakpoint(pad-portrait)
+        width: size(100)
+        // 20181109 yulin RWD
+        padding-right: 0
+
+.bg-fixed
+    +bg-fixed
+
+.bg-repeat-none
+    +bg-repeat-none
+
+.bg-pos-ct
+    +bg-pos-ct
+
+.bg-pos-cc
+    +bg-pos-cc
+
+.bg-img
+    +bg-img
+
+.fixed
+    +fixed
+
+.absolute
+    +absolute
+
+.relative
+    +relative
+
+.sticky
+    +sticky
+
+.float-L
+    +float-L
+    +breakpoint(mobile)
+        +float-none
+
+.float-R
+    +float-R
+    +breakpoint(mobile)
+        +float-none
+
+.float-none
+    +float-none
+
+.text-L
+    +text-L
+
+.text-R
+    +text-R
+
+.text-C
+    +text-C
+
+.text-ii
+    +text-ii
+
+.text-ih
+    +text-ih
+
+.text-jt
+    +text-jt
+
+.text-truncate
+    +text-truncate
+
+.text-deco-none
+    +text-deco-none
+
+.text-deco-over
+    +text-deco-over
+
+.text-deco-through
+    +text-deco-through
+
+.text-deco-under
+    +text-deco-under
+
+.text-lowercase
+    +text-transform-lower
+
+.text-uppercase
+    +text-transform-upper
+
+.text-capitalize
+    +text-transform-capi
+
+.d-none
+    +d-none
+
+.d-inline
+    +d-inline
+
+.d-inline-block
+    +d-inline-block
+
+.d-table
+    +d-table
+
+.d-table-cell
+    +d-table-cell
+
+.d-block
+    +d-block
+
+.d-flex
+    +d-flex
+
+.d-inline-flex
+    +d-inline-flex
+
+.desktop-none
+    +d-none
+    +breakpoint(pad-portrait)
+        +d-block
+
+.mobile-none
+    +d-block
+    +breakpoint(pad-portrait)
+        +d-none
+
+.mobile-show
+    +d-none
+    +breakpoint(pad-portrait)
+        +d-block
+
+*.text--hide
+    @extend %text-truncate
+
+@each $name, $align in $align-v
+    .align-v-#{$name}
+        vertical-align: $align !important
+
+@for $ii from 1 to 10
+    .delay-#{$ii}x
+        -o-animation-delay: $ii * 0.25s
+        -moz-animation-delay: $ii * 0.25s
+        -webkit-animation-delay: $ii * 0.25s
+        animation-delay: $ii * 0.25s
+
+@for $dd from 1 to 10
+    .duration-#{$dd}x
+        -o-animation-duration: $dd * 0.25s
+        -moz-animation-duration: $dd * 0.25s
+        -webkit-animation-duration: $dd * 0.25s
+        animation-duration: $dd * 0.25s

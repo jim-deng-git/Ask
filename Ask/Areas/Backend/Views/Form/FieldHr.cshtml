@@ -1,0 +1,109 @@
+﻿@model WorkV3.Models.FieldModel
+@{
+    ViewBag.Title = "分隔線";
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var query = new { formId = ViewBag.FormID };
+}
+
+<div class="groove groove-1">
+    <form id="editForm" action="@Url.Action("FieldSetting", query)&type=hr" method="post">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">分隔線</div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline no-label">線段樣式</div>
+                    <div class="input-field inline no-label">
+                        <div class="treeview">
+                            <span>選擇線段樣式</span>
+                            <ul class="treelist dropdown-content">
+                                <li>
+                                    <ol id="olDescription" class="dd-list">
+                                        <li class="dd-item" data-val="use-rainbow">
+                                            <div class="dd-handle">
+                                                <hr class="hr use-rainbow">
+                                            </div>
+                                        </li>
+                                        <li class="dd-item" data-val="use-maxres">
+                                            <div class="dd-handle">
+                                                <hr class="hr use-maxres">
+                                            </div>
+                                        </li>
+                                        <li class="dd-item" data-val="use-fish">
+                                            <div class="dd-handle">
+                                                <hr class="hr use-fish">
+                                            </div>
+                                        </li>
+                                    </ol>
+                                    <input type="hidden" name="Description" value="@(string.IsNullOrWhiteSpace(Model.Description) ? "use-rainbow" : Model.Description)" />
+                                </li>
+                            </ul>
+                        </div>                        
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="title inline no-label">線上文字</div>
+                    <div class="input-field inline no-label">
+                        <input type="text" id="Hint" name="Hint" value="@Model.Hint" />
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft(); Component.closeRight();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+        <input type="hidden" name="ID" value="@Model.ID" />
+        <input type="hidden" name="TypeID" value="@Model.TypeID" />
+        <input type="hidden" name="Width" value="@((int)FieldWidth.Full)" />
+    </form>
+</div>
+
+@section FArea {
+    <link href="~/Css/Cards/Form/style1.css" rel="stylesheet" />    
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $('#olDescription').each(function () {
+            var olElm = $(this);
+            olElm.on('click', 'li', function () {
+                if ($(this).hasClass('current-menu'))
+                    return;
+
+                $(this).addClass('current-menu').siblings('.current-menu').removeClass('current-menu');
+                olElm.next().val($(this).attr('data-val'));
+            });
+
+            var val = olElm.next().val();
+            olElm.find('li[data-val="' + val + '"]').addClass('current-menu');
+
+            olElm.closest('div.treeview').click(function () {
+                $(this).children('.treelist').toggleClass('active').slideToggle(); 
+            });            
+        });
+        
+        $('#btnSave').click(function () {            
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+        parent.setField('@Model.ID');
+        setTimeout(function () {
+            Component.closeLeft();
+            Component.closeRight();
+        }, 100);        
+            </text>
+        }
+    </script>
+}
+
+

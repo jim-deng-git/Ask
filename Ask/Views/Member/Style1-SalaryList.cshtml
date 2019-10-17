@@ -1,0 +1,140 @@
+﻿@using WorkV3.Common;
+@using WorkV3.Models.Repository
+@model WorkV3.Models.MemberShipModels
+@{
+    Pagination pagination = ViewBag.Pager;
+    JobWorksSearchModel search = ViewBag.Search;
+}
+
+<div class="mainPage card-member salary" data-style="1">
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+    <div class="article-wrap">
+         <!-- 薪資查詢 -->
+        <div id="list-item-salary" class="article-list">
+            <div class="article-title">
+                薪資查詢
+                <div class="selectDateRange">
+                    <a id="DateRange" class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title="">@search.DateStart.ToString("yyyy/MM/dd") - @search.DateEnd.ToString("yyyy/MM/dd") <i class="cc cc-chevron-down"></i></a>
+                    <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                        <li>
+                            <iframe class="dropdownIframe" src="@Url.Action("DateRange", new { start = search.DateStart, end = search.DateEnd})" frameborder="0"></iframe>
+                        </li>
+                    </ul> 
+                </div>
+                <div class="float-R">
+                    <span class="font-grey">本月累積時數<span class="font-ms">@Model.SalaryList.Sum(m => m.Hours)</span>小時</span>
+                    <span class="font-gold">本月累積薪資 NT$<span class="font-ms">@Model.SalaryList.Sum(m => m.FinalSalary).ToString("N0")</span></span>
+                </div>
+            </div>
+            <ul class="salary-list">
+                @if(Model.SalaryList != null && Model.SalaryList.Count() > 0)
+                {
+                    foreach(var item in Model.SalaryList)
+                    {
+                        string url = string.Empty, hour = "計算中", money = "計算中";
+                        if (item.IsIssue)
+                        {
+                            url = Url.RouteUrl("FrontSitePage", new { SiteSN = ViewBag.SiteSN, PageSn = "SalaryContent", Id = item.ID });
+                            hour = $"<span class=\"font-hg\">{item.Hours}</span>小時";
+                            money = $"NT$<span class=\"font-hg\">{item.FinalSalary.ToString("N0")}</span>";
+                        }
+                        <li class="salary">
+                            <a href="@Html.Raw(url)">
+                                <div class="date">@item.CheckDate.ToString("yyyy/MM/dd")</div>
+                                <div class="title">@item.RecruitTitle</div>
+                                <div class="check font-green">
+                                    @if (item.IsPayeeCheck)
+                                    {
+                                        <i class="cc cc-check"></i>@:領款人已確認
+                                    }
+                                </div>
+                                <div class="allTime font-grey">@Html.Raw(hour)</div>
+                                <div class="money font-gold">@Html.Raw(money)</div>
+                            </a>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <!-- 如果沒薪資 -->
+                    <li class="none-salary">你目前沒有任何薪資記錄，前往「<a id="aLinkPush1" href="@Url.RouteUrl("FrontSitePage", new { SiteSN = ViewBag.SiteSN, PageSn = "Recruits"})" data-target="eligible">首頁</a>」看看吧！</li> 
+                }
+            </ul>
+        </div>
+        <div class="pagination text-L">
+            @if(pagination != null)
+            {
+                @Html.Action("Pager", "Common", pagination)
+            }
+        </div>
+    </div>
+
+</div>
+
+<link href="~/css/vendor/tooltipster/tooltipster.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<script src="~/Script/tooltipster/tooltipster.bundle.js"></script>
+<script src="~/Script/stickyKit/sticky-kit.js"></script>
+<script src="~/Script/forms/forms.js"></script>
+<script src="~/Script/forms/dropdown.js"></script>
+<script src="~/Script/colorbox/jquery.colorbox.js"></script>
+
+<script>
+    function setChartDate(startDate, endDate) {
+        location = '@Url.RouteUrl("FrontSitePage", new { SiteSN = ViewBag.SiteSN, PageSn = "SalaryList" })'+ "?DateStart=" + startDate + "&DateEnd=" + endDate;
+    }
+
+    $('.dropdown-button').dropdown({
+        constrainWidth: false,
+        stopPropagation: true
+    });
+    $('.dropdown-content.closeOnClick').on('click', function(e) {
+        e.stopPropagation();
+    });
+    $('.tooltip-info').tooltipster({
+        maxWidth: 250,
+    });
+    $('.filter-activity a').click(function(){
+        // alert($(this).data('target'));
+        var _filter_target=$(this).data('target');
+        $(this).addClass('active').siblings().removeClass('active');
+
+        var _content=$(this).parents('.filter-activity').siblings('.activity-content');
+
+        _content.find('li').stop().hide(100).addClass('hide_this');
+        _content.find('.'+_filter_target).stop().show().removeClass('hide_this');
+    });
+    $(".openEdit-m").on('click', function (e) {
+        e.preventDefault();
+        window.parent.$.colorbox({
+            href: $(this).attr('href'),
+            maxWidth: function() {
+                var NW = "600";
+                if ($.isNumeric($(this).data("width"))) {
+                    NW = $(this).data("width");
+                }
+                //console.log("NW:" + NW);
+                return NW;
+            },
+            width: "100%",
+            height: "95%",
+            right: "20",
+            iframe: true,
+            transition: false,
+            speed: 0,
+            fadeOut: 100,
+            onClosed: function() {
+              var formBox = window.parent.$("#leftEditBox");
+
+              if (formBox.length) {
+                if (formBox.hasClass('active')) {
+                  formBox.fadeOut(300).removeClass('active');
+                }
+              }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,112 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleSet/style12.css" rel="stylesheet" />
+
+<div id="card_@setting.CardNo" class="card-articleSet wow fadeInUp" data-style="12">
+    <div class="filters-bar">
+        <ol id="filter-bar">
+            @* 以年分類 第一個要加className:"active" *@
+            @{
+                List<string> AllYears = new List<string>();
+                foreach (var item in Model)
+                {
+                    if (item.IssueDate != null)
+                    {
+                        AllYears.Add(item.IssueDate.ToString("yyyy"));
+                    }
+                }
+
+                HashSet<string> Years = new HashSet<string>(AllYears);
+
+                int index = 1;
+                foreach (string Year in Years)
+                {
+                    <li class="@(index == 1 ? "active" : "")" data-tag="@Year"><span>@Year</span></li>
+                    index++;
+                }
+            }
+        </ol>
+    </div>
+    <div class="article-list">
+        @* 以年分類 第一個要加className:"active" *@
+        @{index = 1;}
+        @foreach (string Year in Years)
+        {
+            <div class="article @(index == 1 ? "active" : "")" data-tag="@Year" style="@(index == 1 ? "" : "display:none")">
+                @{
+                    var Articles = Model.Where(x => x.IssueDate.ToString("yyyy") == Year).OrderByDescending(x => x.IssueDate).Take(4);
+                }
+                @foreach (var item in Articles)
+                {
+                    List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                    SitePage page = itemPages[item.CardNo];
+                    string img = item.GetFirstImg(setting);
+                    string imgUrl = "";
+                    if (!string.IsNullOrEmpty(img))
+                    {
+                        string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(page.SiteID, page.MenuID);
+                        if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, img)))
+                        {
+                            img = string.Format("R_{0}", img);
+                        }
+                    }
+
+                    <div class="card shadow-none">
+                        <div class="card-box">
+                            <div class="card-img original">
+                                <a class="" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))" target="_blank">
+                                    @if (!string.IsNullOrWhiteSpace(item.VideoImg))
+                                    {
+                                        imgUrl = item.VideoImgIsCustom ? page.GetUploadUrl() + Server.UrlPathEncode(img) : item.VideoImg;
+                                        <img src="@imgUrl" alt="">
+                                        <div class="card-img-content flex" style="background-image:url('@imgUrl')"></div>
+                                        <span><i class="cc cc-play"></i></span>
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(img))
+                                        {
+                                            imgUrl = page.GetUploadUrl() + Server.UrlPathEncode(img);
+                                            <img src="@imgUrl" alt="">
+                                            <div class="card-img-content flex" style="background-image:url('@imgUrl')"></div>
+                                        }
+                                    }
+                                </a>
+                                <div class="card-text">
+                                    <div class="card-text-name">@item.Title</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            index++;
+        }
+    </div>
+</div>
+
+<script type="text/javascript" src="~/Script/swiper/swiper.jquery.js"></script>
+<script>
+$(document).ready(function(){
+    var $filterList = $('#card_@setting.CardNo .filters-bar').find('li')
+    $filterList.on('click', function(){
+        $filterList.removeClass('active');
+        $(this).addClass('active');
+        var filterTag =  $(this).data('tag');
+        $('#card_@setting.CardNo .article-list').find('.article').each(function(){
+            var swiperTag = $(this).data('tag');
+            if(filterTag == swiperTag){
+                $(this).addClass('active').fadeIn();
+            }else{
+                $(this).removeClass('active').hide();
+            }
+        });
+    })
+})
+</script>

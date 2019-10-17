@@ -1,0 +1,34 @@
+.card-imageText[data-style="5"] .card-img img {
+  width: 100%;
+  border-radius: 50%; }
+
+.card-imageText[data-style="5"] .card-img:focus .activeWrap, .card-imageText[data-style="5"] .card-img:hover .activeWrap {
+  opacity: 0;
+  bottom: -100%; }
+
+@media only screen and (max-width: 420px) {
+  .card-imageText[data-style="5"] .card-img > a {
+    width: 80%;
+    margin: 0 auto; } }
+
+.card-imageText[data-style="5"] .card-text {
+  padding: 15px 0; }
+
+.card-imageText[data-style="5"] .card-text-info {
+  font-size: 13px;
+  color: #bdbdbd; }
+
+.card-imageText[data-style="5"] .card-text-name {
+  font-size: 15px;
+  color: #000000;
+  text-align: center;
+  padding: 0 20px; }
+  .card-imageText[data-style="5"] .card-text-name ~ .card-text-info {
+    margin-top: 5px; }
+
+.card-imageText[data-style="5"] .activeWrap {
+  opacity: 1;
+  bottom: 0; }
+
+.card-imageText[data-style="5"] .card-img-content.flex {
+  border-radius: 50%; }

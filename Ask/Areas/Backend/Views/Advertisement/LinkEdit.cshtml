@@ -1,0 +1,79 @@
+﻿@model AdsCustomizeToLinkModel
+@{
+    ViewBag.Title = "點擊事件-連結";
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script>
+    $(function () {
+        $("#Savebtn").click(function () {
+            var form = $("#editForm");
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+    });
+
+    @if ((ViewBag.Exit as bool?) == true)
+    {
+        <text>
+        Component.alert('連結已儲存', function () {
+            Component.closeCenter();
+            top.mainWebContent.refresh_custom_detail();
+        });
+        </text>
+    }
+</script>
+<div class="zone zone-full">
+    <div class="wrapper">
+        <form id="editForm" method="post" action="@Url.Action("LinkEdit")" enctype="multipart/form-data">
+            <div class="groove groove-1">
+
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">設定連結</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">
+                                            連結<span class="required">*</span>
+                                        </div>
+                                        <div id="outsideLink-box" class="input-field inline full">
+                                            @Html.TextBoxFor(m => m.Url, new { @Class = "m-B-none validate[required]", @Placeholder = "http://" })
+                                            @*<input class="m-B-none" id="menuName" type="text" placeholder="http://">*@
+                                        </div>
+                                        <div class="radio-box inline full">
+                                            <div>
+                                                @Html.CheckBoxFor(m => m.IsOpenNew)
+                                                @*<input type="checkbox" id="blank" />*@
+                                                <label for="IsOpenNew">另開</label>
+                                            </div>
+                                        </div>
+                                        <!--#include file="../../../Share/BackEnd/linkEdit.aspx"-->
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar flex">
+                    <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>
+                    <a id="Savebtn" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                    @Html.HiddenFor(m => m.ID)
+                    @Html.HiddenFor(m => m.AdsCustomize_ID)
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+

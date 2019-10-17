@@ -1,0 +1,362 @@
+﻿@model WorkV3.Models.MainVisionModel
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+    var youtubeCoverUrl = Request.Url.Scheme + "://img.youtube.com/vi/";
+}
+
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+    <script type="text/javascript">
+        var editor = Component.editor('Content');
+
+        function getScreenshotHtml(url, index) {
+            return '<div>' +
+                '   <input class="with-item video-img" name="videoDefaultImg" type="radio" id="videoImg_' + index + '" value="' + url + '" checked="checked" />' +
+                '   <img src="' + url + '" />' +
+                '   <label for="videoImg_' + index + '"></label>' +
+                '</div>';
+        }
+
+        function onYouTubeIframeAPIReady() {
+            $('#video-website').change(function () { // ndGUClIX9ZE
+                var v = $.trim(this.value);
+                if (!v) {
+                    $('#divPreview').html('');
+                    return;
+                }
+
+                $('#divPreview').html('<div id="divYoutube"></div>');
+                var youtube = new YT.Player('divYoutube', {
+                    height: '315',
+                    width: '560',
+                    videoId: v,
+                    events: {
+                        'onStateChange': function (e) {
+                            if (e.data == YT.PlayerState.CUED) {
+                                // $('#Second').val(youtube.getDuration());
+                                $('#divScreenshot').html(getScreenshotHtml('@youtubeCoverUrl' + v + '/0.jpg', 0));
+                            }
+                        }
+                    }
+                });
+                setTimeout(function () {
+                    // $('#Second').val(youtube.getDuration());
+                    var shotUrl = '@youtubeCoverUrl' + v + '/0.jpg';
+                    $('#divScreenshot').html(getScreenshotHtml(shotUrl, 0));
+                    if (shotUrl == $('#VideoImg').val())
+                        $('#divScreenshot').find('input[value="' + shotUrl + '"]').prop('checked', true);
+                }, 1000);
+            }).triggerHandler('change');
+        }
+
+        function submitHandler() {
+            if ($('#VideoImgIsCustom').prop('checked')) {
+                $('#VideoImg').val($('#customVideoImg').val());
+                $('#VideoImgM').val($('#customVideoImgM').val());
+            } else {
+                var selectedImg = $(document.getElementsByName('videoDefaultImg')).filter(':checked');
+                $('#VideoImg').val(selectedImg.length ? selectedImg.val() : '');
+                $('#VideoImgM').val(selectedImg.length ? selectedImg.val() : '');
+            }
+        }
+
+        function Callbacks() {
+            @if (ViewBag.IsValid as bool? == false)
+            {
+            <text>
+            var msg = [];
+            $(".validationSummary li").each(function () {
+                msg.push($(this).text());
+            });
+            Component.alert(msg.join("\r\n"));
+            </text>
+            }
+
+            @if (ViewBag.EditResult != null )
+            {
+            <text>
+            Component.alert("@Html.Raw(ViewBag.EditResult)", function () {
+                parent.refreshList();
+                Component.closeCenter();
+            });
+            </text>
+            }
+        }
+
+        $(function () {
+            Component.singleImageUpload('#ImgFile', '@(Href("~/"))', '@ViewBag.UploadVPath', true, 1920);
+            Component.singleImageUpload('#ImgMFile', '@(Href("~/"))', '@ViewBag.UploadVPath', true);
+            Component.singleImageUpload('#fVideoImg', '@(Href("~/"))', '@ViewBag.UploadVPath', true);
+            Component.singleImageUpload('#fVideoImgM', '@(Href("~/"))', '@ViewBag.UploadVPath', true);
+            Component.singleImageUpload('#fIcon', '@(Href("~/"))', '@ViewBag.UploadVPath', true);
+            Component.singleImageUpload('#fHoverIcon', '@(Href("~/"))', '@ViewBag.UploadVPath', true);
+            Component.radioList('div[data-radioGroup]');
+
+            $('#divType').find(':radio').click(function () {
+                var ulElm = $(this).closest('ul');
+                ulElm.find('li.TypeRel').hide().filter('.' + this.value).slideDown();
+            }).filter(':checked').triggerHandler('click');
+
+            // 刊登相關設定
+
+            $("#IsIssue").change(function () {
+                if (this.checked)
+                    $('#publishedTime').fadeIn();
+                else
+                    $('#publishedTime').fadeOut();
+            }).trigger("change");
+
+            $('#VideoImgIsCustom').on('change', function () {
+                if (this.checked) {
+                    $('#divVideoImg').slideDown();
+                    $('#divScreenshot').slideUp();
+                } else {
+                    $('#divVideoImg').slideUp();
+                    $('#divScreenshot').slideDown();
+                }
+            }).change();
+
+            // 刊登相關設定 End
+
+            $('#btnSave').click(function () {
+                if (Component.singleVideoUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    var form = $('#editForm');
+                    if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                        submitHandler();
+                        form.submit();
+                    }
+                }
+            });
+
+            Callbacks();
+        });
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                if (!/^https?:\/\//i.test(v))
+                    return '* 連結格式必須以 http:// 或 https:// 開頭';
+            }
+        }
+    </script>
+}
+
+<div class="groove groove-1">
+    @using (Html.BeginForm("Edit", "MainVision", siteQuery, FormMethod.Post, new { enctype = "multipart/form-data", id = "editForm" }))
+    {
+        @Html.ValidationSummary(false, "", new { @class = "validationSummary", style = "display:none;" })
+        @Html.HiddenFor(m => m.ID)
+        @Html.HiddenFor(m => m.CardNo)
+        @Html.HiddenFor(m => m.Sort)
+        @Html.HiddenFor(m => m.Creator)
+        @Html.HiddenFor(m => m.CreateTime)
+
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">標題</div>
+                    <div class="input-field">
+                        <input id="Title" name="Title" type="text" maxlength="150" value="@Model.Title" />
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">內文</div>
+                    <div class="input-field img-text-height">
+                        <textarea class="ckeditor editor-txt" contenteditable="true" id="Content" name="Content">
+                            @Model.Content
+                        </textarea>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">類型</div>
+                    <div id="divType" class="radio-box inline" data-radioGroup="Type">
+                        <div>
+                            <input class="with-gap" type="radio" value="Image">
+                            <label>圖片</label>
+                        </div>
+                        <div>
+                            <input class="with-gap" type="radio" value="Video">
+                            <label>影片</label>
+                        </div>
+                        <input type="hidden" id="Type" name="Type" value="@(string.IsNullOrWhiteSpace(Model.Type) ? "Image" : Model.Type)" />
+                    </div>
+                </div>
+            </li>
+            <li class="TypeRel Image">
+                <div class="flexUpload">
+                    <div class="flex-16">
+                        <div class="title">電腦版</div>
+                        <div class="input-field">
+                            <input type="file" id="ImgFile" name="ImgFile" />
+                            <input type="hidden" id="Img" name="Img" value='@Model.Img' />
+                            <input type="hidden" id="ImgFileBase64" name="ImgFileBase64" />
+                            <input type="hidden" id="ImgFileBase64_Resize" name="ImgFileBase64_Resize" />
+                        </div>
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>建議尺寸1920px X 430px</div>
+                        </div>
+                    </div>
+                    <div class="flex-9">
+                        <div class="title">手機版</div>
+                        <div class="input-field vertical">
+                            <input type="file" id="ImgMFile" name="ImgMFile" />
+                            <input type="hidden" id="ImgM" name="ImgM" value='@Model.ImgM' />
+                            <input type="hidden" id="ImgMFileBase64" name="ImgMFileBase64" />
+                            <input type="hidden" id="ImgMFileBase64_Resize" name="ImgMFileBase64_Resize" />
+                        </div>
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>
+                                建議尺寸640px X 540px<br />
+                                若沒有上傳手機版圖片，在手機上會呈現電腦版的圖片。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="TypeRel Video">
+                <div class="flexUpload">
+                    <div class="flex-16">
+                        <div class="title inline">影片網址</div>
+                        <div class="input-field inline full">
+                            <input placeholder="請填入YouTube影片網址" id="video-website" name="VideoID" type="text" value="@Model.VideoID" class="validate[required]" />
+                        </div>
+                        <a class="tooltip" title="YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE"><i class="cc cc-attention"></i></a>
+                        <div id="divPreview" class="preview"></div>
+                    </div>
+                    <div class="flex-9">
+                        <div class="title m-T-8">影片截圖</div>
+                        <div id="divScreenshot" class="radio-box inline full with-img m-T-10"></div>
+                        <div class="radio-box inline full">
+                            <div>
+                                @Html.CheckBoxFor(model => model.VideoImgIsCustom)
+                                <label for="VideoImgIsCustom">自行上傳圖片</label>
+                            </div>
+                        </div>
+                        <div id="divVideoImg">
+                            <div class="title">電腦版</div>
+                            <div id="videoImgUpload-box" class="input-field inline full m-T-10">
+                                <input type="file" id="fVideoImg" name="fVideoImg" />
+                                @{
+                                    string customVideoImg = string.Empty;
+                                    if (!string.IsNullOrWhiteSpace(Model.VideoImg) && Model.VideoImg[0] == '{') {
+                                        customVideoImg = Model.VideoImg;
+                                    }
+                                }
+                                <input type="hidden" id="customVideoImg" value='@customVideoImg' />
+                                <input type="hidden" id="fVideoImgBase64" name="fVideoImgBase64" />
+                                <input type="hidden" id="fVideoImgBase64_Resize" name="fVideoImgBase64_Resize" />
+                            </div>
+                            <input type="hidden" id="VideoImg" name="VideoImg" value='@Model.VideoImg' />
+
+                            <div class="title">手機版</div>
+                            <div id="videoImgUploadM-box" class="input-field inline full">
+                                <input type="file" id="fVideoImgM" name="fVideoImgM" />
+                                @{
+                                    string customVideoImgM = string.Empty;
+                                    if (!string.IsNullOrWhiteSpace(Model.VideoImgM) && Model.VideoImgM[0] == '{') {
+                                        customVideoImgM = Model.VideoImgM;
+                                    }
+                                }
+                                <input type="hidden" id="customVideoImgM" value='@customVideoImgM' />
+                                <input type="hidden" id="fVideoImgMBase64" name="fVideoImgMBase64" />
+                                <input type="hidden" id="fVideoImgMBase64_Resize" name="fVideoImgMBase64_Resize" />
+                            </div>
+                            <input type="hidden" id="VideoImgM" name="VideoImgM" value='@Model.VideoImgM' />
+                        </div>
+                    </div>
+                </div>
+            </li>    
+            <li>
+                <div class="flexUpload">
+                    <div class="col-8">
+                        <div class="title">圖標</div>
+                        <div class="input-field vertical">
+                            <input type="file" id="fIcon" name="fIcon" />
+                            <input type="hidden" id="Icon" name="Icon" value='@Model.Icon' />
+                            <input type="hidden" id="fIconBase64" name="fIconBase64" />
+                            <input type="hidden" id="fIconBase64_Resize" name="fIconBase64_Resize" />
+                        </div>
+                    </div>
+                    <div class="alert transparent col-1">
+                        <i class="cc cc-attention"></i>
+                        <div>建議尺寸100px X 100px</div>
+                    </div>
+                </div>
+                <div class="flexUpload">
+                    <div class="col-8">
+                        <div class="title">滑過圖標</div>
+                        <div class="input-field vertical">
+                            <input type="file" id="fHoverIcon" name="fHoverIcon" />
+                            <input type="hidden" id="HoverIcon" name="HoverIcon" value='@Model.HoverIcon' />
+                            <input type="hidden" id="fHoverIconBase64" name="fHoverIconBase64" />
+                            <input type="hidden" id="fHoverIconBase64_Resize" name="fHoverIconBase64_Resize" />
+                        </div>
+                    </div>
+                    <div class="alert transparent col-1">
+                        <i class="cc cc-attention"></i>
+                        <div>建議尺寸100px X 100px</div>
+                    </div>
+                </div>
+            </li>
+            <li class="TypeRel Video">
+                <div class="col-1">
+                    <div class="title inline">輪播秒數</div>
+                    <div class="input-field inline mini">
+                        @Html.TextBoxFor(m => m.Second, new { @class = "text-C validate[required]" })
+                        <span class="info">秒</span>
+                    </div>
+                </div>
+            </li>
+            <li class="TypeRel Image">
+                <div class="col-1">
+                    <div class="title inline">連結</div>
+                    <div id="outsideLink-box" class="input-field inline full">
+                        @Html.TextBoxFor(m => m.Link, new { @class = "m-B-none validate[funcCall[checkLink]]", placeholder = "http://" })
+                    </div>
+                    <div class="radio-box inline full">
+                        <div>
+                            @Html.CheckBoxFor(x => x.IsOpenNew)
+                            <label for="IsOpenNew">另開</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(m => m.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <div id="publishedTime" class="bar-item float-L" style="display:none;">
+                <div class="input-field inline m-T-none">
+                    @Html.TextBoxFor(m => m.IssueStart, new { @class = "input-cal datetimepicker", placeholder = "開始時間" })
+                </div>
+                <div class="input-field inline m-T-none">
+                    @Html.TextBoxFor(m => m.IssueEnd, new { @class = "input-cal datetimepicker", placeholder = "結束時間" })
+                </div>                
+            </div>            
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+        <input type="hidden" name="Clicks" value="@Model.Clicks" />
+    }
+</div>

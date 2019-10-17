@@ -1,0 +1,222 @@
+﻿@{
+    ViewBag.Title = "參數設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    var siteQuery = new { siteId = ViewBag.SiteID };
+    var uploadViewPath = ViewBag.UploadUrl;
+    var uploadViewPath_plan = ViewBag.UploadUrl_plan;
+
+    IEnumerable<WorkV3.Models.StoreCategoryModel> CategoryItems = ViewBag.Category;
+    IEnumerable<WorkV3.Models.StorePlanModel> PlanItems = ViewBag.Plan;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script src="~/Script/StickyTableHeaders/jquery.stickytableheaders.js"></script>
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            window.parent.refreshList = function refreshList() {
+                location.replace(location.href);
+            }
+        });
+
+        function initArea(type) {
+            var tableElm = $('#' + type + "Table");
+
+            var listObj = Component.dataList(type + 'Table');
+            listObj.sorted = function (sortItems) {
+                $.post('Sort?siteId=@(ViewBag.SiteID)&type=' + type, { 'items': sortItems }, function () {
+                    location.replace('@Html.Raw(Url.Action("List", siteQuery))&type=' + type);
+                });
+            }
+            listObj.deleted = function (delIds) {
+                $.post('Del?siteId=@(ViewBag.SiteID)&type=' + type, { 'ids': delIds }, function () {
+                    location.replace('@Html.Raw(Url.Action("List", siteQuery))&type=' + type);
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    tableElm.find('span.info').html('');
+                }
+            }
+            listObj.statusChange = function (id) {
+                $.post('ChangeStatus/' + id + '?siteId=@(ViewBag.SiteID)&type=' + type);
+            }
+
+            tableElm.on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tableElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+        }
+
+        initArea('category');
+        initArea('plan');
+
+    </script>
+
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide @(ViewBag.Type == "category" ? "selected" : string.Empty)"><i class="cc cc-tag cc-rotate-270"></i>商店類型</div>
+            <div class="swiper-slide @(ViewBag.Type == "plan" ? "selected" : string.Empty)"><i class="cc cc-list"></i>商店方案</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide p-T-10">
+                <table class="fixTable" id="categoryTable">
+                    <caption>
+                        商店類型
+                        <span class="info"></span>
+                        <div class="float-R">
+                            @*<a class="btn-grey-o square tooltip-info" href="javascript:" title="複製"><i class="cc cc-content-copy"></i></a>*@
+
+                            <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                            <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" data-action="add" href="@Html.Raw(Url.Action("CategoryEdit",siteQuery))" title="新增"><i class="cc cc-plus"></i></a>
+                            <a class="btn-grey-o square tooltip-info btn-del" data-action="del" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                            <span data-for="sort" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>名稱</th>
+                            <th>主視覺</th>
+                            <th>圖標</th>
+                            <th>色調</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0, len = CategoryItems.Count(); i < len; ++i)
+                        {
+                            WorkV3.Models.StoreCategoryModel item = CategoryItems.ElementAt(i);
+                            <tr data-id="@item.ID">
+                                <td class="sort">@(i + 1)</td>
+                                <td class="text-L">@item.CategoryName</td>
+                                <td class="img">
+                                    @if (!string.IsNullOrEmpty(item.MainVision))
+                                    {
+                                        <img src="@(uploadViewPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.MainVision).Img)" />
+                                    }
+                                </td>
+                                <td class="img">
+                                    @if (!string.IsNullOrEmpty(item.CoverImg))
+                                    {
+                                        <img src="@(uploadViewPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.CoverImg).Img)" />
+                                    }
+                                </td>
+                                <td><i class="btn-default btn-tiny circle" data-color="@item.Color"></i></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                                <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="@Html.Raw(Url.Action("CategoryEdit", new { id = item.ID, siteId = ViewBag.SiteID}))"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="swiper-slide p-T-10">
+                <table class="fixTable" id="planTable">
+                    <caption>
+                        商店方案
+                        <span class="info"></span>
+                        <div class="float-R">
+                            @*<a class="btn-grey-o square tooltip-info" href="javascript:" title="複製"><i class="cc cc-content-copy"></i></a>*@
+                            <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                            <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" data-action="add" href="@Html.Raw(Url.Action("PlanEdit",siteQuery))" title="新增"><i class="cc cc-plus"></i></a>
+                            <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                            <span data-for="sort" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>方案名稱</th>
+                            <th>圖標</th>
+                            <th>簽約金<br>(年費)</th>
+                            <th>交易抽成</th>
+                            <th>業務獎金</th>
+                            <th>預設期間長度</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                            <th>預設中文合約</th>
+                            <th>預設英文合約</th>
+                            <th>服務項目紀錄</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0, len = PlanItems.Count(); i < len; ++i)
+                        {
+                            WorkV3.Models.StorePlanModel item = PlanItems.ElementAt(i);
+                            string yearPeriod = string.Empty;
+                            if (item.Period % 12 == 0 && item.Period / 12 != 0)
+                            {
+                                yearPeriod = "<br/>(" + (item.Period / 12) + "年期)";
+                            }
+                            <tr data-id="@item.ID">
+                                <td class="sort">@(i + 1)</td>
+                                <td class="text-L">@item.PlanName</td>
+                                <td class="img">
+                                    @if (!string.IsNullOrEmpty(item.CoverImg))
+                                    {
+                                        <img src="@(uploadViewPath_plan + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.CoverImg).Img)" />
+                                    }
+                                </td>
+                                <td>@(item.SigningBonusMode == 1 ? "須簽約金" : "免簽約金")</td>
+                                <td>@(item.CommissionPercent)%</td>
+                                <td>@(item.BonusMode == 1 ? "NT$" + item.BonusMoney.ToString("N0") : "無")</td>
+                                <td>@(item.Period)個月 @Html.Raw(yearPeriod)</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                                <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="@Html.Raw(Url.Action("PlanEdit", new { id = item.ID, siteId = ViewBag.SiteID }))"><i class="cc cc-edit-o"></i></a></td>
+                                <td><a class="btn-grey-darken-4-o transparent square" href="@Html.Raw(Url.Action("PlanContract", new { parentId = item.ID,lang = 1, siteId = ViewBag.SiteID }))"><i class="cc cc-file-o"></i></a></td>
+                                <td><a class="btn-grey-darken-4-o transparent square" href="@Html.Raw(Url.Action("PlanContract", new { parentId = item.ID,lang = 2, siteId = ViewBag.SiteID }))"><i class="cc cc-file-o"></i></a></td>
+                                <td>
+                                    <div><a class="btn-grey-darken-4-o transparent p-h-none" href="@Html.Raw(Url.Action("PlanServiceList", new { siteId = ViewBag.SiteID, parentId = item.ID}))"><i class="cc cc-list font-lg align-v-bottom"></i>@*6*@</a></div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

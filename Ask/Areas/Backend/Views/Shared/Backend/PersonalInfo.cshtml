@@ -1,0 +1,308 @@
+﻿@using WorkV3.ViewModels
+@using Newtonsoft.Json
+@using WorkV3.Models.Repository;
+@{
+    MemberModels memModel = new MemberModels();
+    string uploadUrl = ViewBag.UploadUrl;
+    if (ViewBag.Member != null)
+    {
+        memModel = ViewBag.Member as MemberModels;
+    }
+
+    string MemberImgPath = "";
+
+    if(ViewBag.SiteID != null)
+    {
+        MemberImgPath = WorkV3.Golbal.UpdFileInfo.GetVPathBySiteID(ViewBag.SiteID, "Member");
+    }
+
+    string RecruitsUploadUrl = ViewBag.RecruitsUploadUrl;
+    string memberUploadUrl = ViewBag.memberUploadUrl;
+}
+<div id="contentTop">
+    <div class="float-R">
+        <a href="javascript:;" class="login-info d-flex text-deco-none">
+            <div>@*  *@
+                @if (string.IsNullOrEmpty(memModel.Img))
+                {
+                    <img src="~/images/logo.png">
+                }
+                else
+                {
+                    <img src="@(uploadUrl+memModel.Img)">
+                }
+
+            </div>
+            <div class="login-name" id="divHeadMemberName">@(string.IsNullOrEmpty(memModel.Name) ? "None" : memModel.Name)</div>
+        </a>
+        <div class="info-detail">
+            <div class="imgfile">
+                <input type="file" name="imgFileProfile" id="imgFileProfile" />
+                <script src="~/script/fileuploader/jquery.fileuploader.js"></script>
+                <script type="text/JavaScript">
+                    $(function () {
+
+                        var imgShow = '<a href="JavaScript:;" class="user" ><i class="cc cc-user-o" ></i></a>' +
+                                          '<a href="JavaScript:;" class="camera"><i class="cc cc-camera-o"></i></a>';
+                        @if (!string.IsNullOrEmpty(memModel.Img))
+                        {
+                            <text>
+                            imgShow = '<img src="@(uploadUrl+memModel.Img)" style="width:100%;height:200%"/>';
+                            </text>
+                        }
+                        $('input[name="imgFileProfile"]').fileuploader({
+                            limit: 1,
+                            extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
+                            changeInput: ' ',
+                            theme: 'thumbnails',
+                            enableApi: true,
+                            addMore: false,
+                            thumbnails: {
+                                box: '<div class="imgFileProfile"><div class="fileuploader-items singleImg b-radius" >' +
+                                      '<ul class="fileuploader-items-list">' +
+                                        '<li class="fileuploader-thumbnails-input" >' +
+                                          imgShow +
+                                        '</li>' +
+                                      '</ul>' +
+                                    '</div></div>',
+                                item: '<li class="fileuploader-item">' +
+                                        '<div class="fileuploader-item-inner">' +
+                                          '<div class="thumbnail-holder b-radius">${image}</div>' +
+                                          '<div class="actions-holder">' +
+                                            '<a class="btn-white-o square transparent fileuploader-action-image tooltip" title="裁切" href="javascript:"><i class="cc cc-camera-o"></i></a>' +
+                                            '<a class="btn-del btn-white-o square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                                          '</div>' +
+                                          '<div class="progress-holder">${progressBar}</div>' +
+                                        '</div>' +
+                                      '</li>',
+                                item2: '<li class="fileuploader-item">' +
+                                        '<div class="fileuploader-item-inner">' +
+                                          '<div class="thumbnail-holder b-radius">${image}</div>' +
+                                          '<div class="actions-holder">' +
+                                            '<a class="btn-white-o square transparent fileuploader-action-image tooltip" title="裁切" href="javascript:"><i class="cc cc-camera-o"></i></a>' +
+                                            '<a class="btn-del btn-white-o square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                                          '</div>' +
+                                        '</div>' +
+                                      '</li>',
+                                startImageRenderer: true,
+                                canvasImage: false,
+                                _selectors: {
+                                    list: '.fileuploader-items-list',
+                                    item: '.fileuploader-item',
+                                    start: '.fileuploader-action-start',
+                                    retry: '.fileuploader-action-retry',
+                                    remove: '.fileuploader-action-remove'
+                                },
+                                onItemShow: function (item, listEl, parentEl, newInputEl, inputEl) {
+                                    var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                                        api = $.fileuploader.getInstance(inputEl.get(0));
+                                    if (api.getFiles().length >= api.getOptions().limit) {
+                                        plusInput.hide();
+                                    }
+
+                                    plusInput.insertAfter(item.html);
+
+                                    if (item.format == 'image') {
+                                        item.html.find('.fileuploader-item-icon').hide();
+                                    };
+
+                                    function openLeftEdit(src) {
+                                        var formBox = window.parent.$("#leftEditBox");
+
+                                        if (formBox.is(':visible'))
+                                            formBox.hide();
+
+                                        var iframe = formBox.find('.iframe');
+
+                                        // console.log(iframe)
+                                        // console.log(formBox)
+
+                                        iframe.prop('src', src);
+                                        iframe.on('load', function () {
+                                            // var domH = window.parent.$(window).outerHeight();
+
+                                            // iframe.css({
+                                            //     'height': domH,
+                                            // });
+                                            // formBox.css({
+                                            //     'height': domH,
+                                            // });
+
+                                            // var fH = formBox.height();
+                                            // var fW = formBox.width();
+
+                                            window.parent.closeLeftEdit = function () {
+                                                formBox.fadeOut(300).removeClass('active');
+                                            };
+
+                                            formBox.fadeIn(300).addClass('active');
+                                        });
+                                    }
+                                    $('.tooltip').tooltipster({
+                                        maxWidth: 100,
+                                    });
+                                    $('.openLeftEdit').on('click', function (e) {
+                                        var formBox = window.parent.$("#leftEditBox");
+                                        e.preventDefault();
+                                        if (formBox.hasClass('active')) {
+                                            formBox.fadeOut(300).removeClass('active');
+                                        } else {
+                                            openLeftEdit(this.href);
+                                        }
+                                    });
+                                },
+                                onItemRemove: function (html, listEl, parentEl, newInputEl, inputEl) {
+                                    var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                                        api = $.fileuploader.getInstance(inputEl.get(0));
+
+                                    html.children().animate({ 'opacity': 0 }, 200, function () {
+                                        setTimeout(function () {
+                                            html.remove();
+
+                                            if (api.getFiles().length - 1 < api.getOptions().limit) {
+                                                plusInput.show();
+                                            }
+                                        }, 100);
+                                    });
+                                }
+                            },
+                            afterRender: function (listEl, parentEl, newInputEl, inputEl) {
+                                BindFileUpload();
+                                var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                                    api = $.fileuploader.getInstance(inputEl.get(0));
+                                plusInput.on('click', function () {
+                                    api.open();
+                                });
+                            }
+                        });
+                    });
+                </script>
+            </div>
+            <div class="info-forms">
+                <ul class="forms">
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline" id="divMemberName">@memModel.Name</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline" id="divMemberEmail">@(string.IsNullOrEmpty(memModel.Email) ? "None" : memModel.Email)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="m-T-4">
+                            <a class="btn-grey-darken-4-o btn-mini openEdit-m" href="@Url.Action("EditMemberInfo", "Home", new { ID = memModel.Id })"><i class="cc cc-edit-o"></i>個人資料</a>
+                            <a class="btn-grey-darken-4-o btn-mini" href="@Url.Action("Logout")"><i class="cc cc-arrow-right"></i>登出</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <link href="~/css/forms.css" rel="stylesheet" />
+    <link href="~/css/admin.css" rel="stylesheet" />
+
+    <!--聊天室元件-->
+    <script src="~/Script/jquery.signalR-2.4.1.js"></script>
+    <script src="~/Signalr/hubs"></script>
+
+    @BundleConfig.Component()
+    <script type="text/JavaScript">
+        $(function () {
+
+
+            @if (memModel.IsSupremeAuthority && !memModel.IsChangedPassword)
+            {
+                <text>
+            Component.openRight('@Url.Action("EditMemberInfo", "Home", new { ID = memModel.Id })', null, { overlayClose: false });
+            </text>
+            }
+
+            $("#contentTop .login-info").on("click", function (e) {
+                var _opend = $(this).hasClass("opend");
+                if (!_opend) {
+                    $(this).next(".info-detail").addClass("hoved").show();
+                    $(this).addClass("opend");
+                } else {
+                    $(this).next(".info-detail").removeClass("hoved").hide();
+                    $(this).removeClass("opend");
+                }
+            });
+
+            @*20190412 yulin close chatroom*@
+            $('#mainWebContent').on("load", function(){
+                var $iframe = $(this),
+                    $contents = $iframe.contents();
+                $contents.on("click", function() {
+                    parent.$(parent.document).trigger('closeChatNav');
+                })
+            })
+        });
+        function ResetMemberInfo(memberName, memberEmail) {
+            $("#divHeadMemberName").html(memberName);
+            $("#divMemberName").html(memberName);
+            $("#divMemberEmail").html(memberEmail);
+            RefreshLoginInfo();
+
+        }
+        function RefreshLoginInfo() {
+            $.ajax({
+                url: "@Url.Action("RefreshLoginInfo")",
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    location.href = location.href;
+                    //alert(" refresh success");
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function BindFileUpload() {
+            var $inputFiles = $("#imgFileProfile");
+            if (window.FileReader) {
+                $inputFiles.change(function () {
+                    var fileReader = new FileReader(),
+                            files = this.files,
+                            file;
+                    if (!files.length) {
+                        return;
+                    }
+                    PostFileToUpload(files[0]);
+                });
+            }
+        }
+        function PostFileToUpload(file) {
+            var formData = new FormData();
+            formData.append("File", file);
+            $.ajax({
+                url: "@Url.Action("UploadPersonPhotoFile")",
+                type: "POST",
+                data: formData,
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    $("#imgFileProfile").val("");
+                    if (data == "fail") {
+                        alert(file.name + " 檔案上傳失敗");
+                    }
+                    else {
+                        $("#imgFileProfile").val("");
+                        RefreshLoginInfo();
+                        alert(file.name + " 檔案上傳成功");
+                    }
+                },
+                fail: function () {
+                    console.log("post fail ");
+                }
+            });
+        }
+    </script>
+</div>

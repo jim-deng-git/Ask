@@ -1,0 +1,95 @@
+﻿@model WorkV3.Models.FieldModel
+@{
+    ViewBag.Title = "靜態文字";
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    var query = new { formId = ViewBag.FormID };
+}
+
+<div class="groove groove-1">
+    <form id="editForm" action="@Url.Action("FieldSetting", query)&type=text" method="post" enctype="multipart/form-data">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">靜態文字</div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline no-label">標題</div>
+                    <div class="input-field inline no-label">
+                        <input type="text" id="Title" name="Title" value="@Model.Title" class="validate[required]" />
+                    </div>                    
+                </div>
+                <div class="col-1">
+                    <div class="title inline no-label">內文</div>
+                    <div class="input-field full no-label">
+                        <textarea id="Description" name="Description">@Model.Description</textarea>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="title inline no-label">圖片</div>
+                    <div class="input-field full no-label">
+                        <input type="file" id="fImage" name="fImage" />
+                        <input type="hidden" id="Image" name="Image" value='@(string.IsNullOrWhiteSpace(Model.Image) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.Image }))' />
+                        <input type="hidden" id="fImageBase64" name="fImageBase64" />
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div class="title inline">連結</div>                    
+                </div>
+                <div class="col-1">
+                    <div class="title inline no-label">寬度</div>
+                    <div class="radio-box inline" data-radioGroup="Width">
+                        @{ FieldWidth[] widths = (FieldWidth[])Enum.GetValues(typeof(FieldWidth)); }
+                        @foreach (FieldWidth item in widths) {
+                        <div>
+                            <input type="radio" class="with-gap" value="@((int)item)">
+                            <label>@item.Description()</label>
+                        </div>
+                        } 
+                        <input type="hidden" id="Width" name="Width" value="@Model.Width" />
+                    </div>
+                </div>                 
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft(); Component.closeRight();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+        <input type="hidden" name="ID" value="@Model.ID" />
+        <input type="hidden" name="TypeID" value="@Model.TypeID" />
+    </form>
+</div>
+
+@section FArea {
+    <link href="~/Css/Cards/Form/style1.css" rel="stylesheet" />    
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        Component.radioList('[data-radioGroup]');        
+        Component.singleImageUpload('#fImage', '@(Href("~/"))', '@uploadUrl', true);
+                        
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+        parent.setField('@Model.ID');
+        setTimeout(function () {
+            Component.closeLeft();
+            Component.closeRight();
+        }, 100);
+            </text>
+        }
+    </script>
+}
+
+

@@ -1,0 +1,55 @@
+.card-imageTextList[data-style="26"] .swiper-slide {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box; }
+
+.card-imageTextList[data-style="26"] .swiper-button-prev, .card-imageTextList[data-style="26"] .swiper-button-next, .card-imageTextList[data-style="26"] .swiper-button-prev::after, .card-imageTextList[data-style="26"] .swiper-button-next::after {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out; }
+
+.card-imageTextList[data-style="26"] .swiper-slide {
+  width: 33.33333%;
+  padding: 0 40px; }
+  @media only screen and (max-width: 800px) {
+    .card-imageTextList[data-style="26"] .swiper-slide {
+      padding: 0 20px; } }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="26"] .swiper-slide {
+      width: 100%;
+      padding: 0 5%; } }
+
+.card-imageTextList[data-style="26"] .swiper-button-prev, .card-imageTextList[data-style="26"] .swiper-button-next {
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  margin-top: -20px;
+  border-radius: 100%;
+  opacity: 0;
+  overflow: hidden;
+  color: #000000;
+  text-align: center;
+  background: transparent; }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="26"] .swiper-button-prev, .card-imageTextList[data-style="26"] .swiper-button-next {
+      opacity: 1; } }
+  .card-imageTextList[data-style="26"] .swiper-button-prev:hover, .card-imageTextList[data-style="26"] .swiper-button-next:hover {
+    opacity: 1; }
+  .card-imageTextList[data-style="26"] .swiper-button-prev::after, .card-imageTextList[data-style="26"] .swiper-button-next::after {
+    font-family: "FontCCWork";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    line-height: 50px;
+    top: 40%;
+    margin-top: -20px;
+    font-size: 30px; }
+
+.card-imageTextList[data-style="26"] .swiper-button-prev::after {
+  content: "\ea06"; }
+
+.card-imageTextList[data-style="26"] .swiper-button-next::after {
+  content: "\ea08"; }
+
+.card-imageTextList[data-style="26"] .swiper-container:hover .swiper-button-prev, .card-imageTextList[data-style="26"] .swiper-container:hover .swiper-button-next {
+  opacity: 1; }

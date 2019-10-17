@@ -1,0 +1,269 @@
+﻿@model IEnumerable<WorkV3.Models.SeekItemModel>
+@{
+    ViewBag.Title = "參與名單";
+
+    bool isIframe = Request.QueryString["iframe"] == "1";    
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    WorkV3.Models.SeekItemSearch search = ViewBag.Search;
+
+    Pagination pagination = ViewBag.Pagination;
+
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+    string listUrl = Url.Action("List", new { siteId = siteId, index = Request.QueryString["page"] });
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+
+        $('.dropdown-btn').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+
+        var listObj = Component.dataList('listTable');
+        listObj.deleted = function (delIds) {
+            $.post('../SeekItemDel?siteId=@siteId', { 'ids': delIds }, function () {
+                location.replace(location.href);
+            });
+        };
+        listObj.selected = function (action, selectedIds) {
+            if (action == 'email') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+
+                var mainWin = Component.openRight('@Html.Raw(Url.Action("SendMail", new { siteId = siteId, seekId = search.SeekID }))');
+                mainWin.getSelectIds = function () {
+                    return selectedIds;
+                };
+                mainWin.sendComplete = function () {
+                    $('#btnEmailCancel').click();
+                };
+            } else if (action == 'flag') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+                var mainWin = Component.iframe('@Url.Action("AddFlag", new { siteId = siteId })');
+                mainWin.getSelectIds = function () {
+                    return selectedIds;
+                };
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                };
+            } else if (action == 'process') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+
+                var mainWin = Component.iframe('@Url.Action("Process", new { id = search.SeekID })', '600px', '350px');
+                mainWin.getSelectIds = function () {
+                    return selectedIds;
+                };
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                };
+            }
+        };
+        listObj.canceled = function (action) {
+            if (action == "del" || $('a[data-action="' + action + '"]').attr('data-select') == 'true') {
+                $('#listTable').find('span.info').html('');
+            }
+        };
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+
+        function refreshList() {
+            location.replace(location.href);
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="searchBox" class="search-box">
+            <a class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+            <form id="searchForm" method="post" action="@Url.Action("SeekItemList", new { id = search.SeekID, siteId = siteId })">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">                            
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input type="text" id="Key" name="Key" placeholder="請輸入投稿內容、投稿者姓名、Email、手機號碼、地址等關鍵字" value="@search.Key" />
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">投稿時間</div>
+                            <div class="input-field inline">
+                                <input type="text" id="CreateStart" name="CreateStart" class="input-cal datetimepicker" value="@search.CreateStart.ToString("yyyy.MM.dd HH:mm")" />
+                            </div>
+                            <div class="input-field inline">
+                                <input type="text" id="CreateEnd" name="CreateEnd" class="input-cal datetimepicker" value="@search.CreateEnd.ToString("yyyy.MM.dd HH:mm")" />
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">是否中獎</div>
+                            <div class="radio-box inline" data-checkGroup="IsWinner">
+                                <div>
+                                    <input type="checkbox" id="allWinnerOptions" class="select-all" />
+                                    <label for="allWinnerOptions">全選</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" value="True" @(search?.IsWinner?.Contains(true) == true ? "checked=\"checked\"" : string.Empty) />
+                                    <label>中獎</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" value="False" @(search?.IsWinner?.Contains(false) == true ? "checked=\"checked\"" : string.Empty) />
+                                    <label>未中獎</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">是否處理</div>
+                            <div class="radio-box inline" data-checkGroup="IsProcess">
+                                <div>
+                                    <input type="checkbox" id="allProcessOptions" class="select-all" />
+                                    <label for="allProcessOptions">全選</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" value="True" @(search?.IsProcess?.Contains(true) == true ? "checked=\"checked\"" : string.Empty) />
+                                    <label>已處理</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" value="False" @(search?.IsProcess?.Contains(false) == true ? "checked=\"checked\"" : string.Empty) />
+                                    <label>尚未處理</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    
+                </ul>                
+                <div class="float-R"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+            </form>
+        </div>
+        <table id="listTable" class="fixTable">
+            <caption>
+                @if(!isIframe) { 
+                <a href="@listUrl" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>
+                }
+                參與名單
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o iframe" href="@Url.Action("Raffle", new { id = search.SeekID })" data-height="300"><i class="cc cc-gift"></i>抽獎</a>
+                    <a class="btn-grey-o square tooltip-info dropdown-btn" href="javascript:" data-activates="btnMail" title="寄通知信"><i class="cc cc-email"></i></a>
+                    <ul id="btnMail" class="dropdown-content btnStyle">
+                        <li><a class="btn-grey-darken-4-o transparent" data-action="email" data-select="true"><i class="cc cc-grid-list"></i>開始寄信</a></li>
+                        <li><a class="btn-grey-darken-4-o transparent openEdit-c" href="@Url.Action("MailLog", new { siteId = siteId, seekId = search.SeekID })"><i class="cc cc-email"></i>寄信歷程</a></li>
+                    </ul>
+                    <a class="btn-grey-o square tooltip-info dropdown-btn tooltipstered" href="javascript:" data-activates="export" title="匯出名單"><i class="cc cc-playlist-play"></i></a>
+                    <ul id="export" class="dropdown-content btnStyle">
+                        <li><a class="btn-grey-darken-4-o transparent" href="@Url.Action("SeekItemExport", new { id = search.SeekID })" target="_blank"><i class="cc cc-file-o"></i>詳細清單</a></li>
+                        <li><a class="btn-grey-darken-4-o transparent" href="@Url.Action("SeekItemExport", new { id = search.SeekID })?privacy=true" target="_blank"><i class="cc cc-file-o"></i>詳細清單(隱藏個資)</a></li>
+                    </ul>
+                    <a class="btn-grey-o square tooltip-info" data-action="process" data-select="true" title="標示處理"><i class="cc cc-check"></i></a>
+                    <a class="btn-grey-o square tooltip-info tooltipstered" data-action="flag" data-select="true" title="追蹤標記"><i class="cc cc-account-alert"></i></a>                    
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    <span data-for="email" style="display:none;">
+                        <a id="btnEmailCancel" class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>寄信</a>
+                    </span>
+                    <span data-for="process" style="display:none;">
+                        <a id="btnProcessCancel" class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>處理</a>
+                    </span>
+                    <span data-for="flag" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>姓名</th>
+                    <th>手機號碼</th>
+                    <th>Email</th>                    
+                    <th>投稿時間</th>
+                    <th>追蹤標記</th>
+                    <th>已處理</th>
+                    <th>標示中獎</th>
+                    <th>備註</th>                    
+                    <th>查看</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0, len = Model.Count(); i < len; ++i) {
+                    WorkV3.Models.SeekItemModel item = Model.ElementAt(i);
+                    IEnumerable<string> flags = item.GetFlags(siteId);                    
+                    <tr data-id="@item.ID">
+                        <td>@pagination.GetItemIndex(i)</td>
+                        <td>
+                            @item.Name
+                            @if (item.MemberID != null) {
+                            <a class="btn-grey-darken-4-o transparent p-none hide" href="javascript:Component.openRight('@Url.Action("Edit", "Member", new { MenuID = 1000, siteid = 1, backMenu = 32, ID=item.MemberID })')">
+                                <i class="cc cc-user-o font-hg m-R-none"></i>
+                            </a>
+                            }
+                        </td>
+                        <td>@item.Mobile</td>
+                        <td>@item.Email</td>
+                        <td class="text-L">                            
+                            @($"{ item.CreateDate.ToString("MM/dd") }({ weeks[(int)((DateTime)item.CreateDate).DayOfWeek] }) { item.CreateDate.ToString("HH:mm") }")
+                        </td>
+                        <td><a href="@Url.Action("ModifyFlag", new { siteId = siteId, seekItemId = item.ID })" class="openEdit-c">@string.Join(", ", flags)</a></td>
+                        <td>@Html.Raw(item.IsProcess ? "<i class=\"cc cc-check\"></i>" : string.Empty)</td>
+                        <td>@Html.Raw(item.IsWinner ? "<i class=\"cc cc-gift\"></i>" : string.Empty)</td>
+                        <td class="text-L">@item.ProcessRemark</td>                        
+                        <td class="icon edit">
+                            <a class="btn-grey-darken-4-o transparent square tooltip-info" href="@Html.Raw(Url.Action("SeekItemView", new { id = item.ID, siteId = siteId, seekId = search.SeekID, seekPage = Request.QueryString["page"], page = pagination.PageIndex }))" title="查看">
+                                <i class="cc cc-search"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }                
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>        
+    </div>
+</div>
+

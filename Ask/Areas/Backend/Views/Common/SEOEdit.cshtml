@@ -1,0 +1,194 @@
+﻿@model WorkV3.Models.SEOModels
+@{
+    ViewBag.Title = "SEO設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = Model.MenuID, sourceNo = Model.SourceNo };
+}
+<form id="seoEditForm" method="post" action="@Html.Raw(Url.Action("SEOEdit", siteQuery))" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div id="btnMainArea" class="swiper-slide selected">搜尋引擎設定</div>
+                <div class="swiper-slide">關鍵字設定</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title">是否讓搜尋引擎機器人主動找到本頁面？</div>
+                                <div class="radio-box inline m-T-none" data-radioGroup="Robot">
+                                    <div>
+                                        <input class="with-gap" type="radio" value="true" />
+                                        <label for="video-youtube">開放</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap" type="radio" value="false" />
+                                        <label for="video-vimeo">拒絕</label>
+                                    </div>
+                                    <input type="hidden" id="Robot" name="Robot" value="@(Model.Robot ? "true" : "false")" />
+                                    <img src="~/images/robot-1.png" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">標題</div>
+                                <div class="input-field inline full">
+                                    <input placeholder="title" type="text" name="Title" value="@Model.Title" maxlength="450" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">描述</div>
+                                <div class="input-field inline full">
+                                    <textarea placeholder="description" type="text" name="Description">@Model.Description</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">作者</div>
+                                <div class="input-field inline full">
+                                    <input placeholder="author" type="text" name="Author" value="@Model.Author" maxlength="180" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">版權</div>
+                                <div class="input-field inline full">
+                                    <input placeholder="copyright" type="text" name="Copyright" value="@Model.Copyright" maxlength="180" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">社群分享圖</div>
+                                <div class="input-field inline full">
+                                    <input type="file" id="fImage" name="fImage" />
+                                    @{ 
+                                        string imgJSON = string.Empty;
+                                        if(!string.IsNullOrWhiteSpace(Model.Image)) {
+                                            imgJSON = Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.Image });
+                                        }
+                                    }
+                                    <input type="hidden" id="Image" name="Image" value='@imgJSON' />
+                                    <input type="hidden" id="fImageBase64" name="fImageBase64" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">關鍵字</div>
+                                <div class="input-field inline full">
+                                    <textarea id="Keywords" name="Keywords" class="tagEditor">@Model.Keywords</textarea>
+                                    <div class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>請在上方輸入框中輸入關鍵字，輸入後，按下 , 或 ; 或 空一格 或 Enter，即可完成一筆關鍵字的建立。</div>
+                                    </div>
+                                    <a class="btn-grey-darken-4-o m-T-4 dropdown-button" href="javascript:" data-activates="keywordsSearch" title=""><i class="cc cc-plus"></i>快選</a>
+                                    <ul id="keywordsSearch" class="dropdown-content customContent large closeOnClick">
+                                        <li>
+                                            <iframe class="dropdownIframe" src="@Url.Action("SEOKeyword", new { siteId = ViewBag.SiteID, menuId = Model.MenuID })" frameborder="0"></iframe>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar flex">            
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+@section FArea {
+<link href="~/css/vendor/tagEditor/tagEditor.css" type="text/css" rel="stylesheet" />
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript" src="~/script/tagEditor/jquery.caret.min.js"></script>
+    <script type="text/javascript" src="~/script/tagEditor/jquery.tag-editor.js"></script>
+    <script type="text/javascript" src="~/script/tagEditor/jquery.ui.autocomplete.html.js"></script>
+    <script type="text/javascript">
+        Component.radioList('[data-radioGroup]'); 
+        Component.singleImageUpload('#fImage', '@(Href("~/"))', '@uploadUrl', true);
+
+        $('div[data-radioGroup="Robot"]').on('click', 'input:radio', function () {
+            var imgElm = $(this).closest('div.radio-box').find('img').get(0);
+            if (this.value == 'true') {                
+                imgElm.src = imgElm.src.replace(/\/robot-1\.png$/i, "/robot-2.png");
+            } else {
+                imgElm.src = imgElm.src.replace(/\/robot-2\.png$/i, "/robot-1.png");
+            }
+        }).find(':checked').click();
+
+        $('#Keywords').tagEditor({
+            delimiter: ';, ',
+            placeholder: 'keywords',
+            autocomplete: {
+                delay: 0,
+                position: {
+                    collision: 'flip'
+                },
+                source: ['ActionScript', 'AppleScript', 'Asp', 'BASIC', 'C', 'C++', 'CSS', 'Clojure', 'COBOL', 'ColdFusion', 'Erlang', 'Fortran', 'Groovy', 'Haskell', 'HTML', 'Java', 'JavaScript', 'Lisp', 'Perl', 'PHP', 'Python', 'Ruby', 'Scala', 'Scheme']
+            },
+            forceLowercase: false
+        });
+
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        (function () {
+            $('#btnSave').click(function () {
+                $('#btnMainArea').click();
+                var form = $('#seoEditForm');
+                if (form.validationEngine('validate')) {
+                    form.submit();
+                }
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>                
+                parent.$.colorbox.close();
+                </text>
+            }
+        })();
+
+        function setKeywords(keywords) {
+            if (!keywords || keywords.length == 0)
+                return;
+                        
+            var elm = $('#Keywords');
+            var v = $.trim(elm.val());
+            var words = v ? v.split(';') : [];
+            
+            for (var i = 0, len = keywords.length; i < len; ++i) {
+                if ($.inArray(keywords[i], words) == -1)
+                    elm.tagEditor('addTag', keywords[i]);           
+            }            
+        }
+    </script>
+}

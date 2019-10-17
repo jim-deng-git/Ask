@@ -1,0 +1,72 @@
+﻿@using Newtonsoft.Json.Linq;
+@{
+    Layout = null;
+
+    IEnumerable<WorkV3.Areas.Backend.ViewModels.AdsStatisticsViewModel> infos = ViewData["Info"] as IEnumerable<WorkV3.Areas.Backend.ViewModels.AdsStatisticsViewModel>;
+
+    bool privacy = (bool)ViewData["Privacy"];
+    Dictionary<string, string> adsPositionMapping = (Dictionary<string, string>)ViewData["AdsPositionMapping"];
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+    table {
+        width:95%;
+        margin:0px auto;
+        text-align:center;
+        border-style:solid;
+    }
+
+    table th {
+        border:1px black solid;
+        padding:3px;
+        font-size: 12pt;
+        text-align: center;
+    }
+
+    table td {
+        border:1px black solid;
+        padding:3px;
+        font-size: 11pt;
+        text-align: center;
+        mso-number-format:"\@@";
+    }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>廣告說明</th>
+                <th>所屬廣告區</th>
+                <th>廣告主</th>
+                <th>聯絡人</th>
+                <th>聯絡電話</th>
+                <th>點擊量</th>
+                <th>瀏覽人次</th>
+                <th>費用估算(NTD)</th>
+                <th>CP值</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (WorkV3.Areas.Backend.ViewModels.AdsStatisticsViewModel item in infos)
+            {
+                <tr>
+                    <td>@item.Description</td>
+                    <td>@item.MenuTitle - @adsPositionMapping[item.GroupPosition]</td>
+                    <td>@item.CompanyName</td>
+                    <td>@item.ContactPerson</td>
+                    <td>@item.ContactPhone</td>
+                    <td>@item.ClickCount</td>
+                    <td>@item.BrowseCount</td>
+                    <td>@string.Format("{0:n0}", item.FullPrice)</td>
+                    <td>@item.CP</td>                
+                </tr>
+            } 
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,16 @@
+@function color($color, $type)
+    @if map-has-key($colors, $color)
+        $curr_color: map-get($colors, $color)
+
+        @if map-has-key($curr_color, $type)
+            @return map-get($curr_color, $type)
+
+    @warn "Unknown `#{name}` in $colors."
+
+    @return null
+
+@function size($size)
+    @return map-get($sizes, $size)
+
+@function line-height($lineHeight)
+    @return map-get($lineHeights, $lineHeight)

@@ -1,0 +1,111 @@
+﻿
+@model WorkV3.Models.MemberShipModels
+@{
+    ViewBag.Title = "位置";
+    ViewBag.BodyClass = "body-lightBox";
+
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+}
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+<form id="editForm" action="@Url.Action("Index", "Home", new { SiteSN = siteSn, PageSN = pageSn })" method="post">
+    <div class="card-member loginPage forget" data-style="1">
+        <div class="login">
+            <div class="login-logo">找回密碼</div>
+            <div class="login-box">
+                <div class="left-box">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title">帳號<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <input type="text" id="Account" name="Account" value="@Model.Account" class="validate[required]" maxlength="100" placeholder="" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">Email<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <input type="text" id="Email" name="Email" value="@Model.Email" class="validate[required][custom[email]]" maxlength="120" />
+                                    <!-- <div class="alert transparent ">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            提示文字。
+                                        </div>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </li>
+                        <li class="">
+                            <div class="col-1 relative">
+                                @Html.Captcha("captcha")
+                            </div>
+                        </li>
+                        <li>
+                            <div class="btnBox">
+                                <a class="btn-grey-o half" id="btnCancel" href="javascript:" onclick="parent.$.colorbox.close();">取消</a>
+                                <a id="btnSent" class="btn-custom half" href="javascript:">確認送出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript">
+    $(function () {
+
+        @Html.Raw(ViewBag.Script)
+
+        $('#btnSent').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                $.get('@Url.Action("CheckAccount", "Member", new { siteId = ViewBag.SiteID })&account=' + encodeURIComponent($('#Account').val()), function (rs) {
+                    rs -= 0;
+                    if (!rs) {
+                        form.submit();
+                    } else {
+                        Component.showElementError('#Account', '* 帳號不存在');
+                    }
+                });
+            }
+        });
+        // carrie 20171227
+        // $('#btnCancel').click(function () {
+        //     parent.isShowForget = false;
+        //     parent.ShowOrHideForget();
+        // });
+        @if (ViewBag.Message != "")
+        {
+            var isActionExit = false;
+            if ((ViewBag.Exit as bool?).HasValue)
+            {
+                isActionExit = (ViewBag.Exit as bool?).Value;
+            }
+            var Message = "";
+            if (!string.IsNullOrEmpty(ViewBag.Message))
+            {
+                Message = ViewBag.Message;
+            }
+            <text>
+        var message = "@Message";
+        var isExit = @isActionExit.ToString().ToLower();
+        if(message != null && message != "")
+        {
+            Component.alert(message, function() {
+                if(isExit)
+                {
+                    parent.ResetFormData();
+                }
+            });
+        }
+        </text>
+        }
+    });
+</script>

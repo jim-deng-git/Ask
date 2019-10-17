@@ -1,0 +1,114 @@
+﻿@model IEnumerable<WorkV3.Models.CustomArticleListItemModel>
+@{
+    ViewBag.Title = "最新-列表設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+
+    Dictionary<long, List<WorkV3.Models.ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, string[]> itemMenus = ViewBag.ItemMenus;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(".fixTable").stickyTableHeaders();
+
+        var listObj = Component.dataList('listTable');
+        listObj.sorted = function (sortItems) {
+            $.post('Sort?siteId=@siteId&menuId=@menuId', { 'items': sortItems }, function () {
+                location.replace(location.href);
+            });
+        }
+        listObj.deleted = function (delIds) {
+            $.post('Del?siteId=@siteId&menuId=@menuId', { 'ids': delIds }, function () {
+                location.replace(location.href);
+            });
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+        $('#btnAdd').click(function () {
+            var mainWin = Component.openRight('@Html.Raw(Url.Action("Edit", siteQuery))');
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        });        
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">        
+        <table id="listTable" class="fixTable">
+            <caption>
+                最新-列表設定
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info" id="btnAdd" href="javascript:" title="挑選"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="移除"><i class="cc cc-trash-o"></i></a>                    
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>                   
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>標題</th>
+                    <th>選單</th>
+                    <th>類別</th>
+                    <th>創建者</th>                    
+                    <th>預覽</th>                    
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0, len = Model.Count(); i < len; ++i) {
+                    WorkV3.Models.CustomArticleListItemModel item = Model.ElementAt(i);
+                    List<WorkV3.Models.ArticleTypesModels> types = itemTypes.GetValue(item.ArticleID);
+                    string[] menus = itemMenus.GetValue(item.ArticleID);
+                <tr data-id="@item.ArticleID">
+                    <td class="sort">@(i + 1)</td>
+                    <td class="text-L">@item.Title</td>
+                    <td class="text-L">@string.Join(" > ", menus.Where(m => !string.IsNullOrWhiteSpace(m)))</td>
+                    <td>
+                        @if (types?.Count() > 0) {
+                            @:@string.Join("、", types.Select(t => t.Name))
+                        }
+                    </td>
+                    <td>@item.Creator</td>
+                    <td class="icon edit"><a class="btn-grey-darken-4-o transparent square" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = item.SiteSN, PageSN = item.PageSN, area = string.Empty }))" target="_blank"><i class="cc cc-cellphone-link"></i></a></td>
+                </tr>
+                }                
+            </tbody>
+        </table>
+    </div>
+</div>
+

@@ -1,0 +1,115 @@
+﻿@model WorkV3.Models.EventYearModels
+@{
+    ViewBag.Title = "適合年齡編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("ParaYearEdit", siteQuery))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">適合年齡編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">年齡標示</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">歲數範圍</div>
+                                <div class="input-field inline mini">
+                                    <input type="text" id="YearStart" name="YearStart" class="text-C validate[funcCall[checkYearStart]]" value="@Model.YearStart" />
+                                    <span class="info">歲<span>-</span></span>
+                                </div>
+
+                                <div class="input-field inline mini">
+                                    <input type="text" id="YearEnd" name="YearEnd" class="text-C validate[funcCall[checkYearEnd]]" value="@Model.YearEnd" />
+                                    <span class="info">歲</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">注意事項</div>
+                                <div class="input-field">
+                                    <textarea id="Attention" name="Attention" class="materialize-textarea">@Model.Attention</textarea>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        function checkYearStart(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                v -= 0;
+                if (isNaN(v) || v < 0)
+                    return '* 必須為大於或等於零的整數';                
+            }
+        }
+
+        function checkYearEnd(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                v -= 0;
+                if (isNaN(v) || v < 0)
+                    return '* 必須為大於或等於零的整數';
+                
+                var start = $.trim($('#YearStart').val());
+                if (start) {
+                    start -= 0;
+                    if (!isNaN(start) && v < start)
+                        return '* 結束值不能小於起始值';
+                }
+            }
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

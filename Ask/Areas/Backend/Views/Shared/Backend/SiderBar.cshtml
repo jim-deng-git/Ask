@@ -1,0 +1,632 @@
+﻿@*@model List<MenusModels>*@
+@{
+    Layout = null;
+    string[] MenuAreaClass = { "", "nestable-topMenu", "nestable-mainMenu", "nestable-bottomMenu" };
+    string[] MenuAreaTitle = { "", "上導覽列", "主選單", "下導覽列" };
+
+    List<MenusModels> VMenuList = new List<MenusModels>();
+    if (ViewBag.MenuList != null)
+    {
+        VMenuList = ViewBag.MenuList;
+    }
+    List<WorkV3.Areas.Backend.ViewModels.CardsViewModel> cards = ViewBag.Cards;
+    List<WorkV3.Areas.Backend.Models.CardsTypeModels> cardtypes = ViewBag.CardTypes;
+    List<WorkV3.Areas.Backend.Abstracts.Menu> backendMenu = ViewBag.BackendMenu;
+    List<GroupPermissionModels> permissions = ViewBag.Permissions;
+}
+<script src="~/Script/workV3/component.js"></script>
+<script>
+    var isLogout = false;
+    $(document).ready(function () {
+        selectStoreChange();
+        $("#selectStore").bind("change", function () {
+            selectStoreChange();
+        });
+        var isMenuEdit = Component.queryString('isMenuEdit');
+        if (isMenuEdit == "1") {
+            $(".mm-listview").children("li").first().children("a").trigger("click");
+        }
+    });
+    window.setInterval(function () {
+        checkLogin();
+    }, 5000);
+    function checkLogin() {
+        if (!isLogout) {
+            $.post("@Url.Action("CheckSessionValid", "Home", new { siteId = ViewBag.SiteID })", function (data) {
+                if (data != "yes") {
+                    isLogout = true;
+                    swal({
+                        text: "登入時效已過，請重新登入",
+                        customClass: 'animated fadeIn',
+                        onClose: function () {
+                            location.href = "@Url.Action("login", "Home", new { siteId = ViewBag.SiteID })";
+                        }
+                    }).then(function () {
+                        location.href = "@Url.Action("login", "Home", new { siteId = ViewBag.SiteID })";
+                    });
+                }
+                //console.log(data);
+            });
+        }
+    }
+    function selectStoreChange() {
+        var selStoreID = $("#selectStore").val()
+        $("li[data-function='StoreFunction']").each(function () {
+            var href = $(this).attr("data-href");
+            var acturl = $(this).attr("data-action");
+            var newActUrl = acturl;
+            if (acturl.indexOf("StoreID") > 0) {
+                newActUrl = newActUrl.substring(0, newActUrl.indexOf("StoreID") - 1) + "&StoreID=" + selStoreID;
+            }
+            else {
+                newActUrl += "&StoreID=" + selStoreID;
+            }
+            $(this).attr("data-href", newActUrl);
+            $(this).attr("data-action", newActUrl);
+        });
+        console.log($(".mm-title").first().html());
+        if ($(".mm-title").first().html() == "商店經營") {
+            $("li[data-function='StoreFunction']").first().trigger("click");
+        }
+    }
+</script>
+<div class="barContent">
+    <div class="cclogo"><img src="~/images/logo.png" /></div>
+    @{
+        string ulClass = "mm-listview";
+        bool IsManagerMenu = false;
+        if (backendMenu != null && backendMenu.Count() > 0)
+        {
+            BackendMenuModel fModel = backendMenu.First() as BackendMenuModel;
+
+            if (fModel.MenuClass == 9)
+            {
+                ulClass = "";
+                IsManagerMenu = true;
+            }
+        }
+    }
+    <ul class="@ulClass">
+        @if (backendMenu != null)
+        {
+            if (IsManagerMenu)
+            {
+                <li>
+                    <span class="DDmenu">
+                        <div class="section-heading dd nestable-topMenu active divManager">
+                            @foreach (BackendMenuModel menu in backendMenu)
+                            {
+                                <ol class="dd-list show">
+                                    @if (Utility.HavePermission(permissions, menu))
+                                    {
+                                        if (VMenuList != null)
+                                        {
+                                            @RenderBackendMenuManagerSelfWithChildren(permissions, menu)
+                                        }
+                                    }
+                                </ol>
+                            }
+                        </div>
+                    </span>
+                </li>
+            }
+            else
+            {
+                foreach (BackendMenuModel menu in backendMenu)
+                {
+                    if (menu.MenuClass == 1) // 前台選單編輯
+                    {
+                        if (Utility.HavePermission(permissions, ViewBag.SiteID, menu))
+                        {
+                            <li>
+                                <span>@menu.Title</span>
+                                @if (VMenuList != null)
+                                {
+                                    <ul>
+                                        <li>
+                                            <span class="DDmenu">
+                                                @* neil 20180511 改寫選單產生方法*@
+                                                @*網頁-start*@
+
+                                                @for (int ii = 1; ii <= 3; ii++)
+                                                {
+
+                                                    List<MenusModels> PageMenu = VMenuList.Where(dr => dr.AreaID == ii).ToList();
+                                                    <div class="section-heading dd @Html.Raw(MenuAreaClass[ii]) active divSiderMenu" data-AreaID="@ii" data-SiteID="@ViewBag.SiteID">
+                                                        <div class="toggleBox active">
+                                                            <i class="cc cc-chevron-down"></i>
+                                                        </div>
+                                                        <div class="iconMenu-top">
+                                                            <div></div>
+                                                        </div>
+                                                        <div class="section-heading-title">@Html.Raw(MenuAreaTitle[ii])</div>
+
+
+                                                        <div class="addMenu">
+                                                            <a class="font-black openEdit" href="@Url.Action("MenuAdd", "Menus", new { id = string.Empty, AreaID = ii, SiteID = ViewBag.SiteID })"><i class="cc cc-plus"></i></a>
+                                                        </div>
+
+                                                        <ol class="dd-list show">
+                                                            @if (PageMenu.Count > 0)
+                                                            {
+                                                                #region 選單
+                                                                List<MenusModels> roots = GetRoots(PageMenu).ToList();
+                                                                foreach (MenusModels item in roots)
+                                                                {
+                                                                    @RenderFrontendListMenuWithChildren(permissions, PageMenu, item)
+                                                                }
+                                                                #endregion
+                                                            }
+                                                        </ol>
+                                                    </div>
+                                                }
+                                                @*網頁-end*@
+                                            </span>
+                                        </li>
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    }
+                    else if (menu.MenuClass == 2) // 前台選單內容管理
+                    {
+                        if (Utility.HavePermission(permissions, ViewBag.SiteID, menu))
+                        {
+                            <li>
+                                <span>@menu.Title</span>
+                                @if (VMenuList != null)
+                                {
+                                    <ul>
+                                        <li>
+                                            <span class="DDmenu">
+                                                @for (int ii = 1; ii <= 3; ii++)
+                                    {
+                                        List<MenusModels> MGRMenu = VMenuList.Where(dr => dr.AreaID == ii && dr.MenuManageURL != null).ToList();
+
+                                                    <div class="section-heading dd @Html.Raw(MenuAreaClass[ii]) active divManager" data-AreaID="@ii" data-SiteID="@ViewBag.SiteID">
+                                                        <div class="toggleBox active">
+                                                            <i class="cc cc-chevron-down"></i>
+                                                        </div>
+                                                        <div class="iconMenu-main">
+                                                            <div></div>
+                                                        </div>
+                                                        <div class="section-heading-title">@Html.Raw(MenuAreaTitle[ii])</div>
+
+                                                        <ol class="dd-list show">
+                                                            @if (MGRMenu.Count > 0)
+                                                            {
+                                                                for (int i = 0; i < MGRMenu.Count; i++)
+                                                                {
+                                                                    if (!WorkV3.Common.Utility.HavePermission(permissions, ViewBag.SiteID, MGRMenu[i]))
+                                                                    {
+                                                                        continue;
+                                                                    }
+                                                                    MenusModels MGRItem = MGRMenu[i];
+                                                                    List<MenusModels.MenuManageURLs> MGRUrls = MGRItem.MenuManageURL;
+
+                                                                    <li class="dd-item">
+                                                                        <div class="dd-nodrag">
+                                                                            <i class="@MGRItem.MenuIcon"></i>
+                                                                            <span class="menu-title">@MGRItem.Title</span>
+                                                                        </div>
+                                                                        <ol class="dd-list">
+                                                                            @if (MGRUrls.Count > 0)
+                                                                            {
+                                                                                for (int j = 0; j < MGRUrls.Count; j++)
+                                                                                {
+                                                                                    MenusModels.MenuManageURLs MGRURL = MGRUrls[j];
+                                                                                    <li class="dd-item" data-href="@Url.Action(@MGRURL.URLAction, @MGRItem.MenuCode, new { MenuID = @MGRItem.ID, SiteID = @MGRItem.SiteID })">
+                                                                                        <div class="dd-nodrag">
+                                                                                            <i class="@MGRURL.icon"></i>
+                                                                                            <span class="menu-title">@MGRURL.Title</span>
+                                                                                        </div>
+                                                                                    </li>
+                                                                                }
+                                                                            }
+
+                                                                            @if (cards != null)
+                                                                            {
+                                                                                var card = cards.Where(x => x.MenuID == MGRItem.ID && x.ViewAction == null && (x.CardsType == "ImageText" || x.CardsType == "ImageTextList" || x.CardsType == "MainVision" || x.CardsType == "Parallax" || x.CardsType == "PlainText"));
+                                                                                foreach (var item in card)
+                                                                                {
+                                                                                    string title = item.Title, typeIcon = item.TypeIcon;
+                                                                                    if (string.IsNullOrEmpty(title))
+                                                                                    {
+                                                                                        var cardtype = cardtypes.Where(c => c.Code == item.CardsType);
+                                                                                        if (cardtype != null)
+                                                                                        {
+                                                                                            title = cardtype.First().Title;
+                                                                                            typeIcon = cardtype.First().Icon;
+                                                                                        }
+                                                                                    }
+                                                                                    <li class="dd-item" data-href="@Url.Action(item.TypeEditURLAction, item.CardsType, new { SiteID = ViewBag.SiteID, MenuID = item.MenuID, CardNo = item.No })">
+                                                                                        <div class="dd-nodrag">
+                                                                                            <i class="@typeIcon"></i>
+                                                                                            <span class="menu-title">@title</span>
+                                                                                        </div>
+                                                                                    </li>
+                                                                                }
+                                                                            }
+                                                                        </ol>
+                                                                    </li>
+                                                                }
+                                                            }
+                                                        </ol>
+                                                    </div>
+                                                }
+                                            </span>
+                                        </li>
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    }
+                                                else // 後台選單顯示
+                                                {
+                                                    @RenderBackendMenuSelfWithChildren(permissions, menu)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                @* 20180911 cc<li>
+                                                        <span><a href="@Url.Action("Logout", "Home")">登出</a></span>
+                                                    </li>*@
+
+                                            </ul>
+
+                                            <!-- <div class="publish">
+                                                <a class="btn-MianUpload transparent" href="javascript:">
+                                                    <i class="cc cc-cloud-upload-o"></i>
+                                                    發佈至前台
+                                                </a>
+                                            </div> -->
+                                        </div>
+
+                                        @functions
+{
+        public List<MenusModels> GetChildren(List<MenusModels> menu, long menuId)
+        {
+            return menu.Where(row => row.ParentID == menuId).ToList();
+        }
+
+        public List<MenusModels> GetRoots(List<MenusModels> menu)
+        {
+            return GetChildren(menu, 0);
+        }
+                                        }
+
+                                        @helper RenderFrontendListMenuWithChildren(List<GroupPermissionModels> permissions, List<MenusModels> menu, MenusModels currentMenu)
+                                        {
+long siteId = ViewBag.SiteID;
+if (!WorkV3.Common.Utility.HavePermission(permissions, siteId, currentMenu))
+{
+    return;
+}
+List<MenusModels> children = GetChildren(menu, currentMenu.ID).ToList();
+string childrenList = "";
+string showingClass = children.Count > 0 ? "" : "disable-menu";
+if (children.Count > 0)
+{
+    foreach (MenusModels item in children)
+    {
+        childrenList += RenderFrontendListMenuWithChildren(permissions, menu, item);
+    }
+    childrenList = string.Format(@"<ol class=""dd-list a"">{0}</ol>", childrenList);
+}
+
+                                            <li class="dd-item" data-id="@currentMenu.ID" @Html.Raw(currentMenu.MenuIsNeedSN == true ? "data-href=\"" + @Url.Action(@currentMenu.MenuEditURLAction, @currentMenu.MenuCode, new { MenuID = @currentMenu.ID, SiteID = @currentMenu.SiteID }) + "\"" : "") data-Type="@currentMenu.MenuCode">
+                                                <div class="dd-handle">
+                                                    <i class="@currentMenu.MenuIcon"></i>
+                                                    <span class="menu-title">@currentMenu.Title</span>
+                                                    <span class="icons-box">
+                                                        <i class="@Html.Raw(currentMenu.GetShowStatusClass())"></i>
+                                                        <a class="openEdit dd-nodrag" href="@Url.Action(currentMenu.MenuURLAction, "Menus", new { id = @currentMenu.ID, SiteID = currentMenu.SiteID })" data-height="@currentMenu.MenuiFrameH" data-width="@currentMenu.MenuiFrameW"><i class="cc cc-settings"></i></a>
+                                                    </span>
+                                                </div>
+                                                @Html.Raw(childrenList)
+                                            </li>
+}
+
+                                        @*
+
+                                        *@
+
+@helper RenderBackendMenuManagerSelfWithChildren(List<GroupPermissionModels> permissions, BackendMenuModel menu)
+{
+
+bool HasPermission = WorkV3.Common.Utility.HavePermission(permissions, menu);
+if (!HasPermission)
+{
+    return;
+}
+
+//遞迴 render 出子選單
+string childrenList = "";
+foreach (BackendMenuModel childMenu in menu.Children)
+{
+    //客製 YuMing 20190722 隱藏 LOG記錄
+   // if (childMenu.Title == "LOG記錄") //Joe 20190923 問題單0918#4
+    //{
+    //    continue;
+   // }
+    childrenList += RenderBackendMenuManagerSelfWithChildren(permissions, childMenu);
+}
+// 根節點和子節點顯示方式不同
+if (menu.ParentID == null)
+{
+    string url = "", queryString = "";
+    if (!string.IsNullOrEmpty(menu.UrlActionName))
+    {
+        url = Url.Action(menu.UrlActionName, menu.UrlControllerName);
+        menu.QueryString = menu.QueryString ?? "";
+        List<string> queryStringParams = menu.QueryString.TrimStart('?').TrimStart('&').Split('&').ToList();
+        string menuSn = menu.MenuSN ?? "";
+        queryStringParams.Add($"backMenu={menu.ID}");
+        queryString = String.Join("&", queryStringParams.ToArray()).TrimStart('&');
+    }
+    <li class="dd-item" data-id="1" @(!string.IsNullOrEmpty(url) ? ("data-href=" + url + "?" + queryString + "") : "")>
+        @if (!string.IsNullOrEmpty(menu.Icon))
+        {
+            <div class="dd-nodrag">
+                <i class="cc @menu.Icon"></i>
+                <span class="menu-title">@menu.Title</span>
+            </div>
+        }
+        else
+        {
+            <span class="menu-title">@menu.Title</span>
+        }
+                                        <ol class="dd-list">
+        @Html.Raw(childrenList)
+                                            </ol>
+    </li>
+}
+else
+{
+    string url = Url.Action(menu.UrlActionName, menu.UrlControllerName);
+    menu.QueryString = menu.QueryString ?? "";
+    List<string>
+        queryStringParams = menu.QueryString.TrimStart('?').TrimStart('&').Split('&').ToList();
+    string menuSn = menu.MenuSN ?? "";
+    queryStringParams.Add($"backMenu={menu.ID}");
+    queryStringParams.Add($"SiteID={menu.SiteID}");
+    string queryString = String.Join("&", queryStringParams.ToArray()).TrimStart('&');
+
+    var parent = menu.GetParent();
+
+    if (parent.ParentID != null || menu.MenuClass == 9)
+    {
+                <li class="dd-item" data-id="5" data-href="@(string.IsNullOrEmpty(childrenList) ? (url + "?" + queryString) : "")">
+                    @if (!string.IsNullOrEmpty(menu.Icon))
+                    {
+                        <div class="dd-nodrag">
+                            <i class="cc @menu.Icon"></i>
+                            <span class="menu-title">@menu.Title</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="menu-title">@menu.Title</span>
+                    }
+                    @Html.Raw(childrenList)
+                </li>
+    }
+    else
+    {
+        if (!menu.IsLink)
+        {
+            <li>
+                <div class="DDmenu">
+                    <div class="section-heading dd nestable-mainMenu active divManager" data-SiteID="@menu.SiteID">
+                        <div class="toggleBox active">
+                            <i class="cc cc-chevron-down"></i>
+                        </div>
+                        <div class="cc @menu.Icon">
+                            <div></div>
+                        </div>
+                        <div class="section-heading-title">@menu.Title</div>
+
+                        <ol class="dd-list show">
+                            @Html.Raw(childrenList)
+                        </ol>
+                    </div>
+                </div>
+            </li>
+        }
+        else
+        {
+                <li class="dd-item" @(!string.IsNullOrEmpty(url) ? ("data-href=" + url + "?" + queryString + "") : "")>
+                    @if (!string.IsNullOrEmpty(menu.Icon))
+                    {
+                        <div class="dd-nodrag">
+                            <i class="cc @menu.Icon"></i>
+                            <span class="menu-title">@menu.Title</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="menu-title">@menu.Title</span>
+                    }
+                </li>
+        }
+    }
+}
+}
+
+@helper RenderBackendMenuStoresSelfWithChildren(BackendMenuModel menu)
+{
+
+//遞迴 render 出子選單
+string childrenList = "";
+foreach (BackendMenuModel childMenu in menu.Children)
+{
+    childrenList += RenderBackendMenuStoresSelfWithChildren(childMenu);
+}
+string url = Url.Action(menu.UrlActionName, menu.UrlControllerName);
+menu.QueryString = menu.QueryString ?? "";
+List<string>
+    queryStringParams = menu.QueryString.TrimStart('?').TrimStart('&').Split('&').ToList();
+string menuSn = menu.MenuSN ?? "";
+queryStringParams.Add($"backMenu={menu.ID}");
+queryStringParams.Add($"SiteID={menu.SiteID}");
+string queryString = String.Join("&", queryStringParams.ToArray()).TrimStart('&');
+
+    <ol class="dd-list show">
+        <li class="dd-item" data-id="1" data-href="@(string.IsNullOrEmpty(childrenList)? (url+"?"+queryString):"")" data-function="StoreFunction" data-action="@(url+"?"+queryString)">
+            @if (!string.IsNullOrEmpty(menu.Icon))
+            {
+                <div class="dd-nodrag">
+                    <i class="cc @menu.Icon"></i>
+                    <span class="menu-title">@menu.Title</span>
+                </div>
+            }
+            else
+            {
+                <span class="menu-title">@menu.Title</span>
+            }
+            @Html.Raw(childrenList)
+        </li>
+    </ol>
+}
+                            @helper RenderBackendMenuSelfWithChildren(List<GroupPermissionModels> permissions, BackendMenuModel menu)
+        {
+    long? siteId = ViewBag.SiteID;
+    bool HasPermission = false;
+    if (siteId.HasValue)
+    {
+        HasPermission = WorkV3.Common.Utility.HavePermission(permissions, siteId.Value, menu);
+    }
+    else
+    {
+        HasPermission = WorkV3.Common.Utility.HavePermission(permissions, menu);
+    }
+    if (!HasPermission)
+    {
+        return;
+    }
+
+    //遞迴 render 出子選單
+    string childrenList = "";
+    foreach (var myChildMenu in menu.Children)
+    {
+        //客製 YuMing 20190722 隱藏 上導覽列、下導覽列
+        if (myChildMenu.Title == "數據" || myChildMenu.Title == "廣告")
+        {
+            continue;
+        }
+        if (myChildMenu is BackendMenuModel)
+        {
+            childrenList += RenderBackendMenuManagerSelfWithChildren(permissions, myChildMenu as BackendMenuModel);
+        }
+
+    }
+
+    // 根節點和子節點顯示方式不同
+    if (menu.ParentID == null)
+    {
+        // 連結跟目錄顯示方式不同
+        if (!menu.IsLink)
+        {
+            string menuActionClass = "toggleBox";
+            if (menu.MenuClass == 9)
+            {
+                menuActionClass = "toggleBox";
+            }
+
+            <li>
+                <span>@menu.Title</span>
+                <ul>
+                    <li>
+                        <span class="DDmenu">
+                                <ol class="dd-list show">
+                                    @Html.Raw(childrenList)
+                                </ol>
+                        </span>
+                    </li>
+                </ul>
+            </li>
+
+    }
+    else
+    {
+        string url = Url.Action(menu.UrlActionName, menu.UrlControllerName);
+        menu.QueryString = menu.QueryString ?? "";
+        List<string> queryStringParams = menu.QueryString.TrimStart('?').TrimStart('&').Split('&').ToList();
+        string menuSn = menu.MenuSN ?? "";
+        if (siteId.HasValue)
+        {
+            if (!string.IsNullOrEmpty(menuSn))
+            {
+                WorkV3.Models.MenusModels item = WorkV3.Models.DataAccess.MenusDAO.GetInfo(siteId.Value, menuSn);
+                queryStringParams.Add($"menuid={item.Id}");
+            }
+            queryStringParams.Add($"siteid={siteId}");
+            queryStringParams.Add($"backMenu={menu.ID}");
+        }
+        else
+        {
+
+            queryStringParams.Add($"backMenu={menu.ID}");
+        }
+
+        string queryString = String.Join("&", queryStringParams.ToArray()).TrimStart('&');
+
+            <li class="dd-item">
+                @if (!string.IsNullOrEmpty(menu.Icon))
+                {
+                    <i class="cc @menu.Icon"></i>
+                    <span><a href="@url?@queryString">@menu.Title</a></span>
+                }
+                else
+                {
+                    <span><a href="@url?@queryString">@menu.Title</a></span>
+                }
+            </li>
+
+    }
+}
+else
+{
+    if (!menu.IsLink)
+    {
+
+            <li class="dd-item" data-id="1">
+                <div class="dd-nodrag">
+                    <i class="cc @menu.Icon"></i>
+                    <span class="menu-title">@menu.Title</span>
+                </div>
+                <ol class="dd-list">
+                    @Html.Raw(childrenList)
+                </ol>
+            </li>
+
+    }
+    else
+    {
+        string url = Url.Action(menu.UrlActionName, menu.UrlControllerName);
+        menu.QueryString = menu.QueryString ?? "";
+        List<string> queryStringParams = menu.QueryString.TrimStart('?').TrimStart('&').Split('&').ToList();
+        string menuSn = menu.MenuSN ?? "";
+
+        if (siteId.HasValue)
+        {
+            if (!string.IsNullOrEmpty(menuSn))
+            {
+                WorkV3.Models.MenusModels item = WorkV3.Models.DataAccess.MenusDAO.GetInfo(siteId.Value, menuSn);
+                queryStringParams.Add($"menuid={item.Id}");
+            }
+            queryStringParams.Add($"siteid={siteId}");
+        }
+        queryStringParams.Add($"backMenu={menu.ID}");
+        string queryString = String.Join("&", queryStringParams.ToArray()).TrimStart('&');
+
+            <li class="dd-item" data-id="5" data-href="@url?@queryString">
+                <div class="dd-nodrag">
+                    <i class="cc @menu.Icon"></i>
+                    <span class="menu-title">@menu.Title</span>
+                </div>
+            </li>
+
+    }
+}
+}

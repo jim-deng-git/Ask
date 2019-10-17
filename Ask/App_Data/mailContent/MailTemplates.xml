@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Mails>
+  <Template ID="Notice" Title="會員通知信">
+    <Subject>[WebsiteName] – 會員通知信</Subject>
+    <Content>
+      <p>親愛的 [MemberName]，您好：</p>
+      <p>這是 [WebsiteName] 的會員通知信。</p>
+      <p>提醒您：</p>
+      <p>“ 請在此處寫入欲通知之內容...... ”</p>
+      <p>
+        <br/>
+      </p>
+      <p>如有任何問題，請洽詢客服專線：02-23456789#123</p>
+      <p>※ 為了避免重複收到通知信，如果您已確實收到本通知信，請協助點擊：「<a href="[GetEmail]">[GetEmail]</a>」，謝謝。</p>
+      <p style="text-align:right">
+        [WebsiteName]<br/>[SendDate]
+      </p>
+      <p></p>
+    </Content>
+  </Template>
+  <Template ID="Regist" Title="註冊啟用驗證信">
+    <Subject>歡迎您加入 [WebsiteName] 會員，請開信啟用帳號。</Subject>
+    <Content>
+      <p>親愛的 [MemberName]，您好：</p>
+      <p>歡迎您加入 [WebsiteName] 會員，為了保障您的權益，請點擊：「<a href="[StartLink]">[StartLink]</a>」，來啟用您的會員帳戶。</p>
+      <p>※ 本信件為系統訊息，請勿直接回信。</p>
+      <p>
+        <br/>
+      </p>
+      <p style="text-align:right">
+        [WebsiteName]<br/>[SendDate]
+      </p>
+      <p></p>
+    </Content>
+  </Template>
+  <Template ID="RegistResult" Title="註冊結果通知信">
+    <Subject>[WebsiteName] – 註冊結果通知信</Subject>
+    <Content>
+        <p>親愛的 [MemberName]，您好：</p>
+        <p>歡迎您加入 [WebsiteName] 會員，您的會員申請結果與說明如下：</p>
+        <p>[RegStatus]</p>
+        <p>[RegReason]</p>
+        <p>如有任何問題，請洽詢客服專線：02-23456789#123 </p>
+        <p>※ 為了避免重複收到通知信，如果您已確實收到本通知信，請協助點擊：「<a href="[GetEmail]">[GetEmail]</a>」，謝謝。</p>
+        <p>
+          <br/>
+        </p>
+        <p style="text-align:right">
+          [WebsiteName]<br/>[SendDate]</p>
+        <p></p>
+    </Content>
+  </Template>
+  <Template ID="Forget" Title="忘記密碼通知信">
+    <Subject>[WebsiteName] 會員 [MemberName]，您忘記密碼了嗎？</Subject>
+    <Content>
+      <p>
+        <br/>
+      </p>
+      <p>親愛的 [MemberName]，您好：</p>
+      <p>歡迎您成為 [WebsiteName] 會員，您忘記密碼了嗎？</p>
+      <p>請點擊：「<a href="[ChangeLink]">[ChangeLink]</a>」，回到網站修正您的密碼。</p>
+      <p>
+        <br/>
+      </p>
+      <p>
+        <br/>
+      </p>
+      <p>※ 本信件為系統訊息，請勿直接回信。</p>
+      <p style="text-align:right">
+        [WebsiteName]<br/>[SendDate]
+      </p>
+      <p></p>
+    </Content>
+  </Template>
+  <Template ID="ChangeEmail" Title="Email變更通知信">
+    <Subject>[WebsiteName] –  Email變更通知</Subject>
+    <Content>
+      <p>親愛的 [MemberName]，您好：</p>
+      <p>
+        您已於[SendDate] 修正了您的 Email，如欲變更，請點擊：「<a href="[ChangeLink]">[ChangeLink]</a>」，回到網站進行修正。</p>
+      <p>※ 本信件為系統訊息，請勿直接回信。</p>
+      <p>
+        <br/>
+      </p>
+      <p style="text-align:right">
+        [WebsiteName]<br/>[SendDate]
+      </p>
+      <p></p>
+    </Content>
+  </Template>
+  <Template ID="ChangePWD" Title="密碼變更通知信">
+    <Subject>[WebsiteName] – 密碼變更通知</Subject>
+    <Content>
+      <p>親愛的 [MemberName]，您好：</p>
+      <p>您已於[SendDate] 修正了您的密碼，如欲再次變更，請點擊：「<a href="[ChangeLink]">[ChangeLink]</a>」，回到網站進行修正。</p>
+      <p>
+        <br/>
+      </p>
+      <p>
+        <br/>
+      </p>
+      <p>※ 本信件為系統訊息，請勿直接回信。</p>
+      <p>
+        <br/>
+      </p>
+      <p style="text-align:right">
+        [WebsiteName]<br/>[SendDate]
+      </p>
+      <p></p>
+    </Content>
+  </Template>
+</Mails>

@@ -1,0 +1,143 @@
+﻿@{
+    Layout = null;
+
+    IEnumerable<WorkV3.Areas.Backend.Models.MemberShipRegColumnSetModels> fields = (IEnumerable<WorkV3.Areas.Backend.Models.MemberShipRegColumnSetModels>)ViewData["MemberFields"];
+
+    var ListIdentityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewData["IdentityCategories"];
+    var ListFavorityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewData["FavorityCategories"];
+    var ListCareerCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewData["CareerCategories"];
+    var ListMarriageCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewData["MarriageCategories"];
+    var ListEducationCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewData["EducationCategories"];
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+    table {
+        width:95%;
+        margin:0px auto;
+        text-align:center;
+        border-style:solid;
+    }
+
+    table th {
+        border:1px black solid;
+        padding:3px;
+        font-size: 12pt;
+        text-align: center;
+    }
+
+    table td {
+        border:1px black solid;
+        padding:3px;
+        font-size: 11pt;
+        text-align: center;
+        mso-number-format:"\@@";
+    }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                @foreach (WorkV3.Areas.Backend.Models.MemberShipRegColumnSetModels item in fields)
+                {
+                    if (item.IsOpen && item.ColumnName!="Photo")
+                    {
+                        <th>                        
+                            @(item.ColumnTitle)
+                            @if (item.ColumnName == "Career")
+                            {
+                                string listItems = "";
+                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListCareerCategories)
+                                {
+                                    if (cate.ShowStatus)
+                                    {
+                                        listItems += cate.Title + "/";
+                                    }
+                                }
+                                <text>
+                                ：單選(@listItems)
+                                </text>
+                            }
+                            else if (item.ColumnName == "Identity")
+                            {
+                                string listItems = "";
+                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListIdentityCategories)
+                                {
+                                    if (cate.ShowStatus)
+                                    {
+                                        listItems += cate.Title + "/";
+                                    }
+                                }
+                                <text>
+                                    ：複選(@listItems)
+                                </text>
+                            }
+                            else if (item.ColumnName == "Sex")
+                            {
+                                <text>
+                                ：單選(男/女)
+                                </text>
+                            }
+                            else if (item.ColumnName == "Favority")
+                            {
+                                string listItems = "";
+                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListFavorityCategories)
+                                {
+                                    if (cate.ShowStatus)
+                                    {
+                                        listItems += cate.Title + "/";
+                                    }
+                                }
+                                <text>
+                                    ：複選(@listItems)
+                                </text>
+                            }
+                            else if (item.ColumnName == "Marriage")
+                            {
+                                string listItems = "";
+                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListMarriageCategories)
+                                {
+                                    if (cate.ShowStatus)
+                                    {
+                                        listItems += cate.Title + "/";
+                                    }
+                                }
+                                <text>
+                                    ：單選(@listItems)
+                                </text>
+                            }
+                            else if (item.ColumnName == "Education")
+                            {
+                                string listItems = "";
+                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListEducationCategories)
+                                {
+                                    if (cate.ShowStatus)
+                                    {
+                                        listItems += cate.Title + "/";
+                                    }
+                                }
+                                <text>
+                                    ：單選(@listItems)
+                                </text>
+                            }
+                        </th>
+                    }
+                }
+            </tr>
+            <tr>
+                @foreach (WorkV3.Areas.Backend.Models.MemberShipRegColumnSetModels item in fields)
+                {
+                    if (item.IsOpen && item.ColumnName != "Photo")
+                    {
+                        <td></td>
+                    }
+                }
+            </tr>
+        </thead>        
+    </table>
+</body>
+</html>

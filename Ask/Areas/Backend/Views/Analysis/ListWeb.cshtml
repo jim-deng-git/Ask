@@ -1,0 +1,575 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model AnalysisSiteLogViewModel
+@{
+    ViewBag.Title = "分析";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    List<AnalysisMemberGroupViewModel> groupMembers = (List<AnalysisMemberGroupViewModel>)ViewBag.GroupMembers;
+    string UploadUrl = ViewBag.UploadUrl;
+    string  OrderByColumn = "0", OrderByDesc = "0";
+    if (Model.OrderBy.SortDesc == SortDesc.Desc)
+    {
+        OrderByDesc = "0";
+    }
+    else
+    {
+        OrderByDesc = "1";
+    }
+    OrderByColumn = ((int)Model.OrderBy.SortColumn).ToString();
+    string OrdreBySortColumnTotalViewCount = Url.Action("ListWeb", new { OrderColumn = "0", OrderSort = "1", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrdreBySortColumnTotalTotalUserCount = Url.Action("ListWeb", new { OrderColumn = "1", OrderSort = "1", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrdreBySortColumnTotalMemberViewCount = Url.Action("ListWeb", new { OrderColumn = "2", OrderSort = "1", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string CurrentOrderByUrl = Url.Action("ListWeb", new { OrderColumn = OrderByColumn, OrderSort = OrderByDesc, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    }
+
+    @section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.HighCharts()
+
+}
+
+    @section Script {
+        @BundleConfig.Component()
+    <script type="text/javascript">
+        function SetIsShowLabelLine(isShow)
+        {
+            $("#IsShowCustomLableLine").prop("checked" , isShow);
+            var form = $('#searchForm');
+            form.submit();
+        }
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+        
+        //$('.modify_label_line').click(function (e) {
+        //    e.preventDefault();
+        //    window.parent.$.colorbox({
+        //        href: $(this).attr("href"),
+        //        width: "600",
+        //        height: "95%",
+        //        right: "20",
+        //        iframe: true,
+        //        transition: false,
+        //        speed: 0,
+        //        fadeOut: 100,
+        //        onClosed: function () {
+        //            location.reload(true);
+        //        }
+        //    });
+        //});
+
+        function refreshList()
+        {
+            location.replace(location.href);
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            // $(".fixTable").stickyTableHeaders();
+            var dateArray = [], dailayTotalViews = [], dailyTotalCount = [], dailyMemberCount = [], statistic_celling = [], plot_lines = [];
+            var range_max = 0, range_min = 0, celling_interval = 100;
+            @if (Model.LogDailyList != null && Model.LogDailyList.Count() > 0)
+            {
+                int cell_interval = 100;
+                long max = 0, min = 0;
+                for (int i = 0; i < Model.LogDailyList.Count(); i++)
+                {
+                    AnalysisDailyLogViewModel daily_item = Model.LogDailyList.ElementAt(i);
+                    if (Model.IsShowCustomLableLine)
+                    {
+                        for (int m = 0; m < Model.LabelLineList.Count(); m++)
+                        {
+                            AnalysisLogCustomLabelLineViewModel label_item = Model.LabelLineList.ElementAt(m);
+
+                            if (label_item.LabelDate == daily_item.LogDate)
+                            {
+                    <text>
+            var plotLineOption = {
+                                    color: '@label_item.LabelColor',
+                width: 2,
+                value: @i.ToString(),
+                label: {
+                                        text: '@label_item.Title',
+                    verticalAlign: 'top',
+                    textAlign: 'center',
+                    rotation: 0,
+                    y: -20,
+                }
+                                };
+                                plot_lines.push(plotLineOption);
+            </text>
+                            }
+                        }
+                    }
+                    <text>
+            dateArray.push("@daily_item.LogDate");
+                    dailayTotalViews.push(@daily_item.TotalViewCount);
+                    dailyTotalCount.push(@daily_item.TotalUserCount);
+                    dailyMemberCount.push(@daily_item.TotalMemberViewCount);
+            </text>
+                if (i == 0)
+                    {
+                        max = Math.Max(Math.Max(daily_item.TotalViewCount, daily_item.TotalUserCount), daily_item.TotalMemberViewCount);
+                    }
+                    else
+                    {
+                        max = Math.Max(Math.Max(Math.Max(daily_item.TotalViewCount, daily_item.TotalUserCount), daily_item.TotalMemberViewCount), max);
+                    }
+                }
+                if (max < 100)
+                {
+                    cell_interval = 10;
+                }
+                int cell_count = (int)(max / cell_interval);
+                if (max % cell_interval != 0)
+                {
+                    cell_count++;
+                }
+                for (int i = 0; i <= cell_count; i++)
+                {
+                <text>
+            statistic_celling.push(@(cell_interval * i))
+            </text>
+                }
+                max = cell_count * cell_interval;
+                <text>
+            range_max=@max;
+                range_min=@min;
+                celling_interval =@cell_interval;
+            </text>
+        }
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+            $('.chart-line').highcharts({
+                chart: {
+                    height: 500,
+                    /*style: {
+                        padding: '30px 0 20px'
+                    },*/
+                    type: 'line',
+                    spacingTop: 50
+                },
+                title: {
+                    text: null,
+                },
+                subtitle: {
+                    text: null,
+                },
+                /*legend: {
+                    enabled: false
+                },*/
+                xAxis: {
+                    title: {
+                        text: '日期',
+                        margin: 20
+                    },
+                    categories: dateArray,
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        style: {
+                            fontSize: '18px'
+                        },
+                    },
+                    plotLines: plot_lines
+                },
+                yAxis: {
+                    min: range_min,
+                    max: range_max,
+                    tickInterval: celling_interval,
+                    title: {
+                        text: '瀏量',
+                        rotation: 0,
+                        align: 'high',
+                        offset: 0,
+                        y: -20,
+                        x: -15
+                    },
+                    categories: statistic_celling,
+                    labels: {
+                        style: {
+                            fontSize: '18px'
+                        }
+                    },
+                    maxPadding: 0.05
+                },
+                series: [
+                {
+                    name: '全站瀏覽量',
+                    data: dailayTotalViews,
+                    marker: {
+                        enabled: false
+                    },
+                    // lineWidth:5,
+                    color: '#2196F3',
+                    zIndex: 2
+                },
+
+                {
+                    name: '全站瀏覽人次',
+                    data: dailyTotalCount,
+                    marker: {
+                        enabled: false
+                    },
+                    color: '#43A047'
+                },
+
+                {
+                    name: '全站會員瀏覽',
+                    data: dailyMemberCount,
+                    marker: {
+                        enabled: false
+                    },
+                    color: '#ef6c00'
+                }
+                ]
+            });
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+
+    <h1 class="title-admin-page">網頁流量分析</h1>
+    <div id="SearchBox" class="search-box pushup">
+        <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+        <form id="searchForm" method="post" action="@Url.Action("ListWeb")">
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">關鍵字</div>
+                        <div class="input-field inline full">
+                            <input id="Keywords" type="text" placeholder="請輸入關鍵字" name="Keywords" value="@Model.Keywords">
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-2">
+                        <div class="title inline">創建者</div>
+                        <div class="input-field inline full">
+                            <div class="selectGroup">
+                                <a class="btn-grey-darken-4-o transparent dropdown-button p-L-none p-T-none" href="javascript:" data-activates="creator" title="" id="aSelectMemberNamesTop">全部管理員創建的頁面 <i class="cc cc-chevron-down"></i></a>
+                                <ul id="creator" class="dropdown-content customContent large closeOnClick">
+                                    <li>
+                                        <iframe class="dropdownIframe" src="@Url.Action("SelectManagers", "Common", new { SelectMembers=Model.SelectMembers })" frameborder="0"></iframe>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">搜尋時間</div>
+                        <div class="input-field inline">
+                            <input type='text' class="input-cal my-datepicker" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")" name="SearchStartDate" id="SearchStartDate">
+                        </div>
+                        <div class="input-field inline">
+                            <input type='text' class="input-cal my-datepicker" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")" name="SearchEndDate" id="SearchEndDate">
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="float-R m-L-4"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+    </div>
+    <div class="analytics-control-bar">
+            
+            <div class="selectDateRange" style="float:left;">
+                <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title="" id="selectedDates"><span id="spDateRange">@(Model.SearchStartDate.ToString("yyyy/MM/dd") + " - " + ((Model.SearchEndDate.Year == Model.SearchStartDate.Year)? Model.SearchEndDate.ToString("MM/dd") : Model.SearchEndDate.ToString("yyyy/MM/dd")))</span> <i class="cc cc-chevron-down"></i></a>
+                <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                    <li>
+                        <input type='hidden' name="RangeType" id="RangeType" value="@Model.RangeType">
+                        <iframe class="dropdownIframe" src="@Url.Action("SelectRangeDate", "Common", new { start=Model.SearchStartDate.ToString("yyyy/MM/dd"), end=Model.SearchEndDate.ToString("yyyy/MM/dd"), select =Model.RangeType})" frameborder="0"></iframe>
+                    </li>
+                </ul>
+            </div>
+            <div class="selectGroup" style="float:left;">
+                <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="allPage" id="aSelectMemberNames" title="">全部管理員創建的頁面 <i class="cc cc-chevron-down"></i></a>
+                
+                <ul id="allPage" class="dropdown-content customContent large closeOnClick">
+                    <li>
+                            <iframe class="dropdownIframe" src="@Url.Action("SelectManagers", "Common", new { SelectMembers=Model.SelectMembers, IsAutoReload = false })" frameborder="0"></iframe>
+                    </li>
+                </ul>
+            </div>
+            <!-- <div class="selectCreator">
+                <div class="input-field inline">
+                    <select>
+                        <option value="" disabled selected>網站</option>
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                        <option value="3">Option 3</option>
+                    </select>
+                </div>
+            </div> -->
+            <input type="hidden" id="SelectMembers" name="SelectMembers" value="@Model.SelectMembers" />
+            <input type="checkbox" id="IsShowCustomLableLine" name="IsShowCustomLableLine" @((Model != null) ? (Model.IsShowCustomLableLine ? "checked" : string.Empty) : string.Empty ) />
+        </form>
+        <div class="selectCreator" >
+            <a href="@Url.Action("CustomLabelLine", "Analysis")" class="btn-grey-o modify_label_line my-openEdit-m"><i class="cc cc-edit"></i>自訂標線</a>
+            <a href="@Url.Action("ExportToXLS", "Analysis", Model)" target="_blank" class="btn-grey-o"><i class="cc cc-playlist-play"></i>匯出統計</a>
+            <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+        </div>
+    </div>
+
+    <div class="charts">
+        <div class="chart-line highcharts"></div>
+    </div>
+
+    <div class="chartContent">
+        <span>全站瀏覽量</span>
+        <a href="@Url.Action("PageAnalysisDetails", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType })" style="color: #2196F3;">@Model.TotalViewCount.ToString("N0")</a>
+        <span>全站瀏覽人次</span>
+        <a href="@Url.Action("PageAnalysisDetails", new { type="user", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType })" style="color: #43A047;">@Model.TotalUserCount.ToString("N0")</a>
+        <span>全站會員瀏覽</span>
+        <a href="@Url.Action("PageAnalysisDetails", new { type="member", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType })" style="color: #ef6c00;">@Model.TotalMemberViewCount.ToString("N0")</a>
+    </div>
+
+    <div class="card shadow-none">
+
+        <div class="card shadow-none m-T-12">
+            <table class="fixTable" id="listTable">
+                <thead>
+                    <tr>
+                        <th>序</th>
+                        <th>選單 | 內頁</th>
+                        <th>創建者</th>
+                        <th>
+                            @if (Model.OrderBy.SortColumn == SortColumn.TotalViewCount)
+                            {
+                                <text>瀏覽量</text>
+                                if (Model.OrderBy.SortDesc == SortDesc.Desc)
+                                {
+                                    <a href="@CurrentOrderByUrl"><i class="cc cc-chevron-down"></i></a>
+                                }
+                                else
+                                {
+                                    <a href="@CurrentOrderByUrl"><i class="cc cc-chevron-up"></i></a>
+                                }
+                            }
+                            else
+                            {
+    <a href="@OrdreBySortColumnTotalViewCount">瀏覽量</a>
+    }
+</th>
+                        <th>
+                            @if (Model.OrderBy.SortColumn ==  SortColumn.TotalUserCount)
+                            {
+                                <text>每日瀏覽人次</text>
+
+                                if (Model.OrderBy.SortDesc ==  SortDesc.Desc)
+                                {
+                                    <a href="@CurrentOrderByUrl"><i class="cc cc-chevron-down"></i></a>
+                                }
+                                else
+                                {
+                                    <a href="@CurrentOrderByUrl"><i class="cc cc-chevron-up"></i></a>
+                                }
+                            }
+                            else
+                            {
+    <a href="@OrdreBySortColumnTotalTotalUserCount">每日瀏覽人次</a>
+    }
+</th>
+                        <th>
+                            @if (Model.OrderBy.SortColumn == SortColumn.TotalMemberViewCount)
+                            {
+                                <text>每日會員瀏覽  </text>
+
+                                if (Model.OrderBy.SortDesc ==  SortDesc.Desc)
+                                {
+                                    <a href="@CurrentOrderByUrl"><i class="cc cc-chevron-down"></i></a>
+                                }
+                                else
+                                {
+                                    <a href="@CurrentOrderByUrl"><i class="cc cc-chevron-up"></i></a>
+                                }
+                            }
+                            else
+                            {
+                                <a href="@OrdreBySortColumnTotalMemberViewCount">每日會員瀏覽</a>
+                            }
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0, len = Model.LogPageList.Count(); i < len; ++i)
+                    {
+                        AnalysisPageLogViewModel item = Model.LogPageList.ElementAt(i);
+                        long rowTotalCount = item.TotalViewCount, rowTotalUserCount= item.TotalUserCount, rowTotalMemberCount = item.TotalMemberViewCount;
+                        long totalCount = Model.TotalViewCount, totalUserCount = Model.TotalUserCount, totalMemberViewCount= Model.TotalMemberViewCount;
+                        double per_totalCount = 0, per_totalUserCount = 0, per_totalMemberCount = 0;
+                        if (totalCount != 0)
+                        {
+                            per_totalCount = Math.Round((double)((rowTotalCount * 100) / totalCount), 2);
+                        }
+                        if (totalUserCount != 0)
+                        {
+                            per_totalUserCount = Math.Round((double)((rowTotalUserCount * 100) / totalUserCount), 2);
+                        }
+                        if (totalMemberViewCount != 0)
+                        {
+                            per_totalMemberCount = Math.Round((double)((rowTotalMemberCount * 100) / totalMemberViewCount), 2);
+                        }
+                        <tr>
+                            <td class="sort">@pagination.GetItemIndex(i)</td>
+                            <td class="name">
+                            <a target="_blank" href="@Url.RouteUrl("Default", new { controller = "Home", action = "Index" , SiteSN =item.SiteSN, PageSN=item.SN })" class="underline" title="@item.Title">
+                                @(WorkLib.uDataProcess.GetLeftStr(item.Title, 20, "...")) 
+                                </a></td>
+                            <td>@item.Creator</td>
+                            <td class="viewCount"><a href="@Url.Action("PageAnalysisDetails", new { PageID=item.No, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType })" class="underline">@item.TotalViewCount.ToString("N0")</a><div style="width: @per_totalCount%;"></div></td>
+                            <td class="viewCount"><a href="@Url.Action("PageAnalysisDetails", new { PageID=item.No, type="user", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType })" class="underline">@item.TotalUserCount.ToString("N0")</a><div style="width: @per_totalUserCount%;"></div></td>
+                            <td class="viewCount"><a href="@Url.Action("PageAnalysisDetails", new { PageID=item.No, type="member", SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType })" class="underline">@item.TotalMemberViewCount.ToString("N0")</a><div style="width: @per_totalMemberCount%;"></div></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="pagination text-C">
+                @Html.Action("Pager", "Common", pagination)
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<script src="~/script/workV3/check.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        
+        $(".my-openEdit-m").colorbox({
+            width: "600",
+            height: "95%",
+            right: "20",
+            iframe: true,
+            transition: false,
+            speed: 0,
+            fadeOut: 100,
+            createIframe: function () {
+                var iframe = document.createElement('iframe');
+                var attrs = $(this).data('cbox-iframe-attrs');
+
+                if (typeof attrs === 'object') {
+                    $.each(attrs, function (key, val) {
+                        iframe[key] = val;
+                    });
+                }
+
+                if ('frameBorder' in iframe) {
+                    iframe.frameBorder = 0;
+                }
+                if ('allowTransparency' in iframe) {
+                    iframe.allowTransparency = "true";
+                }
+                iframe.name = "EidtConditionInfo"; // give the iframe a unique name to prevent caching
+                iframe.allowFullscreen = true;
+
+                return iframe;
+            }
+        });
+        
+        if ($('#SearchBox').length) {
+            var $SearchBoxH = $('#SearchBox').outerHeight();
+            if( $('#SearchBox').hasClass('pushup')) {
+
+                $('#closeSerach').on('click', function(){
+                    $('#SearchBox').removeClass('pushup');
+                });
+            } else {
+            }
+
+            $('#openSearch').on('click', function() {
+                $('#SearchBox').toggleClass('pushup');
+                if( $('#SearchBox').hasClass('pushup')) {
+                } else {
+                }
+            });
+        }
+        $('#SearchStartDate').datetimepicker({
+            format: "YYYY.MM.DD"
+        });
+        $('#SearchStartDate').on('dp.change', function(e){ setSelectedDateRange($("#SearchStartDate").val(), $("#SearchEndDate").val() , "6", true); });
+        $('#SearchEndDate').datetimepicker({
+            format: "YYYY.MM.DD"
+        });
+        $('#SearchEndDate').on('dp.change', function(e){ setSelectedDateRange($("#SearchStartDate").val(), $("#SearchEndDate").val() , "6", true); });
+        //var selectMembers = "@Model.SelectMembers", selectMemberNames="", selectMemberCount= "";
+        //if(selectMembers!="" && selectMemberNames!= "" && selectMemberCount!="")
+        //    setSelectedManagers(selectMembers, selectMemberNames, selectMemberCount, true);
+        
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+    });
+    function setSelectedDateRange(startdate, enddate, selectCbxValue, onlySetValue)
+    {
+        var selectedDate =startdate ;
+        if(startdate.split("/")[0] == enddate.split("/")[0])
+            selectedDate +=  " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+        else
+            selectedDate +=  " - " + enddate;
+
+        $("#SearchStartDate").val(startdate);
+        $("#SearchEndDate").val(enddate);
+        $("#RangeType").val(selectCbxValue);
+        $("#spDateRange").html(selectedDate);
+        $('#choiceDateRange').hide();
+       
+        var checkStartDateResult = Component.parseDate($("#SearchStartDate").val());
+        var checkEndDateResult = Component.parseDate($("#SearchEndDate").val());
+        if (checkStartDateResult == null) {
+            Component.alert('開始日期格式錯誤。');
+            return;
+        }
+        if (checkEndDateResult == null) {
+            Component.alert('結束日期格式錯誤。');
+            return;
+
+        }
+        if(!onlySetValue)
+            $("#searchForm").submit();
+    }
+    function cancelSelectedDateRange() {
+        $('#choiceDateRange').hide();
+    }
+    var maxShowLength = 25;
+    function setSelectedManagers(selectMembers, selectMemberNames, selectMemberCount, onlySetValue)
+    {
+        if (selectMemberNames.length > maxShowLength)
+            selectMemberNames = selectMemberNames.substring(0, maxShowLength) + "...";
+        $("#aSelectMemberNames").html(selectMemberNames + "...(" + selectMemberCount.toString() + ")");
+        $("#aSelectMemberNamesTop").html($("#aSelectMemberNames").html());
+        $("#SelectMembers").val(selectMembers);
+        $("#allPage").hide();
+        if(!onlySetValue)
+            $("#searchForm").submit();
+        else
+        {
+            $("#creator").hide();
+        }
+    }
+    function closeMembers()
+    {
+        $("#creator").hide();
+        $("#allPage").hide();
+    }
+    function setSelectedManagersNames( selectMemberNames, selectMemberCount)
+    {
+        if (selectMemberNames.length > maxShowLength)
+            selectMemberNames = selectMemberNames.substring(0, maxShowLength) + "...";
+        $("#aSelectMemberNames").html(selectMemberNames + "...(" + selectMemberCount.toString() + ")");
+        $("#aSelectMemberNamesTop").html($("#aSelectMemberNames").html());
+    }
+    
+</script>

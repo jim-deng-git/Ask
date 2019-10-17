@@ -1,0 +1,563 @@
+﻿@using WorkV3.ViewModels
+@using WorkV3.Models.Repository
+@model ChatRoomViewModel
+@{
+    ViewBag.Title = "文章列表";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@{
+    MemberModels curMemberItem = ViewBag.Member;
+    string MemberShipImgPath = ViewBag.MemberShipImgPath;
+    string MemberImgPath = ViewBag.MemberImgPath;
+    string MsgImgPath = ViewBag.MsgImgPath;
+
+    RecruitsRepository recruitsRepository = new RecruitsRepository();
+}
+
+<div class="groove groove-1">
+    <div class="chatroom-container">
+        <div class="chatroom-header">
+            <a id="closeChat" class="btn-grey-darken-2-o transparent square btn-close" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i></a>
+
+            <div class="user">
+                <div class="photo">
+                    @if (Model.ChatRoom.ChatRoomType == (int)WorkV3.Models.ChatRoomType.Single || Model.ChatRoom.ChatRoomType == (int)WorkV3.Models.ChatRoomType.OneByOne)
+                    {
+                        <div class="bg-img" style="background-image: url('@(MemberShipImgPath + Model.ChatRoom.Img)')"></div>
+                    }
+                    else if (Model.ChatRoom.ChatRoomType == (int)WorkV3.Models.ChatRoomType.Group)
+                    {
+                        string ChatImage = "";
+                        string uploadUrl = WorkV3.Golbal.UpdFileInfo.GetVPathBySiteID(ViewBag.SiteID, "Recruits");
+                        var RecruitItem = recruitsRepository.GetItem(Model.ChatRoom.ChatModelID);
+                        string image = recruitsRepository.GetFirstImg(RecruitItem.CustomIcon, RecruitItem.Icon, RecruitItem.ID);
+
+                        if (!string.IsNullOrEmpty(image))
+                        {
+                            ChatImage = uploadUrl + image;
+                        }
+                        <div class="bg-img" style="background-image: url('@ChatImage')"></div>
+                    }
+                </div>
+            </div>
+            <div class="info">
+                <h6>
+                    <a href="" target="_blank">@Model.ChatRoom.Title @(Model.ChatRoom.ChatRoomType != (int)WorkV3.Models.ChatRoomType.OneByOne ? $"({Model.ChatRoomMembers.Count()})" : "")</a>
+                </h6>
+                <div class="description">
+                    <a href="javascript:;" class="edit-chatroom-description">
+                        <i class="cc cc-edit"></i>
+                    </a>
+                    <a href="javascript:;" class="edit-chatroom-description-cancel" style="display: none;">
+                        <i class="cc cc-close"></i>
+                    </a>
+                    <div class="input-field inline full chatroom-description">
+                        <p>@Model.ChatRoomMembers.Where(x => x.RoomMemberID == curMemberItem.Id).First().RoomNote</p>
+                        <input type="text" style="display: none;" value="@Model.ChatRoomMembers.Where(x => x.RoomMemberID == curMemberItem.Id).First().RoomNote">
+                        <a href="javascript:;" class="btn-grey btn-mini edit-chatroom-description-save" style="display: none;">
+                            完成
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--聊天室內容start-->
+        <div class="chatroom-body" id="chatroom-body">
+
+            @* <div class="narration">有問題歡迎與我們聯繫</div>*@
+
+            @{DateTime? preDataTime = null;
+                string[] weeks = { "週日", "週一", "週二", "週三", "週四", "週五", "週六" };
+            }
+            @{int DateIndex = 1;}
+            @foreach (var item in Model.ChatRoomContent)
+            {
+                if (preDataTime == null)
+                {
+                    @*<div class="narration">2018/08/23 今天</div>*@
+                    <div class="narration" narration_id="@DateIndex">@item.Time.ToString("yyyy/MM/dd") @(item.Time.ToString("yyyy/MM/dd") == DateTime.Now.ToString("yyyy/MM/dd") ? "今天" : weeks[Int32.Parse(item.Time.DayOfWeek.ToString("d"))])</div>
+                    DateIndex++;
+                }
+                else
+                {
+                    if (preDataTime.ToString("yyyy/MM/dd") != item.Time.ToString("yyyy/MM/dd"))
+                    {
+                        <div class="narration" narration_id="@DateIndex">@item.Time.ToString("yyyy/MM/dd") @(item.Time.ToString("yyyy/MM/dd") == DateTime.Now.ToString("yyyy/MM/dd") ? "今天" : weeks[Int32.Parse(item.Time.DayOfWeek.ToString("d"))])</div>
+                        DateIndex++;
+                    }
+                }
+                <div class="balloon-container" id="@item.ID">
+                    <div class="balloon @(item.RoomMemberID == curMemberItem.Id ? "me" : "you")">
+                        <div class="photo">
+                            @if (item.RoomMemberType == 1)
+                            {
+                                <div class="bg-img" style="background-image: url('@( MemberImgPath + item.MemberImg)')"></div>
+                            }
+                            else
+                            {
+                                <div class="bg-img" style="background-image: url('@( MemberShipImgPath + item.MemberShipImg)')"></div>
+                            }
+                        </div>
+                        <div class="name">@(item.RoomMemberType == 1 ? item.MemberName : item.MemberShipName)</div>
+                        @if (item.RoomContentType == 1)
+                        {
+                            <div class="talk" style="white-space: pre;"><p>@item.RoomContent</p></div>
+                        }
+                        else if (item.RoomContentType == 2)
+                        {
+                            <div class="talk" style="white-space: pre;"><a href="@( MsgImgPath + item.RoomContent)" class="check-img"><img src="@( MsgImgPath + item.RoomContent)"></a></div>
+                            <script src="~/Script/exif.js"></script>
+                            <script>
+                                console.log('123');
+                            </script>
+                        }
+                        else if (item.RoomContentType == 3)
+                        {
+                            <div class="talk"><a href="@Url.Action("FilesDownload", "Chat", new { SiteID = ViewBag.SiteID , FileName = item.RoomContent })">@item.RoomContent 下載</a></div>
+                        }
+                        <div class="outer">
+                            @if (item.RoomMemberID == curMemberItem.Id)
+                            {
+                                string isReadStr = "";
+                                if (item.IsRead != 0)
+                                {
+                                    if (item.IsRead == 1)
+                                    {
+                                        isReadStr = "已讀";
+                                    }
+                                    else
+                                    {
+                                        isReadStr = "已讀" + item.IsRead;
+                                    }
+                                }
+                                <div class="read">@isReadStr</div>
+                            }
+                            <div class="time">@(item.Time.ToString("HH:mm"))</div>
+                        </div>
+                    </div>
+                </div>
+                preDataTime = item.Time;
+            }
+        </div>
+        <!--聊天室內容end-->
+
+        <div class="chatroom-message">
+            <div class="quick-comment">
+                <div class="quick-comment-container">
+                    @if (Model.ChatQuickComment != null)
+                    {
+                        int index = 1;
+                        foreach (var item in Model.ChatQuickComment)
+                        {
+                            <div class="comment-chip" id="@index" onclick="showQuickMsg(this)">
+                                @item.QuickComment
+                                <span class="delete-comment" id="@index" onclick="delComment(this)"><i class="cc cc-close"></i></span>
+                            </div>
+                            index = index + 1;
+                        }
+                    }
+                </div>
+                <a href="javascript:;" class="btn-grey-darken-4-o transparent square date-store" title="儲存快速留言"><i class="cc cc-edit"></i></a>
+            </div>
+            <div class="typing">
+                <form id="imgform">
+                    <input type="file" name="imgMultiple" id="fImg" onchange="imgUpload()" accept="image/*">
+                </form>
+                <form id="fileform">
+                    <input type="file" name="filesMultiple" id="fileInput" onchange="filesUpload()">
+                </form>
+                <textarea name="" id="MessageBox" cols="4" rows="10" style="resize:none;"></textarea>
+                <a href="javascript:;" id="SendMessage" class="btn-grey-darken-4-o square transparent" title="送出"><i class="cc cc-paper-plane"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+<!--css-->
+<link href="~/css/Cards/Store/page-style1.css" type="text/css" rel="stylesheet" />
+<link href="~/css/chat.css" rel="stylesheet" />
+
+<link href="~/css/normalize.css" rel="stylesheet" />
+<link href="~/css/ccwork.css" rel="stylesheet" />
+<link href="~/css/background.css" rel="stylesheet" />
+<link href="~/css/button.css" rel="stylesheet" />
+<link href="~/css/font-color.css" rel="stylesheet" />
+<link href="~/css/spacing.css" rel="stylesheet" />
+
+<link href="~/css/font-ccwork.css" type="text/css" rel="stylesheet" />
+<link href="~/css/vendor/animate/animate.css" type="text/css" rel="stylesheet" />
+
+<script src="~/Script/workV3/component.js"></script>
+
+<!--聊天室元件-->
+<script src="~/Script/Jquery/jquery-3.1.1.js"></script>
+<script src="~/Script/jquery.signalR-2.4.1.js"></script>
+<script src="~/Signalr/hubs"></script>
+<script src="~/Script/fileuploader/jquery.fileuploader.js"></script>
+<script src="~/Script/autosize/autosize.min.js"></script>
+
+<script type="text/javascript">
+    $(function(){
+        var descriptEdit = $(".edit-chatroom-description"),
+            descript = $(".chatroom-description p"),
+            descriptInput = $(".chatroom-description input"),
+            descriptCancel = $(".edit-chatroom-description-cancel"),
+            descriptSave = $(".edit-chatroom-description-save");
+
+        descriptEdit.on("click", function(){
+            descriptEdit.hide();
+            descript.hide();
+            descriptInput.fadeIn(150);
+            descriptCancel.fadeIn(150);
+            descriptSave.fadeIn(150);
+        });
+        descriptCancel.on("click", function(){
+            descriptEdit.fadeIn(150);
+            descript.fadeIn(150);
+            descriptInput.hide();
+            descriptCancel.hide();
+            descriptSave.hide();
+        });
+        descriptSave.on("click", function(){
+            descriptEdit.fadeIn(150);
+            descript.fadeIn(150);
+            descriptInput.hide();
+            descriptCancel.hide();
+            descriptSave.hide();
+            descript.text(descriptInput.val());
+
+            var formData = new FormData();
+            formData.append("ChatRoomID", "@Model.ChatRoom.ID");
+            formData.append("MemberID", "@curMemberItem.Id");
+            formData.append("NoteStr", descriptInput.val());
+            $.ajax({
+                url: "@Url.Action("UpdateRoomNote", "Chat")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function(result) {
+
+                }
+            });
+        });
+    })
+
+    $(function () {
+        $('input[name="imgMultiple"]').fileuploader({
+            changeInput: '<div class="fileuploader-input-Img">' +
+                            '<i class="cc cc-image"></i>' +
+                         '</div>'
+        });
+    })
+
+    $(function () {
+        $('input[name="filesMultiple"]').fileuploader({
+            changeInput: '<div class="fileuploader-input-Files">' +
+                            '<i class="cc cc-file-edit"></i>' +
+                         '</div>'
+        });
+    })
+
+    //聊天室控制Script---------start
+    var ChatRoomBody = document.getElementById("chatroom-body");
+    ChatRoomBody.scrollTop = ChatRoomBody.scrollHeight;      //聊天室頁面置底
+
+    //連線至SignalR Hub
+    var chat = $.connection.chatHub;
+
+    //連線至聊天室
+    $.connection.hub.start().done(function () {
+        chat.server.joinGroup('@Model.ChatRoom.ID');
+        $('#MessageBox').focus();
+    });
+
+    //接收訊息
+    chat.client.addMessage = function (data) {
+        var whoMsg = '', isReadStr = '';
+        var TimeNow = new Date();
+        var yyyy = TimeNow.toLocaleDateString().slice(0,4);                         //西元年
+        var MM = (TimeNow.getMonth()+1<10 ? '0' : '')+(TimeNow.getMonth()+1);       //月
+        var dd = (TimeNow.getDate()<10 ? '0' : '')+TimeNow.getDate();               //日
+        var hh = (TimeNow.getHours()<10 ? '0' : '')+TimeNow.getHours();             //時
+        var mm = (TimeNow.getMinutes()<10 ? '0' : '')+TimeNow.getMinutes();         //分
+        var imgPath = '';
+
+        if (data.MemberType == 1)
+            imgPath = '@MemberImgPath';
+        else
+            imgPath = '@MemberShipImgPath';
+
+        var msgImgPath = '@MsgImgPath';
+
+        if (data.MemberID == '@curMemberItem.Id')
+        {
+            whoMsg = 'balloon me';
+            if(data.IsRead == 0)
+            {
+                isReadStr = '<div class="read"></div>';
+            }
+            else if (data.IsRead == 1)
+            {
+                isReadStr = '<div class="read">已讀</div>';
+            }
+            else
+            {
+                isReadStr = '<div class="read">已讀' + data.IsRead + '</div>';
+            }
+        }
+        else
+        {
+            whoMsg = 'balloon you';
+            isReadStr = '';
+        }
+
+        var html = '';
+        var nowDate = yyyy + '/' + MM + '/' + dd;
+
+        var dateTitleCount = $('.narration').length;
+        var lastDateTitle = $('div[narration_id="' + dateTitleCount + '"]').text().split(' ');
+
+        if (dateTitleCount == 0 || lastDateTitle[0] != nowDate) {
+            html += '<div class="narration" narration_id="' + (dateTitleCount + 1) + '">' + nowDate + ' 今天</div>';
+            if(dateTitleCount != 0 && lastDateTitle[1] == '今天')
+            {
+                $('div[narration_id="' + dateTitleCount + '"]').text(lastDateTitle[0] + ' 昨天');
+            }
+        }
+
+        html += '<div class="balloon-container" id="' + data.MessageID + '">' +
+                    '<div class="' + whoMsg + '">' +
+                        '<div class="photo">' +
+                            '<div class="bg-img" style="background-image: url(\'' + data.Img + '\')"></div>' +
+                        '</div>' +
+                        '<div class="name">' + data.Name + '</div>' +
+                        '<div class="talk" style="white-space: pre;">';
+                        if(data.MessageType == 1)
+                        {
+                            html += '<p>' + data.Message + '</p>';
+                        }
+                        else if (data.MessageType == 2)
+                        {
+                            html += '<a href="' + data.FileUrl + '" class="check-img">' +
+                                        '<img src="' + data.FileUrl + '">' +
+                                    '</a>';
+                        }
+                        else if (data.MessageType == 3) {
+                            html += '<a href="' + data.FileUrl + '">' +
+                                        data.Message + '下載' +
+                                    '</a>';
+                        }
+        html +=         '</div>' +
+                        '<div class="outer">' +
+                            isReadStr +
+                            '<div class="time">' + hh + ':' + mm + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+        $('.chatroom-body').append(html);
+        ChatRoomBody.scrollTop = ChatRoomBody.scrollHeight;           //聊天室頁面置底
+    };
+
+    //更新已讀
+    //chat.client.updateIsRead = function (Result, groupID) {
+    chat.client.updateIsRead = function (data) {
+        data.OthersMsg.forEach(function (item) {
+            var isReadStr = '';
+            if (item.IsRead != 0)
+            {
+                if (item.IsRead == 1)
+                {
+                    isReadStr = '已讀';
+                }
+                else
+                {
+                    isReadStr = '已讀' + item.IsRead;
+                }
+                $('div[id="' + item.IDStr + '"]').find('.read').html(isReadStr);
+            }
+        });
+    };
+
+    //點擊發送訊息
+    $('#SendMessage').click(function () {
+        if ($('#MessageBox').val() == '') {
+            return;
+        }
+        else {
+            chat.server.send('@Model.ChatRoom.ID', '@curMemberItem.Id', '@curMemberItem.Name', '@curMemberItem.Img', 1, $("#MessageBox").val(), 1); //參數4: 1 => Member, 2 => MemberShip
+            $('#MessageBox').val('').focus();
+        }
+    });
+
+    //Enter發送訊息
+    $('#MessageBox').on('keydown', function (event) {
+        var elmStr = $('#MessageBox').val();
+        if (event.keyCode == 13 && event.shiftKey) {
+            elmStr = elmStr += '\n';
+        }
+        else if (event.keyCode == 13) {
+            if ($('#MessageBox').val() == '') {
+                event.preventDefault();
+                $('#MessageBox').val('').focus();
+                return;
+            }
+            else {
+                event.preventDefault();
+                chat.server.send('@Model.ChatRoom.ID', '@curMemberItem.Id', '@curMemberItem.Name', '@curMemberItem.Img', 1, $("#MessageBox").val(), 1); //參數4: 1 => Member, 2 => MemberShip
+                $('#MessageBox').val('').focus();
+            }
+        }
+    });
+
+    var url = '@Url.Action("ChangeInRoom", "Chat")';
+    window.onfocus = function () {
+        $.post( url + '?ChatRoomID=@(Model.ChatRoom.ID)&RoomMemberID=@(curMemberItem.Id)&Status=in');
+        chat.server.inRoom( '@Model.ChatRoom.ID', '@curMemberItem.Id');
+    };
+
+    window.onblur = function () {
+        $.post( url + '?ChatRoomID=@(Model.ChatRoom.ID)&RoomMemberID=@(curMemberItem.Id)&Status=out');
+    };
+
+    $('#closeChat').click(function(){
+        window.onblur();
+    });
+
+    //圖片上傳
+    var imgUpload = function () {
+        var fileExtName = '.dib,.webp,.jpge,.svgz,.gif,.jpg,.ico,.png,.svg,.tif,.xbm,.bmp,.jfif,.pjpge,.pjp,.tiff';
+        var validExtName = fileExtName.split(',');
+        var data = new FormData();
+        var files = $("#fImg").get(0).files;
+
+        if (files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+
+                //抓檔案副檔名
+                var fileExt = files[i].name;
+                fileExt = fileExt.substring(fileExt.lastIndexOf('.'));
+
+                if (validExtName.indexOf(fileExt) < 0) {
+                    $('#imgform').get(0).reset(); //清空檔案
+                    Component.alert('無法上傳此檔案格式');
+                    return;
+                }
+
+                data.append(files[i].name, files[i]);
+            }
+        }
+
+        data.append("SiteID", '@ViewBag.SiteID');
+        var ajaxRequest = $.ajax({
+            type: "POST",
+            url: '@Url.Action("ImgUpload")',
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function (result) {
+                result.forEach(function(item){
+                    chat.server.send( '@Model.ChatRoom.ID', '@curMemberItem.Id', '@curMemberItem.Name', '@curMemberItem.Img', 1, item, 2);
+                })
+            }
+        });
+        //$('imgform').get(0).reset(); //清空檔案
+    };
+
+    //檔案上傳
+    var filesUpload = function () {
+        var maxFileSize = '@System.Web.Configuration.WebConfigurationManager.AppSettings["MaxFileSize"]';
+        var fileExtName = '@System.Web.Configuration.WebConfigurationManager.AppSettings["FileExtName"]';
+        var validExtName = fileExtName.split(',');
+        var data = new FormData();
+        var files = $("#fileInput").get(0).files;
+
+        if (files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+
+                //抓檔案副檔名
+                var fileExt = files[i].name;
+                fileExt = fileExt.substring(fileExt.lastIndexOf('.'));
+
+                if (validExtName.indexOf(fileExt) < 0)
+                {
+                    $('#fileform').get(0).reset(); //清空檔案
+                    Component.alert('無法上傳此檔案格式');
+                    return;
+                }
+
+                if (files[i].size > parseInt(maxFileSize) * 1024 * 1024) {
+                    $('#fileform').get(0).reset(); //清空檔案
+                    Component.alert('您有檔案超過限制大小  檔案：' + files[i].name + ' 大小：' + (files[i].size / 1024 / 1024).toFixed() + 'MB\n限制：' + maxFileSize + 'MB');
+                    return;
+                }
+                data.append(files[i].name, files[i]);
+            }
+        }
+
+        data.append("SiteID", '@ViewBag.SiteID');
+        var ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("FilesUpload", "Chat")",
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function (result) {
+                result.forEach(function (item) {
+                    chat.server.send('@Model.ChatRoom.ID', '@curMemberItem.Id', '@curMemberItem.Name', '@curMemberItem.Img', 1, item, 3);
+                })
+            }
+        });
+        $('#fileform').get(0).reset(); //清空檔案
+    };
+
+    //快速留言
+    $(function(){
+        $('.date-store').on('click', function() {
+            if(!$('#MessageBox').val())
+            {
+                parent.window.swal({
+                    text: '請輸入留言，再按下儲存。',
+                    type: 'warning',
+                    //showCancelButton: true,
+                    confirmButtonText: '確定',
+                    //cancelButtonText: '取消',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                });
+            }
+            else
+            {
+                var index = $('.quick-comment-container>div').length + 1;
+                $('.quick-comment-container').append('' +
+                    '<div class="comment-chip" id="' + index + '" onclick="showQuickMsg(this)">' +
+                        $.trim($('#MessageBox').val()) +
+                        '<span class="delete-comment" id="' + index + '" onclick="delComment(this)"><i class="cc cc-close"></i></span>' +
+                    '</div>'
+                );
+
+                $.post('@Url.Action("InsertQuickComment", "Chat")', { 'MemberID': '@curMemberItem.Id', 'QuickComment' : $.trim($('#MessageBox').val()) });
+
+                $('#MessageBox').val('').focus();
+            }
+        });
+    })
+
+    var delComment = function(e){
+        $.post('@Url.Action("DelQuickComment", "Chat")', { 'MemberID': '@curMemberItem.Id', 'QuickComment' : $.trim($('div[id="' + e.id + '"]').text()) });
+        $('div[id="' + e.id + '"]').remove();
+    };
+
+    var showQuickMsg = function(e){
+        $('#MessageBox').val($.trim($('div[id="' + e.id + '"]').text())).focus();
+    };
+
+    window.onunload = function () {
+        $.post('@Url.Action("DelChat", "Chat")', { 'ChatRoomID': '@Model.ChatRoom.ID' });
+    };
+
+    //聊天室控制Script---------End
+</script>

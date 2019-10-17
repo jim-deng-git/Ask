@@ -1,0 +1,75 @@
+.card-epaperSet[data-style="2"] > div input {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box; }
+
+.card-epaperSet[data-style="2"] svg path {
+  -webkit-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out; }
+
+.card-epaperSet[data-style="2"] {
+  font-size: 13px;
+  color: #9e9e9e;
+  text-align: center;
+  padding: 80px 0px 0;
+  position: relative; }
+  .card-epaperSet[data-style="2"] svg {
+    position: absolute;
+    width: 100%;
+    height: 100px;
+    top: 0;
+    left: 0; }
+    .card-epaperSet[data-style="2"] svg path {
+      fill: #000000;
+      stroke: transparent; }
+  .card-epaperSet[data-style="2"] > div {
+    vertical-align: middle;
+    color: #ffffff;
+    background-color: #000000;
+    position: relative;
+    -ms-input-placeholder-color: #bdbdbd;
+    -moz-placeholder-color: #bdbdbd; }
+    @media only screen and (max-width: 420px) {
+      .card-epaperSet[data-style="2"] > div {
+        width: 100%;
+        padding: 0px; } }
+    .card-epaperSet[data-style="2"] > div.epaperSet-title {
+      font-size: 24px; }
+    .card-epaperSet[data-style="2"] > div.epaperSet-sub {
+      font-size: 18px; }
+    .card-epaperSet[data-style="2"] > div.epaperSet-input {
+      padding: 20px 0; }
+    .card-epaperSet[data-style="2"] > div.epaperSet-link {
+      padding-bottom: 40px; }
+      .card-epaperSet[data-style="2"] > div.epaperSet-link a {
+        padding: 0 20px; }
+    .card-epaperSet[data-style="2"] > div input {
+      border-radius: 0;
+      -webkit-appearance: none;
+      vertical-align: middle;
+      padding: 10px;
+      margin: 0;
+      height: 45px;
+      line-height: 45px;
+      width: 220px; }
+      @media only screen and (max-width: 420px) {
+        .card-epaperSet[data-style="2"] > div input {
+          width: calc(80% - 45px); } }
+      .card-epaperSet[data-style="2"] > div input, .card-epaperSet[data-style="2"] > div input:focus {
+        -webkit-box-shadow: none;
+                box-shadow: none;
+        outline: none;
+        border: 1px solid #bdbdbd; }
+    .card-epaperSet[data-style="2"] > div a {
+      text-decoration: none; }
+      .card-epaperSet[data-style="2"] > div a.square {
+        margin-left: -5px;
+        background-color: #ffffff; }
+        .card-epaperSet[data-style="2"] > div a.square:focus, .card-epaperSet[data-style="2"] > div a.square:hover {
+          color: #757575;
+          background-color: #bdbdbd;
+          border-color: #bdbdbd; }
+    .card-epaperSet[data-style="2"] > div ::-webkit-input-placeholder {
+      color: #bdbdbd; }
+    .card-epaperSet[data-style="2"] > div ::-moz-placeholder {
+      color: #bdbdbd; }

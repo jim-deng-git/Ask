@@ -1,0 +1,152 @@
+﻿@model List<ImageTextModel>
+@{
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(pageCache.SiteID, pageCache.MenuID);
+}
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/Cards/ImageText/style18.css" rel="stylesheet" />
+
+@BundleConfig.Colorbox()
+@BundleConfig.JWPlayer()
+
+@foreach (var item in Model)
+{
+    string imgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Img).Img;
+    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, imgFileName)))
+    {
+        imgFileName = string.Format("R_{0}", imgFileName);
+    }
+    var imgSrc = pageCache.UploadVPath + imgFileName;
+    //var imgSrc = pageCache.UploadVPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Img).Img;
+    var openClass = "";
+    var target = "";
+    var clickEvent = "javascript: void(0);";
+    switch (item.ClickType)
+    {
+        case 1:
+            openClass = "openImg";
+
+            List<ClickImgModel> imgs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClickImgModel>>(item.ClickEvent);
+            foreach (var img in imgs)
+            {
+                if (imgs.IndexOf(img) == 0)
+                {
+                    clickEvent = pageCache.UploadVPath + img.Img;
+                }
+            }
+
+            <script type="text/javascript">
+                $(function () {
+                    $(".openImg").colorbox({
+                        rel: 'group1',
+                        maxWidth: "90%",
+                        maxHeight: "90%",
+                        closeButton: true
+                        //cc 20180606
+                    });
+                });
+            </script>
+
+            break;
+        case 2:
+            ClickVideoModel video = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickVideoModel>(item.ClickEvent);
+            openClass = "open" + video.ID;
+            clickEvent = Url.Action("Click", "Click", new { clickType = item.ClickType, data = item.ClickEvent });
+            <script type="text/javascript">
+                $(function () {
+                    $(".@openClass").click(function (e) {
+                        e.preventDefault();
+                        $.colorbox({
+                            href: this.href,
+                            iframe: true,
+                            width: "1408px",
+                            height: "792px",
+                            maxWidth: "90%",
+                            maxHeight: "90%"
+                        });
+                    });
+                });
+            </script>
+            break;
+        case 3:
+            ClickVoiceModel voice = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickVoiceModel>(item.ClickEvent);
+            openClass = "open" + voice.ID;
+            <script type="text/javascript">
+                $(function () {
+                    $(".@openClass").click(function (e) {
+                        e.preventDefault();
+                        $.colorbox({
+                            html: '<div id="voice_player' + '@openClass' + '"></div>',
+                            width: "270px",
+                            height: "30px",
+                            maxWidth: "90%",
+                            maxHeight: "90%",
+                            scrolling: false,
+                            fixed: true,
+                            onComplete: function () {
+                                jwplayer('voice_player' + '@openClass').setup({
+                                    file: '@(pageCache.UploadVPath + voice.Path)',
+                                    width: "270",
+                                    height: "30",
+                                    type: "mp3",
+                                    skin: {
+                                        name: "default",//選擇主題
+                                        active: "#2e2e2e",//選擇主色
+                                        inactive: "#ffffff",
+                                        background: "#000000"//選擇背景
+                                    },
+                                    autostart: true
+                                });
+                            }
+                        });
+                    });
+                });
+            </script>
+            break;
+        case 4:
+            ClickFileModel file = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickFileModel>(item.ClickEvent);
+            target = "target='_blank'";
+            clickEvent = pageCache.UploadVPath + file.FileInfo;
+            break;
+        case 5:
+            ClickLinkModel link = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickLinkModel>(item.ClickEvent);
+            if (link.IsOpenNew)
+            {
+                target = "target='_blank'";
+            }
+            clickEvent = link.Link;
+            break;
+    }
+
+    <div class="card-imageText" data-style="18">
+        <div class="card shadow-none">
+            <div class="card-box">
+                <div class="card-img original">
+                    <a class="@openClass" @target href="@clickEvent">
+                        <img src="@imgSrc" alt="">
+                        <div class="card-img-content flex" style="background-image:url('@imgSrc')"></div>
+                    </a>
+
+                    <div class="card-text">
+                        <div class="card-text-name">@item.Title</div>
+                        <div class="card-text-info">@Html.Raw(item.Description)</div>
+                    </div>
+
+                    @if (item.ClickType == 1)
+                    {
+                        List<ClickImgModel> imgs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClickImgModel>>(item.ClickEvent);
+
+                        foreach (var img in imgs)
+                        {
+                            if (imgs.IndexOf(img) != 0)
+                            {
+                                <a class="@openClass" href="@(pageCache.UploadVPath + img.Img)" title=""></a>
+                            }
+                        }
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,140 @@
+﻿@{
+    ViewBag.Title = "寄通知信";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID, menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId, formId = ViewBag.FormID };
+
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("SendMail", siteQuery))">
+    <div class="groove groove-1">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">您可以編輯以下信件內容，並進行發送：</div>
+        </div>
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">主旨<span class="required">*</span></div>
+                    <div class="input-field">
+                        <input type="text" id="MailSubject" name="MailSubject" value="[WebsiteName] – [FormName] 填表結果通知信" class="validate[required]" />
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">內文<span class="required">*</span></div>
+                    <div class="input-field">
+                        <textarea id="MailBody" name="MailBody">
+                            <p>您好：</p>
+                            <p style="padding-left:20px;">
+                                感謝您於<span style="color: #2196F3;">[RegTime]</span>填寫了<span>[FormName]</span>表格，聯繫資料如下：
+                            </p>
+                            <p style="padding-left:20px;">
+                                填表者姓名：[RegName][RegGender]<br />                                
+                                填表者手機：[RegPhone]<br />
+                                填表者信箱：[RegEmail]                                
+                            </p>
+                            <p style="padding-left:20px;">如果以上資料確認無誤，您的填表結果與說明，請參閱附件。</p>
+                            <p style="padding-left:20px; font-size: 13px; border:1px solid #ebccd1; background-color: #f2dede; color: #a94442;">如有任何問題，請洽詢客服專線：02-23456789#123</p><br />
+                            <p style="padding-left:20px; font-size: 13px; border:1px solid #ebccd1; background-color: #f2dede; color: #a94442;">
+                                ※ 為了避免重複收到通知信，如果您已確實收到本通知信，請協助點擊：<a href="[Receive]" target="_blank">「[Receive]」</a>，謝謝。
+                            </p><br />
+                            <p style="text-align:right;">
+                                [WebsiteName]<br />[SendDate]
+                            </p>
+                        </textarea>
+                    </div>
+                </div>
+            </li>
+            <li style="display:none;">
+                <div class="col-1">
+                    <div class="title inline">寄件人</div>
+                    <div class="input-field inline">
+                        <input id="Sender" name="Sender" type="text" />
+                    </div>
+                </div>
+            </li>
+            <li style="display:none;">
+                <div class="col-1">
+                    <div class="title inline">寄件人Email</div>
+                    <div class="input-field inline full">
+                        <input id="SenderEmail" name="SenderEmail" type="text" />
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">附件</div>
+                    <div class="input-field inline full multiple">
+                        <input type="file" id="fFile" name="fFile" data-field="FileList" />
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">代碼說明</div>
+                    <div class="input-field font-grey font-xs">
+                        <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱<br />
+                        <span class="font-grey font-darken-3">FormName：</span>表單名稱<br />
+                        <span class="font-grey font-darken-3">RegTime：</span>表單填寫時間<br />
+                        <span class="font-grey font-darken-3">RegName：</span>填寫人姓名<br />
+                        <span class="font-grey font-darken-3">RegGender：</span>填寫人性別<br />
+                        <span class="font-grey font-darken-3">RegPhone：</span>填表者手機<br />
+                        <span class="font-grey font-darken-3">RegTel：</span>填表者電話<br />                        
+                        <span class="font-grey font-darken-3">RegEmail：</span>填表者信箱<br />
+                        <span class="font-grey font-darken-3">Receive：</span>確認我已收到通知信的連結<br />
+                        <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-grey prev" href="javascript:Component.closeRight();"><i class="cc cc-arrow-left"></i>上一步，已選了<span id="spanCount"></span>筆</a>
+            <a class="btn-grey openEdit" href="@Url.Action("TestEmail")"><i class="cc cc-email"></i>測試發送</a>
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeRight();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:checkForm(false)"><i class="cc cc-check"></i>確認送出</a>
+        </div>
+    </div>
+    <input type="hidden" id="recipientIds" name="recipientIds" />
+    <input type="hidden" id="recipientEmails" name="recipientEmails" />
+</form>
+
+@section FArea {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()    
+    <script type="text/javascript">
+        function checkForm(isTest, recipientEmails) {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                $('#recipientEmails').val(recipientEmails);
+                form.triggerHandler('submit');
+                $('#MailBody').val(CKEDITOR.instances.MailBody.getData());
+
+                $.post(form.prop('action') + '&isTest=' + (isTest ? 'true' : 'false'), form.serialize(), function (rs) {
+                    if (isTest) {
+                        Component.alert('測試郵件已發送', function () {
+                            $.colorbox.close();
+                        });
+                    } else {
+                        Component.alert('通知信已送出', function () {
+                            parent.sendComplete();
+                            Component.closeRight();
+                        });
+                    }
+                });
+            }
+        }
+
+        (function () {
+            Component.editor('MailBody');            
+            Component.multiFileUpload('#fFile', '@(Href("~/"))', '@Html.Raw(Url.Action("FileUpload", "Common", new { siteId = siteId, menuId = menuId, sourceNo = ViewBag.FormID}))', '@uploadUrl', null, true, true);
+
+            var selectedIds = parent.getSelectIds();
+            $('#spanCount').html(selectedIds.length);
+            $('#recipientIds').val(selectedIds.join());
+        })();
+    </script>
+}

@@ -1,0 +1,97 @@
+﻿@using Newtonsoft.Json.Linq;
+@{
+    Layout = null;
+        
+    IEnumerable<MemberModels> infos = ViewData["Info"] as IEnumerable<MemberModels>;
+    
+    bool privacy = (bool)ViewData["Privacy"];    
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+    table {
+        width:95%;
+        margin:0px auto;
+        text-align:center;
+        border-style:solid;
+    }
+
+    table th {
+        border:1px black solid;
+        padding:3px;
+        font-size: 12pt;
+        text-align: center;
+    }
+
+    table td {
+        border:1px black solid;
+        padding:3px;
+        font-size: 11pt;
+        text-align: center;
+        mso-number-format:"\@@";
+    }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>帳號</th>
+                <th>姓名 / 名稱</th>
+                <th>Email</th>
+                <th>手機</th>
+                <th>電話</th>
+                <th>權限群組</th>
+                <th>狀態</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (MemberModels item in infos)
+            {
+                string privateMobile = "", privatePhone = "";
+                if (!string.IsNullOrEmpty(item.Mobile))
+                {
+                    if (item.Mobile.Length >= 9)
+                    {
+                        privateMobile = $"{item.Mobile.Substring(0, 5)}*****";
+                    }
+                }
+                if (!string.IsNullOrEmpty(item.Phone))
+                {
+                    if (item.Phone.Length >= 7)
+                    {
+                        privatePhone = $"{item.Phone.Substring(0, 4)}*********";
+                    }
+                }
+                if (privacy)
+                {
+                    <tr data-id="@item.Id">
+                        <td class="">@(item.LoginID?.Length > 5 ? item.LoginID.Substring(0, 5) : item.LoginID)*********</td>
+                        <td class="">*@(item.Name?.Length > 1 ? item.Name.Substring(1) : item.Name)</td>
+                        <td class="">@(item.Email?.Length > 1 ? $"*****@{ item.Email.Substring(item.Email.IndexOf('@') + 1) }" : item.Email)</td>
+                        <td>@privateMobile</td>
+                        <td>@privatePhone</td>
+                        <td class="">@item.GroupName</td>
+                        <td class="">@Html.Raw(((item.MStatus == 0) ? "正常" : "<span  class=\"font-red\">停權</span>"))</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr data-id="@item.Id">
+                        <td class="">@item.LoginID</td>
+                        <td class="">@item.Name</td>
+                        <td class="">@item.Email</td>
+                        <td>@item.Mobile</td>
+                        <td>@item.Phone</td>
+                        <td class="">@item.GroupName</td>
+                        <td class="">@Html.Raw(((item.MStatus == 0) ? "正常" : "<span  class=\"font-red\">停權</span>"))</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</body>
+</html>

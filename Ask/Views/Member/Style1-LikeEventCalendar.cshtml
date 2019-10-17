@@ -1,0 +1,419 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    long menuID = ViewBag.MenuID;
+    string pageSn = ViewBag.PageSN;
+    int sYear = DateTime.Now.AddYears(-3).Year;
+    int eYear = DateTime.Now.Year;
+
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<div class="card-member mainPage" data-style="1" id="divCollection">
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+
+    @*<div class="member_header">
+        <h2 class="title">
+            <a href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Desktop" })"><i class="cc cc-arrow-left"></i></a>你的報名紀錄
+            <span class="zh-name" style="display:none">@Model.Name</span>
+            <span class="en-name" style="display:none">(@Model.Account)</span>
+            <span class="meberinfo">
+                <a class="member-edit" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Desktop" })"><i class="cc cc-user-o"></i>會員主頁</a>
+                <a class="member-logout" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Login" })"><i class="cc cc-link"></i>登出</a>
+            </span>
+        </h2>
+
+        <div class="member-pic">
+            @RenderPage("~/Views/Member/Style1-MemberPhoto.cshtml")
+        </div>
+    </div>*@
+
+    <div class="calendar-title">
+        <span class="title">活動行事曆</span><span class="involved">已報名活動</span>@*<span class="counter">(@Model.OnlineEventList.Count())</span>*@
+    </div>
+    <div class="date_select">
+        <!--這裡要麻煩串一下-->
+        <div class="year select-horizon">
+            <select id="selCalendarYear">
+                @{
+                    for (int i = sYear; i <= eYear; i++)
+                    {
+                        <text>
+                            <option value="@i.ToString("0000")" @(i == eYear ? "selected" : "")>@i.ToString("0000")</option>
+                        </text>
+                    }
+                }
+            </select>
+        </div>
+        <div class="month">
+            <div class="swiper-container">
+                <div class="month-list swiper-wrapper">
+                    @{
+                        for (int i = 1; i <= 12; i++)
+                        {
+                            string className = "";
+                            if (i == DateTime.Now.Month)
+                            {
+                                className = "active";
+                                
+                            }
+                            <text>
+                                <div class="item" >
+                                    <a href="#">@i.ToString("00")</a>
+                                </div>
+                            </text>
+                        }
+                    }
+                    @*<li class="has">
+                        <a href="#">02</a>
+                    </li>
+                    <li>
+                        <a href="#">03</a>
+                    </li>
+                    <li>
+                        <a href="#">04</a>
+                    </li>
+                    <li class="has">
+                        <a href="#">05</a>
+                    </li>
+                    <li>
+                        <a href="#">06</a>
+                    </li>
+                    <li>
+                        <a href="#">07</a>
+                    </li>
+                    <li>
+                        <a href="#">08</a>
+                    </li>
+                    <li>
+                        <a href="#">09</a>
+                    </li>
+                    <li>
+                        <a href="#">10</a>
+                    </li>
+                    <li>
+                        <a href="#">11</a>
+                    </li>
+                    <li>
+                        <a href="#">12</a>
+                    </li>*@
+                </div>
+                <div class="swiper-prev"></div>
+                <div class="swiper-next"></div>
+            </div>
+        </div>
+    </div>
+    <div id="fullcalendar"></div>
+    <div class="status">
+        <div class="participated status-item">
+            <span></span>
+            已參與活動
+        </div>
+        <div class="registered status-item">
+            <span></span>
+            已報名活動
+        </div>
+        <div class="collected status-item">
+            <span></span>
+            已收藏活動
+        </div>
+    </div> 
+</div>
+
+@BundleConfig.Validate()
+@BundleConfig.Component()
+
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<link href="~/script/fullcalendar/fullcalendar.min.css" rel="stylesheet" />
+<link href="~/script/tooltipster/tooltipster.bundle.min.css" rel="stylesheet" />
+<link href="~/script/tooltipster/themes/tooltipster-sideTip-shadow.min.css" rel="stylesheet" />
+<script src="~/script/tooltipster/tooltipster.bundle.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script src="~/script/fullcalendar/fullcalendar.min.js"></script>
+<script src="~/script/fullcalendar/zh-tw.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>
+<script src="~/script/stickyKit/sticky-kit.js"></script>
+<script src="~/script/scrollspy/scrollspy.js"></script>
+<!--
+<link href="~/css/Cards/Member/style3.css" rel="stylesheet" />
+-->
+<script>
+    var selectYY = $("#selCalendarYear").val();
+    var selectMM = "@DateTime.Now.Month.ToString("00")";
+    var currentMM = @DateTime.Now.Month.ToString("00");
+    var currentYY = @DateTime.Now.Year.ToString("0000");
+    var eventList = null;
+    $(function () {
+        GetEvnets();
+       // setMonthEventSytle();
+
+        $("#selCalendarYear").bind("change", function(){
+
+            selectYY = $("#selCalendarYear").val();
+            setMonthEventSytle();
+
+            selectMM = "01";
+            //GetEvnets();
+            $('#fullcalendar').fullCalendar("gotoDate", selectYY+ "-"+selectMM + "-01");
+        });
+    });
+    function setMonthEventSytle()
+    {
+        selectYY = $("#selCalendarYear").val();
+        $(".month div div a").each(function () {
+            $(this).bind("click", function(){
+                selectYY = $("#selCalendarYear").val();
+                selectMM = $(this).html();
+                //GetEvnets(selectYY, selectMM);
+                $('#fullcalendar').fullCalendar("gotoDate", selectYY+ "-"+selectMM + "-01");
+            });
+
+            var aMonth = $(this);
+            var MM = $(aMonth).html();
+
+            var className = "item";
+            if (currentYY == selectYY && currentMM == MM)
+                className = "item active";
+            $(aMonth).parent().attr("class", className);
+            //console.log(eventList);
+            if(eventList != null)
+            {
+                var currentMonthEvents = eventList.filter(function (item) {
+                    return item.start.replace("-", "/").startsWith(selectYY+"/"+MM);
+                });
+                if(currentMonthEvents != null &&currentMonthEvents.length > 0)
+                {
+                    className += " has";
+                }
+                $(aMonth).parent().attr("class", className);
+            }
+            @*$.getJSON('@Html.Raw(Url.Action("MemberEvnets", "Member", new { menuId = menuID}))&YY=' + selectYY + '&MM=' + MM, function (data) {
+                var className = "item";
+                if (currentYY == selectYY && currentMM == MM)
+                    className = "item active";
+                if (data.length > 0) {
+                    className += " has";
+                }
+                $(aMonth).parent().attr("class", className);
+
+            });*@
+        });
+    }
+    function select_color(status) {
+        /*
+        通過：綠色
+        取消：灰色
+        不通過：紅色
+        待審核：藍色
+        */
+        /*
+         待審核,
+        正取,
+        備取,
+        保留,
+        不通過,
+        前台取消,
+        後台取消
+        */
+        var _status = status;
+        if (_status === '已參與活動') {
+            return 'participated'
+        } else if (_status === '已報名活動') {
+            return 'registered'
+        } else if (_status === '已收藏活動') {
+            return 'collected'
+        } else if (_status === '可報名活動') {
+            return 'canberegistered'
+        }
+    }
+    @*function GetEvnets(selectYY, selectMM)
+    {
+        $.getJSON('@Html.Raw(Url.Action("MemberEvnets", "Member", new { menuId = menuID}))&YY=' + selectYY + '&MM=' + selectMM, function (data) {
+
+            var d = new Date(selectYY, parseInt(selectMM) + 1, 0);
+
+            BindCalendar(selectYY, selectMM, data);
+        });
+    }*@
+    function GetEvnets()
+    {
+        $.getJSON('@Html.Raw(Url.Action("MemberEvnets", "Member", new { siteSn = siteSn, menuId = menuID}))', function (data) {
+            eventList = data;
+            console.log(data);
+            //var d = new Date(selectYY, parseInt(selectMM) + 1, 0);
+            BindCalendar(data);
+            //var applyedEvents = eventList.filter(function (item) {
+            //    return (item.status === "備取" ||
+            //        item.status === "報名成功" ||
+            //        item.status === "正取"||
+            //        item.status === "待審核" ||
+            //        item.status === "保留");
+            //});
+            //if(applyedEvents!= null && applyedEvents.length > 0)
+            //    $(".counter").html("("+applyedEvents.length+")");
+            //console.log(applyedEvents);
+            //if(data!= null && data.length > 0)
+            //    $(".counter").html("("+data.length+")");
+
+            setMonthEventSytle();
+        });
+    }
+    function CancelApplyed(formNo, token)
+    {
+        Component.confirm('確定取消報名嗎？', function (isOk) {
+            if (isOk) {
+                var id = formNo;
+                $.get('@Url.Action("SignCancel", "SignUp")/' + formNo + '?token=' + token, function () {
+                    setTimeout(function () {
+                        Component.alert('您的報名已取消', function () {
+                            GetEvnets();
+                        });
+                    }, 100);
+                });
+            }
+        });
+    }
+    function CancelApplication(jobApplicationId) {
+        Component.confirm('確定取消應徵？', function (isOk) {
+            if (isOk) {
+                var url = '@Url.Action("CancelSignUp","Recruit")';
+                $.post(url, { 'jobApplicationId': jobApplicationId}, function (e) {
+                    if (e.Success) {
+                        setTimeout(function () {
+                            Component.alert('已取消應徵!', function () {
+                                GetEvnets();
+                            });
+                        }, 100);
+                    }
+                });
+            }
+        });
+    }
+    function BindCalendar(events)
+    {
+        $('#fullcalendar').fullCalendar("destroy");
+        $('#fullcalendar').fullCalendar({
+            defaultView: switch_views(),
+            header: {
+                left: 'prev,next today',
+                center: '',
+                right: 'title'
+            },
+            editable: false,
+            year: selectYY,
+            month: selectMM,
+            eventClick: function (data, event, view) {
+                var tooltip = '<div class="content">';
+
+                if (data.title != '') {
+                    tooltip += '<div class="title">' + data.title + '</div>'
+                }
+                if (data.images != '') {
+                    tooltip += '<div class="images"><img src="' + data.images + '"></div>';
+                }
+
+                var eventTime = data.start.format('YYYY-MM-DD');
+                if (data.Type == 2) {
+                    eventTime = data.start.format('YYYY-MM-DD') + " ~ " + data.end.format('YYYY-MM-DD');
+                }
+                if (data.start != '') {
+                    tooltip += '<div class="times"><span class="title-s">活動期間:</span><span class="data_content">' + eventTime + '</span></div>';
+                }
+
+                if (data.location != '') {
+                    if (data.googlemap != '') {
+                        tooltip += '<div class="location"><span class="title-s">活動地點:</span><span class="data_content">' + data.location + '<a href="https://www.google.com.tw/maps/place/' + data.googlemap + '/" target="_blank">' + data.googlemap +
+                            '<i class="cc cc-map-marker"></i></a></span></div>';
+                    } else {
+                        tooltip += '<div class="location"><span class="title-s">活動地點:</span><span class="data_content">' + data.location + '</span></div>';
+                    }
+                }
+                if (data.organizer != '') {
+                    tooltip += '<div class="organizer"><span class="title-s">主辦單位:</span><span class="data_content">' + data.organizer + '</span></div>';
+                }
+                if (data.status != '') {
+                    tooltip += '<div class="status"><span class="title-s">報名狀態:</span><span class="data_content ' + select_color(data.status) + '">' + data.status + '</span></div>';
+                    if (data.status == '備取' || data.status == '待審核' || data.status == '已報名' || data.status == '正取' || data.status == '保留') {
+                        var googleUrl = '@Url.Action("MyCalendar", "Event", new { CalendarType = "Google" })' + '&EventID=' + data.No.toString();
+                        var iosUrl = '@Url.Action("MyCalendar", "Event", new { CalendarType="File"})' + '&EventID=' + data.No.toString();
+                        var outlookUrl = '@Url.Action("MyCalendar", "Event", new { CalendarType="File"})' + '&EventID=' + data.No.toString();
+
+                        if (data.Type == 1) {
+                            tooltip += '<div class="status"><span class="title-s">取消報名:</span><span class="data_content"><a class="delete" onclick="CancelApplyed(\'' + data.FormNo + '\', \'' + data.Token + '\')" target="_blank">取消<i class="cc cc-trash-o"></i></a></span></div>';
+                        } else if (data.Type == 2) {
+                            tooltip += '<div class="status"><span class="title-s">取消報名:</span><span class="data_content"><a class="delete" onclick="CancelApplication(' + data.cancellink+')" target="_blank">取消<i class="cc cc-trash-o"></i></a></span></div>';
+
+                            googleUrl = '@Url.Action("MyCalendar", "Recruit", new { CalendarType = "Google" })' + '&jobId=' + data.No.toString();
+                            iosUrl = '@Url.Action("MyCalendar", "Recruit", new { CalendarType="File"})' + '&jobId=' + data.No.toString();
+                            outlookUrl = '@Url.Action("MyCalendar", "Recruit", new { CalendarType="File"})' + '&jobId=' + data.No.toString();
+                        }
+
+                        //tooltip += '<div class="status"><span class="title-s">取消報名:</span><span class="data_content"><a class="delete" href="'+data.cancellink+'" target="_blank">取消<i class="cc cc-trash-o"></i></a></span></div>';
+                        tooltip += '<div class="status"><span class="title-s">加入提醒:</span><span class="data_content"><div class="card-calendar text-L border-T m-T-8 p-T-8">';
+                        tooltip += '<a class="text-deco-none" href="' + googleUrl+'" target="_blank">';
+                        tooltip += 'Google Calendar';
+                        tooltip += '<i class="cc cc-chevron-right float-R"></i>';
+                        tooltip += '</a>';
+                        tooltip += '<a class="text-deco-none" href="' + iosUrl+'" target="_blank">';
+                        tooltip += 'iCal ( iOS )';
+                        tooltip += '<i class="cc cc-chevron-right float-R"></i>';
+                        tooltip += '</a>';
+                        tooltip += '<a class="text-deco-none" href="' + outlookUrl+'" target="_blank">';
+                        tooltip += 'Outlook';
+                        tooltip += '<i class="cc cc-chevron-right float-R"></i>';
+                        tooltip += '</a>';
+                        tooltip += '</div></span></div>';
+                    }
+                }
+
+                tooltip += '<a class="close-tools-tip"></a></div>';
+
+                $(this).tooltipster({
+                    content: tooltip,
+                    contentAsHTML: true,
+                    contentCloning: true,
+                    theme: 'tooltipster-shadow',
+                    trigger: 'custom',
+                    maxWidth: 380,
+                    trackTooltip: true,
+                    triggerOpen: {
+                        click: true,
+                        tap: true
+                    },
+                    triggerClose: {
+                        click: false,
+                        tap: false,
+                        scroll: true
+                    },
+                    functionBefore: function (instance, helper) {
+                        $('.tooltipster-base').remove();
+                    },
+                    functionReady: function (instance, helper) {
+                        $('.close-tools-tip').click(function () {
+                            $('.tooltipster-base').remove();
+                        });
+                    }
+                }).tooltipster('open').tooltipster('reposition');
+
+            },
+            events: {
+                events
+                }
+        });
+        $('#fullcalendar').fullCalendar("gotoDate", selectYY+ "-"+selectMM + "-01");
+    }
+    /*Ben 1070323*/
+    function switch_views(){
+        var window_width=$(window).width();
+        if(window_width<768){
+            return 'listMonth'
+        }else{
+            return 'month'
+        }
+    }
+</script>

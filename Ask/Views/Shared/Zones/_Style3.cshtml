@@ -1,0 +1,68 @@
+﻿@model List<CardsModels>
+@{
+    CardsModels Card1 = new CardsModels();
+    CardsModels Card2 = new CardsModels();
+    CardsModels Card3 = new CardsModels();
+    if (Model != null)
+    {
+        int i = 0;
+        foreach (var item in Model)
+        {
+            if (i == 0)
+            {
+                Card1 = Model[i];
+            }
+            if (i == 1)
+            {
+                Card2 = Model[i];
+            }
+            if (i == 2)
+            {
+                Card3 = Model[i];
+            }
+
+            i++;
+        }
+
+    }
+}
+<div class="zone zone-base" zoneLayout="h-c3-s1" ZoneStyle="3" data-ZoneNo="@Html.Raw("Z" + ViewBag.ZoneNo)">
+    <div class="wrapper">
+        <div class="groove groove-3" mT="main" mR="sub" mB="main" mL="" data-CardType="@Card1.CardsType" data-CardNo="@Html.Raw("C" + Card1.No)">
+            @{
+                if (Card1.No != 0 && Card1.Status == 1)
+                {
+                    Html.RenderAction(!string.IsNullOrEmpty(Card1.ViewAction) ? Card1.ViewAction : "Index", Card1.CardsType, Card1);
+                }
+                else
+                {
+                    Html.RenderAction("EmptyGroove", "Home");
+                }
+            }
+        </div>
+        <div class="groove groove-3" mT="main" mR="sub" mB="main" mL="" data-CardType="@Card2.CardsType" data-CardNo="@Html.Raw("C" + Card2.No)">
+            @{
+                if (Card2.No != 0 && Card2.Status == 1)
+                {
+                    Html.RenderAction(!string.IsNullOrEmpty(Card2.ViewAction) ? Card2.ViewAction : "Index", Card2.CardsType, Card2);
+                }
+                else
+                {
+                    Html.RenderAction("EmptyGroove", "Home");
+                }
+            }
+        </div>
+        <div class="groove groove-3" mT="main" mR="" mB="main" mL="" data-CardType="@Card3.CardsType" data-CardNo="@Html.Raw("C" + Card3.No)">
+            @{
+                if (Card3.No != 0 && Card3.Status == 1)
+                {
+                    Html.RenderAction(!string.IsNullOrEmpty(Card3.ViewAction) ? Card3.ViewAction : "Index", Card3.CardsType, Card3);
+                }
+                else
+                {
+                    Html.RenderAction("EmptyGroove", "Home");
+                }
+            }
+    </div>
+</div>
+</div>

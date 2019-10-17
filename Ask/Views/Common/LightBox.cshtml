@@ -1,0 +1,83 @@
+﻿@model WorkV3.ViewModels.LightBoxViewModel
+    @{
+        Layout = "~/Views/Shared/_MasterLayout.cshtml";
+
+        string uploadUrl = ViewBag.UploadUrl;
+    }
+    <link href="~/css/card.css" rel="stylesheet" />
+    <link href="~/css/Cards/Article/page-style1.css" rel="stylesheet" />
+    <link href="~/css/vendor/flexslider/flexslider.css" rel="stylesheet" />
+    <div class="zone zone-base p-8">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <div class="card-common lightbox">
+                    <div class="article-main">
+                        <div class="article-center">
+                            <div class="article-main-content">
+                                <div class="article-title page">@Model.lightBox.Title</div>
+                                <!-- 圖片尺寸 與文同寬 -->
+                                <div class="card shadow-none imgWidth-middle">
+                                    <div class="card-box">
+                                        <div class="card-img">
+                                            <div class="flexslider">
+                                                @if(Model.Imgs != null && Model.Imgs.Count() > 0)
+                                                {
+                                                    <ul class="slides">
+                                                        @foreach(var item in Model.Imgs)
+                                                        {
+                                                            <li>
+                                                                <a class="openImg" data-href="@(uploadUrl + item.Img)">
+                                                                    <img src="@(uploadUrl + item.Img)" alt="">
+                                                                </a>
+                                                                @if (!string.IsNullOrWhiteSpace(item.SpecDetail))
+                                                                {
+                                                                    <div class="imgInfo">
+                                                                        <span class="imgIntro">@Html.Raw(item.SpecDetail)</span>
+                                                                        @if (!string.IsNullOrWhiteSpace(item.Link))
+                                                                        {
+                                                                            <a class="btn-black-o square transparent btn-mini imgLink" href="@item.Link" @(item.IsOpenNew == true ? "target=\"_blank\"" : string.Empty)><i class="cc cc-link-variant"></i></a>
+                                                                        }
+                                                                    </div>
+                                                                }
+                                                                
+                                                            </li>
+                                                        }
+                                                        
+                                                    </ul>
+                                                }                                                
+                                            </div>
+                                        </div>
+                                        <div class="card-text">
+                                            @if (!string.IsNullOrWhiteSpace(Model.lightBox.Spec)) {
+                                                <div class="card-text-info">@Html.Raw(Model.lightBox.Spec)</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/Script/flexslider/jquery.flexslider.js"></script>
+    <script>
+        $(function () {
+            setTimeout(function () {
+                $('.flexslider').flexslider({
+                    animation: "slide",
+                    smoothHeight: true,
+                    slideshow: true,
+                    controlNav: false,
+                    touch: $(this).children('ul.slides > li').length > 1, //只有一則行動裝置 停止輪播
+                    start: function () {
+                        var $winWidth = $(window).width(),
+                            $centerWidth = $('.article-center').width();
+
+                        $("ul.flex-direction-nav").css("width", $centerWidth);
+                    }
+                });
+            }, 100);
+        })
+    </script>

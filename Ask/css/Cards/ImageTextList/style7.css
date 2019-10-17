@@ -1,0 +1,20 @@
+.card-imageTextList[data-style="7"] {
+  text-align: center; }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="7"] {
+      overflow: hidden;
+      overflow-x: auto;
+      white-space: nowrap; } }
+  .card-imageTextList[data-style="7"] > div {
+    float: none;
+    width: calc((100% - (5% * 6)) / 6);
+    margin: auto 1.5%;
+    display: inline-block;
+    max-width: 100px; }
+    @media only screen and (max-width: 420px) {
+      .card-imageTextList[data-style="7"] > div {
+        width: 20%;
+        margin: 0 2%; } }
+    @media only screen and (max-width: 420px) {
+      .card-imageTextList[data-style="7"] > div .card-img > a {
+        width: 100%; } }

@@ -1,0 +1,639 @@
+﻿@model ReimbursesModel
+@{
+    ViewBag.Title = "報支單編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    string sessionKey = ViewBag.SessionKey;
+
+    IEnumerable<ProjectsModel> projectItems = ViewBag.Projects;
+    IEnumerable<ReimburseToItemsModel> reimburseItems = ViewBag.ReimburseItems; //報支表項目
+    IEnumerable<ProjectTypesModel> reimburseTypes = ViewBag.ReimburseTypes; //報支表的類別
+    IEnumerable<EstimatesModel> projectEstimates = ViewBag.ProjectEstimates; //專案的預支表(尚未加入判斷是否已通過)
+    IEnumerable<EstimatesToReimburseModel> estimatesToReimburse = ViewBag.EstimatesToReimburse; //報支單的核銷預支表
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("Edit", new { siteId = siteId}))">
+    <div class="groove groove-1">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">報支單編輯
+                <div class="float-R">申請日期：
+                    <div class="input-field inline middle">
+                        <input type="text" class="datepicker" id="ApplyDate" name="ApplyDate" value="@Model.ApplyDate.ToString("yyyy.MM.dd")">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul class="forms" id="ulforms">
+            <li>
+                <div class="col-2">
+                    <div class="title inline">對應專案</div>
+                    @if (Model.ID != 0)
+                    {
+                        <!-- 編輯報支單 直接帶入專案名稱 -->
+                        <div class="d-inline-block font-base">@Model.ProjectNumber - @Model.ProjectTitle</div>
+                    }
+                    else
+                    {
+                        <!-- 新報支單 選擇專案-->
+                        <div class="input-field inline full">
+                            <select name="ProjectID" id="ProjectID">
+                                <option value="">請選擇</option>
+                                @foreach (var item in projectItems)
+                                {
+                                    <option value="@item.ID" @(item.ID == Model.ProjectID ? "selected" : "")>@item.ProjectNumber - @item.Title</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                    <input type="hidden" id="inpProjectID" value="@Model.ProjectID" />
+                </div>
+                <div class="col-2">
+                    <div class="title inline">申請月份</div>
+                    <div class="input-field inline middle">
+                        <input type="text" class="datepickerM" id="ApplyMonth" name="ApplyMonth" value="@Model.ApplyMonth.ToString("yyyy.MM")">
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title inline">申請人</div>
+                    <div class="input-field inline full">
+                        <input type="text" id="ApplyName" name="ApplyName" value="@Model.ApplyName">
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="title inline">建檔人</div>
+                    <div class="input-field inline full">
+                        <input type="text" id="CreatorName" name="CreatorName" value="@Model.CreatorName">
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title inline">銀行帳戶</div>
+                    <div class="input-field inline full">
+                        <input type="text" id="BankAccountName" name="BankAccountName" value="@Model.BankAccountName">
+                    </div>
+                </div>
+                <div class="col-2 multiple">
+                    <div class="float-R">
+                        <a class="btn-grey-darken-4-o btn-mini m-L-3 openEdit-m" href="<%= SysHelp.GetURL() %>Views/Cards/Project/BackEnd/CustomerInforMode.aspx">自動帶入</a>
+                    </div>
+                    <span>
+                        <div class="title inline">撥款方式</div>
+                        <div class="input-field inline longer">
+                            <select name="Transfer" id="Transfer">
+                                <option value="1" @(Model.Transfer == 1 ? "selected" : "")>轉帳</option>
+                                <option value="2" @(Model.Transfer == 2 ? "selected" : "")>現金</option>
+                                <option value="3" @(Model.Transfer == 3 ? "selected" : "")>匯款</option>
+                                <option value="4" @(Model.Transfer == 4 ? "selected" : "")>支票</option>
+                            </select>
+                        </div>
+                    </span>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title inline">銀行帳號</div>
+                    <div class="input-field inline full">
+                        <input type="text" id="BankAccount" name="BankAccount" value="@Model.BankAccount">
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="title inline">銀行/分行代碼</div>
+                    <div class="input-field inline full">
+                        <input type="text" id="BankID" name="BankID" value="@Model.BankID">
+                    </div>
+                </div>
+            </li>
+            <li id="prevParagraph">
+                <div class="col-3">
+                    <div class="title inline">聯絡人</div>
+                    <div class="input-field inline longer">
+                        <input type="text" id="ContactName" name="ContactName" value="@Model.ContactName">
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="title inline">連絡電話</div>
+                    <div class="input-field inline longer">
+                        <input type="text" id="ContactPhone" name="ContactPhone" value="@Model.ContactPhone">
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="title inline">連絡信箱</div>
+                    <div class="input-field inline longer">
+                        <input type="text" id="ContactEmail" name="ContactEmail" value="@Model.ContactEmail">
+                    </div>
+                </div>
+            </li>
+            @if(reimburseItems != null && reimburseItems.Count() > 0)
+            {
+                foreach(var item in reimburseItems)
+                {
+                    <li class="paragraph bg-border">
+                        <div class="item-box">
+                            <div class="float-R m-L-5">
+                                <a class="btn-grey-o square transparent tooltip" href="javascript:" title="編輯" onclick="paragraphOpen(this)"><i class="cc cc-edit"></i></a>
+                                <a class="btn-grey-o square transparent tooltip" data-sort="up" href="javascript:" title="向上"><i class="cc cc-arrow-up"></i></a>
+                                <a class="btn-grey-o square transparent tooltip" data-sort="down" href="javascript:" title="向下"><i class="cc cc-arrow-down"></i></a>
+                                <a class="btn-del square transparent paragraph-del tooltip delParagraph" href="javascript:" title="刪除段落"><i class="cc cc-trash-o"></i></a>
+                            </div>
+                            <div class="item-listBox">
+                                <input type="hidden" data-field="ID" value="@item.ID" />
+                                @*<div class="d-inline-block">1-1</div>*@
+                                <div class="d-inline-block">
+                                    <div class="item-title font-color paragraphTypeID" data-color="@item.TypeColor">@item.TypeName</div>
+                                </div>
+                                <div class="d-inline-block paragraphDescription">
+                                    @if (!string.IsNullOrWhiteSpace(item.Description))
+                                    {
+                                        @Html.Raw(item.Description)
+                                    }
+                                </div>
+                                <div class="item-allPrice float-R">$ <span class="font-hg paragraphTaxIncluded">@item.TaxIncluded.ToString("N0")</span></div>
+                            </div>  
+                            <div class="item-infoBox">
+                                <div class="col-1 inline-box-solve m-B-5">
+                                    <div class="title inline">類別</div>
+                                    <div class="input-field inline full">
+                                        <select data-field="TypeID" >
+                                            <option value="">請選擇</option>
+                                            @{ string Description = "";}
+                                            @if(reimburseTypes != null && reimburseTypes.Count() > 0)
+                                            {
+                                                foreach(var type in reimburseTypes)
+                                                {
+                                                    string isSelect = "";
+                                                    if(type.ID == item.TypeID)
+                                                    {
+                                                        isSelect = "selected";
+                                                        Description = type.Description;
+                                                    }
+                                                    <option value="@type.ID" @(isSelect)>@type.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div class="paragraphTypeDesc">
+                                            @Description
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-1 inline-box-solve m-B-5">
+                                    <div class="title inline">對應預支表</div>
+                                    <div class="input-field inline full">
+                                        <select data-field="EstimateID" >
+                                            <option value="">請選擇</option>
+                                            @if(projectEstimates != null && projectEstimates.Count() > 0)
+                                            {
+                                                foreach(var estimates in projectEstimates)
+                                                {
+                                                    string isSelect = "";
+                                                    if(estimates.ID == item.EstimateID)
+                                                    {
+                                                        isSelect = "selected";
+                                                    }
+                                                    <option value="@estimates.ID" @(isSelect)>@estimates.ApplyMonth.ToString("yyyy.MM") $@estimates.Total.ToString("N0")</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-1 inline-box-solve m-B-5">
+                                    <div class="title inline">項目說明</div>
+                                    <div class="input-field inline full">
+                                        <textarea contenteditable="true" data-field="Description">@item.Description</textarea>
+                                    </div>
+                                </div>
+                                <div class="col-1 inline-box-solve m-B-5">
+                                    <div class="title inline">備註(支付說明)</div>
+                                    <div class="input-field inline full">
+                                        <textarea contenteditable="true" data-field="Note">@item.Note</textarea>
+                                    </div>
+                                </div>
+                                <div class="col-1 text-R">
+                                    <div class="row-ms inline-box-solve">
+                                        <div class="col-ms-2">
+                                            <span>銷售額 $</span>
+                                            <div class="input-field inline middle">
+                                                <input type="text" data-field="TaxExcluded" value="@item.TaxExcluded">
+                                            </div>
+                                        </div>
+                                        <div class="col-ms-4">
+                                            <span>稅金 $</span>
+                                            <div class="input-field inline middle">
+                                                <div class="d-inline-block font-hg paragraphTax">@item.Tax.ToString("N0")</div>
+                                                <input type="hidden" data-field="Tax" value="@item.Tax" class="paragraphTax">
+                                            </div>
+                                        </div>
+                                        <div class="col-ms-4">
+                                            <span>含稅總計 $</span>
+                                            <div class="d-inline-block font-hg paragraphTaxIncluded">@item.TaxIncluded.ToString("N0")</div>
+                                            <input type="hidden" data-field="TaxIncluded" value="@item.TaxIncluded" class="paragraphTaxIncluded">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-1 text-R">
+                                    <div class="row-ms inline-box-solve">
+                                        <div class="col-ms-2">
+                                            <span>單據類型 $</span>
+                                            <div class="input-field inline short">
+                                                <select name="" id="">
+                                                    <option value="">發票</option>
+                                                    <option value="">option2</option>
+                                                    <option value="">option3</option>
+                                                    <option value="">option4</option>
+                                                </select>
+                                            </div>
+                                            <div class="input-field inline middle">
+                                                <input type="text" data-field="DocumentNumber" value="@item.DocumentNumber">
+                                            </div>
+                                        </div>
+                                        <div class="col-ms-4">
+                                            <span>現金支付 $</span>
+                                            <div class="input-field inline middle">
+                                                <input type="text" data-field="CashPay" value="@item.CashPay">
+                                            </div>
+                                        </div>
+                                        <div class="col-ms-4">
+                                            <span>公司支付 $</span>
+                                            <div class="input-field inline middle">
+                                                <input type="text" data-field="CompanyPay" value="@item.CompanyPay">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                }
+            }
+            <li>
+                <a class="btn-grey-darken-4-o" onclick="addItem()"><i class="cc cc-plus"></i> 新增項目</a>
+                <a class="btn-grey-darken-4-o m-L-8 openEdit-c" href="@Url.Action("ShowTerm", "Project", new { siteId = siteId, type = (int)ProjectTermType.Report})"><i class="cc cc-attention"></i> 注意事項</a>
+                <div class="float-R" id="divItemCnt"></div>
+            </li>
+            <li>
+                <table class="fixTable font-base">
+                    <caption class="p-none">
+                        對應預支表核銷
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>申請月份</th>
+                            <th>申請日期</th>
+                            <th>申請人</th>
+                            <th>原始預支金額</th>
+                            <th>本單已申請金額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableEstimates">
+                        @if(estimatesToReimburse != null && estimatesToReimburse.Count() > 0)
+                        {
+                            int idx = 1;
+                            foreach(var item in estimatesToReimburse)
+                            {
+                                <tr>
+                                    <td>@idx</td>
+                                    <td>@item.ApplyMonth.ToString("yyyy.MM")</td>
+                                    <td>@item.ApplyDate.ToString("yyyy.MM.dd")</td>
+                                    <td>@item.ApplyName</td>
+                                    <td>@item.Total.ToString("N0")</td>
+                                    <td>@item.ReimburseTotal.ToString("N0")</td>
+                                </tr>
+                                idx++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </li>
+            <li>
+                @*<a class="btn-grey-darken-4-o openEdit-m" href="<%= SysHelp.GetURL() %>Views/Cards/Project/BackEnd/CashAdvanceMode.aspx"><i class="cc cc-plus"></i> 新增項目</a>*@
+                <div class="float-R" id="divEstimatesCnt">共 @(estimatesToReimburse != null ? estimatesToReimburse.Count() : 0) 筆</div>
+            </li>
+            <li class="totalAmount border-T p-T-8">
+                <div class="inline-box-solve row-ms text-R">
+                    <div class="col-ms-2 align-v-top">
+                        原始預支總計 $
+                        <div class="input-field inline middle">
+                            <input type="text" id="EstimateTotal" name="EstimateTotal" value="@Model.EstimateTotal">
+                        </div>
+                    </div>
+                    <div class="col-ms-4">
+                        <div>
+                            現金支付總額 $<span class="font-lg" id="spanCashPayTotal">@Model.CashPayTotal.ToString("N0")</span>
+                            <input type="hidden" id="CashPayTotal" name="CashPayTotal" value="@Model.CashPayTotal" />
+                        </div>
+                        <div>
+                            公司支付總額 $<span class="font-lg" id="spanCompanyPayTotal">@Model.CompanyPayTotal.ToString("N0")</span>
+                            <input type="hidden" id="CompanyPayTotal" name="CompanyPayTotal" value="@Model.CompanyPayTotal" />
+                        </div>
+                    </div>
+                    <div class="col-ms-4 font-red">
+                        應繳(請)款金額 $<span class="font-lg" id="spanAccountsPayable">@Model.AccountsPayable.ToString("N0")</span>
+                        <input type="hidden" id="AccountsPayable" name="AccountsPayable" value="@Model.AccountsPayable" />
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="radio-box inline">
+                    @foreach (ReimburseStatus status in Enum.GetValues(typeof(ReimburseStatus)))
+                    {
+                        <div>
+                            <input type="radio" class="with-gap" id="@status" name="Status" value="@((int)status)" @(Model.Status == (int)status ? "checked=\"checked\"" : "") />
+                            <label for="@status">@WorkV3.Common.EnumExt.Description(status)</label>
+                        </div>
+                    }
+                </div>
+                
+            </div>
+            @if (Model.ModifyTime != null)
+            {
+                <span class="font-sm">上次修改記錄 @Model.ModifyTime.ToString("yyyy/MM/dd HH:mm")  @Model.ModifierName</span>
+            }
+            <a class="btn-cancel" href="javascript:" onclick="window.parent.closeCenterEdit()"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            <input type="hidden" id="SessionKey" name="SessionKey" value="@sessionKey" />
+        </div>
+    </div>
+</form>
+
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    @BundleConfig.Colorbox()
+    <script src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var getTypeUrl = '@Url.Action("GetProjectTypeData", "Project")';
+
+            $("#ulforms").on("change", ".paragraphInp", function (e) {
+                var field = $(this).data("field");
+                var parentElm = $(this).parents('.paragraph');
+                var fieldVal = $(this).val();
+
+                if (e.target.nodeName == "SELECT") {
+                    fieldVal = $(this).find(":selected").text();
+                    var typeId = $(this).find(":selected").val();
+                    $.getJSON(getTypeUrl, { Id: typeId }, function (data) {
+                        parentElm.find(".paragraphTypeDesc").html(data.Description);
+                        parentElm.find(".paragraphTypeID").attr("data-color", data.Color);
+                    });
+                }
+
+                var targetField = parentElm.find(".paragraph" + field);
+                targetField.html(fieldVal);
+
+                cntItemTotal(parentElm);
+            });
+
+            $("#ProjectID").change(function () {
+                $("#inpProjectID").val($(this).val());
+            });
+        })
+
+        function addItem() {
+            var projectId = $("#inpProjectID").val();
+            if (!projectId || projectId == 0) {
+                Component.alert("請選擇對應專案。");
+                return;
+            }
+
+            var editUrl = "@Url.Action("ReimburseItemEdit", new { siteId = siteId })" + "&projectId=" + projectId;
+            var outerElm = $("#ulforms").children(".paragraph");
+
+            $.get(editUrl, function (html) {
+                var pElm = $(html);
+                if (outerElm.length == 0)
+                    $("#prevParagraph").after(pElm);
+                else
+                    outerElm.last().after(pElm);
+                initItemParagraph();
+            });
+        }
+
+        function initItemParagraph() {
+            var outerElm = $("#ulforms");
+
+            assignIds();
+            destoryEditor();
+            createEditor();
+
+            outerElm.find('a[data-sort]').click(function () {
+                var liElm = $(this).closest('li');
+                var dir = $(this).attr('data-sort');
+                if (dir == 'up') {
+                    var prevLi = liElm.prev();
+                    if (prevLi.length) {
+                        liElm.fadeOut(function () {
+                            destoryEditor();
+                            prevLi.before(liElm);
+                            liElm.fadeIn();
+                            assignIds();
+                            createEditor();
+                        });
+                    }
+                } else {
+                    var nextLi = liElm.next();
+                    if (nextLi.length) {
+                        liElm.fadeOut(function () {
+                            destoryEditor();
+                            nextLi.after(liElm);
+                            liElm.fadeIn();
+                            assignIds();
+                            createEditor();
+                        });
+                    }
+                }
+            });
+
+            outerElm.find('a.delParagraph').click(function () {
+                var liElm = $(this).closest('li');
+                Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                    if (isConfirm) {
+                        liElm.fadeOut(function () {
+                            liElm.remove();
+                            assignIds();
+                            cntTotal();
+                        });
+                    }
+                }, 'warning');
+            });
+
+            outerElm.find('[data-field="TypeID"]').each(function () {
+                $(this).material_select();
+            });
+
+            outerElm.find('[data-field="EstimateID"]').each(function () {
+                $(this).material_select();
+            });
+
+            function assignIds() {
+                var itemCnt = 0;
+                outerElm.children(".paragraph").each(function (n) {
+                    itemCnt += 1;
+
+                    $(this).find('[data-field]').each(function () {
+                        var field = $(this).attr('data-field');
+                        this.name = this.id = "reimburseItems" + "[" + n + "]." + field;
+                        $(this).addClass("paragraphInp");
+                    });
+                });
+
+                $("#divItemCnt").html("共 " + itemCnt + " 筆");
+            }
+
+            function createEditor() {
+                outerElm.find('textarea[data-field="Note"]').each(function () {
+                    Component.editor(this.id);
+                });
+
+                outerElm.find('textarea[data-field="Description"]').each(function () {
+                    Component.editor(this.id);
+                });
+            }
+
+            function destoryEditor() {
+                outerElm.find('textarea[data-field="Note"]').each(function () {
+                    var editor = CKEDITOR.instances[this.id];
+                    if (editor) {
+                        editor.updateElement();
+                        editor.destroy(true);
+                    }
+                });
+
+                outerElm.find('textarea[data-field="Description"]').each(function () {
+                    var editor = CKEDITOR.instances[this.id];
+                    if (editor) {
+                        editor.updateElement();
+                        editor.destroy(true);
+                    }
+                });
+            }
+        }
+
+        function cntItemTotal(parent) { //報支項目計算(單筆)
+            var taxExcluded = parseInt(parent.find('[data-field="TaxExcluded"]').val()); //銷售額
+            var tax = Math.round(taxExcluded * (5 / 100)); //稅金
+            var taxIncluded = taxExcluded + tax; //含稅總計
+
+            parent.find(".paragraphTax").html(tax);
+            parent.find(".paragraphTax").val(tax);
+            parent.find(".paragraphTaxIncluded").html(taxIncluded);
+            parent.find(".paragraphTaxIncluded").val(taxIncluded);
+        }
+
+        function paragraphOpen(obj) {
+            var thisObj = $(obj);
+            thisObj.parents('.paragraph').toggleClass('open');
+
+            var thisObjI = thisObj.find('i');
+            if (thisObjI.hasClass("cc-edit")) {
+                console.log("save");
+                var parentElm = thisObj.parents('.paragraph');
+                //var descriptionElmID = parentElm.find('[data-field="Description"]').attr("id");
+                //var noteElmID = parentElm.find('[data-field="Note"]').attr("id");
+
+                var formData = new FormData();
+                formData.append("ID", parentElm.find('[data-field="ID"]').val());
+                formData.append("TypeID", parentElm.find('[data-field="TypeID"]').find(":selected").val());
+                formData.append("EstimateID", parentElm.find('[data-field="EstimateID"]').find(":selected").val());
+                //formData.append("Description", CKEDITOR.instances[descriptionElmID].getData());
+                //formData.append("Note", CKEDITOR.instances[noteElmID].getData());
+                formData.append("TaxExcluded", parentElm.find('[data-field="TaxExcluded"]').val());
+                formData.append("Tax", parentElm.find('[data-field="Tax"]').val());
+                formData.append("TaxIncluded", parentElm.find('[data-field="TaxIncluded"]').val());
+                formData.append("DocumentNumber", parentElm.find('[data-field="DocumentNumber"]').val());
+                //formData.append("Receipt", ShowStatus);
+                formData.append("CashPay", parentElm.find('[data-field="CashPay"]').val());
+                formData.append("CompanyPay", parentElm.find('[data-field="CompanyPay"]').val());
+                formData.append("SessionKey", '@sessionKey');
+
+                $.ajax({
+                    url: "@Url.Action("SaveItemToSession")",
+                    data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        console.log(data);
+                        var EstimatesToReimburse = data.ShowEstimatesToReimburse;//對應預支表核銷
+                        var Reimburse = data.Reimburse; //報支單
+
+                        //原始預支總計
+                        $("#EstimateTotal").val(Reimburse.EstimateTotal);
+
+                        //現金支付總額
+                        $("#CashPayTotal").val(Reimburse.CashPayTotal);
+                        $("#spanCashPayTotal").html(Reimburse.CashPayTotal);
+
+                        //公司支付總額
+                        $("#CompanyPayTotal").val(Reimburse.CompanyPayTotal);
+                        $("#spanCompanyPayTotal").html(Reimburse.CompanyPayTotal);
+
+                        //應繳(請)款金額
+                        $("#AccountsPayable").val(Reimburse.AccountsPayable);
+                        $("#spanAccountsPayable").html(Reimburse.AccountsPayable);
+
+                        var tableEstimatesHtml = "";
+                        $("#tableEstimates").empty();
+                        for (var i = 0; i < EstimatesToReimburse.length; i++) {
+                            var item = EstimatesToReimburse[i];
+                            tableEstimatesHtml = "<tr>" +
+                                "<td>" + (i+1) + "</td>" +
+                                "<td>" + item.ApplyMonth + "</td>" +
+                                "<td>" + item.ApplyDate + "</td>" +
+                                "<td>" + item.ApplyName + "</td>" +
+                                "<td>" + item.Total + "</td>" +
+                                "<td>" + item.ReimburseTotal + "</td>" +
+                                "</tr>";
+
+                            $("#tableEstimates").append(tableEstimatesHtml);
+                        }
+                        $("#divEstimatesCnt").html("共 " + EstimatesToReimburse.length + " 筆");
+
+                    },
+                    fail: function () {
+                        console.log("refresh fail ");
+                    }
+                });
+            }
+            thisObjI.toggleClass('cc-edit cc-download cc-rotate-180');
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            initItemParagraph();
+
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    form.submit();
+                }
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                Component.alert('已儲存', function () {
+                    if (parent.refreshList)
+                        parent.refreshList();
+
+                    window.parent.closeCenterEdit();
+                    parent.$.colorbox.close();
+                });
+                
+                </text>
+            }
+        })
+    </script>
+}

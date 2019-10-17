@@ -1,0 +1,391 @@
+﻿@model RewardSettingAndPlaceModel
+@using Newtonsoft.Json.Linq;
+
+@{
+    ViewBag.Title = "集點參數設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    int SN = 1;
+    int SN2 = 1;
+    SearchModel search = ViewBag.Search;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, CardNo = ViewBag.CardNo };
+
+    string selectIndex = "1";
+    if (!string.IsNullOrEmpty(Request.QueryString["s"]))
+    {
+        selectIndex = Request.QueryString["s"];
+    }
+    if (TempData["s"] != null)//wei 20180821 編輯地方導入第二頁
+    {
+        selectIndex = TempData["s"].ToString();
+    }
+    string baseUrl = Url.Action("Index", "RewardSetting", new { SiteID = ViewBag.SiteID });
+    string listPageUrl1 = baseUrl + "&s=1";
+    string listPageUrl2 = baseUrl + "&s=2";
+    string listPageUrl3 = baseUrl + "&s=3";
+    string listPageUrl4 = baseUrl + "&s=4";
+}
+@section Script {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        var selectIndex = @selectIndex;
+        var listPageUrl1 = '@Html.Raw(listPageUrl1)';
+        var listPageUrl2 = '@Html.Raw(listPageUrl2)';
+        var listPageUrl3 = '@Html.Raw(listPageUrl3)';
+        var listPageUrl4 = '@Html.Raw(listPageUrl4)';
+
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+        var tmp = location.href.toString();//wei 20180822 改成tmp 為了地方排序轉2
+        if (tmp.indexOf("&s=2"))
+            tmp = tmp.substr(0, tmp.length - 4);
+        var listObj = Component.dataList('listTable');
+        listObj.sorted = function (sortItems) {
+            $.post("@Url.Action("Sort", "RewardSetting")", { "SiteID": "@ViewBag.SiteID", "items": sortItems }, function () {//wei 20180822 修排序
+                location.replace(tmp);//wei 20180822 改成tmp 為了地方排序轉2
+            });
+        }
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (check) {
+                if (check) {
+                    $.post("@Url.Action("Delete", "RewardSetting")", { 'ids': delIds }, function () {
+                        location.replace(listPageUrl1);
+                    });
+                }
+            });
+        }
+        listObj.statusChange = function (id) {
+             $.get(`@Html.Raw(Url.Action("ToggleIssue", "RewardSetting"))/${id}`);
+            //$.get("ToggleIssue/" + id);
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(tmp);//wei 20180822 改成tmp 為了地方排序轉2
+            }
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+
+        var listObj2 = Component.dataList('listTable2');
+        listObj2.sorted = function (sortItems) {
+            $.post("@Url.Action("SortPlace", "RewardSetting")", { "SiteID": "@ViewBag.SiteID", "items": sortItems }, function () {//wei 20180822 修排序
+                location.replace(tmp+"&s=2");//wei 20180822 改成tmp 為了地方排序轉2
+            });
+        }
+        listObj2.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (check) {
+                if (check) {
+                    $.post("@Url.Action("DeletePlace")", { 'ids': delIds }, function () {
+                        location.replace(listPageUrl2);
+                    });
+                }
+            });
+        }
+        listObj2.statusChange = function (id) {
+            $.get(`@Html.Raw(Url.Action("ToggleIssuePlace", "RewardSetting"))/${id}`);
+        }
+        listObj2.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj2.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(listPageUrl2);
+            }
+        }
+
+        $('#listTable2').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+    </script>
+}
+<body class="body-admin-main">
+
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide @(selectIndex == "1"?"selected":"")""><i class="cc cc-tag cc-rotate-270"></i>類別</div>
+                <div class="swiper-slide @(selectIndex == "2"?"selected":"")""><i class="cc cc-map-o"></i>集點場地</div>
+                <div class="swiper-slide @(selectIndex == "3"?"selected":"")""><i class="cc cc-tutorial-o"></i>預設條款</div>
+                <div class="swiper-slide @(selectIndex == "4"?"selected":"")""><i class="cc cc-map-location"></i>集點中預設文案</div>
+                <div class="swiper-slide @(selectIndex == "5"?"selected":"")""><i class="cc cc-flag"></i>集點後預設文案</div>
+
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide p-T-10">
+                    <table id="listTable" class="fixTable">
+                        <caption>
+                            類別
+                            <span class="info"></span>
+                            <div class="float-R">
+                                <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                                <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" href="@Url.Action("Edit", "RewardSetting", new { SiteID = ViewBag.SiteID })" title="新增"><i class="cc cc-plus"></i></a>
+                                <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                                @*<a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>*@@*wei20180806備註*@
+                                <span data-for="sort" style="display:none;">
+                                    <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                    <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                </span>
+                                <span data-for="del" style="display:none;">
+                                    <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                    <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                </span>
+                            </div>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th>序</th>
+                                <th>名稱</th>
+                                <th>色調</th>
+                                <th>刊登</th>
+                                <th>編輯</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RewardSettingModel)
+                            {
+                                <tr data-id="@item.ID">
+                                    <td class="sort">@(SN++)</td>
+                                    <td class="">@item.Title</td>
+                                    <td class=""><i class="btn-default btn-tiny circle" data-color="@item.Color"></i></td>
+                                    <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                                    <td class="icon edit">
+                                        <a class="btn-grey-darken-4-o transparent square openEdit-m" href="@Url.Action("Edit", "RewardSetting", new { SiteID = ViewBag.SiteID, ID = item.ID })">
+                                            <i class="cc cc-edit-o"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                }
+                                    
+                            @*<tr>
+                                <td class="sort">8</td>
+                                <td class="text-L"></td>
+                                <td class=""><i class="btn-default btn-tiny circle" data-color="deep-purple"></i></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="<%= SysHelp.GetURL() %>Views/Cards/Reward/BackEnd/paraEdit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>*@
+                        </tbody>
+                    </table>
+                </div>
+                <div class="swiper-slide p-T-10">
+                    <table id="listTable2" class="fixTable">
+                        <caption>
+                            集點場地
+                            <span class="info"></span>
+                            <div class="float-R">
+                                <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                                <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" href="@Url.Action("EditPlace", "RewardSetting", new { SiteID = ViewBag.SiteID })" title="新增"><i class="cc cc-plus"></i></a>
+                                <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                                @*<a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>*@@*wei20180806備註*@
+                                <span data-for="sort" style="display:none;">
+                                    <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                    <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                </span>
+                                <span data-for="del" style="display:none;">
+                                    <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                    <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                </span>
+                            </div>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th>序</th>
+                                <th>場地照片</th>
+                                <th>場地名稱</th>
+                                @*<th>地址</th>*@@*wei 20180723 客戶說拿掉*@
+                                <th>緯度, 經度</th>
+                                <th>刊登</th>
+                                <th>編輯</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.RewardPlaceModel)
+                            {
+                                JObject imgs = JObject.Parse(string.IsNullOrEmpty(item.Img) ? "{\"Img\":\"\"}" : item.Img);
+                            <tr data-id="@item.ID">
+                                <td class="sort">@(SN2++)</td>
+
+                                <td class=""><img src="@(ViewBag.UploadUrl+"/RewardPlace/" + Server.UrlPathEncode(imgs["Img"].ToString()))" /></td>
+                                <td class="">@item.Name</td>
+                                @*<td class="">@item.Address</td>*@@*wei 20180723 客戶說拿掉*@
+                                <td class="">@item.Lat @item.Lng</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                                <td class="icon edit">
+                                    <a class="btn-grey-darken-4-o transparent square openEdit-m" href="@Url.Action("EditPlace", "RewardSetting", new { SiteID = ViewBag.SiteID, ID = item.ID })">
+                                        <i class="cc cc-edit-o"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            }
+                            @*<tr>
+                                <td class="sort">1</td>
+                                <td class=""><img src="<%= SysHelp.GetURL() %>images/temp/theater.jpg" alt=""></td>
+                                <td class="text-L">烏梅劇院</td>
+                                <td class="">台北市南京東路一段1號</td>
+                                <td>25.033493, 121.564101</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="<%= SysHelp.GetURL() %>Views/Cards/Reward/BackEnd/paraEdit-venue.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>*@
+                                    
+                        </tbody>
+                    </table>
+                </div>
+                <div class="swiper-slide p-T-10">
+                    <ul class="forms">
+                        <!-- 拿掉li上面多餘的class cc 20180907 -->
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    @{
+                                        var st = "請輸入預設條款";
+                                    }
+                                    <textarea contenteditable="true" id="DefaultTerms" name="DefaultTerms">@(string.IsNullOrWhiteSpace(ViewBag.DefaultTerms) ? @st : ViewBag.DefaultTerms)</textarea>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="swiper-slide p-T-10">
+                    <ul class="forms">
+                        <!-- 拿掉li上面多餘的class cc 20180907 -->
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    @{
+                                        var st2 = "<p>您已蒐集了<span style=\"color: #2196F3; font-size: 30px;\"> [GetNum] </span>個場地！</p>" +
+                                                    "<p><span style=\"font-size: 12px; color: #999;\">[GetPlace]</span></p>" +
+                                                    "<hr style=\"color: black\">" +
+                                                    "<p>尚有<span style=\"color: red; font-size: 20px;\"> [WaitNum] </span>個場地等待著您前往蒐集：</p>" +
+                                                    "<p><span style=\"padding-bottom: 20px;\">[WaitPlace]</span></p>" +
+                                                    "<p>只要您集滿 <span style=\"color: black; font-size: 16px;\"> [GetGoal] </span>，便有機會獲得精美好禮唷！ </p>";
+                                    }
+                                    <textarea contenteditable="true" id="RewardingText" name="RewardingText">@(string.IsNullOrWhiteSpace(ViewBag.RewardingText) ? @st2 : ViewBag.RewardingText)</textarea>
+                                    @*<textarea class="ckeditor editor-txt" contenteditable="true" id="" name="">@ViewBag.DefaultTerms</textarea>*@
+                                        @*<p>您已蒐集了<span style="color: #2196F3; font-size: 30px;"> [GetNum] </span>個場地！</p>
+                                        <p><span style="font-size: 12px; color: #999;">[GetPlace]</span></p>
+                                        <hr style="color: black">
+                                        <p>尚有<span style="color: red; font-size: 20px;"> [WaitNum] </span>個場地等待著您前往蒐集：</p>
+                                        <p><span style="padding-bottom: 20px;">[WaitPlace]</span></p>
+                                        <p>只要您集滿 <span style="color: black; font-size: 16px;"> [GetGoal] </span>，便有機會獲得精美好禮唷！ </p>*@
+                                            
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="m-T-4">@*wei 20180723 補充參數說明*@
+                                <span class="alert inline transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>參數如下：[GetGoal] 代表集滿條件數，[GetNum] 代表目前已蒐集的場地數，[GetPlace] 代表已蒐集的場地，[WaitNum] 代表尚未蒐集的場地數，[WaitPlace] 代表尚未蒐集的場地。</div>
+                                </span>
+                            </div>
+                </div>
+                <div class="swiper-slide p-T-10">
+                    <ul class="forms">
+                        <!-- 拿掉li上面多餘的class cc 20180907 -->
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    @{
+                                        var st3 = "<p><span style=\"font-size: 24px \">恭喜，集滿囉！</span></p>" +
+                                                "<p>您已蒐集了<span style=\"color: #2196F3; font-size: 30px;\"> [GetNum] </span>個場地！</p>" +
+                                                "<p>感謝參與，您將有機會獲得精美好禮，以下為您集得的場地：</p>" +
+                                                "<p><span style=\"font-size: 12px; color: #999;\">[GetPlace]</span></p>" +
+                                                "<p>並請填寫您的基本資料，方便在得獎時，進行禮物寄送。</p>";
+                                    }
+                                    <textarea contenteditable="true" id="RewardedText" name="RewardedText">@(string.IsNullOrWhiteSpace(ViewBag.RewardedText) ? @st3 : ViewBag.RewardedText)</textarea>
+                                    @*<textarea class="ckeditor editor-txt" contenteditable="true" id="" name="">
+                                        <p><span style="font-size: 24px ">恭喜，集滿囉！</span></p>
+                                        <p>您已蒐集了<span style="color: #2196F3; font-size: 30px;"> [GetNum] </span>個場地！</p>
+                                        <p>感謝參與，您將有機會獲得精美好禮，以下為您集得的場地：</p>
+                                        <p><span style="font-size: 12px; color: #999;">[GetPlace]</span></p>
+                                        <p>並請填寫您的基本資料，方便在得獎時，進行禮物寄送。</p>
+                                    </textarea>*@
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="m-T-4">@*wei 20180723 補充參數說明*@
+                                <span class="alert inline transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>參數如下：[GetGoal] 代表集滿條件數，[GetNum] 代表目前已蒐集的場地數，[GetPlace] 代表已蒐集的場地，[WaitNum] 代表尚未蒐集的場地數，[WaitPlace] 代表尚未蒐集的場地。</div>
+                                </span>
+                            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function(e){
+                e.stopPropagation();
+            });
+            var editor = Component.editor('DefaultTerms');
+            editor.on('change', function (event) {
+                $.post('@Html.Raw(Url.Action("TextEdit", new { ID = "DefaultTerms",SiteID= ViewBag.SiteID }))', { Text: this.getData() });
+            });
+            var editor2 = Component.editor('RewardingText');
+            editor2.on('change', function (event) {
+                $.post('@Html.Raw(Url.Action("TextEdit", new { ID = "RewardingText", SiteID = ViewBag.SiteID }))', { Text: this.getData() });
+            });
+            var editor3 = Component.editor('RewardedText');
+            editor3.on('change', function (event) {
+                $.post('@Html.Raw(Url.Action("TextEdit", new { ID = "RewardedText", SiteID = ViewBag.SiteID }))', { Text: this.getData() });
+            });
+
+            if(selectIndex == 3)
+            {
+                $(".swiper-tab-bar").children("div").children(".swiper-slide").eq(2).trigger("click");
+            }
+            if(selectIndex == 2)
+            {
+                $(".swiper-tab-bar").children("div").children(".swiper-slide").eq(1).trigger("click");
+            }
+        });
+
+        top["settingrefresh"] = function refreshList() {
+            parent.$.colorbox.close();
+            location.replace(tmp);//wei 20180822 改成tmp 為了地方排序轉2
+        }
+       
+    </script>
+
+</body>
+
+
+

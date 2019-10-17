@@ -1,0 +1,283 @@
+﻿@{
+    ViewBag.Title = "搭配圖片";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo };
+}
+
+<form id="imgEditForm" method="post" action="@Html.Raw(Url.Action("ImgEdit", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo }))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div id="btnMainArea" class="swiper-slide selected">上傳圖片</div>
+                <div class="swiper-slide">多圖設定</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div id="divImgUpload" class="input-field">
+                                    <input type="file" id="imgUpload" name="imgUpload" data-field="imgs" />
+                                </div>
+                                <div class="input-field">
+                                    <div class="title inline">圖片尺寸</div>
+                                    <div class="pips inline">
+                                        <div id="imgWidthSet" class="flat-slider"></div>
+                                        <div class="pips-input">
+                                            <span id="pips-val">與文同寬</span>
+                                            <div><span id="widthPixel">650</span><span>px</span></div>
+                                        </div>
+                                        <a id="btnPipsDefault" class="btn-del circle transparent pips-reset-button tooltip" title="還原預設" href="javascript:"><i class="cc cc-close"></i></a>
+                                        <input type="hidden" id="SizeType" name="SizeType" value="@ViewBag.SizeType" />
+                                        <div class="radio-box inline">
+                                            <div>
+                                                <input type="checkbox" id="IsOriginalSize" name="IsOriginalSize" value="1" @(ViewBag.IsOriginalSize ? "checked='checked'" : string.Empty) />
+                                                <label for="IsOriginalSize">保持圖片原尺寸</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="radio-box inline full" data-radioGroup="MultiImgStyle">
+                                    <div>
+                                        <input type="radio" class="with-item" value="輪播" />
+                                        <i class="cc cc-file-o cc-rotate-270"></i>
+                                        <label>輪播</label>
+                                    </div>
+                                    @*<div>
+                                        <input type="radio" class="with-item" value="陳列" />
+                                        <i class="cc cc-file-o cc-rotate-270"></i>
+                                        <label>陳列</label>
+                                    </div>*@
+                                    <div>
+                                        <input type="radio" class="with-item" value="齊頂" />
+                                        <i class="cc cc-file-o cc-rotate-270"></i>
+                                        <label>齊頂</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-item" value="齊底" />
+                                        <i class="cc cc-file-o cc-rotate-270"></i>
+                                        <label>齊底</label>
+                                    </div>
+                                    <input type="hidden" id="multiImgStyle" name="multiImgStyle" value="@ViewBag.MultiImgStyle" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar flex">            
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+@section FArea {
+    @BundleConfig.SlidePips()    
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        function initSliderPip() {
+            var imgWidth = ["小於文寬", "與文同寬", "超過文寬"];
+            var valShowElm = $('#pips-val');
+            var valElm = $('#SizeType');
+
+            function slideShow(val) {
+                var data = imgWidth[val];
+                valShowElm.text(data);
+                valElm.val(val);
+
+                var widthPixel = 650;
+                if (val == 0)
+                    widthPixel = 390;
+                else if (val == 2)
+                    widthPixel = 980;
+                $('#widthPixel').html(widthPixel);
+            }
+
+            $("#imgWidthSet").slider({
+                min: 0,
+                max: imgWidth.length - 1,
+                range: 'min',
+                value: 1
+            }).slider("pips", {
+                rest: false,
+                first: false,
+                last: false,
+                labels: imgWidth
+            }).on("slide", function (e, ui) {
+                slideShow(ui.value);
+            });
+
+            $('#btnPipsDefault').click(function () {
+                $("#imgWidthSet").slider('value', 1);
+                slideShow(1);
+            });
+
+            var val = valElm.val();
+            if (val) {
+                val -= 0;
+                $("#imgWidthSet").slider('value', val);
+                slideShow(val);
+            }
+        }
+
+        (function () {
+            initSliderPip();
+            Component.multiImageUpload('#imgUpload', '@(Href("~/"))', '@Html.Raw(Url.Action("FileUpload", siteQuery))', '@ViewBag.UploadUrl', @Html.Raw(@ViewBag.Imgs), '@ViewBag.SiteID', '@ViewBag.MenuID');
+
+            if (parent.getPosConfig() == '文繞圖') {
+                var multiImgStyleOuter = $('div[data-radioGroup="MultiImgStyle"]');
+                multiImgStyleOuter.find(':radio[value!="輪播"]').parent().remove();
+            }
+
+            Component.radioList('[data-radioGroup]');
+
+            $('#IsOriginalSize').click(function () {
+                var slideElms = $(this).closest('div.radio-box').prevAll();
+                if (this.checked) {
+                    slideElms.fadeOut();
+                } else {
+                    slideElms.fadeIn();
+                }
+            }).triggerHandler('click');
+
+            $('#btnSave').click(function () {
+                if (Component.multiImageUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    $('#btnMainArea').click();
+                    var form = $('#imgEditForm');
+                    if (form.validationEngine('validate')) {
+                        form.submit();
+                    }
+                }
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                if (parent.refreshResourceImageSetting)
+                    parent.refreshResourceImageSetting($("#SizeType").val(), $("#IsOriginalSize").prop("checked"));
+                if (parent.refreshResourceItems)
+                    parent.refreshResourceItems();
+                Component.closeLeft();
+                parent.$.colorbox.close();
+                </text>
+            }
+
+
+            var mainWin = window;
+            if (mainWin.parent != null)
+            {
+                while (mainWin.parent != mainWin)
+                    mainWin = mainWin.parent;
+            }
+            mainWin.refreshWindows = function(){
+                var d = new Date();
+                var t = d.getTime();
+                //location = $("#imgEditForm").attr("action")+"&a="+t;
+                //Component.multiImageUpload('#imgUpload', '@(Href("~/"))', '@Html.Raw(Url.Action("FileUpload", siteQuery))', '@ViewBag.UploadUrl', @Html.Raw(@ViewBag.Imgs), '@ViewBag.SiteID', '@ViewBag.MenuID');
+                //$(".fileuploader-item-image").each(function(){
+                //    var img =$(this).find("img");
+                //    $(img).attr("src", $(img).attr("src")+"&r="+t);
+                //    $(this).children("img").attr("src",$(this).find("img").attr("src")+"&r="+t);
+
+                //});
+                $("#imgEditForm").submit();
+            };
+        })();
+        function initNewItem(item) {
+            var valElm = item.html.find('input:hidden');
+
+            item.html.find('.openLeftEdit').on('click', function (e) {
+                e.preventDefault();
+                var mainWin = Component.toggleLeft(this.href);
+                mainWin.getImageItem = function () {
+                    return $.parseJSON(valElm.val());
+                };
+
+                mainWin.setImageItem = function (imgItem) {
+                    valElm.val(JSON.stringify(imgItem));
+                };
+            });
+
+            item.html.find('.openLeftEdit-lg').on('click', function (e) {
+                var posElm='#centerEditBox-middle';
+                var url = $(this).prop("href");
+                e.preventDefault();
+                var mainWin = window;
+                if (mainWin.parent != null)
+                {
+                    while (mainWin.parent != mainWin)
+                        mainWin = mainWin.parent;
+                }
+                var formBox = mainWin.$(posElm);
+                if (formBox.is(':visible'))
+                    formBox.hide();
+                var iframe = formBox.find('.iframe');
+                iframe.prop('src', url);
+                iframe.on('load', function () {
+                    formBox.fadeIn(300).addClass('active');
+                    formBox.css("z-index","1050");
+                });
+
+                mainWin.closeWindow = function(){
+                    Component.closeCenter();
+                    mainWin.$(posElm).css("z-index","");
+                };
+                mainWin.getImageItemList = function () {
+                    var images = $("input[name=MutiPicInfo]");
+                    var objList = [];
+                    for(var k=0;k<images.length;k++)
+                    {
+                        objList.push($.parseJSON($(images[k]).val()));
+                    }
+                    return objList;
+                };
+                mainWin.getImageItem = function () {
+                    return $.parseJSON(valElm.val());
+                };
+                mainWin.getUploadUrl = function(){
+                    return uploadUrl;
+                };
+                mainWin.getBrowserUrl= function(){
+                    return browserUrl;
+                };
+            });
+
+            item.html.find('.showStatus').click(function () {
+                var iconElm = $(this).find('i');
+                var isShow = true;
+                if (iconElm.hasClass('cc-eye')) {
+                    iconElm.removeClass('cc-eye').addClass('cc-eye-off');
+                    isShow = false;
+                } else {
+                    iconElm.removeClass('cc-eye-off').addClass('cc-eye');
+                }
+
+                var imgItem = $.parseJSON(valElm.val());
+                imgItem.IsShow = isShow;
+                valElm.val(JSON.stringify(imgItem));
+            });
+
+            item.html.find('div.progress-holder').html('');
+            item.html.disableSelection();
+        }
+    </script>
+}

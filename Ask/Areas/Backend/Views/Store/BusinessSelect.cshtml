@@ -1,0 +1,73 @@
+﻿@model IEnumerable<WorkV3.Areas.Backend.Models.MemberModels>
+@{
+    ViewBag.Title = "選擇管理員";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="title">選擇管理員<span class="required">*</span></div>
+            <div class="input-field">
+                <input id="txtKey" type="text" placeholder="關鍵字搜尋" />
+            </div>
+        </li>
+        <li>
+            <div class="radio-box" id="divList">
+                @foreach (var item in Model)
+                {
+                    <div data-item="@Newtonsoft.Json.JsonConvert.SerializeObject(item)">
+                        <input class="with-gap" type="checkbox" id="@item.Id" />
+                        <label for="@item.Id">
+                            @item.Name <span class="font-grey">@item.Email</span>
+                        </label>
+                    </div>
+                }
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar">
+        <div style="display: none;">
+            <div id="addTag" class="float-box">
+                <div class="title">直接輸入Email</div>
+                <input id="" type="text" placeholder="輸入完畢請按下Enter" value="">
+            </div>
+        </div>
+        <a class="btn-grey-o set-left openInlineEdit" href="#addTag" style="display: none;">
+            <i class="cc cc-plus"></i>快速新增
+        </a>
+        <a class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSelect" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>選入</a>
+    </div>
+</div>
+@section FArea {
+    <script type="text/javascript">
+        var listOuterElm = $('#divList');
+
+        $('#txtKey').change(function () {
+            var val = $.trim(this.value);
+            listOuterElm.children().each(function () {
+                if (!$(this).find('input').prop('checked')) {
+                    var business = $.parseJSON($(this).attr('data-item'));
+                    if (business.Name.indexOf(val) == -1 && business.LoginID.indexOf(val) == -1 &&　business.Email.indexOf(val) == -1)
+                        $(this).fadeOut();
+                    else
+                        $(this).fadeIn();
+                }
+            });
+        });
+
+        $('#btnSelect').click(function () {
+            var selectedBusiness = [];
+            listOuterElm.children().each(function () {
+                if ($(this).find('input').prop('checked')) {
+                    var business = $.parseJSON($(this).attr('data-item'));
+                    selectedBusiness.push(business);
+                }
+            });
+
+            parent.setBusiness(selectedBusiness);
+            setTimeout(function () { parent.document.body.click(); }, 100);
+        });
+    </script>
+}

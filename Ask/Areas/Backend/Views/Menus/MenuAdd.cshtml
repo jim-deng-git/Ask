@@ -1,0 +1,187 @@
+﻿
+@model MenusModels
+@{
+    ViewBag.Title = "MenuAdd";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    List<CardsTypeModels> CardsTypeList = ViewBag.CardsTypeList;
+    List<CardsTypeModels> CardsTypeListD1 = ViewBag.CardsTypeListD1;
+    List<CardsTypeModels> CardsTypeListD2 = ViewBag.CardsTypeListD2;
+
+}
+@section HArea{
+@BundleConfig.Component()
+    @*@Styles.Render("~/Css/validate")*@
+    @Scripts.Render("~/JS/validate")
+
+    @if (TempData["refreshData"] != null)
+    {
+        <script type="text/javascript">
+
+            CloseBox(); 
+        </script>
+    }
+    <script type="text/javascript">
+
+        $(function () {
+
+            function checkForm() {
+                var form = $('#SendForm');
+                if (form.validationEngine('validate')) {
+                    var Code = $("#DataType").val();
+                    if (Code == "")
+                    {
+                        Component.showElementError('#errorDataType', '* 必選欄位');
+                        return;
+                    }
+                    if ($("#ckCode").val() == 'OK' || $("#ckCode").val() == '1' || $("#isNeedSN").val() == 'False') {
+                        if ($('#SN').val() != "") {
+                            $.get('@Url.Action("CheckMenuSNisExist", "Menus",new {SiteID=ViewBag.SiteID})&VSN=' + $('#SN').val(), function (result) {
+                                if (result == "NO") {
+                                    $('#SN').validationEngine('showPrompt', '* 此代碼已使用', 'error', null, true);
+                                }
+                                else {
+                                    form.submit();
+                                }
+                            });
+                        }
+                        else {
+                            form.submit();
+                        }
+                    }
+                }
+            }
+
+            $('#btnSave').click(function () {
+                checkForm();
+            });
+
+            $(".rbtnCardCode").click(function () {
+                var Code = $(this).data("code");
+                var isNeedSN=  $(this).data("isneedsn");            
+                $("#DataType").val(Code);
+                $("#isNeedSN").val(isNeedSN);
+                if (isNeedSN == 'False') {
+                    $(".liSN").css('display', 'none');
+                } else {
+                    $(".liSN").css('display', 'block');
+                }
+
+            });
+
+
+
+        });
+
+
+        function CheckCode(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                //if (!v)
+                //    return '* 必填';
+
+                if (!/^[-_a-zA-Z\d]{2,}$/.test(v))
+                    return "* 文字需符合3位以上英數";
+
+                if (/^(admin$|system$|manage$|module$|image$|style$|script$|bin$|app_code$|app_webreferences$|app_globalresources$|control$|font$)/i.test(v))
+                    return "* 此文字不開放使用";
+
+                //確認代碼
+                $.get('@Url.Action("CheckMenuSNisExist", "Menus",new {SiteID=ViewBag.SiteID})&VSN=' + v, function (result) {
+                    $("#ckCode").val(result);
+                    if (result == "NO") {
+                        $('#SN').validationEngine('showPrompt', '* 此代碼已使用', 'error', null, true);
+                        return "* 此代碼已使用";
+                    }
+                });
+            }
+            
+
+        }
+
+    </script>
+}
+
+<div class="groove groove-1">
+    <form id="SendForm" action="@Request.RawUrl" method="post" enctype="multipart/form-data">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">選擇模組<span class="required" id="errorDataType">*</span></div>
+                        <div class="radio-box inline module">
+                            @if (CardsTypeListD1.Count > 0)
+                            {
+                                for (int i = 0; i < CardsTypeListD1.Count(); i++)
+                                {
+                                    CardsTypeModels CardsT = CardsTypeListD1[i];
+                                    //客製 YuMing 20190722 隱藏 客製化主題、問卷調查、徵才、活動
+                                    if (CardsT.Code == "CustomTheme" || CardsT.Code == "Event" || CardsT.Code == "Recruits" || CardsT.Code == "Questionnaire")
+                                    {
+                                        continue;
+                                    }
+                                    <div>
+                                        <input class="with-item rbtnCardCode" name="group1" type="radio" data-Code="@CardsT.Code" id="module_@CardsT.Code" data-isNeedSN="@CardsT.isNeedSN"/>
+                                        <i class="@CardsT.Icon"></i>
+                                        <label for="module_@CardsT.Code">@CardsT.Title</label>
+                                    </div>
+                                }
+                        
+                            }
+                            @if (CardsTypeListD2.Count > 0)
+                            {
+                                for (int i = 0; i < CardsTypeListD2.Count(); i++)
+                                {
+                                    CardsTypeModels CardsT = CardsTypeListD2[i];
+                                    <div>
+                                        <input class="with-item rbtnCardCode" name="group1" type="radio" data-Code="@CardsT.Code" id="module_@CardsT.Code" data-isNeedSN="@CardsT.isNeedSN" />
+                                        <i class="@CardsT.Icon"></i>
+                                        <label for="module_@CardsT.Code">@CardsT.Title</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    @Html.Hidden("AreaID", (object)ViewBag.AreaID)
+                    @Html.HiddenFor(m => m.DataType)
+                    @Html.Hidden("isNeedSN", "True")
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">選單名稱<span class="required">*</span></div>
+                            <div class="input-field inline">
+                                @Html.TextBoxFor(m => m.Title, new { @class = "validate[required]" })
+                            </div>
+                        </div>
+                    </li>
+                    <li class="liSN">
+                        <div class="col-1">
+                            <div class="title inline">網址代碼<span class="required">*</span></div>
+                            <div class="input-field inline">
+                                @Html.TextBoxFor(m => m.SN, new
+                           {
+                               @class = "validate[required,funcCall[CheckCode]]" ,@maxlength ="20"
+                           })
+
+                            </div>
+                            <a class="tooltip" title="網址代碼.....http://cc-work.com/kidtech/XXXXX，限填英文與數字"><i class="cc cc-attention"></i></a>
+                            @Html.Hidden("ckCode", 1)
+
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <a class="btn btn-cancel" href="javascript:void(0);" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn btn-bulid" href="javascript:void(0);" id="btnSave"><i class="cc cc-check"></i>建立</a>
+
+            @Html.Hidden("SiteID", (object)ViewBag.SiteID)
+            @Html.Hidden("ShowStatus", 1)
+   
+        </div>
+    </form>
+</div>

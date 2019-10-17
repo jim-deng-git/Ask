@@ -1,0 +1,72 @@
+﻿@model FieldModel
+
+@{
+    var ans = ViewBag.Answer == null ? null : (FieldAnswerModel)ViewBag.Answer;
+
+    var divClass = "";
+
+    switch (Model.Width)
+    {
+        case 1:
+            divClass = "col-4";
+            break;
+        case 2:
+            divClass = "col-2";
+            break;
+        case 3:
+            divClass = "col-1";
+            break;
+    }
+}
+
+<div class="@divClass">
+
+    @if (!string.IsNullOrWhiteSpace(Model.Title))
+    {
+        <div class="title inline m-R-8">
+            @Model.Title
+        </div>
+    }
+
+    @{
+        var answer = "";
+        switch (Model.TypeID)
+        {
+            case "radio":
+                var options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<FieldsOptionModel>>(Model.Options);
+                var option = options.Where(x => x.ID.ToString() == ans.Answer).FirstOrDefault();
+                if (option != null)
+                {
+                    answer = option.Label;
+                }
+                break;
+            case "checkbox":
+                options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<FieldsOptionModel>>(Model.Options);
+                if (ans.Answer != null)
+                {
+                    var ansCheckbox = ans.Answer.Split(',');
+                    options = options.Where(x => ansCheckbox.Contains(x.ID.ToString())).ToList();
+                    if (options.Count > 0)
+                    {
+                        answer = string.Join("、", options.Select(x => x.Label));
+                    }
+                }
+
+                break;
+            case "address":
+                if (ans.Answer != null)
+                {
+                    var addressAns = Newtonsoft.Json.JsonConvert.DeserializeObject<AddressAnswerModel>(ans.Answer);
+                    answer = addressAns.ToAddressString();
+                }
+                break;
+            default:
+                answer = ans == null ? "" : ans.Answer == null ? "" : ans.Answer;
+                break;
+        }
+    }
+
+    <div class="text-value">
+        @answer
+    </div>
+</div>

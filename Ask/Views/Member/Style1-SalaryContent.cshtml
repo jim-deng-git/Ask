@@ -1,0 +1,204 @@
+﻿@using WorkV3.Models.Repository
+@using WorkV3.Areas.Backend.Models
+@model MemberShipModels
+@{
+    MemberShipRepository memberRepo = new MemberShipRepository();
+    RecruitJobWorksModel Job = Model.SalaryContent;
+
+    IEnumerable<WorkV3.Areas.Backend.Models.RecruitJobApplicationToCheckInModel> CheckIn = ViewBag.CheckInItem;
+    IEnumerable<WorkV3.Areas.Backend.Models.RecruitJobApplicationToMoneyModel> Money = ViewBag.Money;
+}
+
+<div class="mainPage card-member receipt" data-style="1">
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+    <div class="article-wrap">
+        <!-- 勞務報酬收據 -->
+        <div id="list-item-salary" class="article-list">
+            <div class="article-title">
+                <a class="goBack" href="javascript:" onclick="history.go(-1); return false;"><i class="cc cc-arrow-left cc-lg p-R-5"></i></a>勞務報酬收據
+            </div>
+        </div>
+        <ul class="forms">
+            <li>
+                <div class="title inline font-grey">職缺名稱</div>
+                <div class="d-inline-block font-base">@Job.RecruitTitle</div>
+            </li>
+            <li>
+                <div class="title inline font-grey">工作類型</div>
+                <div class="d-inline-block font-base">@Job.JobName</div>
+            </li>
+            <li>
+                <div class="multiple">
+                    <div class="title inline font-grey">薪資/工期</div>
+                    @foreach (var item in CheckIn)
+                    {
+                        <div class="input-field inline full font-base">
+                            @Job.CheckDate.ToString("yyyy.MM.dd") @item.CheckTimeStart~@item.CheckTimeEnd 時薪 NT$ @item.HourSalary
+                        </div>
+                    }
+                    <div class="input-field inline full">
+                        <div class="d-inline-block p-R-5 font-base">工作時數<span class="font-ms font-grey"> @Job.Hours </span>小時</div>
+                    </div>
+                </div>
+
+            </li>
+            <li>
+                <div class="title inline font-grey">所得金額</div>
+                <div class="input-field inline middle">
+                    NT$<span class="font-ms font-grey"> @(Job.Salary)</span>
+                </div>
+            </li>
+            <li>
+                <div class="title inline font-grey">扣繳稅率</div>
+                <div class="input-field inline mini">
+                    <span class="font-ms font-grey">@(Job.TaxRate ?? 0)</span>%
+                </div>
+            </li>
+            <li>
+                <div class="title inline font-grey">估算薪資</div>
+                <div class="d-inline-block font-base">NT$<span class="font-ms font-grey"> @Job.EstimateSalary.ToString("N0") </span></div>
+            </li>
+            <li>
+                <div class="title inline font-grey">增減金額</div>
+                <div class="d-inline-block font-base align-v-top">
+                    <div class="border-B p-B-5">
+                        @foreach (var item in Money)
+                        {
+                            <div>
+                                <div class="font-hg font-grey d-inline-block text-C" style="width:30px">@(item.Type == (int)MoneyType.Plus ? "＋" : "–")</div>
+                                <span>NT$</span>
+                                <span class="font-lg font-grey">@item.Money</span>
+                                <span>@item.Reason</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="title inline font-gold">領款人</div>
+                <div class="d-inline-block font-base font-gold">NT$<span class="font-ms"> @Job.FinalSalary.ToString("N0") </span></div>
+            </li>
+            <li class="border-T p-T-8">
+                <div class="title inline font-grey">領款人</div>
+                <div class="d-inline-block font-base">@Job.MemberName</div>
+            </li>
+            <li>
+                <div class="title inline font-grey">身分證字號</div>
+                <div class="d-inline-block font-base">@Job.MemberIDCard</div>
+            </li>
+            <li>
+                <div class="title inline font-grey">戶籍地址</div>
+                @{
+                    string memberAddress = memberRepo.GetFullAddress(Job.MemberRegions, Job.MemberAddress);
+                }
+                <div class="d-inline-block font-base">@memberAddress</div>
+            </li>
+            @*<li class="border-T p-T-8">
+                <div class="title inline font-grey">注意事項</div>
+                <div class="input-field img-text-height m-T-3">
+                    @Html.Raw(Job.Note)
+                </div>
+            </li>*@
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item float-L ">
+                <div class="radio-box inline">
+                    <div>
+                        <input type="checkbox" id="IsPayeeCheck" name="IsPayeeCheck" value="True" @(Model.SalaryContent.IsPayeeCheck ? "checked" : "") />
+                        <label for="IsPayeeCheck">領款人已確認</label>
+                    </div>
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="history.go(-1); return false;"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>確認</a>
+            <a id="CheckPassWord" class="openGuest btn-grey-darken-4-o" href="@Url.Action("CheckPassWord", new { siteSN = ViewBag.SiteSN, workId = Model.SalaryContent.ID})"></a>
+        </div>
+    </div>
+
+</div>
+
+<link href="~/css/vendor/tooltipster/tooltipster.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<script src="~/Script/tooltipster/tooltipster.bundle.js"></script>
+<script src="~/Script/stickyKit/sticky-kit.js"></script>
+<script src="~/Script/forms/forms.js"></script>
+<script src="~/Script/forms/dropdown.js"></script>
+<script src="~/Script/colorbox/jquery.colorbox.js"></script>
+
+<script>
+    $(function () {
+        $("#btnSave").click(function () {
+            if ($("#IsPayeeCheck").prop("checked")) {
+                Component.confirm("領款人請再輸入一次密碼，以確認是本人進行領款確認作業。", function (isOk) {
+                    if (isOk) {
+                        $("#CheckPassWord").click();
+                    }
+                });
+            } else {
+                Component.alert("領款人必須實際確認本頁薪資資料，並勾選「領款人已確認」，才能進行儲存。");
+            }
+        });
+
+        $('.openGuest').colorbox({
+            width: "300",
+            height: "200",
+            maxWidth: "95%",
+            maxHeight: "95%",
+            iframe: true,
+        });
+    });
+
+    $('.dropdown-button').dropdown({
+        constrainWidth: false,
+        stopPropagation: true
+    });
+    $('.dropdown-content.closeOnClick').on('click', function(e) {
+        e.stopPropagation();
+    });
+    $('.tooltip-info').tooltipster({
+        maxWidth: 250,
+    });
+    $('.filter-activity a').click(function(){
+        // alert($(this).data('target'));
+        var _filter_target=$(this).data('target');
+        $(this).addClass('active').siblings().removeClass('active');
+
+        var _content=$(this).parents('.filter-activity').siblings('.activity-content');
+
+        _content.find('li').stop().hide(100).addClass('hide_this');
+        _content.find('.'+_filter_target).stop().show().removeClass('hide_this');
+    });
+    $(".openEdit-m").on('click', function (e) {
+        e.preventDefault();
+        window.parent.$.colorbox({
+            href: $(this).attr('href'),
+            maxWidth: function() {
+                var NW = "600";
+                if ($.isNumeric($(this).data("width"))) {
+                    NW = $(this).data("width");
+                }
+                //console.log("NW:" + NW);
+                return NW;
+            },
+            width: "100%",
+            height: "95%",
+            right: "20",
+            iframe: true,
+            transition: false,
+            speed: 0,
+            fadeOut: 100,
+            onClosed: function() {
+              var formBox = window.parent.$("#leftEditBox");
+
+              if (formBox.length) {
+                if (formBox.hasClass('active')) {
+                  formBox.fadeOut(300).removeClass('active');
+                }
+              }
+            }
+        });
+    });
+</script>

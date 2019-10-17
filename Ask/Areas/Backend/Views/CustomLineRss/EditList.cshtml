@@ -1,0 +1,152 @@
+﻿@model IEnumerable<CustomLineNewsDataModels>
+@{
+    ViewBag.Title = "EditList";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    CustomLineNewsSearchModels search = ViewBag.Search;
+    long siteId = ViewBag.SiteID;
+    //long sId = ViewBag.sId;
+    long sId = 1;
+
+}
+@section HArea{
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+
+}
+@section FArea {
+
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+
+<script type="text/javascript">
+    Component.checkList('[data-checkGroup]');
+    $(".fixTable").stickyTableHeaders();
+    if ($("#SourceID").val() != "" && $("#SourceID").val() != "0") {
+        $("#divSelectDate").hide();
+    }
+
+    var listObj = Component.dataList('listTable');
+
+    @*listObj.deleted = function (delIds) {
+        $.post('LineNewsDataDel?siteId=@siteId&sId=@sId', { 'ids': delIds }, function () {
+            location.replace(location.href);
+        });
+    }*@
+    listObj.canceled = function (action) {
+        if (action == "del") {
+            $('#listTable').find('span.info').html('');
+        }
+    }
+    listObj.opened = function (mainWin, action) {
+        mainWin.refreshList = function () {
+            location.replace(location.href);
+        }
+    }
+
+
+    //$('#listTable').on('click', 'tbody :checkbox', function () {
+    //    console.log("Select");
+
+    //    var selectedNum = 0;
+    //    var tbodyElm = $('#listTable');
+    //    tbodyElm.find('td.edit').each(function () {
+    //        if ($(this).find('input').prop('checked')) {
+    //            selectedNum++;
+    //        }
+    //    });
+
+    //    $('span.infoNum').html('共選了<span>' + selectedNum + '</span>筆');
+    //});
+
+
+
+    //$('#btnSearch').click(function () {
+    //    var form = $('#searchForm');
+    //    form.submit();
+    //});
+
+
+    $('#btnCancel').click(function () {
+        Component.closeLeft();
+        Component.closeCenter();
+    });
+    @if (ViewBag.Exit as bool? == true)
+          {
+        <text>
+    Component.alert('資料已儲存', function () {
+        //parent.refreshList();
+        Component.closeLeft();
+        Component.closeCenter();
+    });
+    </text>
+          }
+</script>
+}
+<div class="groove groove-1" >
+    <div class="card shadow-none">
+        <table id="listTable" class="fixTable">
+            <caption>
+                LINE NEWS RSS推播文章列表
+                <span class="info infoNum">@*共選了<span>1</span>筆*@</span>
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" href="@Url.Action("AddData","CustomLineRss",new { siteId = siteId, SourceID= sId }))" title="挑選"><i class="cc cc-plus"></i></a>
+
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" title="移除"><i class="cc cc-trash-o"></i></a>
+
+                    <a class="btn-grey-o" href="javascript:"><i class="cc cc-close"></i>取消</a>
+
+                    <!-- 刪除的確定 -->
+                    <a class="btn-grey-darken-4-o data-del" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    <!-- 刪除的確定END -->
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>標題</th>
+                    <th>選單</th>
+                    <th>預覽</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="sort">1</td>
+                    <td class="text-L">男子漢的極致浪漫之二 -- Ivan Gros─窺見版畫小而浪漫情事</td>
+                    <td>太人物</td>
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-cellphone-link"></i></a></td>
+                </tr>
+                <tr>
+                    <td class="sort">2</td>
+                    <td class="text-L">男子漢的極致浪漫之二 -- Ivan Gros─窺見版畫小而浪漫情事</td>
+                    <td>影音 > 美食東西軍</td>
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-cellphone-link"></i></a></td>
+                </tr>
+                <tr>
+                    <td class="sort">3</td>
+                    <td class="text-L">男子漢的極致浪漫之二 -- Ivan Gros─窺見版畫小而浪漫情事</td>
+                    <td>太人物</td>
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-cellphone-link"></i></a></td>
+                </tr>
+                <tr>
+                    <td class="sort">4</td>
+                    <td class="text-L">男子漢的極致浪漫之二 -- Ivan Gros─窺見版畫小而浪漫情事</td>
+                    <td>太人物</td>
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-cellphone-link"></i></a></td>
+                </tr>
+                <tr>
+                    <td class="sort">5</td>
+                    <td class="text-L">男子漢的極致浪漫之二 -- Ivan Gros─窺見版畫小而浪漫情事</td>
+                    <td>太人物</td>
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-cellphone-link"></i></a></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination text-L">
+            @*@Html.Action("Pager", "Common", pagination)*@
+        </div>
+    </div>
+</div>
+

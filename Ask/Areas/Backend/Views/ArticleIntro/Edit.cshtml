@@ -1,0 +1,140 @@
+﻿@model ArticleIntroModels
+@{
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+}
+
+@section HArea {    
+    <title>@ViewBag.Title</title>
+}
+
+@section Script {
+    @BundleConfig.JWPlayer()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $('#btnDetail').click(function() {
+            var $this = $(this);
+            var settingBox = $this.closest('.detailSetting').children('ul.forms');
+            if (settingBox.is(':visible')) {
+                settingBox.slideUp();
+                $this.html('<i class="cc cc-settings"></i>頁面細節');
+            } else {
+                settingBox.slideDown();
+                $this.html('<i class="cc cc-close"></i>收合');
+            }
+        });
+
+        $('#imgSetting').change(function () {
+            if (this.checked) {
+                $('#imgSetting-box').slideDown();
+            } else {
+                $('#imgSetting-box').slideUp();
+            }
+        }).change();
+
+        if ($('#Icon').val())
+            $('#imgSetting').click();
+
+        Component.singleImageUpload('#fIcon', '@(Href("~/"))', '@ViewBag.UploadUrl');
+
+        function checkDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var date = Component.parseDate(v);
+                if (!date)
+                    return '* 日期格式錯誤';
+            }
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+
+        var editUrl = '@Html.Raw(Url.Action("ParagraphEdit", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID }))';
+        var matchUrl = '@Html.Raw(Url.Action("ParagraphMatch", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID }))';
+        var matchDelUrl = '@Html.Raw(Url.Action("ParagraphMatchDel", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID }))';
+        Component.paragraph('#ulParagraphs', editUrl, matchUrl, matchDelUrl, '@Model.ID');
+
+        @if(ViewBag.Success as bool? == true) {
+            @:Component.alert('頁面已儲存');
+        }
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <form id="editForm" method="post" action="@Url.Action("Edit", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID })" enctype="multipart/form-data">
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title">主標題</div>
+                        <div class="input-field">                            
+                            <input type="text" id="Title" name="Title" value="@Model.Title" class=""> @* 拿掉validate[required] carrie 20180105 *@
+                        </div>
+                    </div>
+                </li>
+                <li class="detailSetting">
+                    <a id="btnDetail" class="btn-openDetail" href="javascript:"><i class="cc cc-close"></i>收合</a>
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">發文日期</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="IssueDate" name="IssueDate" value="@Model.IssueDate.ToString("yyyy.MM.dd")" class="datepicker validate[funcCall[checkDate]]">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">宣告、備註文字<a class="tooltip m-h-2" title="宣告、備註文字會出現在全文下方，可宣告版權、感謝贊助、或備註次要資訊。"><i class="cc cc-attention"></i></a></div>
+                                <div class="input-field">
+                                    <input type="text" id="RemarkText" name="RemarkText" value="@Model.RemarkText">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input type="checkbox" id="imgSetting" />
+                                        <label for="imgSetting">自行設定代表圖 與 社群分享圖</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="imgSetting-box" class="col-2" style="display:none;">
+                                <div class="input-field m-T-none">
+                                    <input type="file" id="fIcon" name="fIcon" />
+                                    <input type="hidden" id="Icon" name="Icon" value='@Model.Icon' />
+                                    <input type="hidden" id="fIconBase64" name="fIconBase64" />
+                                    <input type="hidden" id="fIconBase64_Resize" name="fIconBase64_Resize" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </li>                
+            </ul>
+            @*段落*@
+            <ul id="ulParagraphs" data-field="paragraphs" class="forms"></ul>
+            <a class="btn-grey-darken-4-o transparent paragraph-add" href="javascript:" style="margin-top:-30px; margin-bottom:30px;"><i class="cc cc-plus"></i>增加段落</a>
+            <input type="hidden" id="deletedParagraphs" name="deletedParagraphs" />
+            @*段落 End*@
+            <div class="control-bar">                
+                <a class="btn-grey float-L" href="javascript:Component.openRight('@Url.Action("seoEdit", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = Model.ID })')"><i class="cc cc-search-text"></i>SEO設定</a>
+                <div class="bar-item float-L">
+                    <div>
+                        @Html.CheckBoxFor(model => model.IsIssue)
+                        <label for="IsIssue">刊登</label>
+                    </div>
+                </div>
+
+                <a class="btn-cancel" href="javascript:Component.closeLeft();location.replace(location.href);"><i class="cc cc-close"></i>取消</a>
+                <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            </div>
+            <input type="hidden" name="ID" value="@Model.ID" />            
+        </form>
+    </div>
+</div>

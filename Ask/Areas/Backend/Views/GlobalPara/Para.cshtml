@@ -1,0 +1,208 @@
+﻿
+@{
+    ViewBag.Title = "全域參數設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    string type = ViewBag.Type;
+    string parentName = ViewBag.ParentName;
+    int? parentId = ViewBag.ParentID;
+    IEnumerable<CompanyModel> company = ViewBag.Companys;
+
+    bool isParent = (string.IsNullOrWhiteSpace(parentName) ? true : false);
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+          <div class="swiper-wrapper">
+              <div class="swiper-slide @(type == "Company" ? "selected" : string.Empty)" data-type="Company"><i class="cc cc-tag cc-rotate-270"></i>公司/部門</div>
+              <div class="swiper-slide @(type == "Holiday" ? "selected" : string.Empty)" data-type="Holiday"><i class="cc cc-tag cc-rotate-270"></i>例假日設定</div>
+              <div class="swiper-slide @(type == "NationalHoliday" ? "selected" : string.Empty)" data-type="NationalHoliday"><i class="cc cc-tag cc-rotate-270"></i>國定假日設定</div>
+          </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide p-T-10">
+                <table class="fixTable" id="listTable">
+                    <caption>
+                        @if (isParent)
+                        {
+                            @:公司 / 部門
+                        }
+                        else
+                        {
+                            <a class="btn-grey-darken-4-o transparent goBack" href="@Url.Action("Para",new { siteId = siteId})"><i class="cc cc-arrow-left"></i></a>@parentName
+                        }
+                        <span class="info"></span>
+                        <div class="float-R">
+                            <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                            <a class="btn-grey-darken-4-o square tooltip-info openEdit-c" href="@Url.Action("Edit",new { siteId = siteId, parentId = parentId})" title="新增"><i class="cc cc-plus"></i></a>
+                            <a class="btn-grey-o square tooltip-info btn-del" data-action="del" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                            <span data-for="sort" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>@(isParent ? "公司" : "部門")名稱</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                            @if (isParent)
+                            {
+                                <th>部門</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(company != null && company.Count() > 0)
+                        {
+                            int idx = 1;
+                            foreach(var item in company)
+                            {
+                                <tr data-id="@item.ID">
+                                    <td class="sort edit">@idx</td>
+                                    <td class="">@item.Name</td>
+                                    <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                                    <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-c" href="@Url.Action("Edit",new { siteId = siteId, Id = item.ID, parentId = parentId})"><i class="cc cc-edit-o"></i></a></td>
+                                    @if (isParent)
+                                    {
+                                        <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="@Url.Action("Para",new { siteId = siteId, parentId = item.ID})"><i class="cc cc-list"></i></a></td>
+                                    }
+                                </tr>
+                                idx++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="swiper-slide p-T-10" id="divHoliday"></div>
+            <div class="swiper-slide p-T-10" id="divNationalHoliday"></div>
+            @*@Html.Action("HolidaySet", "GlobalPara")*@
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/amazeui_calendar.css">
+
+<script src="~/Script/StickyTableHeaders/jquery.stickytableheaders.js"></script>
+<script src="~/Script/base/admin-slideTabs.js"></script>
+<script src="~/Script/amazeui_calendar.js"></script>
+
+@section Script {
+    @BundleConfig.Component()    
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            var outerElm = $('#listTable');
+
+            var listObj = Component.dataList('listTable');
+            listObj.sorted = function (sortItems) {
+                $.post('ParaSort', { 'items': sortItems, 'parentId': '@parentId' }, function () {
+                    refreshList();
+                });
+            }
+            listObj.deleted = function (delIds) {
+                $.post('ParaDel', { 'ids': delIds }, function () {
+                    refreshList();
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    outerElm.find('span.info').html('');
+                }
+            }
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    refreshList();
+                }
+            }
+            listObj.statusChange = function (id) {
+                $.get('ParaToggleIssue/' + id);
+            }
+
+            outerElm.on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                outerElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function(e){
+                e.stopPropagation();
+            }); 
+
+            var swiperTab = new Swiper('.swiper-tab-bar', {
+                slidesPerView: 'auto',
+                paginationClickable: true,
+                spaceBetween: 0,
+                freeMode: true,
+                loop: false
+            });
+
+            var swiperContent = new Swiper('.swiper-tab-content', {
+                direction: 'horizontal',
+                slidesPerView: 'auto',
+                loop: false,
+                autoHeight: true,
+                simulateTouch: false,
+                onSlideChangeEnd: function (swiper) {
+                    var n = swiper.activeIndex;
+                    setCurrentSlide($(".swiper-tab-bar .swiper-slide").eq(n), n);
+                    swiper1.slideTo(n, 500, false);
+                }
+            });
+
+            swiperTab.slides.each(function (index, val) {
+                $(this).click(function () {
+                    var $this = $(this);
+                    var tabType = $this.attr('data-type');
+
+                    if (tabType == "NationalHoliday" || tabType == "Holiday") {
+                        $("#divNationalHoliday").empty();
+                        $("#divHoliday").empty();
+
+                        var contentElm = $('#div' + tabType);
+                        //contentElm.empty();
+                        contentElm.load(tabType + 'Set', function () {
+                            $(".swiper-tab-bar .swiper-slide").removeClass("selected");
+                            $this.addClass("selected");
+                            swiperContent.update();
+                        });
+
+                        setTimeout(function () {
+                            swiperContent.slideTo(index, 500, false);
+                        }, 100);       
+                    }
+                             
+                });
+
+                if ($(this).hasClass('selected'))
+                    $(this).click();
+            });
+        });
+
+        function refreshList() {
+            location.replace(location.href);
+        }
+    </script>
+}

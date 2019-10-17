@@ -1,0 +1,662 @@
+﻿@model WorkV3.Models.ArticleSettingModels
+@{
+    ViewBag.Title = "列表設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+
+    string uploadUrl = ViewBag.UploadUrl;
+    IEnumerable<ArticleTypesModels> typeItems = ViewBag.Types;
+    IEnumerable<WorkV3.Common.IDValue> listCards = ViewBag.ListCards;
+    IEnumerable<WorkV3.Common.IDValue> listCards2 = ViewBag.ListCards2;
+    IEnumerable<CategoryModels> cateListIdentity = null;
+    if (ViewBag.ListIdentity != null)
+    {
+        cateListIdentity = (IEnumerable<CategoryModels>)ViewBag.ListIdentity;
+    }
+
+    MenusModels menu = ViewBag.Menu;
+    List<WorkV3.ViewModels.CommentType> replyItemList = ViewBag.ReplyItemList as List<WorkV3.ViewModels.CommentType>;
+
+    MemberShipRegSetModels regSet = ViewBag.MemberRegSet;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+}
+
+@section Script {
+    @BundleConfig.Component()  
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        Component.radioList('[data-radioGroup]');
+
+        $(".fixTable").stickyTableHeaders();
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function(e){
+            e.stopPropagation();
+        });
+
+        $("input[name='groupComment']").each(function(){
+            var $this = $(this),
+                $box = $('#comment-All-box');
+
+            $this.on('change', function(){
+                if (this.checked) {
+                    $("#ReplyFBID").removeAttr("class");
+                    $(".ReplyFBIDformError").remove();
+                    $("#ReplyFBAccounts").removeAttr("class");
+                    $(".ReplyFBAccountsformError").remove();
+
+                    if ($this.attr('value') === '@((int)(WorkV3.ViewModels.CommentType.Closed))') {
+                        $box.slideUp();
+                    } else {
+                        $box.slideDown();
+
+                        if ($this.attr('value') === '@((int)(WorkV3.ViewModels.CommentType.FB))') {
+                            $box.children('div').eq(1).slideUp();
+                            $box.children('div').eq(2).slideDown();
+                            $("#ReplyFBID").attr("class", "validate[required]");
+                            $("#ReplyFBAccounts").attr("class", "validate[required]");
+                        } else {
+                            $box.children('div').eq(2).slideUp();
+                            $box.children('div').eq(1).slideDown();
+                        }
+                    }
+                }
+            }).change();
+        });
+        var commentValue = '@((int)(WorkV3.ViewModels.CommentType.Closed))';
+        @if (!string.IsNullOrEmpty(Model.ReplyStatus))
+        {
+            <text>
+            commentValue = '@Model.ReplyStatus';
+            </text>
+        }
+        $("input[name='groupComment'][value='" + commentValue + "']").prop("checked", true);
+        $("input[name='groupComment']").trigger("change");
+        // 頁面程式
+        $('#Types').each(function () {
+    var valElm = $(this);
+    var typeOuter = valElm.prev();
+
+    if (this.value) {
+        var types = this.value.split(',');
+        typeOuter.find('input').each(function () {
+            if ($.inArray(this.value, types) != -1)
+                        this.checked = true;
+            });
+        }
+
+            $('#settingForm').submit(function () {
+            var types = [];
+            typeOuter.find('input').each(function () {
+                if (this.checked && this.value)
+                        types.push(this.value);
+                    });
+                valElm.val(types.join());
+            });
+        });
+
+        $('[data-radioGroup]').each(function () {
+            var $this = $(this);
+            Component.radioList($this);
+
+            var groupName = $this.attr('data-radioGroup');
+            if (groupName == 'PagingMode') {
+                $this.find(':radio').click(function () {
+                    if (this.value == '不分頁') {
+                        $this.closest('li').next().slideUp();
+                    } else {
+                        $this.closest('li').next().slideDown();
+                    }
+                }).filter(':checked').triggerHandler('click');
+            } else if (groupName == 'SortMode') {
+                $this.find(':radio').click(function () {
+                    if (this.value == '時間排序')
+                        $('#sort-Time-box').slideDown();
+                    else
+                        $('#sort-Time-box').slideUp();
+
+                    if (this.value == '熱門排序')
+                        $('#sort-Hot-box').slideDown();
+                    else
+                        $('#sort-Hot-box').slideUp();
+
+                    if (this.value == '手動排序')
+                        $('#sort-Custom-box').slideDown();
+                    else
+                        $('#sort-Custom-box').slideUp();
+                }).filter(':checked').triggerHandler('click');
+            } else if (groupName == 'ExtendReadOpen' || groupName == 'ADOpen') {
+                $this.find(':radio').click(function () {
+                    if (this.value == 'true')
+                        $this.next().slideDown();
+                    else
+                        $this.next().slideUp();
+                }).filter(':checked').triggerHandler('click');
+            } else if (groupName == 'ExtendReadOpen2' || groupName == 'ADOpen') {
+                $this.find(':radio').click(function () {
+                    if (this.value == 'true')
+                        $this.next().slideDown();
+                    else
+                        $this.next().slideUp();
+                }).filter(':checked').triggerHandler('click');
+            }
+        });
+
+        $('[data-checkGroup]').each(function () {
+            var $this = $(this);
+            Component.checkList($this);
+        });
+
+        $('#SortField').each(function () {
+            var v = this.value;
+            if (!v)
+                return;
+
+            $('div.sortField:visible').find(':radio[value="' + v + '"]').click();
+        });
+
+        Component.singleImageUpload('#fDefaultImg', '@(Href("~/"))', '@uploadUrl');
+
+        $('#btnCancel').click(function () {
+            Component.confirm('取消後你當前編輯的頁面將不會儲存，確定取消嗎？', function (isOK) {
+                if (isOK) {
+                    Component.closeLeft();
+                    location.replace(location.href);
+                }
+            }, 'warning');
+        });
+
+        $('#btnSave').click(function () {
+            function submitHandler() {
+                var issueSettings = [];
+                $('[data-checkGroup="IssueSettingGroup"]').find(':checkbox').each(function () {
+                    if (this.checked)
+                        issueSettings.push(this.value);
+                });
+                $('#IssueSetting').val(issueSettings.join());
+
+                var sortField = $('div.sortField:visible').find('input[type="hidden"]').val();
+                $('#SortField').val(sortField);
+
+                form.submit();
+            }
+
+            var form = $('#settingForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                if ($('#olTypes').find(':checked').length == 0) {
+                    Component.confirm('您未勾選任何類別，前台將不會顯示資料，確定要儲存嗎？', function (isOK) {
+                        if (isOK) {
+                            submitHandler();
+                        }
+                    }, 'warning');
+                } else {
+                    submitHandler();
+                }
+            }
+        });
+
+        @if(ViewBag.Success as bool? == true) {
+            @:Component.alert('設置已儲存');
+        }
+
+        $("input[name='ReadMode']").on('change', function () {
+            var selection = $(this).attr('id');
+            switch (selection) {
+                case "ReadMode1":
+                    $("#readSetting").slideDown();
+                    break;
+                default:
+                    $("#readSetting").slideUp();
+            }
+        });
+
+        if ($("#ReadMode").val() == "1") {
+            $("#readSetting").slideDown();
+        }
+
+        $("input#readModeSetAll").change(function () {
+            var checkboxes = $(this).parents(".radio-box").find("input[name='ReadModeSet']:checkbox");
+            if ($(this).is(":checked")) {
+                checkboxes.prop("checked", true);
+            } else {
+                checkboxes.prop("checked", false);
+            }
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    <form id="settingForm" method="post" action="@Url.Action("Setting", siteQuery)" enctype="multipart/form-data">
+        <h1 class="title-admin-page">文章 列表設定</h1>
+        <div class="col-4 border-T">
+            <ul class="forms">
+                <li>
+                    <div class="title">哪個是你想顯示的項目？</div>
+                    <ol class="dd-list checkStyle">
+                        <li class="dd-item" data-id="1">
+                            <input type="checkbox" id="kind" value="" />
+                            <label for="kind">全部類別</label>
+                            @if (typeItems?.Count() > 0) {
+                                int index = 0;
+                                <ol id="olTypes" class="dd-list show">
+                                    @foreach (ArticleTypesModels type in typeItems) {
+                                        <li class="dd-item">
+                                            <div class="dd-handle">
+                                                <input type="checkbox" id="type_@(++index)" value="@type.ID" />
+                                                <label for="type_@index">@type.Name</label>
+                                            </div>
+                                        </li>
+                                    }
+                                </ol>
+                            }
+                        </li>
+                    </ol>
+                    <input type="hidden" id="Types" name="Types" value="@Model.Types" />
+                </li>
+            </ul>
+        </div>
+        <div class="col-4-partner border-T border-L">
+            <ul class="forms">
+                <li>
+                    <div class="title">分頁方式</div>
+                    <div class="radio-box inline" data-radioGroup="PagingMode">
+                        @{ string[] pagingModeList = { "頁碼分頁", "點擊看更多", "捲動看更多", "不分頁" }; }
+                        @foreach (string mode in pagingModeList)
+                        {
+                            <div>
+                                <input type="radio" class="with-item" value="@mode" />
+                                <i class="cc cc-file-o cc-rotate-270"></i>
+                                <label>@mode</label>
+                            </div>
+                        }
+                        <input type="hidden" id="PagingMode" name="PagingMode" value="@Model.PagingMode" />
+                    </div>
+                </li>
+                <li>
+                    <div class="title">列表筆數</div>
+                    <div class="input-field inline mini">
+                        <span class="info">每次載入</span>
+                        <input typeof="text" id="PageSize" name="PageSize" class="text-C validate[required,custom[positive]]" value="@Model.PageSize" />
+                        <span class="info">筆資料</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">顯示設定</div>
+                    <div class="radio-box inline" data-checkGroup="IssueSettingGroup">
+                        @{ string[] issueSettings = string.IsNullOrWhiteSpace(Model.IssueSetting) ? new string[] { } : Model.IssueSetting.Split(','); }
+                        <div>
+                            <input type="checkbox" value="0" @(issueSettings.Contains("0") ? "checked=\"checked\"" : string.Empty) />
+                            <label>刊登期間內的當期資料</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" value="1" @(issueSettings.Contains("1") ? "checked=\"checked\"" : string.Empty) />
+                            <label>已逾期的歷史資料</label>
+                        </div>
+                    </div>
+                    <div class="alert transparent">
+                        <i class="cc cc-attention"></i>
+                        <div>
+                            此處根據「刊登期間」的前後時間，勾選決定是否在前台顯示，前提是該筆資料必須勾選「刊登」。<br />
+                            如果該筆資料在內容編輯時，並未勾選「刊登」，那無論此處設定為何，前台都不會顯示。
+                        </div>
+                    </div>
+                    <input type="hidden" id="IssueSetting" name="IssueSetting" />
+                </li>
+                <li>
+                    <div class="title">排序設定</div>
+                    <div class="radio-box inline full" data-radioGroup="SortMode">
+                        @{ string[] sortModes = { "時間排序", "熱門排序", "隨機排序", "手動排序" }; }
+                        @foreach (string mode in sortModes)
+                        {
+                            <div>
+                                <input type="radio" class="with-gap" value="@mode" />
+                                <label>@mode</label>
+                            </div>
+                        }
+                        <input type="hidden" id="SortMode" name="SortMode" value="@Model.SortMode" />
+                    </div>
+                    <input type="hidden" id="SortField" name="SortField" value="@Model.SortField" />
+                    <div id="sort-Time-box" class="radio-box inline full sortField" data-radioGroup="SortTime">
+                        @{
+                            string[][] sortTimeFields = {
+                            new string[] { "IsNull(IssueDate, CreateTime) Desc", "依發文時間（新 → 舊）" },
+                            new string[] { "IsNull(IssueDate, CreateTime)", "依發文時間（舊 → 新）" },
+                            new string[] { "CreateTime Desc", "依建立時間（新 → 舊）" },
+                            new string[] { "CreateTime", "依建立時間（舊 → 新）" },
+                            new string[] { "IsNull(ModifyTime, CreateTime) Desc", "依修改時間（新 → 舊）" },
+                            new string[] { "IsNull(ModifyTime, CreateTime)", "依修改時間（舊 → 新）" }
+                        };
+                        }
+                        @foreach (string[] item in sortTimeFields)
+                        {
+                            <div>
+                                <input type="radio" class="with-gap" value="@item[0]" />
+                                <label>@item[1]</label>
+                            </div>
+                        }
+                        <input type="hidden" value="IsNull(IssueDate, CreateTime) Desc" />
+                    </div>
+                    <div id="sort-Hot-box" class="radio-box inline full sortField" data-radioGroup="SortHot" style="display:none;">
+                        @{
+                            // 前端尚未處理熱門排序
+                            string[][] sortHotFields = {
+                            new string[] { "Clicks DESC", "熱門優先" },
+                            new string[] { "Clicks", "冷門優先" }
+                        };
+                        }
+                        @foreach (string[] item in sortHotFields)
+                        {
+                            <div>
+                                <input type="radio" class="with-gap" value="@item[0]" />
+                                <label>@item[1]</label>
+                            </div>
+                        }
+                        <input type="hidden" value="Clicks DESC" />
+                    </div>
+                    <div id="sort-Custom-box" class="radio-box inline full sortField" style="display: none;">
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>您可以自行去列表上拖移每筆的順序。</div>
+                        </div>
+                        <input type="hidden" value="Sort" />
+                    </div>
+                </li>
+                <li>
+                    <div class="col-2">
+                        <div class="title">預設圖<a class="tooltip m-h-2" title="如果該筆資料沒上圖，列表上會預設帶出此處設定的圖片。"><i class="cc cc-attention"></i></a></div>
+                        <div class="input-field m-T-none">
+                            <input type="file" id="fDefaultImg" name="fDefaultImg" />
+                            <input type="hidden" id="DefaultImg" name="DefaultImg" value='@Model.DefaultImg' />
+                            <input type="hidden" id="fDefaultImgBase64" name="fDefaultImgBase64" />
+                            <input type="hidden" id="fDefaultImgBase64_Resize" name="fDefaultImgBase64_Resize" />
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">回文留言區</div>
+                    <div class="radio-box inline full" data-radioGroup="ReplyStatus">
+                        @foreach (WorkV3.ViewModels.CommentType commitType in replyItemList)
+                        {
+                            string commitTypeName = "未定義的類別";
+                            if (!regSet.IsOpenReg)
+                            {
+                                if (commitType == WorkV3.ViewModels.CommentType.MemberOnly)
+                                {
+                                    continue;
+                                }
+                            }
+
+                            switch (commitType)
+                            {
+                                case WorkV3.ViewModels.CommentType.All:
+                                    commitTypeName = "開放匿名回文";
+                                    break;
+                                case WorkV3.ViewModels.CommentType.MemberOnly:
+                                    commitTypeName = "開放會員回文";
+                                    break;
+                                case WorkV3.ViewModels.CommentType.FB:
+                                    commitTypeName = "開放FB留言";
+                                    break;
+                                case WorkV3.ViewModels.CommentType.Closed:
+                                    commitTypeName = "關閉（不可回文）";
+                                    break;
+                            }
+                            <div>
+                                <input type="radio" class="with-gap" value="@((int)(commitType))" name="groupComment" />
+                                <label>@commitTypeName</label>
+                            </div>
+                        }
+                        <input type="hidden" id="ReplyStatus" name="ReplyStatus" value="@Model.ReplyStatus" />
+                    </div>
+                    <div id="comment-All-box" class="radio-box inline full">
+                        <div class="col-1">
+                            <div class="input-field inline">
+                                <input type="text" id="ReplyTitle" name="ReplyTitle" value="@Model.ReplyTitle" placeholder="請輸入回文留言區標題" class="validate[required]" />
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <div class="input-field inline mini">
+                                <span class="info">每頁（次）載入</span>
+                                <input typeof="text" id="ReplyPageSize" name="ReplyPageSize" value="@Model.ReplyPageSize" class="text-C validate[required,custom[positive]]" />
+                                <span class="info">筆資料</span>
+                            </div>
+                        </div>
+                        @*
+                    <div style="display: none;">
+                        <div class="col-1">
+                            <div class="input-field inline">
+                                <input class="" id="ReplyFBID" type="text" value="@Model.ReplyFBID" placeholder="應用程式ID" name="ReplyFBID">
+                            </div>
+                            <a class="tooltip" title="要教導使用者如何取得「應用程式ID」與「管理員的Facebook ID」"><i class="cc cc-attention"></i></a>
+                        </div>
+                        <div class="col-1">
+                            <div class="input-field">
+                                <input class="m-B-none" id="ReplyFBAccounts" type="text" value="@Model.ReplyFBAccounts" placeholder="管理員的Faceboox ID" name="ReplyFBAccounts">
+                            </div>
+                            <div class="alert transparent">
+                                <i class="cc cc-attention"></i>
+                                <div>
+                                    如果多人請使用半形逗號(,)分隔。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        *@
+                    </div>
+                </li>
+                <li>
+                    <div class="title">延伸閱讀區I</div>
+                    <div class="radio-box inline full" data-radioGroup="ExtendReadOpen">
+                        <div>
+                            <input type="radio" class="with-gap" value="true" />
+                            <label for="read-open">開放</label>
+                        </div>
+                        <div>
+                            <input type="radio" class="with-gap" value="false" />
+                            <label for="read-close">關閉</label>
+                        </div>
+                        <input type="hidden" id="ExtendReadOpen" name="ExtendReadOpen" value="@(Model.ExtendReadOpen ? "true" : "false")" />
+                    </div>
+                    <div id="read-open-box" class="radio-box inline full">
+                        <div class="col-1">
+                            <div class="title inline">標題</div>
+                            <div class="input-field inline">
+                                <input type="text" id="ExtendReadTitle" name="ExtendReadTitle" value="@Model.ExtendReadTitle" placeholder="延伸閱讀區標題" />
+                            </div>
+                        </div>
+                        @if (listCards?.Count() > 0)
+                        {
+                            <div class="col-1">
+                                <div class="title inline">設定</div>
+                                <div class="radio-box inline full" data-checkGroup="ExtendReadMenus">
+                                    <div>
+                                        <input type="checkbox" id="allMenus" class="select-all" />
+                                        <label for="allMenus">全部</label>
+                                    </div>
+                                    @foreach (WorkV3.Common.IDValue item in listCards)
+                                    {
+                                        string[] extendReadMenus = string.IsNullOrWhiteSpace(Model.ExtendReadMenus) ? new string[] { } : Model.ExtendReadMenus.Split(',');
+                                        <div>
+                                            <input type="checkbox" value="@item.ID" @(extendReadMenus.Contains(item.ID.ToString()) ? "checked=\"checked\"" : string.Empty) name="ExtendReadMenus" />
+                                            <label>@item.Value</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="title inline">篩選</div>
+                                <div class="radio-box inline full" data-radioGroup="ExtendReadMode">
+                                    <div>
+                                        <input type="radio" class="with-gap" value="1" />
+                                        <label>篩選類別相同的文章</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-gap" value="2" />
+                                        <label>篩選關鍵字相同的文章</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-gap" value="3" />
+                                        <label>隨機文章</label>
+                                    </div>
+                                    <input type="hidden" id="ExtendReadMode" name="ExtendReadMode" value="@Model.ExtendReadMode" />
+                                </div>
+                                <div class="input-field inline mini">
+                                    <span class="info">每次篩選出</span>
+                                    <input type="text" class="text-C validate[required,custom[positive]]" id="ExtendReadRowCount" name="ExtendReadRowCount" value="@Model.ExtendReadRowCount" placeholder="前台要顯示的筆數" />
+                                    <span class="info">筆資料</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </li>
+                <li>
+                    <div class="title">延伸閱讀區II</div>
+                    <div class="radio-box inline full" data-radioGroup="ExtendReadOpen2">
+                        <div>
+                            <input type="radio" class="with-gap" value="true" />
+                            <label for="read-open">開放</label>
+                        </div>
+                        <div>
+                            <input type="radio" class="with-gap" value="false" />
+                            <label for="read-close">關閉</label>
+                        </div>
+                        <input type="hidden" id="ExtendReadOpen2" name="ExtendReadOpen2" value="@(Model.ExtendReadOpen2 ? "true" : "false")" />
+                    </div>
+                    <div id="read-open-box2" class="radio-box inline full">
+                        <div class="col-1">
+                            <div class="title inline">標題</div>
+                            <div class="input-field inline">
+                                <input type="text" id="ExtendReadTitle2" name="ExtendReadTitle2" value="@Model.ExtendReadTitle2" placeholder="延伸閱讀區標題" />
+                            </div>
+                        </div>
+                        @if (listCards2?.Count() > 0)
+                        {
+                            <div class="col-1">
+                                <div class="title inline">設定</div>
+                                <div class="radio-box inline full" data-checkGroup="ExtendReadMenus2">
+                                    <div>
+                                        <input type="checkbox" id="allMenus2" class="select-all" />
+                                        <label for="allMenus2">全部</label>
+                                    </div>
+                                    @foreach (WorkV3.Common.IDValue item in listCards2)
+                                    {
+                                        string[] extendReadMenus2 = string.IsNullOrWhiteSpace(Model.ExtendReadMenus2) ? new string[] { } : Model.ExtendReadMenus2.Split(',');
+                                        <div>
+                                            <input type="checkbox" value="@item.ID" @(extendReadMenus2.Contains(item.ID.ToString()) ? "checked=\"checked\"" : string.Empty) name="ExtendReadMenus2" />
+                                            <label>@item.Value</label>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="radio-box inline full" data-radioGroup="ExtendReadMode2">
+                                    <div>
+                                        <input type="radio" class="with-gap" value="1" />
+                                        <label>篩選類別相同的文章</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-gap" value="2" />
+                                        <label>篩選關鍵字相同的文章</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-gap" value="3" />
+                                        <label>隨機文章</label>
+                                    </div>
+                                    <input type="hidden" id="ExtendReadMode2" name="ExtendReadMode2" value="@Model.ExtendReadMode2" />
+                                </div>
+                                <div class="input-field inline mini">
+                                    <span class="info">每次篩選出</span>
+                                    <input type="text" class="text-C validate[required,custom[positive]]" id="ExtendReadRowCount2" name="ExtendReadRowCount2" value="@Model.ExtendReadRowCount2" placeholder="前台要顯示的筆數" />
+                                    <span class="info">筆資料</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </li>
+                <li style="display:none">
+                    <div class="title">廣告區</div>
+                    <div class="radio-box inline full" data-radioGroup="ADOpen">
+                        <div>
+                            <input type="radio" class="with-gap" value="true" />
+                            <label>開放</label>
+                        </div>
+                        <div>
+                            <input type="radio" class="with-gap" value="false" />
+                            <label>關閉</label>
+                        </div>
+                        <input type="hidden" id="ADOpen" name="ExtendReadOpen" value="@(Model.ADOpen ? "true" : "false")" />
+                    </div>
+                    <div id="ad-open-box" class="radio-box inline full">
+                        <div class="col-1">
+                            <div class="title inline">標題</div>
+                            <div class="input-field inline">
+                                <input type="text" id="ADTitle" name="ADTitle" value="@Model.ADTitle" placeholder="不填寫即不顯示標題" />
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <div class="title inline">設定</div>
+                            <div class="input-field inline">
+                                <select>
+                                    <option value="" selected>請選擇廣告區</option>
+                                    <option value="1">Option 1</option>
+                                    <option value="2">Option 2</option>
+                                    <option value="3">Option 3</option>
+                                </select>
+                            </div>
+                            <a class="btn-grey-o m-L-6" href="javascript:"><i class="cc cc-link"></i>管理廣告區</a>
+                        </div>
+                    </div>
+                </li>
+                @if (regSet.IsOpenReg)
+                {
+                <li>
+                    <div class="title">限制會員觀看之預設值</div>
+                    <div class="radio-box inline full" data-radioGroup="ReadMode">
+                        <div class="col-1">
+                            <input class="with-gap" type="radio" checked="checked" value="0">
+                            <label for="readMode0">全部開放，不登入也可觀看全文</label>
+                        </div>
+                        <div class="col-1">
+                            <input class="with-gap" type="radio" value="1">
+                            <label for="readMode1">只限會員登入後，才可觀看全文</label>
+                            <div id="readSetting" class="p-L-8" style="display: none;">
+                                <div class="radio-box inline full">
+                                    <div>
+                                        <input type="checkbox" id="readModeSetAll">
+                                        <label for="readModeSetAll">全部身分別</label>
+                                    </div>
+                                    @if (cateListIdentity != null && cateListIdentity.Count() > 0)
+                                    {
+                                        int i = 0;
+                                        foreach (var Identity in cateListIdentity)
+                                        {
+                                            string[] readModeSet = string.IsNullOrWhiteSpace(Model.ReadModeSet) ? new string[] { } : Model.ReadModeSet.Split(',');
+                                            <div>
+                                                <input type="checkbox" id="ReadModeSet_@i" name="ReadModeSet" value="@Identity.ID" @(readModeSet.Contains(Identity.ID.ToString()) ? "checked=\"checked\"" : string.Empty) />
+                                                <label for="ReadModeSet_@i">@Identity.Title</label>
+                                            </div>
+                                            i++;
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="ReadMode" name="ReadMode" value="@Model.ReadMode" />
+                    </div>
+                </li>
+                }
+            </ul>
+        </div>
+    </form>
+    <div class="control-bar">
+        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>

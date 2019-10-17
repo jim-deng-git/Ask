@@ -1,0 +1,29 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;    
+}
+
+@foreach (ArticleModels item in Model) {
+    string img = item.GetFirstImg(setting);
+    SitePage page = itemPages.GetValue(item.CardNo);
+    if (page != null) {
+<div class="swiper-slide">
+    <div class="card shadow-none">
+        <div class="card-box">
+            <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))">
+                @if (!string.IsNullOrWhiteSpace(img)) {
+                    <div class="card-img square circle" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')">
+                        <div class="card-img-content flex" style="background-image:url(@(page.GetUploadUrl() + Server.UrlPathEncode(img)))"></div>
+                    </div>
+                }
+                <div class="card-text">
+                    <div class="card-text-name">@item.Title</div>
+                    <div class="card-text-info">@item.Summary.TrimTags().Truncate(48)</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+    }
+}

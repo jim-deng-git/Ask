@@ -1,0 +1,52 @@
+﻿@model IEnumerable<WorkV3.Models.FormItem>
+@{
+    ViewBag.Title = "活動報名批次審核";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    WorkV3.Models.EventSignUpModel signUp = ViewBag.SignUp;
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            @if (signUp.AdmissionQuota > 0) {
+                decimal percent = Math.Round(Model.Where(f => f.CheckStatus == (byte)FormCheckStatus.正取).Count() * 100 / (decimal)signUp.AdmissionQuota, 2);                
+                <div class="title">確定參與率 @(percent)%<br />( 正取並已繳費的比例 )</div>
+            }            
+            <ol>
+                @{ FormCheckStatus[] statusList = (FormCheckStatus[])Enum.GetValues(typeof(FormCheckStatus)); }
+                @foreach (FormCheckStatus status in statusList) {
+                    int count = Model.Where(f => f.CheckStatus == (byte)status).Count();
+                    if (count > 0) {
+                    <li class="dd-item p-v-4" data-id="1">
+                        <div>
+                            <label>@status，@(count)名</label>
+                        </div>
+                    </li>
+                    }
+                }
+                @{
+                    int frontCount = Model.Where(f => !f.IsBack).Count();
+                    if (frontCount > 0) {
+                        <li class="dd-item p-v-4" data-id="1">
+                            <div>
+                                <label for="web1">前台報名，@(frontCount)名</label>
+                            </div>
+                        </li>
+                    }
+                }
+                @{
+                    int backCount = Model.Where(f => f.IsBack).Count();
+                    if (backCount > 0) {
+                        <li class="dd-item p-v-4" data-id="1">
+                            <div>
+                                <label for="web1">後台報名，@(backCount)名</label>
+                            </div>
+                        </li>
+                    }
+                }                
+            </ol>
+        </li>
+    </ul>
+</div>
+

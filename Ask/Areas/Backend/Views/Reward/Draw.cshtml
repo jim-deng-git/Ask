@@ -1,0 +1,54 @@
+﻿@model RewardModel
+@using Newtonsoft.Json.Linq;
+@{
+    ViewBag.Title = "Draw";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+
+    <script>
+        function startToDraw() {
+            $.ajax({
+                url: '@Url.Action("Draw", "Reward")',
+                data: {
+                    SiteID: @ViewBag.SiteID,
+                    RewardID: '@Model.ID',
+                    count: $('input[name="count"]').val(),
+                },
+                type: 'post',
+                success(response) {
+                    Component.alert('已完成', function(){
+                        parent.location.reload();
+                    });
+                }
+            });
+        }
+    </script>
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <form method="post" name="draw">
+            <div class="lightbox-top-bar">
+                <div class="lightbox-top-bar-title">抽獎</div>
+            </div>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        隨機篩選<div class="input-field inline small"><input name="count" type="number" min="1" value="1"></div>個已集滿的參與者
+                    </div>
+                </li>
+            </ul>
+
+            <div class="control-bar">
+                <a class="btn-cancel" href="javascript:void(0)" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+                <a class="btn-bulid" href="javascript:void(0)" onclick="startToDraw()"><i class="cc cc-gift"></i>開始抽</a>
+            </div>
+    </div>
+</div>

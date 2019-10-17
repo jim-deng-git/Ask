@@ -1,0 +1,89 @@
+.card-plainText[data-style="12"] .title-sub a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+@-webkit-keyframes hover {
+  0% {
+    width: 0;
+    left: 0; }
+  50% {
+    width: 100%; }
+  100% {
+    width: 0;
+    left: auto;
+    right: 0; } }
+
+@keyframes hover {
+  0% {
+    width: 0;
+    left: 0; }
+  50% {
+    width: 100%; }
+  100% {
+    width: 0;
+    left: auto;
+    right: 0; } }
+
+.card-plainText[data-style="12"] .title-main {
+  font-size: 60px;
+  color: #FE5757;
+  font-weight: 100;
+  line-height: 1; }
+  @media only screen and (max-width: 800px) {
+    .card-plainText[data-style="12"] .title-main {
+      font-size: 40px; } }
+
+.card-plainText[data-style="12"] .title-sub a {
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+  padding: 8px 30px;
+  background-color: transparent;
+  border: 1px solid #FE5757;
+  color: #33FFCC;
+  display: inline-block;
+  will-change: all;
+  -webkit-transition: .4s all ease-out;
+  -o-transition: .4s all ease-out;
+  transition: .4s all ease-out;
+  -webkit-transition-delay: .1s;
+       -o-transition-delay: .1s;
+          transition-delay: .1s; }
+  .card-plainText[data-style="12"] .title-sub a::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background-color: #FE5757; }
+  .card-plainText[data-style="12"] .title-sub a:hover::after {
+    -webkit-animation: hover 0.8s ease-in-out;
+            animation: hover 0.8s ease-in-out;
+    -webkit-animation-iteration-count: 1;
+            animation-iteration-count: 1; }
+  @media only screen and (max-width: 800px) {
+    .card-plainText[data-style="12"] .title-sub a {
+      font-size: 20px; } }
+  @media only screen and (max-width: 580px) {
+    .card-plainText[data-style="12"] .title-sub a {
+      font-size: 18px;
+      padding: 5px 15px; } }
+
+.card-plainText[data-style="12"] .title-sub p {
+  will-change: all;
+  -webkit-transition: .4s all ease-out;
+  -o-transition: .4s all ease-out;
+  transition: .4s all ease-out;
+  -webkit-transition-delay: .1s;
+       -o-transition-delay: .1s;
+          transition-delay: .1s;
+  font-size: 24px;
+  color: #33FFCC; }
+  @media only screen and (max-width: 800px) {
+    .card-plainText[data-style="12"] .title-sub p {
+      font-size: 20px; } }
+  @media only screen and (max-width: 580px) {
+    .card-plainText[data-style="12"] .title-sub p {
+      font-size: 18px; } }

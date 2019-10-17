@@ -1,0 +1,323 @@
+﻿@model WorkV3.Models.SitesModels 
+@{
+    ViewBag.Title = "網站設定";
+    ViewBag.BodyClass = "body-admin-main";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    List<WorkV3.Models.SitesModels> siteList = new List<WorkV3.Models.SitesModels>();
+    if (ViewBag.Sites != null)
+    {
+        siteList = (List<WorkV3.Models.SitesModels>)ViewBag.Sites;
+    }
+    bool IsCopy = false;
+    string ActionName = "Edit";
+    if (ViewBag.IsCopy != null)
+    {
+        IsCopy = (bool)ViewBag.IsCopy;
+        ActionName = "Copy";
+        ViewBag.Title = "網站複製";
+    }
+}
+@BundleConfig.Component()
+@BundleConfig.Validate()
+<script src="~/script/workV3/check.js" type="text/javascript"></script>
+
+<form id="editForm" method="post" action="@Url.Action(ActionName)" style="width:100%">
+
+    <div class="zone zone-base p-T-8">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">@ViewBag.Title</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline no-label">網站名稱<span class="required">*</span></div>
+                                        <div class="input-field inline no-label">
+                                            <input id="Title" type="text" name="Title" class="validate[required]" value="@(Model!= null?Model.Title:"")" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline no-label">網站代碼<span class="required">*</span></div>
+                                        <div class="input-field inline no-label">
+                                            @if (Model == null)
+                                            {
+                                            <input id="SN" type="text" name="SN" class="validate[required]" value="@(Model != null ? Model.SN : "")" />
+                                            }
+                                            else
+                                            {
+                                                <span class="font-black">@Model.SN</span>
+                                                <input id="SN" type="hidden" name="SN" class="validate[required]" value="@(Model != null ? Model.SN : "")" />
+                                            }
+                                        </div>
+                                        <div class="checkInfo-box">
+                                            <span class="checkInfo font-blue" id="spSN_OK" style="display:none"><i class="cc cc-check"></i>OK! 此代碼可用。</span>
+                                            <span class="checkInfo font-red" id="spSN_Exist" style="display:none"><i class="cc cc-close"></i>No！此代碼已被使用，請換一個！</span>
+                                            <span class="checkInfo font-red" id="spSN_Length" style="display:none"><i class="cc cc-close"></i>必須超過4個字元（含英文與數字）</span>
+                                            <span class="checkInfo font-red" id="spSN_System" style="display:none"><i class="cc cc-close"></i>代碼不允許包含系統關鍵字</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline no-label">免費網址</div>
+                                        <div class="text-value inline no-label">
+                                            <span class="font-grey">http://cc-work.com/</span><span class="font-black" id="sp_SN_View"></span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline no-label">網域名稱</div>
+                                        <div id="divDomains">
+
+                                        </div>
+                                        <a class="btn-grey-darken-4-o transparent btn-small p-h-none" id="btnAddDomain" href="javascript:">
+                                            <i class="cc cc-plus"></i>
+                                            增加域名
+                                        </a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">網站屬性</div>
+                                        <div class="radio-box inline full">
+                                            <div>
+                                                <input name="webType" value="Indep" type="radio" id="webType-1" class="with-gap" @(Model == null? "checked":(Model.ParentID.HasValue?"":"checked"))/>
+                                                <label for="webType-1">獨立網站</label>
+                                            </div>
+                                            <div>
+                                                <input name="webType" value="Child" type="radio" id="webType-2" class="with-gap" @(Model == null? "":(Model.ParentID.HasValue? "checked" : ""))/>
+                                                <label for="webType-2">從屬網站</label>
+                                            </div>
+                                        </div>
+                                        <div id="webType-box">
+                                            <span class="font-grey">主網站</span>
+                                            <div class="input-field inline">
+                                                <select id="ParentID" name="ParentID">
+                                                    @if (siteList != null && siteList.Count > 0)
+                                                    {
+                                                        foreach (var siteItem in siteList)
+                                                        {
+                                                            string langText = "";
+                                                            switch (siteItem.Lang.ToLower())
+                                                            {
+                                                                case "zh-hant":
+                                                                    langText = "中文版";
+                                                                    break;
+                                                                case "en-us":
+                                                                    langText = "英文版";
+                                                                    break;
+                                                                case "ja-jp":
+                                                                    langText = "日文版";
+                                                                    break;
+                                                                case "zh-cn":
+                                                                    langText = "簡中版";
+                                                                    break;
+                                                                case "ko-kr":
+                                                                    langText = "韓文版";
+                                                                    break;
+                                                            }
+                                                            <option value="@siteItem.Id" @(Model != null?(Model.ParentID.HasValue?(Model.ParentID.Value == siteItem.Id?"selected":""):""):"")>@siteItem.Title (@langText)</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="alert transparent m-T-4 m-B-8">
+                                            <i class="cc cc-attention"></i>
+                                            <div>
+                                                從屬網站，將繼承主網站之會員，無法自行管理會員。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="alert alert-blue">
+                                        <i class="cc cc-info"></i>
+                                        <div>
+                                            除了網站代碼外，以上設定，日後皆可於「網站設定」功能中調整。
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="radio-box inline no-label">
+                            <div>
+                                <input name="Issue" type="radio" id="Issue_1" class="with-gap" @(Model != null ? (Model.Issue ? "checked" : "") : "") value="True" />
+                                <label for="Issue_1">上線</label>
+                            </div>
+                            <div>
+                                <input name="Issue" type="radio" id="Issue_0" class="with-gap" @(Model != null ? (!Model.Issue ? "checked" : "") : "checked") value="False" />
+                                <label for="Issue_0">隱藏</label>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+                    <input type="hidden" id="ID" name="ID" value="@(Model != null ? Model.Id: 0)" />
+                    <input type="hidden" id="Lang" name="Lang" value="@(Model != null ? Model.Lang:"zh-hant")" />
+                    <input type="hidden" id="Domin" name="Domin" value="@(Model != null ? Model.Domin: "")" />
+                    <input type="hidden" id="SourceID" name="SourceID" value="@ViewBag.SourceID " />
+                </div>
+            </div>
+        </div>
+        </div>
+</form>
+    <script type="text/javascript">
+        var checkUrl = "@Url.Action("IsExist")";
+        var domainIndex = 0;
+        $(function () {
+            @if (ViewBag.Exit != null && (bool)ViewBag.Exit)
+            {
+                <text>
+
+            Component.alert('儲存成功。', function () {
+                Component.closeRight();
+                parent.$.colorbox.close();
+                if (window.top.mainWebContent.refreshViews)
+                    window.top.mainWebContent.refreshViews();
+                if (parent.refreshList)
+                    parent.refreshList();
+            });
+            </text>
+            }
+            else
+            {
+                if (ViewBag.Message != null)
+                {
+
+                <text>
+
+                Component.alert('@ViewBag.Message ');
+                </text>
+                }
+            }
+            $("input[name='webType']").on('change', function () {
+                var $this = $(this);
+
+                if (this.checked) {
+
+                    if ($this.attr('id') != 'webType-2') {
+                        $('#webType-box').slideUp();
+                    } else {
+                        $('#webType-box').slideDown();
+                    }
+
+                }
+            }).change();
+
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate', { promptPosition: 'topRight' })) {
+                    var sn = $("#SN").val();
+                    var id = $("#ID").val();
+                    var isCheckPass = true;
+                    $("span[id*=spSN]").fadeOut();
+                    if (sn.length < 4) {
+                        //$("span[id*=spSN_Length]").fadeIn();
+                        Component.showElementError('#SN', $("span[id*=spSN_Length]").text());
+                        isCheckPass = false;
+                    }
+                    else {
+                        var msg = checkLetterOrNum($("#SN"));
+                        if (msg) {
+                            Component.showElementError('#SN', $("span[id*=spSN_Length]").text());
+                            //$("span[id*=spSN_Length]").fadeIn();
+                            isCheckPass = false;
+                        }
+                        else {
+                            $.getJSON(checkUrl, { ID: id, SN: sn }, function (data) {
+                                if (data == "True") {
+                                    Component.showElementError('#SN', $("span[id*=spSN_Exist]").text());
+                                    //$("span[id*=spSN_Exist]").fadeIn();
+                                    isCheckPass = false;
+                                }
+                                else { // 非同步旳原因, 所以需寫在回應後
+                                    if (isCheckPass) {
+                                        window.scrollTo(0, document.body.scrollHeight);
+                                        form.submit();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                parent.$.colorbox.close();
+            });
+
+            $("#SN").blur(function () {
+                var sn = $(this).val();
+                var id = $("#ID").val();
+                $("span[id*=spSN]").fadeOut();
+                $("#sp_SN_View").html("");
+                if (sn.length < 4) {
+                    Component.showElementError('#SN', $("span[id*=spSN_Length]").text());
+                    //$("span[id*=spSN_Length]").fadeIn();
+                }
+                else {
+                    var msg = checkLetterOrNum($("#SN"));
+                    if (msg) {
+                        Component.showElementError('#SN', $("span[id*=spSN_Length]").text());
+                        //$("span[id*=spSN_Length]").fadeIn();
+                    }
+                    else {
+                        $.getJSON(checkUrl, { ID: id, SN: sn }, function (data) {
+                            if (data == "True") {
+                                Component.showElementError('#SN', $("span[id*=spSN_Exist]").text());
+                                //$("span[id*=spSN_Exist]").fadeIn();
+                            }
+                            else {
+                                //Component.showElementError('#SN', $("span[id*=spSN_OK]").text()); //Joe 20190923 問題單0918 #2
+                                $("span[id*=spSN_OK]").fadeIn();
+                                $("#sp_SN_View").html(sn);
+                            }
+                        });
+                    }
+                }
+            });
+            $('#btnAddDomain').click(function () {
+                AppendDomains();
+            });
+            if ($("#Domin").val() == "")
+                AppendDomains();
+            else {
+                var domains = JSON.parse($("#Domin").val());
+                for (var i = 0; i < domains.length; i++) {
+                    AppendDomains();
+                    $("#domains_" + (i + 1).toString()).val(domains[i].Domain);
+                }
+            }
+            $("#sp_SN_View").html($("#SN").val());
+
+        });
+        function AppendDomains() {
+            domainIndex++;
+            $("#divDomains").append("<div class=\"input-field inline full no-label has-tip\" id=\"divDomain_{index}\"><input id=\"domains_{index}\" name=\"domains\" type=\"text\" /><a class=\"tooltip tooltipstered\" href=\"javascript:\" onclick=\"Remove('{index}')\"><i class=\"cc cc-close\"></i></div>".replace(/{index}/g, domainIndex.toString()));
+
+        }
+        function Remove(index) {
+            var objID = "#divDomain_" + index;
+            if ($("#divDomains").find(objID).length > 0) {
+                $("#divDomains").children("div").remove("#divDomain_" + index);
+            }
+        }
+    </script>

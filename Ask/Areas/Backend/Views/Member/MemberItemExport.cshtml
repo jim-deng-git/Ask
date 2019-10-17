@@ -1,0 +1,76 @@
+﻿@using System.Data;
+@{
+    Layout = null;
+
+    DataTable memberItem = ViewData["MemberItem"] as DataTable;
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+        table {
+            width: 95%;
+            margin: 0px auto;
+            text-align: center;
+            border-style: solid;
+        }
+
+            table th {
+                border: 1px black solid;
+                padding: 3px;
+                font-size: 12pt;
+                text-align: center;
+            }
+
+            table td {
+                border: 1px black solid;
+                padding: 3px;
+                font-size: 11pt;
+                text-align: center;
+                mso-number-format: "\@@";
+            }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                @for (int i = 0; i < memberItem.Columns.Count; i++)
+                {
+                    <th>@memberItem.Columns[i].ColumnName</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{int idx = 1;}
+            @foreach (DataRow dr in memberItem.Rows)
+            {
+                <tr>
+                    @foreach (DataColumn dc in memberItem.Columns)
+                    {
+                        if (dc.ColumnName == "銀行存摺" || dc.ColumnName == "上傳身分證" || dc.ColumnName == "生活照")
+                        {
+                            var fileNames = dr[dc].ToString().Split(',');
+                            string result = "";
+                            foreach (string fileName in fileNames)
+                            {
+                                string path = $"{idx.ToString("000")}/";
+                                result += $"<a href='{path + fileName}'>{fileName}</a><br />";
+                            }
+                            <td>@Html.Raw(result)</td>
+                        }
+                        else
+                        {
+                            <td>@dr[dc]</td>
+                        }
+                    }
+                </tr>
+                idx++;
+            }
+        </tbody>
+    </table>
+</body>
+</html>

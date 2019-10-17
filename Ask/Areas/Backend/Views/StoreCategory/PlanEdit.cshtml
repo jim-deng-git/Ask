@@ -1,0 +1,244 @@
+﻿@model WorkV3.Models.StorePlanModel
+@{
+    ViewBag.Title = "商店方案編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<form id="editForm" method="post" enctype="multipart/form-data" action="@Html.Raw(Url.Action("PlanEdit", new { siteId = ViewBag.SiteID}))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">商店方案編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field inline full">
+                                    <input id="PlanName" name="PlanName" type="text" value="@Model.PlanName" placeholder="商店方案名稱">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">圖標</div>
+                                <div class="input-field inline full">
+                                    <div class="input-field m-T-none" data-visual="square">
+                                        <input type="file" id="fCoverImg" name="fCoverImg" />
+                                        <input type="hidden" id="CoverImg" name="CoverImg" value='@Model.CoverImg' />
+                                        <input type="hidden" id="fCoverImgBase64" name="fCoverImgBase64" />
+                                        <input type="hidden" id="fCoverImgBase64_Resize" name="fCoverImgBase64_Resize" />
+                                    </div>
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>建議尺寸：128 x 128 px。</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">說明</div>
+                                <div class="input-field inline full">
+                                    <div class="img-text-height">
+                                        <textarea contenteditable="true" id="Description" name="Description">@Model.Description</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">簽約金(年資)</div>
+                                <div class="radio-box inline full" data-radioGroup="SigningBonusMode">
+                                    <div class="col-1">
+                                        <input class="with-gap" type="radio" name="SigningBonusMode" id="SigningBonusMode0" value="0">
+                                        <label for="SigningBonusMode0">免簽約金</label>
+                                    </div>
+                                    <div class="col-1">
+                                        <input class="with-gap" type="radio" name="SigningBonusMode" id="SigningBonusMode1" value="1">
+                                        <label for="SigningBonusMode1">須簽約金</label>
+                                        <span id="signingBonusSetting" style="display: none;">
+                                            <span class="input-field inline small">
+                                                <select name="" id="">
+                                                    <option value="NT">NT$</option>
+                                                    <option value="US">US$</option>
+                                                </select>
+                                            </span>
+                                            <span class="input-field inline short">
+                                                <input type="text" id="SigningMoney" name="SigningMoney" value="@Model.SigningMoney">
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>商店每次設定商店方案時，視同一份合約，可能會收取簽約金。所以如果想要收取年費，就把方案期間訂為一年，每年簽訂合約時所收取的簽約金，就視同年費。</div>
+                                    </div>
+
+                                    <input type="hidden" id="SigningBonusMode" name="SigningBonusMode" value="@Model.SigningBonusMode" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">交易抽成</div>
+                                <div class="radio-box inline full" data-radioGroup="CommissionMode">
+                                    <div class="col-1">
+                                        <input class="with-gap" type="radio" name="CommissionMode" id="CommissionMode0" value="0">
+                                        <label for="CommissionMode0">免抽成</label>
+                                    </div>
+                                    <div class="col-1">
+                                        <input class="with-gap" type="radio" name="CommissionMode" id="CommissionMode1" value="1">
+                                        <label for="CommissionMode1">交易成功須抽成</label>
+                                        <span id="commissionSetting" style="display: none;">
+                                            <span class="input-field inline short">
+                                                <input type="text" id="CommissionPercent" name="CommissionPercent" value="@Model.CommissionPercent" class="text-C">
+                                            </span>%
+                                        </span>
+                                    </div>
+                                    <div class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>此商店方案的交易抽成，是計算每筆訂單的「店結算金額」的抽成比例，在月報表中記錄要給本商城的抽成費。其中，店結算金額有含入運費與折扣，也等同於「店月報表」上的營業額。</div>
+                                    </div>
+                                    <input type="hidden" id="CommissionMode" name="CommissionMode" value="@Model.CommissionMode" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">業績獎金</div>
+                                <div class="radio-box inline full" data-radioGroup="BonusMode">
+                                    <div class="col-1">
+                                        <input class="with-gap" type="radio" name="BonusMode" id="BonusMode0" value="0">
+                                        <label for="BonusMode0">無</label>
+                                    </div>
+                                    <div class="col-1">
+                                        <input class="with-gap" type="radio" name="BonusMode" id="BonusMode1" value="1">
+                                        <label for="BonusMode1">固定金額</label>
+                                        <span id="bonusSetting-price" style="display: none;">
+                                            <span class="input-field inline small">
+                                                <select name="" id="">
+                                                    <option value="NT">NT$</option>
+                                                    <option value="US">US$</option>
+                                                </select>
+                                            </span>
+                                            <span class="input-field inline short">
+                                                <input type="text" id="BonusMoney" name="BonusMoney" value="@Model.BonusMoney">
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            核發給「經辦業務」的費用：<br>
+                                            <!-- 1. 如果是根據營業額之「比例」，於每個月結算於「業務配潤表」。<br> -->
+                                            1. 如果是根據「固定金額」，建議於簽約收款後 即可發給經辦業務。<br>
+                                            2. 如果一筆合約設定了多名業務，該筆獎金平分。
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="BonusMode" id="BonusMode" value="@Model.BonusMode" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">預設期間長度</div>
+                                <div class="input-field inline full">
+                                    <div class="input-field inline small">
+                                        <input type="text" class="text-C" value="@Model.Period" name="Period" id="Period">
+                                    </div>個月
+                                    <div class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>設定為 12 個月時，即為 1 年期。</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+    @section FArea {
+        @BundleConfig.StickyTableHeaders()
+        @BundleConfig.FileUploader()
+        @BundleConfig.Validate()
+        @BundleConfig.Component()
+        <script type="text/javascript">
+    Component.radioList('div[data-radioGroup]');
+    var editor = Component.editor('Description');
+
+    Component.singleImageUpload('#fCoverImg', '@(Href("~/"))', '@ViewBag.UploadUrl_plan', true);
+    $('#btnSave').click(function () {
+        var form = $('#editForm');
+        if (form.validationEngine('validate')) {
+            form.submit();
+        }
+    });
+    $(function () {
+        $("input[name='SigningBonusMode']").on('change', function () {
+            var selection = $(this).attr('id');
+            switch (selection) {
+                case "SigningBonusMode1":
+                    $("#signingBonusSetting").fadeIn();
+
+                    break;
+
+                default:
+                    $("#signingBonusSetting").fadeOut();
+            }
+        });
+
+        $("input[name='CommissionMode']").on('change', function () {
+            var selection = $(this).attr('id');
+            switch (selection) {
+                case "CommissionMode1":
+                    $("#commissionSetting").fadeIn();
+
+                    break;
+
+                default:
+                    $("#commissionSetting").fadeOut();
+            }
+        });
+
+        $("input[name='BonusMode']").on('change', function () {
+            var selection = $(this).attr('id');
+            switch (selection) {
+                case "BonusMode1":
+                    $("#bonusSetting-rate").fadeOut();
+                    $("#bonusSetting-price").fadeIn();
+
+                    break;
+
+                default:
+                    $("#bonusSetting-rate").fadeOut();
+                    $("#bonusSetting-price").fadeOut();
+            }
+        });
+    })
+    @if ((ViewBag.Exit as bool?) == true) {
+        <text>
+        if (parent.refreshList)
+            parent.refreshList();
+        parent.$.colorbox.close();
+        </text>
+    }
+        </script>
+    }

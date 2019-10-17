@@ -1,0 +1,34 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    Layout = null;
+
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+@foreach (ArticleModels item in Model) {
+    List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+    SitePage page = itemPages[item.CardNo];
+    ResourceImagesModels img = null;
+    if (!string.IsNullOrWhiteSpace(item.Icon)) {
+        img = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Icon);
+    }
+    <li class="item-static" data-filter-class="all, @string.Join(", ", articleTypes.Select(t => t.ID))">
+        <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+            @if (img != null) {
+                <img src="@(uploadUrl + img.Img)" />
+            }
+            @if (articleTypes?.Count() > 0) {
+                foreach (ArticleTypesModels type in articleTypes) {
+                    <div class="article-list-type">
+                        <span data-color="@type.Color">@type.Name</span>
+                    </div>
+                }
+            }
+            <div class="article-list-title">@item.Title</div>
+            <div class="article-list-desc">@item.RemarkText</div>
+        </a>
+    </li>    
+}

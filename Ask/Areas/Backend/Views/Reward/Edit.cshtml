@@ -1,0 +1,941 @@
+﻿﻿@model RewardModel
+@using Newtonsoft.Json.Linq;
+@{
+    ViewBag.Title = "Edit";
+    bool isIframe = Request.QueryString["iframe"] == "1";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    IEnumerable<RewardSettingModel> RewardKind = ViewBag.RewardKind;
+    IEnumerable<RewardPlaceModel> RewardPlace = ViewBag.RewardPlace;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, iframe = isIframe ? 1 : 0 };
+    IEnumerable<RewardFieldModel> Field = ViewBag.Field;
+    var youtubeCoverUrl = Request.Url.Scheme + "://img.youtube.com/vi/";
+    string uploadUrl = ViewBag.UploadUrl;
+    string listUrl = Url.Action("List", siteQuery);
+}
+@section FArea {
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+    <script type="text/javascript">
+
+        Component.singleImageUploadsize('#fImage', '@(Href("~/"))', '@uploadUrl', true);
+        Component.radioList('div[data-radioGroup]');
+
+        $('#btnShowDescription').each(function () {//wei 20180820 加眼睛
+            $(this).click(function () {
+                var iElm = $(this).find('i');
+                if (iElm.hasClass('cc-eye')) {
+                    iElm.removeClass('cc-eye').addClass('cc-eye-off');
+                    $(this).find('input').val('False');
+                } else {
+                    iElm.removeClass('cc-eye-off').addClass('cc-eye');
+                    $(this).find('input').val('True');
+                }
+            });
+
+            var val = $(this).find('input').val();
+            if (val == 'False') {
+                $(this).click();
+            }
+        });
+
+          $('[data-radioGroup="MatchGroup"]').on('click', ':radio', function () {
+            var val = this.value;
+            $('.matchGroup').hide();
+            $('.' + val).fadeIn();
+        }).find(':radio:checked').click();
+
+        function initVideo() {
+            function setVideoVal(videoType, video, videoPhoto) {
+                if (videoType == 'youtube') {
+                    $('#youtubeId').val(video);
+                    if (/\.(jpe?g|png|gif)$/i.test(videoPhoto)) {
+                        $('#isYoutubeCustomImg').prop('checked', true);
+                        $('#youtubeCustomImgVal').val('{"ID": 1, "Img": "' + videoPhoto + '" }');
+                    }
+
+                } else if (videoType == 'vimeo') {
+                    $('#vimeoId').val(video);
+                    if (videoPhoto && ! /^https ?:\/\//i.test(videoPhoto)) {
+                        $('#isVimeoCustomImg').prop('checked', true);
+                        $('#vimeoCustomImgVal').val('{"ID": 1, "Img": "' + videoPhoto + '" }');
+                    }
+                } else if (videoType == 'custom') {
+                    $('#videoUpload').data('video', video);
+                }
+            }
+
+            @if(Model.UseType == "Video") {
+                @:setVideoVal('@Model.videoType', '@Model.VideoID', '@ViewBag.VideoImg');
+            } else if(Model.UseType == "Img") {
+                @:$('#Image').val('{"ID": 1, "Img": "@ViewBag.Img"}');
+            }
+
+            Component.singleImageUploadsize('#youtubeCustomImg', '@(Href("~/"))', '@uploadUrl', true);
+            Component.singleImageUploadsize('#vimeoCustomImg', '@(Href("~/"))', '@uploadUrl', true);
+            Component.singleVideoUploadsize('#videoUpload', '@Html.Raw(Url.Action("FileUpload", "Common", new { siteId = siteId, menuId = menuId, sourceNo = 0 }))', '@uploadUrl', $('#videoUpload').data('video'));
+
+            $('[data-radioGroup="VideoTypeGroup"]').on('click', ':radio', function () {
+                var val = this.value;
+                $('.videoTypeGroup').hide();
+                $('.' + val).fadeIn();
+            }).find(':radio:checked').click();
+
+            $('#youtubeId').change(function () {
+                var v = $.trim(this.value);
+                if (v) {
+                    $('#youtubePreview').prop('src', 'https://www.youtube.com/embed/' + v);
+
+                    var imgHtml =
+                        '<div>' +
+                        '   <input class="with-item video-img" name="youtubeImg" type="radio" id="youtubeImg" value="0" checked="checked" />' +
+                        '   <img src="@youtubeCoverUrl' + v + '/0.jpg" />' +
+                        '   <label for="youtubeImg"></label>' +
+                        '</div>';
+                    $('#youtubeThumb').html(imgHtml);
+                } else {
+                    $('#youtubePreview').prop('src', '');
+                    $('#youtubeThumb').html('');
+                }
+            }).triggerHandler('change');
+
+            $('#isYoutubeCustomImg,#isVimeoCustomImg').each(function () {
+                $(this).click(function () {
+                    var outerDiv = $(this).closest('div.radio-box');
+                    if (this.checked) {
+                        outerDiv.prev().slideUp();
+                        outerDiv.next().slideDown();
+                    } else {
+                        outerDiv.prev().slideDown();
+                        outerDiv.next().slideUp();
+                    }
+                }).triggerHandler('click');
+            });
+
+            $('#vimeoId').change(function ()
+            {
+                var v = $.trim(this.value);
+                if (v) {
+                    $('#vimeoPreview').prop('src', 'http://player.vimeo.com/video/' + v);
+
+                    $.get('http://vimeo.com/api/v2/video/' + v + '.json ', function (vimeoVideo) {
+                        if (vimeoVideo.length) {
+                            vimeoVideo = vimeoVideo[0];
+                            var thumbUrl = vimeoVideo.thumbnail_large;
+
+                            var imgHtml =
+                                '<div>' +
+                                '   <input class="with-item video-img" name="vimeoImg" type="radio" id="vimeoImg" value="' + thumbUrl + '" checked="checked" />' +
+                                '   <img src="' + thumbUrl + '" />' +
+                                '   <label for="vimeoImg"></label>' +
+                                '</div>';
+                            $('#vimeoThumb').html(imgHtml);
+                        }
+                    });
+                } else {
+                    $('#vimeoPreview').prop('src', '');
+                    $('#vimeoThumb').html('');
+                }
+            }).triggerHandler('change');
+        }
+        initVideo();
+
+        $('#RepeatField').change(function () {
+            if ($(document.getElementsByName('IsRepeat')).filter(':checked').val() == 'False') {
+                var v = $(this).val();
+                if (v) {
+                    $('#' + v).prop('checked', true);
+                    $('#' + v + '_Required').prop('checked', true);
+                }
+            }
+        });
+
+        $(document.getElementsByName('IsRepeat')).click(function () {
+            if (this.value == 'False')
+                $('#RepeatField').trigger('change');
+        });
+
+        $('#liCustomField').on('click', ':checkbox', function () {
+            if (!this.checked && $(document.getElementsByName('IsRepeat')).filter(':checked').val() == 'False') {
+                var id = this.id.split('_')[0];
+                if ($('#RepeatField').val() == id) {
+                    Component.alert('該欄位為投稿限制欄位，不可勾除');
+                    this.checked = true;
+                }
+            }
+            @*function submitHandler() {
+                if (@Model.videoType== "youtube")
+                    if ($('#isYoutubeCustomImg').prop('checked'))
+                    {
+                        $('#VideoImg').val($('#customVideoImg').val());
+                        $('#VideoImgM').val($('#customVideoImgM').val());
+                    } else {
+                        var selectedImg = $(document.getElementsByName('youtubeImg')).filter(':checked');
+                        $('#VideoImg').val(selectedImg.length ? selectedImg.val() : '');
+                        $('#VideoImgM').val(selectedImg.length ? selectedImg.val() : '');
+                    }
+                else
+                    if ($('#isYoutubeCustomImg').prop('checked')) {
+                        $('#VideoImg').val($('#customVideoImg').val());
+                        $('#VideoImgM').val($('#customVideoImgM').val());
+                    } else {
+                        var selectedImg = $(document.getElementsByName('youtubeImg')).filter(':checked');
+                        $('#VideoImg').val(selectedImg.length ? selectedImg.val() : '');
+                        $('#VideoImgM').val(selectedImg.length ? selectedImg.val() : '');
+                    }
+                } *@
+        });
+
+    function checkLink(field) {
+        var v = $.trim(field.val());
+        if (v) {
+            if (!/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+    }
+
+    $('#LimitField').change(function () {
+        if ($(document.getElementsByName('LimitLogin')).filter(':checked').val() == 'false') {
+            var v = $(this).val();
+            if (v) {
+                $('#' + v).prop('checked', true);
+                $('#' + v + '_Required').prop('checked', true);
+            }
+        }
+    });
+
+    $('#LimitField').change(function () {
+        if ($(document.getElementsByName('LimitLogin')).filter(':checked').val() == 'false') {
+            var v = $(this).val();
+            if (v) {
+                $('#' + v).prop('checked', true);
+                $('#' + v + '_Required').prop('checked', true);
+            }
+        }
+    });
+
+    $(document.getElementsByName('LimitLogin')).click(function () {
+        if (this.value == 'False')
+            $('#LimitField').trigger('change');
+    });
+
+    $('#liCustomField').on('click', ':checkbox', function () {
+        if (!this.checked && $(document.getElementsByName('LimitLogin')).filter(':checked').val() == 'false') {
+            var id = this.id.split('_')[0];
+            if ($('#LimitField').val() == id) {
+                Component.alert('該欄位為投稿限制欄位，不可勾除');
+                this.checked = true;
+            }
+            else if (this.id.split('_').length === 1) {
+                $(`#${this.id}_Required`).prop('checked', false);
+            }
+        }
+    });
+
+    function checkLimitLoginField(field) {
+        var v = field.find('select').val();
+        if (!v) {
+            if (field.prevAll('input:first').prop('checked'))
+                return '* 必填欄位';
+        }
+    }
+    </script>
+}
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("Edit", siteQuery))" enctype="multipart/form-data">
+    <input type="hidden" value="@ViewBag.RedirectUrl" name="RedirectUrl" />
+    <input name="ID" value="@Model.ID" type="hidden">
+
+    <div class="groove groove-1">
+        @* 先把上一頁改成 js 的上一頁功能，有問題再改回來 *@
+        @*<h1 class="title-admin-page"><a href="@Url.Action("List",siteQuery)" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>集點編輯</h1>*@
+        @* cc20180907<h1 class="title-admin-page"><a href = "javascript: window.history.back();" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>集點編輯</h1>*@
+        @* 版型錯誤 cc改版型 20180907 *@
+        <div class="card shadow-none">
+            @if (isIframe)
+             {
+                 <div class="lightbox-top-bar">
+                     <div class="lightbox-top-bar-title">集點編輯</div>
+                 </div>
+             }
+             else
+             {
+                 <div class="lightbox-top-bar">
+                     <div class="lightbox-top-bar-title"><a href="javascript: window.history.back();" class="btn-grey-darken-4-o transparent goBack p-none font-lg"><i class="cc cc-arrow-left"></i></a>集點編輯</div>
+                 </div>
+             }
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">主標題</div>
+                        <div class="input-field inline full">
+                            <input placeholder="" name="Title" type="text" value="@Model.Title">
+                        </div>
+                    </div>
+                </li>
+                <li data-area="RewardKindArray">
+                    <div class="col-1">
+                        <div class="title inline">類別</div>
+                        <div class="radio-box inline full">
+                            @if(RewardKind != null)
+                            {
+                                for (int i = 0, len = RewardKind.Count(); i < len; ++i)
+                                {
+                                    string[] mRewardKind = (Model.RewardKind == null ? "" : Model.RewardKind).Split(',');
+                                    RewardSettingModel item = RewardKind.ElementAt(i);
+                                    <div>
+                                        <input type="checkbox" id="RewardKindArray_@i" name="RewardKindArray" value="@item.ID" @(mRewardKind.Contains(item.ID.ToString()) ? "checked=\"checked\"" : string.Empty) />
+                                        <label for="RewardKindArray_@i">@item.Title</label>
+                                    </div>
+                                }
+                            }
+                            
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="blockquote">
+                            <div class="col-3-partner">
+                                <textarea class="editor-txt" contenteditable="true" id="ContentText" name="ContentText">@Model.ContentText</textarea>
+                            </div>
+                            <div class="col-3">
+                                <div class="radio-box inline" data-radioGroup="MatchGroup">
+                                    <div>
+                                        <input type="radio" class="with-gap" value="NoUse" />
+                                        <label>無搭配</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-gap" value="Img" />
+                                        <label>搭配圖片</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="with-gap" value="Video" />
+                                        <label>搭配影片</label>
+                                    </div>
+                                    <input type="hidden" name="Match" value="@Model.UseType" />
+                                </div>
+                                <a id="btnShowDescription" class="btn-del square btn-large transparent" href="javascript:">
+                                    @* wei 20180820 加眼睛*@
+                                <i class="cc cc-eye"></i>
+                                <input type="hidden" name="ShowDescription" value="@Model.ShowDescription.ToString()" />
+                            </a>
+                            <div style="display:none;" class="matchGroup Img">
+                                <input type="file" id="fImage" name="fImage" />
+                                <input type="hidden" id="Image" name="Image" value='@(string.IsNullOrWhiteSpace(Model.Img) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.Img }))' />
+                                <input type="hidden" id="fImageBase64" name="fImageBase64" />
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>
+                                        建議尺寸640px X 426px
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:none;" class="matchGroup Video">
+                                <div class="radio-box inline full" data-radioGroup="VideoTypeGroup">
+                                    <div>
+                                        <input class="with-item transparent" type="radio" value="youtube" />
+                                        <i class="cc cc-youtube"></i>
+                                        <label>Youtube</label>
+                                    </div>
+                                    @*<div>
+                                            <input class="with-item transparent" type="radio" value="vimeo" />
+                                            <i class="cc cc-vimeo"></i>
+                                            <label for="video-vimeo">Vimeo</label>
+                                        </div>*@@*wei 20180824 被下達vimeo註解令*@
+                                        <div>
+                                            <input class="with-item transparent" type="radio" value="custom" />
+                                            <i class="cc cc-upload-o"></i>
+                                            <label>自行上傳</label>
+                                        </div>
+                                        <input type="hidden" name="VideoType" value="@Model.videoType" />
+                                    </div>
+                                    <div style="display:none;" class="videoTypeGroup youtube">
+                                        <div class="col-1">
+                                            <div class="title inline no-label">影片網址</div>
+                                            <div class="input-field inline full no-label">
+                                                <input type="text" id="youtubeId" name="youtubeId" placeholder="請填入Youtube影片 ID" class="validate[required]" />
+                                            </div>
+                                            <a class="tooltip tooltipstered" title="YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE，輸入ndGUClIX9ZE"><i class="cc cc-attention"></i></a>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="preview">
+                                                <iframe id="youtubePreview" frameborder="0" allowfullscreen></iframe>
+                                            </div>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="title m-T-6">影片截圖</div>
+                                            <div id="youtubeThumb" class="radio-box inline full with-img"></div>
+                                            <div class="radio-box inline full">
+                                                <div>
+                                                    <input type="checkbox" id="isYoutubeCustomImg" name="isYoutubeCustomImg" value="1" />
+                                                    <label for="isYoutubeCustomImg">自行上傳圖片</label>
+                                                </div>
+                                            </div>
+                                            <div class="input-field inline full">
+                                                <input type="file" id="youtubeCustomImg" name="youtubeCustomImg" />
+                                                <input type="hidden" id="youtubeCustomImgVal" name="youtubeCustomImgVal" />
+                                                <input type="hidden" id="youtubeCustomImgBase64" name="youtubeCustomImgBase64" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display:none;" class="videoTypeGroup vimeo">
+                                        <div class="col-1">
+                                            <div class="title inline no-label">影片網址</div>
+                                            <div class="input-field inline full no-label">
+                                                <input type="text" id="vimeoId" name="vimeoId" placeholder="請填入vimeo影片 ID" class="validate[required]" />
+                                            </div>
+                                            <a class="tooltip tooltipstered" title="Vimeo影片網址範例：https://player.vimeo.com/video/15205149，輸入15205149"><i class="cc cc-attention"></i></a>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="preview">
+                                                <iframe id="vimeoPreview" frameborder="0" allowfullscreen></iframe>
+                                            </div>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="title m-T-6">影片截圖</div>
+                                            <div id="vimeoThumb" class="radio-box inline full with-img"></div>
+                                            <div class="radio-box inline full">
+                                                <div>
+                                                    <input type="checkbox" id="isVimeoCustomImg" name="isVimeoCustomImg" value="1" />
+                                                    <label for="isVimeoCustomImg">自行上傳圖片</label>
+                                                </div>
+                                            </div>
+                                            <div class="input-field inline full">
+                                                <input type="file" id="vimeoCustomImg" name="vimeoCustomImg" />
+                                                <input type="hidden" id="vimeoCustomImgVal" name="vimeoCustomImgVal" />
+                                                <input type="hidden" id="vimeoCustomImgBase64" name="vimeoCustomImgBase64" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display:none;" class="videoTypeGroup custom">
+                                        <div class="col-1">
+                                            <input type="file" id="videoUpload" name="videoUpload" data-field="customVideo" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">開放集點期間</div>
+                        <div class="input-field inline">
+                            <input type='text' class="input-cal datetimepicker" placeholder="開始時間" name="BeginDate" value="@Model.BeginDate.ToString("yyyy.MM.dd HH:mm")">
+                        </div>
+                        <div class="input-field inline">
+                            <input type='text' class="input-cal datetimepicker" placeholder="結束時間" name="EndDate" value="@Model.EndDate.ToString("yyyy.MM.dd HH:mm")">
+                        </div>
+                    </div>
+                </li>
+                <li data-area="RewardPlace">
+                    <div class="col-1 venue">
+                        <div class="title inline">集點場地</div>
+                        <div class="">
+                            <div class="chips inline" id="reward-venue">
+                                @*@for (int i = 0, len = (Model.RewardPlace == null ? "" : Model.RewardPlace).Split(',').Count(); i < len; ++i)
+                                    {
+                                        string mRewardPlace = (Model.RewardPlace == null ? "" : Model.RewardPlace).Split(',')[i];
+                                        if (mRewardPlace == "")
+                                        {
+                                            continue;
+                                        }
+                                        foreach (var item in RewardPlace)
+                                        {
+                                            if (item.ID.ToString() == mRewardPlace)
+                                            {
+                                                JObject imgs = JObject.Parse(item.Img == "" ? "{\"Img\":\"\"}" : item.Img);
+                                                <div class="chip ui-state-default">
+                                                    <img class="rounded-0" src="@(ViewBag.UploadUrl+"/RewardPlace/" + Server.UrlPathEncode(imgs["Img"].ToString()))" alt="烏梅劇院"> 烏梅劇院
+                                                    <a href="javascript:;" class="tooltip" title="刪除"><i class="cc cc-close"></i></a>
+                                                </div>
+                                            }
+                                        }
+                                    }*@
+                                @if(Model.RewardPlace != null && RewardPlace != null)
+                                {
+                                    foreach (var item in Model.RewardPlace.Split(','))
+                                    {
+                                        foreach (var item2 in RewardPlace)
+                                        {
+                                            if (item2.ID.ToString() == item)
+                                            {
+
+                                                JObject imgs = JObject.Parse(string.IsNullOrEmpty(item2.Img) ? "{\"Img\":\"\"}" : item2.Img);
+                                                <div class="chip ui-state-default">
+                                                    <input style="display:none" name="RewardPlace" value="@(item2.ID)">
+                                                    <img class="rounded-0" src="@(ViewBag.UploadVPath+"RewardPlace/" + Server.UrlPathEncode(imgs["Img"].ToString()))" alt="@item2.Name"> @item2.Name
+                                                    <a onclick="$(this).parents('.chip').remove();" class="tooltip" title="刪除"><i class="cc cc-close"></i></a>
+                                                </div>
+                                            }
+                                        }
+
+                                    }
+                                }
+                                
+                                @*<span id="OldPlaceList">
+
+
+                                    </span>
+
+
+                                    </span>*@
+                                <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="venueBox" title="選擇集點場地" id="add-venue"><i class="cc cc-plus"></i></a>
+                                <ul id="venueBox" class="dropdown-content customContent large closeOnClick">
+                                    <li>
+                                        <iframe class="dropdownIframe" src="@Url.Action("venueEdit",siteQuery)" frameborder="0"></iframe>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">參與限制</div>
+                        <div class="radio-box inline" data-radioGroup="LimitLogin">
+                            <div>
+                                <input class="with-gap" name="LimitLogin" type="radio" id="loginY" @(Model.LimitLogin ? "checked=\"checked\"" : string.Empty ) value="true">
+                                <label for="loginY">必須會員登入後才可集點</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="LimitLogin" type="radio" id="loginN" onclick="$('[name=Limit]').change()" @((!Model.LimitLogin) ? "checked=\"checked\"" : string.Empty ) value="false">
+                                <label for="loginN">無須登入，集點時只需填寫：</label>
+                            </div>
+                            <input type="hidden" id="LimitLogin" name="LimitLogin" value="@Model.LimitLogin.ToString()" />
+                        </div>
+                        <div id="divRepeatField" class="input-field inline validate[funcCall[checkLimitLoginField]]">
+                            <select name="Limit" id="LimitField">
+                                <option value="">請選擇</option>
+                                <option @(Model.Limit == "手機" ? "selected" : string.Empty)>手機</option>
+                                <option @(Model.Limit == "身份證字號" ? "selected" : string.Empty)>身份證字號</option>
+                                <option @(Model.Limit == "Email" ? "selected" : string.Empty)>Email</option>
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">集滿條件</div>
+                        <span>集滿</span>
+                        <div class="input-field inline short">
+                            <input id="CompletePlace" name="CompletePlace" type="text" value="@Model.CompletePlace">
+                        </div>
+                        <span>個地點</span>
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>不可超過集點場地的數量。</div>
+                        </div>
+                    </div>
+                </li>
+                @{
+
+                }
+                <li id="liCustomField">
+                    <div class="col-2">
+                        <div class="title inline">集滿填寫資料</div>
+                        <div class="radio-box inline full member-info">
+                            @{
+                                List<RewardField> fields = ViewBag.Fields;
+                                if(fields != null)
+                                {
+                                    foreach (RewardField item in fields)
+                                    {
+                                        if (item.Name == "地址")
+                                        {
+                                            <div class="btn-grey bg-grey-lighten-2 d-block text-L d-block d-flex justify-space-between ui-sortable-handle">
+                                                <span>
+                                                    <input type="checkbox" class="with-gap field-name" id="@item.Name" @(item.IsShow ? "checked" : string.Empty) />
+                                                    <label for="@item.Name">@item.Name</label>
+                                                </span>
+                                                <span>
+                                                    <input type="radio" class="with-gap" name="@(item.Name)_Group" id="@(item.Name)_TW" value="台灣" @(item.Limit == "台灣" ? "checked" : string.Empty) />
+                                                    <label for="@(item.Name)_TW">台灣</label>
+                                                </span>
+                                                <span>
+                                                    <input type="radio" class="with-gap" name="@(item.Name)_Group" id="@(item.Name)_Global" value="全球" @(item.Limit == "全球" ? "checked" : string.Empty) />
+                                                    <label for="@(item.Name)_Global">全球</label>
+                                                </span>
+                                                <span class="float-R">
+                                                    <input type="checkbox" class="with-gap" id="@(item.Name)_Required" @(item.Required ? "checked" : string.Empty) />
+                                                    <label for="@(item.Name)_Required">必填</label>
+                                                </span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="btn-grey bg-grey-lighten-2 d-block text-L ui-sortable-handle">
+                                                <span>
+                                                    <input type="checkbox" class="field-name" id="@item.Name" @(item.IsShow ? "checked" : string.Empty) />
+                                                    <label for="@item.Name">@item.Name</label>
+                                                </span>
+                                                <span class="float-R">
+                                                    <input type="checkbox" class="" id="@(item.Name)_Required" @(item.Required ? "checked" : string.Empty) />
+                                                    <label for="@(item.Name)_Required">必填</label>
+                                                </span>
+                                            </div>
+                                        }
+                                    }
+                                }
+                                
+                            }
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <input type="hidden" id="Fields" name="Fields" />
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">條款設定</div>
+                        <div class="inline col-5-partner m-L-5">
+                            <div class="radio-box inline full">
+                                <input class="" name="ShowTerms" type="checkbox" id="term" value="true" @(Model.ShowTerms ? "checked" : "")>
+                                <label for="term">顯示參與條款</label>
+                            </div>
+                            <div class="alert transparent">
+                                <i class="cc cc-attention"></i>
+                                <div>若此項不勾選，使用者在前台不顯示參與條款。</div>
+                            </div>
+                            <div class="input-field inline full">
+                                <textarea class="editor-txt" contenteditable="true" id="TermsText" name="TermsText">@(Model.TermsText == null ? ViewBag.DefaultTerms : Model.TermsText)</textarea>
+                            </div>
+                        </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">集點中之文案</div>
+                        <div class="input-field inline full">
+                            <textarea class="editor-txt" contenteditable="true" id="RewardingText" name="RewardingText">@(Model.RewardingText == null ? ViewBag.RewardingText : Model.RewardingText)</textarea>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">集滿後之文案</div>
+                        <div class="input-field inline full">
+                            <textarea class="editor-txt" contenteditable="true" id="RewardedText" name="RewardedText">@(Model.RewardedText == null ? ViewBag.RewardedText : Model.RewardedText)</textarea>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">通知管理員</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input class="with-gap" name="SendMail" value="有人集滿時通知" type="radio" id="rw-full" @(Model.SendMail == null ? "checked" : "") @(Model.SendMail == "有人集滿時通知" ? "checked" : "")>
+                                <label for="rw-full">有人集滿時通知</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="SendMail" value="有人開始集點通知" type="radio" id="rw-start" @(Model.SendMail == "有人開始集點通知" ? "checked" : "")>
+                                <label for="rw-start">有人開始集點通知</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="SendMail" value="不通知" type="radio" id="rw-off" @(Model.SendMail == "不通知" ? "checked" : "")>
+                                <label for="rw-off">不通知</label>
+                            </div>
+                        </div>
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>有人達成條件時，會自動通知以下管理員的Email信箱。</div>
+                        </div>
+                        <div>
+                            <div id="divAdmins" class="chips inline">
+                                @{
+                                    try
+                                    {
+                                        IEnumerable<WorkV3.Models.FormAdmin> admins = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<WorkV3.Models.FormAdmin>>(Model.Admins);
+                                        foreach (WorkV3.Models.FormAdmin item in admins)
+                                        {
+                                            <div class="chip" data-val='@Newtonsoft.Json.JsonConvert.SerializeObject(item, ViewBag.Int64Convert)'>
+                                                @if (!string.IsNullOrWhiteSpace(item.Img))
+                                                {
+                                                    <img src="@item.Img" alt="@item.Name" />
+                                                }
+                                                @item.Name @item.Email
+                                                <a class="tooltip" title="刪除">
+                                                    <i class="cc cc-close"></i>
+                                                </a>
+                                            </div>
+                                        }
+                                    }
+                                    catch (Exception ex) { }
+                                }
+                                <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choicePoster" title="選擇管理員"><i class="cc cc-plus"></i></a>
+                                <ul id="choicePoster" class="dropdown-content customContent large closeOnClick">
+                                    <li>
+                                        <iframe class="dropdownIframe" src="@Html.Raw(Url.Action("AdminSelect","Form", new { siteId = ViewBag.SiteID, formId = Model.ID }))" frameborder="0"></iframe>
+                                    </li>
+                                </ul>
+                                <input type="hidden" id="Admins" name="Admins" />
+                            </div>
+                        </div>
+                        @*<div class="inline full">
+                                <div class="chips inline">
+                                    <div class="chip">
+                                        <img src="<%= SysHelp.GetURL() %>images/temp/yuna.jpg" alt="賴小甫"> 賴小甫 ulyan_lai@kidtech.com.tw
+                                        <a href="javascript:;" class="tooltip" title="刪除">
+                                            <i class="cc cc-close"></i>
+                                        </a>
+                                    </div>
+                                    <div class="chip">
+                                        <img src="<%= SysHelp.GetURL() %>images/temp/yuna.jpg" alt="賴小甫"> 賴小甫 ulyan_lai@kidtech.com.tw
+                                        <a href="javascript:;" class="tooltip" title="刪除">
+                                            <i class="cc cc-close"></i>
+                                        </a>
+                                    </div>
+                                    <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choicePoster" title="選擇管理員"><i class="cc cc-plus"></i></a>
+                                    <ul id="choicePoster" class="dropdown-content customContent large closeOnClick">
+                                        <li>
+                                            <iframe class="dropdownIframe" src="<%= SysHelp.GetURL() %>Views/Cards/Reward/BackEnd/administratorEdit.aspx" frameborder="0"></iframe>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>*@
+                    </div>
+        </div>
+        <div class="clear"></div>
+    </div>
+    </li>
+    </ul>
+    <div class="control-bar">
+        <a class="btn-grey transparent font-grey float-L" href="javascript:Component.openRight('@Url.Action("seoEdit", "Common", new { siteId = siteId, menuId = menuId, sourceNo = Model.ID })')"><i class="cc cc-search-text"></i>SEO設定</a>
+        @if (Model.BeginDate != null)
+        {
+            <a class="btn-grey transparent font-grey float-L" href="@Url.RouteUrl("RewardCollect",new { SiteSN = @ViewBag.SiteSN,PageSN = "Reward",ID= Model.ID })" target="_blank"><i class="cc cc-cellphone-link"></i>預覽</a>
+        }
+        @*<a class="btn-grey-o set-left openInlineEdit" href="#"><i class="cc cc-cellphone-link"></i>預覽</a>*@
+        <div class="bar-item float-L">
+            <div>
+                <input type="checkbox" name="IsIssue" id="published" value="true" @(Model.IsIssue ? "checked" : "") />
+                <label for="published">刊登</label>
+            </div>
+        </div>
+        <div class="float-L input-field m-1">
+            <input type='text' class="input-cal datetimepicker m-none" placeholder="開始時間" name="IssueStart" value="@Model.IssueStart">
+        </div>
+        <div class="float-L input-field m-1">
+            <input type='text' class="input-cal datetimepicker m-none" placeholder="結束時間" name="IssueEnd" value="@Model.IssueEnd">
+        </div>
+        <div class="bar-item float-L">
+            <div>
+                <input type="checkbox" id="stop" name="ForcedEnd" value="true" @(Model.ForcedEnd ? "checked" : "") />
+                <label for="stop">強迫截止</label>
+            </div>
+        </div>
+        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+    </div>
+    </div>
+    </div>
+</form>
+<style>
+
+    .justify-space-between {
+        justify-content: space-between;
+    }
+
+        .justify-space-between:after {
+            display: none;
+        }
+</style>
+<link href="~/css/Cards/Form/style1.css" rel="stylesheet" />
+@Styles.Render("~/Css/Card")
+@BundleConfig.JWPlayer()
+@BundleConfig.StickyTableHeaders()
+@BundleConfig.Validate()
+@BundleConfig.FileUploader()
+@BundleConfig.Component()
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript">
+        $(function () {
+            $('#btnSave').click(function ()
+            {
+                var admins = [];
+                $('#divAdmins').children('div[data-val]').each(function () {
+                    admins.push($.parseJSON($(this).attr('data-val')));
+                });
+                if (admins.length > 0)
+                    $('#Admins').val(JSON.stringify(admins));
+
+                $("[btag=ColSort]").each(function (s) { this.value = s });
+                var form = $('#editForm');
+
+                var fields = [];
+                $('#liCustomField').find('input.field-name').each(function () {
+                    var divElm = $(this).closest('div');
+                    var item = { Name: this.id, IsShow: this.checked, Required: divElm.find(':checkbox:last').prop('checked') };
+                    if (item.Name == '地址')
+                        item.Limit = divElm.find(':radio:checked').val();
+
+                    fields.push(item);
+                });
+                //wei  20180908 [集滿條件]不可超過集點場地的數量，俗稱"防獃"
+                var CompletePlacetotal = $('#CompletePlace').val();
+                if (CompletePlacetotal > $("[name=RewardPlace]").length)
+                {
+                    Component.alert('[集滿條件]不可超過集點場地的數量唷~');
+                    return;
+                }
+
+
+                if (fields.length)
+                    $('#Fields').val(JSON.stringify(fields));
+
+                if (Component.singleVideoUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                    return;
+                }
+
+                if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    //Component.alert('集點已儲存', function () {
+                        //submitHandler();
+                        form.submit();
+                    //});
+                }
+
+            });
+            var isIframe = @(isIframe ? "true" : "false");
+            @if (ViewBag.Exit as bool? == true) {
+            <text>
+            Component.alert('集點已儲存', function () {
+                console.log(isIframe);
+                if (isIframe)
+                    Component.closeRight();
+                else
+                    location.href = '@listUrl';
+            });
+            </text>
+            }
+            $('#btnCancel').click(function () {
+                Component.confirm('取消後你當前編輯的頁面將不會儲存，確定取消嗎？', function(response) {
+                    if (response) {
+                        if (isIframe)
+                            Component.closeRight();
+                        else
+                            location.href = '@listUrl';
+                    }
+                }, 'warning');
+            });
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            $("#reward-venue").sortable();
+            $("#reward-venue").disableSelection();
+            $(".member-info").sortable();
+            $(".member-info").disableSelection();
+
+        });
+</script>
+<script type="text/javascript">
+
+        function LimitChange(e) {
+            if ($("[name=LimitLogin]:checked").val() == "false") {
+                $("[btag=" + e.value + "] [type=checkbox]:not(:checked)").click()
+            }
+
+        }
+        function NeedColChange(e) {
+
+            if ($("[name=LimitLogin]:checked").val()=="false") {
+                if ($(e).parent().parent()[0].attributes.btag.value == $("[name=Limit]").val()) {
+                    if (!(e.checked)) {
+                        Component.alert("集點時須使用" + $("[name=Limit]").val() + "，不可勾除。");
+                        e.checked = true;
+                    }
+
+                }
+            }
+        }
+
+        function columnCheck(e) {
+            console.log(e);
+        }
+
+    $(function () {
+
+        $("input[name='statement']").on('change', function () {
+            var target = $("#cke_statement-textarea");
+            if (!this.checked)
+                target.hide();
+            else
+                target.show();
+        });
+        $("input[id='published']").on('change', function () {
+            var $this = $(this);
+            if (this.checked) {
+                $('#publishedTime').fadeIn();
+            } else {
+                $('#publishedTime').fadeOut();
+            }
+        }).change();
+    });
+
+
+        $('#divAdmins').on('click', 'a', function () {
+            $(this).parent().remove();
+        });
+
+        function setAdmins(admins) {
+            admins = admins || [];
+
+            var divAdminsElm = $('#divAdmins');
+            divAdminsElm.children('div.chip').each(function () {
+                var item = $.parseJSON($(this).attr('data-val'));
+                var index = 0, len = admins.length;
+                for (; index < len; ++index) {
+                    if (admins[index].Email.toLowerCase() == item.Email.toLowerCase() && admins[index].MemberID == item.MemberID)
+                        break;
+                }
+                if (index < len)
+                    admins.splice(index, 1);
+            });
+
+            var html = '';
+            for (var i = 0, len = admins.length; i < len; ++i) {
+                var item = admins[i];
+                html += '<div class="chip" data-val=\'' + JSON.stringify(item) + '\'>';
+                if (item.Img)
+                    html += '<img src="' + item.Img + '" alt="' + item.Name + '" /> ';
+                html += (item.Name || '') + " " + item.Email;
+                html += '<a class="tooltip" title="刪除"><i class="cc cc-close"></i></a>';
+                html += '</div>';
+            }
+
+            divAdminsElm.children('a').before(html);
+        }
+        function InPlace(s) {
+            console.log(s);
+            var placedata = decodeURIComponent(s).split('&');
+            var oldplacelist = [];
+            $("[name=RewardPlace]").each(function () { oldplacelist.push($(this).val()) });
+            shtml = "";
+            for (var i = 0; i < placedata.length; i++) {
+                var placeitem = placedata[i].replace("RewardPlace=", "");
+                if (oldplacelist.indexOf(placeitem.split('|')[0]) > -1) {
+                    continue;
+                }
+                @* <div class="chip ui-state-default">
+                                                        <input style="display:none" name="RewardPlace" value="@(item2.ID)">
+                                                        <img class="rounded-0" src="@(ViewBag.UploadUrl+"/RewardPlace/" + Server.UrlPathEncode(imgs["Img"].ToString()))" alt="@item2.Name"> @item2.Name
+                                                        <a href="javascript:;" class="tooltip" title="刪除"><i class="cc cc-close"></i></a>
+                                                    </div>*@
+                shtml += `
+                    <div class="chip ui-state-default">
+                    <input style="display:none" name="RewardPlace" value="${placeitem.split('|')[0]}">
+                    <img class="rounded-0" src="@(ViewBag.UploadVPath + "/RewardPlace/")${placeitem.split('|')[2]}" alt="${placeitem.split('|')[1]}"> ${placeitem.split('|')[1]}
+                    <a onclick="$(this).parents(\'.chip\').remove();" class="tooltip" title="刪除"><i class="cc cc-close"></i></a>
+                    </div>
+                `;
+            }
+            //$("#reward-venue").append(shtml);
+            $('#add-venue').before(shtml);
+            console.dir(decodeURIComponent(s));
+            $("#venueBox").fadeOut();
+        }
+
+</script>

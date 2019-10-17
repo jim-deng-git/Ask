@@ -1,0 +1,70 @@
+.card-plainText[data-style="6"] {
+  display: -webkit-inline-box !important;
+  display: -ms-inline-flexbox !important;
+  display: inline-flex !important;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column; }
+  @media only screen and (max-width: 1280px) {
+    .card-plainText[data-style="6"] {
+      -webkit-box-align: baseline;
+          -ms-flex-align: baseline;
+              align-items: baseline;
+      -webkit-box-orient: horizontal;
+      -webkit-box-direction: normal;
+          -ms-flex-direction: row;
+              flex-direction: row; } }
+  @media only screen and (max-width: 800px) {
+    .card-plainText[data-style="6"] {
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+          -ms-flex-direction: column;
+              flex-direction: column; } }
+  .card-plainText[data-style="6"] .title-main {
+    -webkit-box-ordinal-group: 2;
+        -ms-flex-order: 1;
+            order: 1;
+    font-size: 36px;
+    color: #000000;
+    font-weight: 400; }
+    @media only screen and (max-width: 800px) {
+      .card-plainText[data-style="6"] .title-main {
+        font-size: 24px; } }
+    @media only screen and (max-width: 420px) {
+      .card-plainText[data-style="6"] .title-main {
+        font-size: 20px; } }
+  .card-plainText[data-style="6"] .title-sub {
+    -webkit-box-ordinal-group: 0;
+        -ms-flex-order: -1;
+            order: -1;
+    font-size: 20px;
+    font-weight: 300;
+    color: #979797;
+    -webkit-transform: rotate(-90deg) translate(-119%, -15px);
+        -ms-transform: rotate(-90deg) translate(-119%, -15px);
+            transform: rotate(-90deg) translate(-119%, -15px);
+    -webkit-transform-origin: 0% 100%;
+        -ms-transform-origin: 0% 100%;
+            transform-origin: 0% 100%;
+    text-align: right; }
+    @media only screen and (max-width: 1280px) {
+      .card-plainText[data-style="6"] .title-sub {
+        -webkit-box-ordinal-group: 3;
+            -ms-flex-order: 2;
+                order: 2;
+        margin-left: 20px;
+        -webkit-transform: rotate(0) translate(0, 0);
+            -ms-transform: rotate(0) translate(0, 0);
+                transform: rotate(0) translate(0, 0);
+        -webkit-transform-origin: 0 0;
+            -ms-transform-origin: 0 0;
+                transform-origin: 0 0;
+        text-align: left; } }
+    @media only screen and (max-width: 800px) {
+      .card-plainText[data-style="6"] .title-sub {
+        margin-left: 0;
+        font-size: 18px; } }
+    @media only screen and (max-width: 420px) {
+      .card-plainText[data-style="6"] .title-sub {
+        font-size: 14px; } }

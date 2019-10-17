@@ -1,0 +1,174 @@
+﻿@model MemberShipLogStatisticLabelModels
+@{
+    ViewBag.Title = "自訂標線";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+}
+@section FArea {
+@BundleConfig.JWPlayer()
+@BundleConfig.StickyTableHeaders()
+@BundleConfig.Validate()
+@BundleConfig.FileUploader()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+<script type="text/javascript">
+     @if (ViewBag.Exit as bool? == true) {
+        <text>
+            Component.alert('標線已儲存', function () {
+                Component.closeLeft();
+                Component.closeCenter();
+                console.log(parent);
+                parent.finish;
+                try {
+                    parent.refreshList();
+                } catch (e) {
+
+                }
+            });
+    </text>
+    } 
+
+    function checkDate(field) {
+        var v = $.trim(field.val());
+        if (v) {
+            var date = Component.parseDate(v);
+            if (!date)
+                return '* 日期格式錯誤';
+        }
+    }
+    function refreshList() {
+        location.replace(location.href);
+    }
+</script>
+}
+<form id="editForm" name="editForm" method="post" action="@Url.Action("CustomLabelLineEdit")" enctype="multipart/form-data">
+    <input type="hidden" name="ID" value="@(Model!= null?Model.ID.ToString():"")" />
+    <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">標線編輯</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">標線文字</div>
+                                        <div class="input-field inline">
+                                            <input id="Title" name="Title" class="validate[required]" type="text" value="@(Model!= null?Model.Title:"")" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">時間</div>
+                                        <div class="input-field inline">
+                                            <input type='text' id="LabelDate" name="LabelDate" class="input-cal datepicker validate[funcCall[checkDate]]" value="@(Model!= null?Model.LabelDate.ToString("yyyy/MM/dd HH:mm"):"")" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">色調</div>
+                                        <div class="radio-box inline">
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_red" value="red"  @(Model!= null ? (Model.LabelColor == "red" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_red" data-color="red"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_orange" value="orange" @(Model!= null ? (Model.LabelColor == "orange" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_orange" data-color="orange"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_yellow" value="yellow" @(Model!= null ? (Model.LabelColor == "yellow" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_yellow" data-color="yellow"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_green" value="green" @(Model!= null ? (Model.LabelColor == "green" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_green" data-color="green"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_light-green" value="light-green" @(Model!= null ? (Model.LabelColor == "light-green" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_light-green" data-color="light-green"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_blue" value="blue" @(Model!= null ? (Model.LabelColor == "blue" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_blue" data-color="blue"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_teal" value="teal" @(Model!= null ? (Model.LabelColor == "teal" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_teal" data-color="teal"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_deep-purple" value="deep-purple"  @(Model!= null ? (Model.LabelColor == "deep-purple" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_deep-purple" data-color="deep-purple"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_gold" value="gold"  @(Model!= null ? (Model.LabelColor == "gold" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_gold" data-color="gold"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_light-grey" value="light-grey"  @(Model!= null ? (Model.LabelColor == "light-grey" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_light-grey" data-color="light-grey"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_grey" value="grey"  @(Model!= null ? (Model.LabelColor == "grey" ? "checked=\"checked\"" : string.Empty):"checked=\"checked\"")/>
+                                                <label for="LabelColor_grey" data-color="grey"></label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LabelColor" type="radio" id="LabelColor_black" value="black"  @(Model!= null ? (Model.LabelColor == "black" ? "checked=\"checked\"" : string.Empty):string.Empty)/>
+                                                <label for="LabelColor_black" data-color="black"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="">
+                            <input type="checkbox" id="ShowStatus" name="ShowStatus" @(Model!= null ? (Model.ShowStatus ? "checked=\"checked\"" : string.Empty):"checked=\"checked\"") value="true"/>
+                            <label for="ShowStatus">顯示</label>
+                        </div>
+                    </div>
+                    <a id="btnCancel" class="btn-cancel" href="@Url.Action("CustomLabelLine")"><i class="cc cc-close"></i>取消</a>
+                    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+      
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.find('div.swiper-slide-active').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    window.scrollTo(0, document.body.scrollHeight);
+                    form.submit();
+                }
+            });
+            $('#btnCancel').click(function () {
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+        });
+</script>
+

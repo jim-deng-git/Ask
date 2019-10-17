@@ -1,0 +1,44 @@
+﻿@model List<MemberModels>
+@{
+    ViewBag.Title = "PermissionGroup_User";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+<script type="text/javascript">
+    $(function () {
+
+        $('#btnCancel, #btnOK').click(function () {
+            Component.closeRight();
+            Component.closeLeft();
+            Component.closeCenter();
+        });
+    });
+</script>
+}
+
+    <div class="groove groove-1">
+        <h1 class="title-admin-page">群組 : @ViewBag.GroupName</h1>
+        <div class="col-4 border-T">
+            <ul class="forms relative">
+                <li>
+                    <div class="title">本群組有哪些人員？(共 @Model.Count 名)</div>
+                    <ol class="dd-list">
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            <li class="dd-item relative">@Model[i].Name</li>
+                        }
+                    </ol>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="control-bar">
+        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnOK" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>確定</a>
+    </div>
+

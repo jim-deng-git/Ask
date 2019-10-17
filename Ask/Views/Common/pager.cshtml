@@ -1,0 +1,171 @@
+﻿@model Pager
+@if (Model.TotalRecord == 0) {
+	@Model.BlankMessage
+}
+else if (Model.TotalPage > 1)
+{
+    int mobilePageRowCount = 5, websitePageRowCount = 9;
+    int nextMobilePageRowCount = (int)(mobilePageRowCount / 2), nextWebSitePageRowCount = (int)(websitePageRowCount / 2);
+    int prevMobilePageRowCount = (int)(mobilePageRowCount / 2), prevWebSitePageRowCount = (int)(websitePageRowCount / 2);
+    if (websitePageRowCount % 2 == 0)
+    {
+        nextWebSitePageRowCount = nextWebSitePageRowCount - 1;
+    }
+    if (mobilePageRowCount % 2 == 0)
+    {
+        nextMobilePageRowCount = nextMobilePageRowCount - 1;
+    }
+    int mobilePageCenter = Model.PageIndex, websitePageCenter = Model.PageIndex;
+    int maxMobilePageIndex = Model.PageIndex + nextMobilePageRowCount, minMobilePageIndex = Model.PageIndex - prevMobilePageRowCount;
+    int maxWebSitePageIndex = Model.PageIndex + nextWebSitePageRowCount, minWebSitePageIndex = Model.PageIndex - prevWebSitePageRowCount;
+    if (minMobilePageIndex <= 0)
+    {
+        minMobilePageIndex = 1;
+        maxMobilePageIndex = minMobilePageIndex + mobilePageRowCount - 1;
+        mobilePageCenter = minMobilePageIndex + nextMobilePageRowCount;
+        if (maxMobilePageIndex > Model.TotalPage)
+        {
+            maxMobilePageIndex = Model.TotalPage;
+        }
+    }
+    if (maxMobilePageIndex > Model.TotalPage)
+    {
+        minMobilePageIndex = Model.TotalPage - mobilePageRowCount + 1;
+        maxMobilePageIndex = Model.TotalPage;
+        mobilePageCenter = Model.TotalPage - nextMobilePageRowCount;
+    }
+    if (minWebSitePageIndex <= 0)
+    {
+        minWebSitePageIndex = 1;
+        maxWebSitePageIndex = minWebSitePageIndex + websitePageRowCount - 1;
+        websitePageCenter = minWebSitePageIndex + nextWebSitePageRowCount;
+        if (maxWebSitePageIndex > Model.TotalPage)
+        {
+            maxWebSitePageIndex = Model.TotalPage;
+        }
+    }
+    if (maxWebSitePageIndex > Model.TotalPage)
+    {
+        minWebSitePageIndex = Model.TotalPage - websitePageRowCount + 1;
+        maxWebSitePageIndex = Model.TotalPage;
+        websitePageCenter = Model.TotalPage - nextWebSitePageRowCount;
+    }
+    @*<div>
+        website range: @minWebSitePageIndex~@maxWebSitePageIndex middle:@websitePageCenter nextcount: @nextWebSitePageRowCount prevcount: @prevWebSitePageRowCount<br />
+        mobile range: @minMobilePageIndex~@maxMobilePageIndex middle:@mobilePageCenter nextcount: @nextMobilePageRowCount prevcount: @prevMobilePageRowCount
+    </div>*@
+	<ul>
+        @if (Model.PageIndex > 1)
+        {
+            <li><a href="@(Model.UrlFmt + (Model.PageIndex - 1))" rel="prev" title="上一頁">上一頁</a></li>
+        }
+        @{
+            string firstClass = "", firsturl = Model.UrlFmt + 1;
+            if (Model.PageIndex == 1)
+            {
+                firsturl = "javascript:";
+                firstClass = " active";
+            }
+            <li><a href="@(Html.Raw(firsturl))" @(Html.Raw(string.IsNullOrEmpty(firstClass) ? "" : "class=\"" + firstClass + "\""))> 1 </a></li>
+        }
+        @for (int i = minWebSitePageIndex; i <= maxWebSitePageIndex; i++)
+        {
+            string url = Model.UrlFmt + i, css = String.Empty;
+            string pagerLiClassName = "";
+            if (i == Model.PageIndex)
+            {
+                url = "javascript:";
+                css = " class=\"active\"";
+            }
+            if (i == minWebSitePageIndex)
+            {
+                bool IsShowMore = false;
+                string moreClass = "";
+                if (minWebSitePageIndex > 2 && minMobilePageIndex > 2)
+                {
+                    moreClass = " mobile website ";
+                    IsShowMore = true;
+                }
+                else if (minMobilePageIndex > 2)
+                {
+                    moreClass = "mobile";
+                    IsShowMore = true;
+                }
+                if (IsShowMore)
+                {
+                    <li @(Html.Raw(string.IsNullOrEmpty(moreClass) ? "" : "class=\"" + moreClass + "\""))><a href="javascript:">...</a></li>
+                }
+
+                if (i != 1)
+                {
+                    if (i < minMobilePageIndex || i > maxMobilePageIndex)
+                    {
+                        pagerLiClassName = " website ";
+                    }
+                    <li @Html.Raw(string.IsNullOrEmpty(pagerLiClassName) ? "" : ("class=\"" + pagerLiClassName + "\""))><a href="@url" @Html.Raw(css)>@i</a></li>
+                }
+            }
+            else if (i == maxWebSitePageIndex)
+            {
+                bool IsShowMore = false;
+                string moreClass = "";
+                if (maxWebSitePageIndex < Model.TotalPage - 1 && maxMobilePageIndex < Model.TotalPage - 1)
+                {
+                    moreClass = " mobile website ";
+                    IsShowMore = true;
+                }
+                else if (maxMobilePageIndex < Model.TotalPage - 1)
+                {
+                    moreClass = "mobile";
+                    IsShowMore = true;
+                }
+
+                if (i != Model.TotalPage)
+                {
+                    if (i < minMobilePageIndex || i > maxMobilePageIndex)
+                    {
+                        pagerLiClassName = " website ";
+                    }
+                    <li @Html.Raw(string.IsNullOrEmpty(pagerLiClassName) ? "" : ("class=\"" + pagerLiClassName + "\""))><a href="@url" @Html.Raw(css)>@i</a></li>
+                }
+                if (IsShowMore)
+                {
+                    <li @(Html.Raw(string.IsNullOrEmpty(moreClass) ? "" : "class=\"" + moreClass + "\""))><a href="javascript:">...</a></li>
+                }
+            }
+            else
+            {
+                if (i < minMobilePageIndex || i > maxMobilePageIndex)
+                {
+                    pagerLiClassName += " website ";
+                }
+                <li @Html.Raw(string.IsNullOrEmpty(pagerLiClassName) ? "" : ("class=\"" + pagerLiClassName + "\""))><a href="@url" @Html.Raw(css)>@i</a></li>
+            }
+
+        }
+        @{
+            string lastClass = "", lasturl = Model.UrlFmt + Model.TotalPage;
+            if (Model.PageIndex == Model.TotalPage)
+            {
+                lasturl = "javascript:";
+                lastClass = " active";
+            }
+            <li><a href="@(Html.Raw(lasturl))" @(Html.Raw(string.IsNullOrEmpty(lastClass) ? "" : "class=\"" + lastClass + "\""))> @Model.TotalPage</a></li>
+        }
+        @*@if (maxWebSitePageIndex  <  Model.TotalPage)
+        {
+            string moreClass = "website mobile";
+            <li @(Html.Raw(string.IsNullOrEmpty(moreClass)?"":"class=\""+moreClass+"\""))><a href="javascript:" >...</a></li>
+            <li><a href="@(Model.UrlFmt + Model.TotalPage)"> @Model.TotalPage </a></li>
+        }*@
+        @if (Model.PageIndex < Model.TotalPage)
+        {
+            <li><a href="@(Model.UrlFmt + (Model.PageIndex + 1))" rel="next" title="下一頁">下一頁</a></li>
+        }
+	</ul>	
+    <span class="totalPage">
+        <span class="txt">第</span><span class="num">@Html.Raw(Model.PageIndex > Model.TotalPage ? Model.TotalPage : Model.PageIndex)</span><span class="txt">頁</span>
+        <span class="slash">/</span>
+        <span class="txt">共</span><span class="num">@Model.TotalPage</span><span class="txt">頁</span>
+    </span>
+}

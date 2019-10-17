@@ -1,0 +1,238 @@
+﻿@model RewardPlaceModel
+@using Newtonsoft.Json.Linq;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+}
+<script>
+    function UpdatePosition(lat_orginal, lng_orginal) {
+        //接收從Gmap移動Maker後的座標
+        var lat = lat_orginal.toString();
+        var lng = lng_orginal.toString();
+
+        if (lat.length > 10) {
+            lat = lat.substring(0, 10);
+        }
+        if (lng.length > 10) {
+            lng = lng.substring(0, 10);
+        }
+
+        $("#Lat").val(lat);
+        $("#Lng").val(lng);
+
+        GenAddress();
+    }
+    function GenGmapByAddress() {
+        //透過地址產生Google Map
+        var address = $("#Address").val();
+        $("#GmapArea")[0].src = "@Url.Action("GenGmapByAddress")?Address=" + address + "&GenMap=true";
+    }
+
+    function GenGmapByLatLng() {
+        //透過經緯度產生Google Map
+        var Lat = $("#Lat").val();
+        var Lng = $("#Lng").val();
+        $("#GmapArea")[0].src = "@Url.Action("GenGmapByLatLng")?Lat=" + Lat + "&Lng=" + Lng + "&GenMap=true";
+        GenAddress();
+    }
+
+    function GenAddress() {
+        //透過座標產生地址
+        var Lat = $("#Lat").val();
+        var Lng = $("#Lng").val();
+
+        $.ajax({
+            url: '@Url.Action("QueryAddress")' + "?Lat=" + Lat + "&Lng=" + Lng,
+            async:false, //非同步要關掉
+            type: 'post',
+            success: function (data) {
+                if (data.Address_Result != "") {
+                    $("#Address").val(data.Address_Result);
+                }
+                if (data.Regions != "") {
+                    SelectRegions(data.Regions);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
+    }
+    //設定地區下拉選單
+    function SelectRegions(data) {
+        if (data == "") {
+            return;
+        }
+        var country = "";
+        var lv1 = "";
+        var lv3 = "";
+        //alert(data);
+        var array = data.split(',');
+        if (array.length > 0) {
+            country = array[0];
+        }
+        if (array.length > 1) {
+            lv1 = array[1];
+        }
+        if (array.length > 2) {
+            lv3 = array[2];
+        }
+
+        $("div[data-level='1'] > div > ul").find('span:contains("' + country + '")')[0].click();
+        setTimeout(function () {
+            $("div[data-level='3'] > div > ul").find('span:contains("' + lv1 + '")')[0].click();
+        }, 100)
+        setTimeout(function () {
+            $("div[data-level='4'] > div > ul").find('span:contains("' + lv3 + '")')[0].click();
+        }, 200)
+
+    }
+</script>
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("EditPlace", siteQuery))" enctype="multipart/form-data">
+    <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">集點場地編輯</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <input name="ID" style="display:none" value="@Model.ID" />
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">場地名稱</div>
+                                        <div class="input-field inline">
+                                            <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+
+                                    <div class="col-1">
+                                        <div class="title">場地照片</div>
+                                        <div class="input-field">
+                                            <input type="file" id="ImgFile" name="ImgFile" />
+                                            <input type="hidden" id="Img" name="Img" value='@Model.Img' />
+                                            <input type="hidden" id="ImgFileBase64" name="ImgFileBase64" />
+                                        </div>
+                                        <div class="alert transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>
+                                                建議尺寸640px X 426px
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">場地介紹</div>
+                                        <div class="input-field inline full">
+                                            <textarea class="materialize-textarea" id="Introduce" name="Introduce" value=''   placeholder="限制480以內">@Model.Introduce</textarea>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">服務電話</div>
+                                        <div class="input-field inline">
+                                            <input id="Phone" name="Phone" value='@Model.Phone' type="text" placeholder="">
+                                        </div>
+                                    </div>
+                                </li>
+                                 <li>@*20180806wei服務時間移動到服務電話下方*@
+                                    <div class="col-1">
+                                        <div class="title inline">服務時間</div>
+                                        <div class="input-field inline full">
+                                            <input id="ServiceTime" name="ServiceTime" value='@Model.ServiceTime' type="text" placeholder="">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    @*<div class="col-1">
+                                        <div class="title inline">地址</div>
+                                        <div class="input-field inline full">
+                                            <input type="hidden" id="Regions" name="Regions" value="@Model.Regions" />
+                                            <div class="col-1">
+                                                <div class="marker-group">
+                                                    <input type="text" id="Address" name="Address" value="@Model.Address" placeholder="地址" maxlength="200" />
+                                                    <a class="btn-grey-darken-3-o btn-small" onclick="GenGmapByAddress();"><i class="cc cc-map-marker"></i>定位</a>
+                                                </div>
+                                            </div>*@
+                                            <div class="col-1">
+                                                <div class="title inline">經緯度</div>
+                                                <div class="input-field inline full">
+                                                    <div class="marker-group">
+                                                        <input class="m-R-4" type="text" id="Lat" name="Lat" value="@(Model.Lat == 0? "25.044126": Model.Lat.ToString())" placeholder="經度" maxlength="200" />
+                                                        <input type="text" id="Lng" name="Lng" value="@(Model.Lng == 0? "121.529396": Model.Lng.ToString())" placeholder="緯度" maxlength="200" />
+                                                        <a class="btn-grey-darken-3-o btn-small" onclick="GenGmapByLatLng();"><i class="cc cc-map-marker"></i>定位</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @*</div>
+                                    </div>*@
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        @*<div class="title inline">地圖</div> Carrie 20180216 *@
+                                        <div class="input-field m-T-none">
+                                            <div class="mapFrame">
+                                                <iframe id="GmapArea" src='@Url.Action("GenGmapByAddress")' scrolling="no" frameBorder="0"></iframe>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>            
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="">
+                            <input type="checkbox" name="IsIssue" value="true" id="published" @(Model.IsIssue ? "checked" : "") />
+                            <label for="published">刊登</label>
+                        </div>
+                    </div>
+                    <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+                    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        Component.radioList('div[data-radioGroup]');
+        var regionObj = Component.worldRegion('#Regions', '@Html.Raw(Url.Action("Regions", "Common"))');
+        Component.singleImageUpload('#ImgFile', '@(Href("~/"))', '@ViewBag.UploadUrl');
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            var Introducestring = document.getElementById("Introduce").value;//wei 20180903 字數限制提醒 >
+            if (Introducestring.length >= 480) {
+                Component.alert('一共'+Introducestring.length+'字，超過480字唷~');
+            }//wei 20180903 字數限制提醒 <
+            else if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+       // $(this).colorbox.close();
+        top["settingrefresh"]();
+
+        </text>
+        }
+    </script>
+}

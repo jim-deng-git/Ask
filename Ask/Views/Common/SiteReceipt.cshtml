@@ -1,0 +1,439 @@
+﻿@model WorkV3.Models.EshopSettingModel
+    @{ 
+        WorkV3.Models.EshopOrderReceiptModel receiptItem = null;
+        if (ViewBag.ReceiptItem != null)
+        {
+            receiptItem = ViewBag.ReceiptItem as WorkV3.Models.EshopOrderReceiptModel;
+        }
+        }
+@if (Model.IsPersonalReceipt)
+{
+<li>
+    <div class="col-1">
+        <div class="radio-box full">
+            <div class="col-1">
+                    <input class="with-gap" name="Receipt" type="radio" id="PersonalReceipt" value="0" @(receiptItem!= null ?(receiptItem.Receipt == 0?"checked":""):"")>
+                <label for="PersonalReceipt">
+                    個人發票
+                </label>
+                        @if (!string.IsNullOrWhiteSpace(Model.PersonalReceiptDesc))
+                        {
+                            <div class="alert transparent inline m-L-8">
+                                <i class="cc cc-attention"></i>
+                                <div>關於個人發票，<a class="openEdit-c" href="~/Views/DemoPage/StoreAjax-Style1.aspx">想了解更多</a></div>
+                            </div>
+                        }
+                    @if (Model.PersonalReceiptType.HasValue)
+                    {
+                        string checked_EReceipt = "", checked_PaperReceipt = "", receiptMailEmail = "", receiptMailAddress = "";
+                        if (receiptItem != null && receiptItem.Receipt == 0)
+                        {
+                            if (receiptItem.ReceiptType.HasValue)
+                            {
+                                EshopPersonalReceiptType selectedType = (EshopPersonalReceiptType)receiptItem.ReceiptType.Value;
+                                switch (selectedType)
+                                {
+                                    case EshopPersonalReceiptType.EReceipt:
+                                        checked_EReceipt = "checked";
+                                        receiptMailEmail = receiptItem.ReceiptMailTo;
+                                        break;
+                                    case EshopPersonalReceiptType.PaperReceipt:
+                                        checked_PaperReceipt = "checked";
+                                        receiptMailAddress = receiptItem.ReceiptMailTo;
+                                        break;
+                                }
+                            }
+                        }
+                        <div id="receiptSetting1" style="display: none;">
+
+                            @switch ((EshopPersonalReceiptType)Model.PersonalReceiptType.Value)
+                            {
+                            case EshopPersonalReceiptType.EReceipt:
+                            @* 只有電子發票 *@
+                            <div class="card-text-info m-L-8">
+                                <h6 class="col-5">
+                                    <div class="title">僅提供電子發票</div>
+                                    <input name="ReceiptType" type="hidden" value="@((int)EshopPersonalReceiptType.EReceipt)">
+                                </h6>
+                                <div class="col-5-partner">
+                                    <div class="title no-label">電子發票Email寄送至<span class="required">*</span></div>
+                                    <div class="input-field full no-label">
+                                        <input id="PersonalReceiptMailEmail" type="text" name="PersonalReceiptMailEmail" value="@receiptMailEmail">
+                                    </div>
+                                </div>
+                            </div>
+                            break;
+                            case EshopPersonalReceiptType.PaperReceipt:
+                            @* 只有紙本發票 *@
+                            <div class="card-text-info m-L-8">
+                                <h6 class="col-5">
+                                    <div class="title">僅提供紙本發票</div>
+                                    <input name="ReceiptType" type="hidden" value="@((int)EshopPersonalReceiptType.PaperReceipt)">
+                                </h6>
+                                <div class="col-5-partner">
+                                    <div class="title no-label">紙本發票郵寄地址<span class="required">*</span></div>
+                                    <div class="input-field full no-label">
+                                        <input id="PersonalReceiptMailAddress" type="text" name="PersonalReceiptMailAddress" value="@receiptMailAddress">
+                                    </div>
+                                </div>
+                            </div>
+                            break;
+                            case EshopPersonalReceiptType.All:
+                            @* 兩者皆有 *@
+                            <div class="card-text-info m-L-8">
+                                <div class="radio-box full">
+                                    <div class="col-4">
+                                        <input class="with-gap" name="ReceiptType" type="radio" id="PersonalReceiptType0" value="@((int)EshopPersonalReceiptType.EReceipt)" @checked_EReceipt>
+                                        <label for="PersonalReceiptType0">電子發票</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <input class="with-gap" name="ReceiptType" type="radio" id="PersonalReceiptType1" value="@((int)EshopPersonalReceiptType.PaperReceipt)" @checked_PaperReceipt>
+                                        <label for="PersonalReceiptType1">郵寄紙本發票</label>
+                                    </div>
+                                    <div class="col-2 personal-sheet-mode-online">
+                                        <div class="title no-label">電子發票Email寄送至<span class="required">*</span></div>
+                                        <div class="input-field full no-label">
+                                            <input id="PersonalReceiptMailEmail" type="text" name="PersonalReceiptMailEmail" value="@receiptMailEmail">
+                                        </div>
+                                    </div>
+                                    <div class="col-2 personal-sheet-mode-paper">
+                                        <div class="title no-label">紙本發票郵寄地址<span class="required">*</span></div>
+                                        <div class="input-field full no-label">
+                                            <input id="PersonalReceiptMailAddress" type="text" name="PersonalReceiptMailAddress" value="@receiptMailAddress">
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>
+                        $(function () {
+                            var $personalSheet_online = $("input#PersonalReceiptType0"),
+                                $personalSheet_paper = $("input#PersonalReceiptType1");
+
+                            $personalSheet_paper.on("change", function () {
+                        if (this.checked) {
+                                    $(".personal-sheet-mode-online").hide();
+                                    $(".personal-sheet-mode-paper").stop().fadeIn("200");
+                            } else {
+                                    $(".personal-sheet-mode-paper").fadeOut("100");
+                            }
+                            }).change();
+
+                            $personalSheet_online.on("change", function () {
+                            if (this.checked) {
+                                    $(".personal-sheet-mode-paper").hide();
+                                    $(".personal-sheet-mode-online").stop().fadeIn("200");
+                                } else {
+                                    $(".personal-sheet-mode-online").fadeOut("100");
+                                }
+                                }).change();
+                        })
+                                </script>
+                            </div>
+                            break;
+                            }
+                            </div>
+                            }
+                        </div>
+        </div>
+    </div>
+</li>
+}
+@if (Model.IsDonationReceipt)
+{
+    <li>
+        <div class="col-1">
+            <div class="radio-box inline full">
+                <div class="col-1">
+                    <input class="with-gap" name="Receipt" type="radio" id="DonationReceipt" value="1" @(receiptItem!= null ?(receiptItem.Receipt == 1?"checked":""):"")>
+                    <label for="DonationReceipt">
+                        捐贈發票
+                    </label>
+
+@if (!string.IsNullOrWhiteSpace(Model.DonationReceiptDesc))
+{
+                        <div class="alert transparent inline m-L-8">
+                            <i class="cc cc-attention"></i>
+                            <div>感謝您的愛心，<a class="openEdit-c" href="~/Views/DemoPage/StoreAjax-Style1.aspx">想了解更多</a></div>
+                        </div>
+}
+
+                    <div id="receiptSetting2" style="display: none;">
+
+                        <div class="card-text-info donation-receipt m-L-8">
+                            <div class="title no-label">請輸入受捐贈機關或團體之捐贈碼或統一編號<span class="required">*</span></div>
+                            <div class="col-3 input-field no-label">
+                                <input id="DonationTarget" type="text" name="DonationTarget" value="@(receiptItem!= null ?(receiptItem.Receipt == 1?receiptItem.DonationTarget : ""):"")">
+                            </div>
+                            <div class="col-3 input-field">
+                                <a href="~/Views/Cards/Store/FrontEnd/donate-receipt.aspx" class="btn-black-o openEdit-lg">
+                                    <i class="cc cc-list"></i>
+                                    快速選擇
+                                </a>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </li>
+}
+
+@if (Model.IsCompanyReceipt)
+{
+<li>
+    <div class="col-1">
+        <div class="radio-box full">
+            <div class="col-1">
+                <input class="with-gap" name="Receipt" type="radio" id="CompanyReceipt" value="2" @(receiptItem!= null ?(receiptItem.Receipt == 2?"checked":""):"")>
+                <label for="CompanyReceipt">
+                    公司發票
+                </label>
+@if (!string.IsNullOrWhiteSpace(Model.CompanyReceiptDesc))
+{
+                    <div class="alert transparent inline m-L-8">
+                        <i class="cc cc-attention"></i>
+                        <div>關於公司發票，<a class="openEdit-c" href="~/Views/DemoPage/StoreAjax-Style1.aspx">想了解更多</a></div>
+                    </div>
+}
+
+                <div id="receiptSetting3" style="display: none;">
+                    @if (Model.CompanyReceiptKind.HasValue)
+                    {
+                        string companyNo = "", companyTitle = "", check_TwoCopies = "", checked_ThreeCopies = "";
+                        if (receiptItem != null && receiptItem.Receipt == 2)
+                        {
+                            if (receiptItem.ReceiptKind.HasValue)
+                            {
+                                EshopCompanyReceiptType selectedKind = (EshopCompanyReceiptType)receiptItem.ReceiptKind.Value;
+                                switch (selectedKind)
+                                {
+                                    case EshopCompanyReceiptType.TwoCopies:
+                                        check_TwoCopies = "checked";
+                                        companyNo = receiptItem.CompanyNo;
+                                        break;
+                                    case EshopCompanyReceiptType.ThreeCopies:
+                                        checked_ThreeCopies = "checked";
+                                        companyNo = receiptItem.CompanyNo;
+                                        companyTitle = receiptItem.CompanyTitle;
+                                        break;
+                                }
+                            }
+                        }
+                        switch ((EshopCompanyReceiptType)Model.CompanyReceiptKind.Value)
+                        {
+                            case EshopCompanyReceiptType.All:
+
+                                @* 兩者皆有 *@
+                                <div class="card-text-info m-L-8">
+                                    <div class="radio-box full">
+                                        <div class="col-4">
+                                            <input class="with-gap" name="ReceiptKind" type="radio" id="ReceiptKind0" value="@((int)EshopCompanyReceiptType.TwoCopies)" @check_TwoCopies>
+                                            <label for="ReceiptKind0">二聯式</label>
+                                        </div>
+                                        <div class="col-4">
+                                            <input class="with-gap" name="ReceiptKind" type="radio" id="ReceiptKind1" value="@((int)EshopCompanyReceiptType.ThreeCopies)" @checked_ThreeCopies>
+                                            <label for="ReceiptKind1">三聯式</label>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="col-3 company-sheet-type-two">
+                                                <div class="title no-label">統一編號<span class="required">*</span></div>
+                                                <div class="input-field full no-label">
+                                                    <input id="CompanyNo" type="text" name="CompanyNo" value="@companyNo">
+                                                </div>
+                                            </div>
+                                            <div class="col-3-partner company-sheet-type-three">
+                                                <div class="title no-label">公司抬頭<span class="required">*</span></div>
+                                                <div class="input-field full no-label">
+                                                    <input id="CompanyTitle" type="text" name="CompanyTitle" value="@companyTitle">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <script>
+                            $(function () {
+                                var $companySheetType_two = $("input#ReceiptKind0"),
+                                    $companySheetType_three = $("input#ReceiptKind1");
+
+                                $companySheetType_two.on("change", function () {
+                                    if (this.checked) {
+                                        $(".company-sheet-type-three").fadeOut();
+                 $(".company-sheet-type-two").stop().fadeIn("200");
+            } else {
+                 $(".company-sheet-type-two").fadeOut("100");
+            }
+            }).change();
+
+                                $companySheetType_three.on("change", function () {
+            if (this.checked) {
+                                        // $(".company-sheet-type-two").stop().fadeIn("200");
+                $(".company-sheet-type-two").stop().fadeIn();
+                $(".company-sheet-type-three").stop().fadeIn();
+                } else {
+                // $(".company-sheet-type-three").fadeOut("100");
+                $(".company-sheet-type-three").fadeOut();
+                }
+                }).change();
+        })
+                                        </script>
+                                    </div>
+                                </div>
+                                break;
+                            case EshopCompanyReceiptType.TwoCopies:
+                                @* 二聯式發票 *@
+                                <div class="card-text-info m-L-8">
+                                    <h6 class="col-5">
+                                        <div class="title">僅提供二聯式發票</div>
+                                        <input name="ReceiptKind" type="hidden" value="@((int)EshopCompanyReceiptType.TwoCopies)">
+                                    </h6>
+                                    <div class="col-5-partner">
+                                        <div class="title no-label">統一編號<span class="required">*</span></div>
+                                        <div class="input-field full no-label">
+                                            <input id="CompanyNo" type="text" name="CompanyNo" value="@companyNo">
+                                        </div>
+                                    </div>
+                                </div>
+                                break;
+                            case EshopCompanyReceiptType.ThreeCopies:
+                                @* 三聯式發票 *@
+                                <div class="card-text-info m-L-8">
+                                    <h6 class="col-5">
+                                        <div class="title">僅提供三聯式發票</div>
+                                        <input name="ReceiptKind" type="hidden" value="@((int)EshopCompanyReceiptType.ThreeCopies)">
+                                    </h6>
+                                    <div class="col-5-partner">
+                                        <div class="col-3">
+                                            <div class="title no-label">統一編號<span class="required">*</span></div>
+                                            <div class="input-field full no-label">
+                                                <input id="CompanyNo" type="text" name="CompanyNo" value="@companyNo">
+                                            </div>
+                                        </div>
+                                        <div class="col-3-partner">
+                                            <div class="title no-label">公司抬頭<span class="required">*</span></div>
+                                            <div class="input-field full no-label">
+                                                <input id="CompanyTitle" type="text" name="CompanyTitle"  value="@companyTitle">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                break;
+                        }
+                    }
+                    @if (Model.CompanyReceiptType.HasValue)
+                    {
+                        string checked_EReceipt = "", checked_PaperReceipt = "", receiptMailEmail = "", receiptMailAddress = "";
+                        if (receiptItem != null && receiptItem.Receipt == 2)
+                        {
+                            if (receiptItem.ReceiptType.HasValue)
+                            {
+                                EshopPersonalReceiptType selectedType = (EshopPersonalReceiptType)receiptItem.ReceiptType.Value;
+                                switch (selectedType)
+                                {
+                                    case EshopPersonalReceiptType.EReceipt:
+                                        checked_EReceipt = "checked";
+                                        receiptMailEmail = receiptItem.ReceiptMailTo;
+                                        break;
+                                    case EshopPersonalReceiptType.PaperReceipt:
+                                        checked_PaperReceipt = "checked";
+                                        receiptMailAddress = receiptItem.ReceiptMailTo;
+                                        break;
+                                }
+                            }
+                        }
+                        switch ((EshopPersonalReceiptType)Model.CompanyReceiptType.Value)
+                        {
+                            case EshopPersonalReceiptType.All:
+                                <div class="card-text-info m-L-8">
+                                    <div class="radio-box full">
+                                        <div class="col-4">
+                                            <input class="with-gap" name="CompanyReceiptType" type="radio" id="CompanyReceiptType0" value="@((int)EshopPersonalReceiptType.EReceipt)" @checked_EReceipt>
+                                            <label for="CompanyReceiptType0">電子發票</label>
+                                        </div>
+                                        <div class="col-4">
+                                            <input class="with-gap" name="CompanyReceiptType" type="radio" id="CompanyReceiptType1" value="@((int)EshopPersonalReceiptType.PaperReceipt)" @checked_PaperReceipt>
+                                            <label for="CompanyReceiptType1">郵寄紙本發票</label>
+                                        </div>
+                                        <div class="col-2 company-sheet-mode-online">
+                                            <div class="title no-label">電子發票Email寄送至<span class="required">*</span></div>
+                                            <div class="input-field full no-label">
+                                                <input id="CompanyReceiptMailEmail" type="text" name="CompanyReceiptMailEmail" value="@receiptMailEmail">
+                                            </div>
+                                        </div>
+                                        <div class="col-2 company-sheet-mode-paper">
+                                            <div class="title no-label">紙本發票郵寄地址<span class="required">*</span></div>
+                                            <div class="input-field full no-label">
+                                                <input id="CompanyReceiptMailAddress" type="text" name="CompanyReceiptMailAddress" value="@receiptMailAddress">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        $(function () {
+                                            var $companySheet_online = $("input#CompanyReceiptType0"),
+                                                                        $companySheet_paper = $("input#CompanyReceiptType1");
+
+                                            $companySheet_paper.on("change", function () {
+                                                if (this.checked) {
+                                                    $(".company-sheet-mode-online").hide();
+                                                    $(".company-sheet-mode-paper").stop().fadeIn("200");
+                                                } else {
+                                                    $(".company-sheet-mode-paper").fadeOut("100");
+                                                }
+                                            }).change();
+
+                                            $companySheet_online.on("change", function () {
+                                                if (this.checked) {
+                                                    $(".company-sheet-mode-paper").hide();
+                                                    $(".company-sheet-mode-online").stop().fadeIn("200");
+                                                } else {
+                                                    $(".company-sheet-mode-online").fadeOut("100");
+                                                }
+                                            }).change();
+                                        })
+                                    </script>
+                                </div>
+                                    break;
+                                case EshopPersonalReceiptType.EReceipt:
+                                @* 只有紙本發票 *@
+                                <div class="card-text-info m-L-8">
+                                    <h6 class="col-5">
+                                        <div class="title">僅提供紙本發票</div>
+                                        <input name="CompanyReceiptType" type="hidden" id="CompanyReceiptType0" value="@((int)EshopPersonalReceiptType.EReceipt)">
+                                    </h6>
+                                    <div class="col-5-partner">
+                                        <div class="title no-label">紙本發票郵寄地址<span class="required">*</span></div>
+                                        <div class="input-field full no-label">
+                                            <input id="CompanyReceiptMailAddress" type="text" name="CompanyReceiptMailAddress" value="@receiptMailEmail">
+                                        </div>
+                                    </div>
+                                </div>
+                                    break;
+                                case EshopPersonalReceiptType.PaperReceipt:
+                                @* 只有電子發票 *@
+                                <div class="card-text-info m-L-8">
+                                    <h6 class="col-5">
+                                        <div class="title">僅提供電子發票</div>
+                                        <input name="CompanyReceiptType" type="hidden" id="CompanyReceiptType0" value="@((int)EshopPersonalReceiptType.PaperReceipt)">
+                                    </h6>
+                                    <div class="col-5-partner">
+                                        <div class="title no-label">電子發票Email寄送至<span class="required">*</span></div>
+                                        <div class="input-field full no-label">
+                                            <input id="CompanyReceiptMailEmail" type="text" name="CompanyReceiptMailEmail" value="@receiptMailAddress">
+                                        </div>
+                                    </div>
+                                </div>
+                                    break;
+                            }
+                        }
+                    </div>
+
+                </div>
+        </div>
+    </div>
+</li>
+}
+<li>
+    <div class="alert transparent">
+        <i class="cc cc-attention"></i>
+        <div>
+            依統一發票使用辦法規定：發票一經開立不得任意更改或改開發票。 <br>
+            電子發票與實體發票具有相同效力，皆能兌獎，可收信或至會員區查詢/下載。
+        </div>
+    </div>
+</li>

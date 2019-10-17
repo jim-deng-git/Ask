@@ -1,0 +1,96 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model AnalysisPageStatLogViewModel
+@{
+    Pagination pagination = ViewBag.Pagination;
+    string OrderByColumn = "0", OrderByDesc = "0";
+    AnalysisOrderByViewModel OrderBy = Model.OrderBy;
+    if (OrderBy.SortDesc == SortDesc.Desc)
+    {
+        OrderByDesc = "0";
+    }
+    OrderByColumn = ((int)OrderBy.SortColumn).ToString();
+    string OrderByDescUrl = Url.Action("PageAnalysisDetails", new { OrderColumn = OrderByColumn, OrderSort = (int)SortDesc.Desc, PageID=Model.PageID, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrderByAscUrl = Url.Action("PageAnalysisDetails", new { OrderColumn = OrderByColumn, OrderSort = (int)SortDesc.Asc, PageID = Model.PageID, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+}
+<div class="card shadow-none m-T-12">
+    <table class="fixTable">
+        <thead>
+            <tr>
+                <th>
+                    序
+                </th>
+                <th>
+                    進入時間
+                    @if (OrderBy.SortDesc == SortDesc.Desc)
+                    {
+                        <a href="@OrderByAscUrl"><i class="cc cc-chevron-down"></i></a>
+                    }
+                    else
+                    {
+                        <a href="@OrderByDescUrl"><i class="cc cc-chevron-up"></i></a>
+                    }
+                </th>
+                <th>停留秒數</th>
+                <th>Session ID</th>
+                <th>裝置</th>
+                <th>作業系統</th>
+                <th>瀏覽器</th>
+                <th>會員姓名/帳號</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0, len = Model.SessionList.Count(); i < len; ++i)
+            {
+                AnalysisPageViewSessionViewModel item = Model.SessionList.ElementAt(i);
+
+                <tr>
+                    <td class="sort">@pagination.GetItemIndex(i)</td>
+                    <td class="time">@item.LogDate</td>
+                    <td class="time">@item.StaySeconds</td>
+                    <td><a href="@Url.Action("SessionAnalysisDetails", "Analysis", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, SessionID = item.SessionID, RangeType=Model.RangeType })">@item.SessionID</a></td>
+                    <td>
+                        @{
+                            string machineName = WorkV3.Areas.Backend.ViewModels.AnalysisPageLogViewModel.GetMachineNumber(item.UserAgent);
+                            <a href="@Url.Action("MachineAnalysisDetails", "Analysis", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, Machine = machineName, RangeType=Model.RangeType })">@machineName</a>
+                        }
+                    </td>
+                    <td>
+                        @{
+                            string osName = WorkV3.Areas.Backend.ViewModels.AnalysisPageLogViewModel.GetOSNumber(item.UserAgent);
+                            @osName
+                        }
+                    </td>
+                    <td>
+                        @{
+                            string browserName = WorkV3.Areas.Backend.ViewModels.AnalysisPageLogViewModel.GetBrowserNumber(item.UserAgent);
+                            @browserName
+                        }
+                    </td>
+                    <td class="text-L">
+                        <div class="hover-show">
+@if (!string.IsNullOrWhiteSpace(item.MemberInfo))
+{
+                            <a href="@Url.Action("MemberAnalysisDetails", "Analysis", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, MemberID = item.MemberID })">@item.MemberInfo</a>
+                            <a class="btn-grey-darken-4-o transparent p-none hide" href="@Url.Action("Edit", "Member", new { MenuID = 1000, siteid = 1, backMenu = 32, ID=item.MemberID })" target="_blank">
+                                @if (item.MemberPhoto != null && !string.IsNullOrEmpty(item.MemberPhoto))
+                                {
+                                    <img src="@((item.MemberPhoto.StartsWith("http") ? "" : ViewBag.VMemberPath) + item.MemberPhoto)" id="imgMemberPhoto" style="width:24px;height:24px" />
+                                }
+                                else
+                                {
+                                    <i class="cc cc-user-o font-hg m-R-none"></i>
+                                }
+                            </a>
+}
+                        </div>
+                    </td>
+                    <td>@item.IP</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="pagination text-C">
+        @Html.Action("Pager", "Common", pagination)
+    </div>
+</div>

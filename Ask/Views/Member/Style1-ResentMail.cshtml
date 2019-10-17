@@ -1,0 +1,114 @@
+﻿@model WorkV3.Models.MemberShipModels
+    @{ 
+        bool CanResent = false;
+    }
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+<div class="card-member loginPage forget" data-style="1">
+    <div class="login">
+        <div class="login-logo">重發驗證信</div>
+        <div class="login-box">
+            <div class="left-box">
+                <form id="editForm" action="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = ViewBag.PageSN })" method="post">
+                    <input type="hidden" value="@ViewBag.MemberID" name="ID" />
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title">E-Mail</div>
+                                <div class="text-value m-T-none font-black">
+                                    @Model.Email
+                                </div>
+                            </div>
+                        </li>
+                        
+                        @if (!string.IsNullOrWhiteSpace(Model.LastResentVerifyMailTime))
+                        {
+                            DateTime lastResentVerifyMailTime = DateTime.Parse(Model.LastResentVerifyMailTime);
+                            if (DateTime.Now.Subtract(lastResentVerifyMailTime).Minutes >=  10)
+                            {
+                                CanResent = true;
+                            }
+                            else{
+                                CanResent = false;
+                            }
+                            <li>
+                                <div class="col-1">
+                                    <div class="title">上次寄送時間</div>
+                                    <div class="input-field">
+                                        @Model.LastResentVerifyMailTime
+                                    </div>
+                                    @if (!CanResent)
+                        {
+                                    <div class="alert font-red transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            再次發送需距上次發送 10 分鐘以上，謝謝！
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            CanResent = true;
+                        }
+                        @if (CanResent)
+                        {
+                            <li>
+                                <div class="btnBox">
+                                    <a id="btnSent" class="btn-custom btn-large block" href="javascript:">確定送出</a>
+                                </div>
+                            </li>
+
+                        }
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript">
+    var isShowForget = false;
+    $(function () {
+        @Html.Raw(ViewBag.Script)
+
+        $('#btnSent').click(function () {
+            
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                form.submit();
+            }
+        });
+
+         @if (ViewBag.Exit != null)
+        {
+            var isActionExit = false;
+            if ((ViewBag.Exit as bool?).HasValue)
+            {
+                isActionExit = (ViewBag.Exit as bool?).Value;
+        }
+        var Message = "";
+        if (!string.IsNullOrEmpty(ViewBag.Message))
+        {
+            Message = ViewBag.Message;
+        }
+        <text>
+    var message = "@Message";
+        var isExit = @isActionExit.ToString().ToLower();
+        if(message != null && message != "")
+        {
+            Component.alert(message, function() {
+                if(isExit)
+                {
+                    parent.ResetFormData();
+                    //location.href = "@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "MyInfo" })";
+                }
+            });
+        }
+        </text>
+    }
+    });
+</script>

@@ -1,0 +1,11 @@
+.card-plainText[data-style="11"] .title-main {
+  font-size: 60px;
+  color: #222222;
+  font-family: "Hiragino Sans CNS", "Century Gothic", "PingFang", "PingFang TC", "LiHei Pro Medium", "Heiti TC", "Microsoft JhengHei", "DFKai-SB", sans-serif;
+  line-height: 1;
+  font-weight: 600; }
+
+.card-plainText[data-style="11"] .title-sub {
+  font-size: 36px;
+  color: #3e3e3e;
+  font-family: "Hiragino Sans CNS", "Century Gothic", "PingFang", "PingFang TC", "LiHei Pro Medium", "Heiti TC", "Microsoft JhengHei", "DFKai-SB", sans-serif; }

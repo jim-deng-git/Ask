@@ -1,0 +1,127 @@
+﻿@model IEnumerable<WorkV3.Models.TemplateModels>
+@{
+    ViewBag.Title = "想前往的列表";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string editUrl = Url.Action("Edit", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID });
+    var ModuleSites = WorkV3.Areas.Backend.Models.DataAccess.ArticleDAO.GetMobuleSites();
+    long SiteID = ViewBag.SiteID;
+    long MenuID = ViewBag.MenuID;
+    string act = ViewBag.ActionType;
+}
+
+<div class="body-dropdown">
+    <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <ul class="forms">
+                    <li>
+                        <div class="title">哪個是你想前往的列表？</div>
+                        <ol class="dd-list">
+                            @if (ModuleSites != null && ModuleSites.Count() > 0)
+                            {
+                                foreach (WorkV3.Models.SitesModels siteItem in ModuleSites)
+                                {
+
+                                    <li class="dd-item" data-id="@siteItem.Id">
+                                        <div class="toggleBox active">
+                                            <i class="cc cc-chevron-down"></i>
+                                        </div>
+                                        <div class="dd-handle">
+                                            <i class="cc cc-laptop"></i>
+                                            <span class="menu-title">網站 @siteItem.Title</span>
+                                        </div>
+                                        @{
+                                            var ModuleMenus = WorkV3.Areas.Backend.Models.DataAccess.ArticleDAO.GetMobuleMenus(siteItem.Id);
+                                            if (ModuleMenus != null && ModuleMenus.Count() > 0)
+                                            {
+                                                <ol class="dd-list show">
+                                                    @foreach (WorkV3.Models.MenusModels menuItem in ModuleMenus)
+                                                    {
+                                                        <li class="dd-item" data-id="@menuItem.Id">
+                                                            <div class="dd-handle">
+                                                                <div>
+                                                                    <input class="with-gap" name="MenuID" type="radio" id="MenuID_@menuItem.Id" value="@menuItem.Id" @(act == "move"?((menuItem.Id == MenuID)? "disabled":""):"") />
+                                                                    <label for="MenuID_@menuItem.Id">@menuItem.Title</label>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    }
+                                                </ol>
+                                            }
+                                        }
+                                    </li>
+                                }
+                            }
+                        </ol>
+                    </li>
+                </ul>
+                <div class="control-bar flex">
+                    <a class="btn-grey prev" href="javascript:parent.$.colorbox.close();"><i class="cc cc-arrow-left"></i>上一步，已選了<span id="spanCount"></span>筆</a>
+                    <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:save();"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var selectIds = parent.getSelectIds();
+    $('#spanCount').html(selectIds.length);
+    $(function () {
+        $('.toggleBox').each(function () {
+            var $this = $(this),
+                $toggleContent = $(this).siblings('.dd-list');
+
+            $this.on('click', function () {
+                if ($toggleContent.hasClass('show')) {
+                    $toggleContent.slideUp('normal', function () {
+                        $(this).removeClass('show');
+                        $this.removeClass('active');
+                    });
+                } else {
+                    $toggleContent.slideDown('normal', function () {
+                        $(this).addClass('show');
+                        $this.addClass('active');
+                    });
+                }
+            });
+        });
+
+    });
+
+
+    function save() {
+        var selectMenuID = $('input[name=MenuID]:checked').val();
+        if (!selectMenuID) {
+            Component.alert('請選擇您想動作的列表');
+            return;
+        }
+        @if (act == "copy")
+        {
+            <text>
+        $.post('@Html.Raw(Url.Action("Copy", new { siteId = SiteID,menuId = MenuID }))', { 'ArticleIds[]': selectIds, 'TargetMenuID': selectMenuID }, function () {
+                Component.alert('已完成複製', function () {
+                    parent.Complete();
+                    parent.$.colorbox.close();
+                });
+            });
+            </text>
+        }
+        @if (act == "move")
+        {
+            <text>
+        $.post('@Html.Raw(Url.Action("Move", new { siteId = SiteID,menuId = MenuID }))', { 'ArticleIds[]': selectIds, 'TargetMenuID': selectMenuID}, function () {
+                Component.alert('已完成移動', function () {
+                    parent.Complete();
+                    parent.$.colorbox.close();
+                });
+            });
+            </text>
+        }
+    }
+</script>
+
+@section FArea {
+    @BundleConfig.Component()
+}
+

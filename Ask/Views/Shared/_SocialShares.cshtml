@@ -1,0 +1,56 @@
+﻿@model List<WorkV3.Areas.Backend.Models.SocialRelationModels>
+    @{
+        int CollectionCount = (int)ViewBag.CollectionCount;
+        if (Model != null && Model.Count() > 0 && Model.First() != null)
+        {
+            var moreList = Model.Where(p => p.IsOpen && p.ShowType == WorkV3.Areas.Backend.Models.ShowType.More);
+            var showList = Model.Where(p => p.IsOpen && p.ShowType == WorkV3.Areas.Backend.Models.ShowType.Show);
+            int shareCount = 0;
+            if (showList != null && showList.Count() > 0)
+            {
+                foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in showList)
+                {
+                    string iconClassName = "", btnClassName = "";
+                    btnClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeButtonStyle(item.SocialType);
+                    iconClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeStyle(item.SocialType);
+                    if (item.SocialType == MemberType.CopyUrl)
+                    {
+                        <a class="btn-url-copy transparent square" href="javascript:" id="custom_mobile_click" title="網址已複製" data-social ><i class="cc cc-content-copy"></i></a>
+                    }
+                    else if (item.SocialType == MemberType.Collection)
+                    {
+                        <a class="btn-member-collection transparent square" href="javascript:" data-collection data-social><i class="cc cc-favorite-o"></i></a>
+                    }
+                    else
+                    {
+                        <a class="@btnClassName transparent square" href="javascript:" data-social><i class="cc @iconClassName"></i></a>
+                    }
+                }
+
+                shareCount += showList.Count() -1 ;
+            }
+            if (moreList != null && moreList.Count() > 0)
+            {
+                foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in moreList)
+                {
+                    string iconClassName = "", btnClassName = "";
+                    btnClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeButtonStyle(item.SocialType);
+                    iconClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeStyle(item.SocialType);
+                    if (item.SocialType == MemberType.CopyUrl)
+                    {
+                        <a class="btn-url-copy transparent square" href="javascript:" id="custom_mobile_click" title="網址已複製" data-social style="display:none"><i class="cc cc-content-copy"></i></a>
+                    }
+                    else if (item.SocialType == MemberType.Collection)
+                    {
+                        <a class="btn-member-collection transparent square" href="javascript:" data-collection data-social style="display:none"><i class="cc cc-favorite-o"></i></a>
+                    }
+                    else
+                    {
+                        <a class="@btnClassName transparent square" href="javascript:" data-social style="display:none"><i class="cc @iconClassName"></i></a>
+                    }
+                }
+                <a id="socialMore" class="btn-default square transparent tooltip tooltipstered" href="javascript:" dada-count="@shareCount"><i class="cc cc-dots-horizontal"></i></a>
+            }
+        }
+    }
+

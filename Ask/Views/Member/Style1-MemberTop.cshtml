@@ -1,0 +1,65 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+    long siteID = ViewBag.SiteID;
+    long menuID = ViewBag.MenuID;
+    string uploadUrl = ViewBag.UploadVPath;
+
+    Member curUser = Member.Current;
+    if (curUser == null)
+    {
+        Response.Redirect(Url.Action("Index", "Home", new { siteSn = ViewBag.SiteSN, pageSn = "Login" }));
+    }
+}
+
+<div class="member_header">
+    <div class="member-photo">
+        @RenderPage("~/Views/Member/Style1-MemberPhoto.cshtml")
+    </div>
+    <div class="member-nav">
+        <h1>
+            <span class="name">@Model.Name</span>
+            <span class="account">@Model.Account</span>
+            <span class="identity general">
+                <i class="cc cc-user-o"></i>
+                一般會員
+            </span>
+            <div class="member-control-bar">
+                <a class="member-edit" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = (Model.MemberType == MemberType.Web ? "MyInfo" : "MySocialInfo") })"><i class="cc cc-user-o"></i>個人設定</a>
+                <a class="member-logout" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Login" })"><i class="cc cc-logout-line"></i>登出</a>
+            </div>
+        </h1>
+        <div class="member-option">
+            <ul>
+                <li @((pageSn == "Desktop") ? "class=current-menu" : "")>
+                    <a href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Desktop" })">
+                        <i class="cc cc-home-o"></i>
+                        會員專區
+                    </a>
+                </li>               
+                <li @((pageSn == "LikeEventCalendar") ? "class=current-menu" : "")>
+                    <a href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "LikeEventCalendar" })">
+                        <i class="cc cc-calendar-o"></i>
+                        活動行事曆
+                    </a>
+                </li>
+                <li @((pageSn == "CollectionList") ? "class=current-menu" : "")>
+                    <a href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "CollectionList" })">
+                        <i class="cc cc-favorite-thin"></i>
+                        我的收藏
+                    </a>
+                </li>
+                @*<li @((pageSn == "MemberBrowseRecord") ? "class=current-menu" : "")>
+                        <a href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "MemberBrowseRecord" })">
+                            <i class="cc cc-list"></i>
+                            瀏覽記錄
+                        </a>
+                </li>*@
+            </ul>
+        </div>
+    </div>
+</div>
+

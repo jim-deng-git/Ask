@@ -1,0 +1,58 @@
+﻿@model IEnumerable<string>
+@{
+    ViewBag.Title = "編輯追蹤標記";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    IEnumerable<string> allFlags = ViewBag.AllFlags;
+    long MemberShipId = ViewBag.MemberShipId;
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">追蹤標記</div>
+        </div>
+        <ul id="ulForm" class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="input-field inline full">
+                        <textarea id="txtFlags" class="tagEditor">@string.Join(";", Model)</textarea>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">            
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:save();"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</div>
+
+@section FArea {    
+    @BundleConfig.TagEditor()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $('#txtFlags').tagEditor({
+            delimiter: ';, ',
+            placeholder: '標記名稱',
+            autocomplete: {
+                delay: 0,
+                position: {
+                    collision: 'flip'
+                },
+                source: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allFlags))
+            },
+            forceLowercase: false
+        });
+
+        function save() {
+            var flags = $('#txtFlags').val();
+            flags = flags ? $.unique(flags.split(';')) : [];
+            $.post('@Html.Raw(Url.Action("ModifyFlag", new { siteId = siteId, MemberShipId = MemberShipId }))', { 'flags[]': flags }, function () {
+                parent.refreshList();
+                parent.$.colorbox.close();
+            });
+        }
+    </script>
+}

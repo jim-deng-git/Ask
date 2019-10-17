@@ -1,0 +1,330 @@
+// 文字行數顯示設定(行數, 行高)
+=truncateBox-line($QTY, $line-height)
+  overflow: hidden
+  text-overflow: ellipsis
+  display: -webkit-box
+  -webkit-box-orient: vertical
+  -webkit-line-clamp: $QTY //控制顯示行數
+  line-height: $line-height   //對不支持瀏覽器的
+  height: $line-height * $QTY //對不支持瀏覽器的彌補 行數*行高
+  
+  
+// @import "https://fonts.googleapis.com/earlyaccess/notosanstc.css"
+
+// html, body, caption, th, input, textarea, select, option
+//   font-family: 'Noto Sans TC','PingFangTC-Medium','微軟正黑體', sans-serif !important
+
+// rwd youtube
+.video-container
+  margin-top: 50px
+  margin-bottom: 20px
+  position: relative
+  padding-bottom: 56.25%
+  padding-top: 30px
+  height: 0
+  overflow: hidden
+  iframe, object, embed
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+
+// instagram
+// .instagram-media
+//   margin-top: 50px !important
+//   margin-bottom: 20px !important
+
+.fb-comments
+  iframe
+    width: 100% !important
+
+
+//圖片統一用背景圖顯示
+a
+  &:link
+    color: #0030a7
+  +hover
+    .card-img
+      >.card-img-content
+        opacity: .9
+  .card-img
+    position: relative
+    overflow: hidden
+    >img
+      width: 100%
+      height: 0
+    >.card-img-content
+      position: absolute
+      top: 0
+      left: 0
+      width: 100%
+      background-size: cover
+      background-position: center center
+      height: 100%
+      @extend %transition-btn
+
+// 為了鎖定卷軸設置
+.body-layout
+  position: relative
+  width: 100%
+  height: 100vh
+  margin-top: 44.5px
+  overflow-y: auto
+  overflow-x: hidden
+  max-height: calc(100vh - 44.5px)
+  -webkit-overflow-scrolling: touch
+  // +breakpoint(pad-portrait)
+  //   margin-top: 0 !important
+  //   max-height: 100vh !important
+  position: absolute
+  left: 0
+  top: 0
+
+      
+//主色、副色 
+$color-main: #80c037 
+$color-sub: #002fa7 
+//#0067bf
+//#002fa7 
+
+//文字統一大小
+$h1: 36px
+$h2: 34px
+$h3: 30px
+$h4: 24px
+$h5: 21px
+$h6: 16px
+$h7: 14px
+
+html,body
+  padding: 0
+  margin: 0
+  // pointer-events: none
+  overflow: hidden
+  -webkit-overflow-scrolling: touch
+  position: static
+*
+  box-sizing: border-box 
+
+ul, ol, li, a
+  @extend %reset
+a
+  display: inline-block
+  @extend  %transition-smoooth
+  +hover
+    color: $color-main 
+h1,h2,h3
+  margin: 0
+  padding: 0
+input
+  outline-color: transparent
+  
+.wrapper,.wrapper-page
+  display: flex
+  flex-direction: column
+  max-width: 1300px
+  width: 100%
+  margin: auto
+  margin-top: 0
+  padding-right: 60px
+  padding-left: 60px
+  +breakpoint(pad-landscape)
+    padding-right: 30px
+    padding-left: 30px
+  +breakpoint(mobile)
+    padding: 0
+    // margin-top: 30px
+    // margin-bottom: 30px
+
+// .wrapper-fluid
+//   margin-top: 60px
+//   +breakpoint(mobile)
+//     margin-top: 30px
+.header-wrapper
+  max-width: 1600px
+  width: 100%
+  margin: auto
+  padding-right: 60px
+  padding-left: 60px
+
+// .wrapper-page
+//   display: flex
+//   flex-direction: column
+//   max-width: 1180px
+//   width: 100%
+//   margin: auto
+//   margin-top: 0
+//   padding-right: 75px
+//   padding-left: 75px
+//   +breakpoint(pad-landscape)
+//     padding-right: 30px
+//     padding-left: 30px
+//   +breakpoint(mobile)
+//     padding: 0
+//     margin-top: 30px
+
+.wrapper-pageArticle
+  display: flex
+  flex-direction: column
+  max-width: 1300px
+  width: 100%
+  margin: auto
+  margin-top: 45px
+  padding-right: 60px
+  padding-left: 60px
+  +breakpoint(pad-landscape)
+    padding-right: 30px
+    padding-left: 30px
+  +breakpoint(mobile)
+    padding: 0
+    margin-top: 30px
+
+.groove + .groove
+  margin-top: 40px
+  +breakpoint(mobile)
+    margin-top: 20px
+
+.groove-1
+  flex: 1 0 auto //解決IE flex bug
+// .groove-1
+  // flex: 0 0 100% !important
+  // max-width: 100% !important
+
+.col
+  padding: 0 $box-space
+  margin: 0
+  width: 100%
+  +breakpoint(pad-portrait)
+    flex: 0 0 50% !important
+    max-width: 50% !important
+  +breakpoint(mobile)
+    flex: 0 0 100% !important
+    max-width: 100% !important
+
+.col-cm-1
+  +breakpoint(pad-landscape)
+    flex: 0 0 100% !important
+    max-width: 100% !important
+.col-sm-1
+  +breakpoint(pad-portrait)
+    flex: 0 0 100% !important
+    max-width: 100% !important
+.col-xs-2
+  +breakpoint(mobile)
+    flex: 0 0 50% !important
+    max-width: 50% !important
+
+
+
+.col-2
+  flex: 0 0 50%
+  max-width: 50%
+.col-3
+  flex: 0 0 33.33333%
+  max-width: 33.33333%
+.col-3x2
+  flex: 0 0 66.66666%
+  max-width: 66.66666%
+.col-4
+  flex: 0 0 25%
+  max-width: 25%
+.col-5
+  flex: 0 0 20%
+  max-width: 20%
+.col-10
+  flex: 0 0 10%
+  max-width: 10%
+.col-10x9
+  flex: 0 0 calc(10% * 9)
+  max-width: calc(10% * 9)
+.col-10x8
+  flex: 0 0 calc(10% * 8)
+  max-width: calc(10% * 8)
+.col-10x7
+  flex: 0 0 calc(10% * 7)
+  max-width: calc(10% * 7)
+.col-10x6
+  flex: 0 0 calc(10% * 6)
+  max-width: calc(10% * 6)
+.col-10x4
+  flex: 0 0 calc(10% * 4)
+  max-width: calc(10% * 4)
+.col-10x3
+  flex: 0 0 calc(10% * 3)
+  max-width: calc(10% * 3)
+.col-off-10
+  margin-left: 10%
+
+.row
+  display: flex
+  flex-wrap: wrap
+  margin-right: -$box-space
+  margin-left: -$box-space
+
+
+.gotop
+  position: fixed
+  bottom: 50px
+  right: 50px
+  display: none
+  z-index: 999
+  +breakpoint(mobile-landscape)
+    bottom: 15px
+    right: 15px
+  a
+    padding: 15px
+    background-color: rgba(0,0,0,.4)
+    font-size: 30px
+    line-height: 30px
+    color: #fff
+    +breakpoint(mobile-landscape)
+      font-size: 20px
+      line-height: 20px
+    +hover
+      background-color: rgba(68,137,200,.6)
+
+
+.push-body
+  @extend  %transition-btn
+  margin-left: 0
+  width: 99.8vw
+  position: relative
+  z-index: 1001
+  background-color: #fff
+  +breakpoint(pad-portrait)
+    padding-top: 44.5px 
+
+.menu-open-background.active
+  position: absolute
+  top: 0
+  left: 0
+  width: 100vw
+  height: 100%
+  background-color: rgba(0, 0, 0, .5)
+  z-index: 10
+
+.svg-container
+  display: inline-block
+  width: 100% 
+  line-height: 0
+  height: 0
+  padding: 0
+  padding-bottom: 100%
+  position: relative
+  svg
+    position: absolute 
+    height: auto
+    height: initial
+    width: 100% 
+    left: 0 
+    top: 0 
+
+
+.mobile-hide
+  +breakpoint(mobile)
+    display: none !important
+.pad-portrait-show
+  display: none !important
+  +breakpoint(mobile)
+    display: block !important

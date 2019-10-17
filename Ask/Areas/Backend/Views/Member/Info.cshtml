@@ -1,0 +1,123 @@
+﻿@model WorkV3.Models.MemberShipModels
+@{
+    ViewBag.Title = "會員檢視";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    var ListIdentityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.IdentityCategories;
+    var ListFavorityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.FavorityCategories;
+}
+
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="p-none p-T-6 p-B-6 border-B text-R m-B-12 p-h-2">                
+            <span class="m-L-4">註冊時間：@Model.CreateTime.ToString(dateTimeFmt)</span>
+            <span class="m-L-4">最後一次登入：@Model.LastLoginTime.ToString(dateTimeFmt)</span>
+        </div>
+        <ul class="forms p-B-12">
+            <li>
+                <div class="col-2">                        
+                    <div class="title">帳號</div>
+                    <div class="text-value">@Model.Account</div>
+                </div>
+                <div class="col-2">
+                    <div class="title">您的邀請碼</div>
+                    <div class="text-value">@Model.RecommandCode</div>
+                </div>
+            </li>                
+            <li>
+                <div class="col-2">
+                    <div class="title">姓名</div>
+                    <div class="text-value">@Model.Name</div>
+                </div>
+                <div class="col-2">
+                    <div class="title">姓名</div>
+                    <div class="text-value">@Model.Sex</div>                        
+                </div>
+            </li>
+            <li style="display: none;">
+                <div class="col-2">
+                    <div class="title">身分證字號</div>
+                    <div class="text-value">@Model.IDCard</div>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title">出生年月日</div>
+                    <div class="text-value">@Model.Birthday.ToString(dateTimeFmt)</div>
+                </div>
+            </li>
+            <li style="display: none;">
+                <div class="col-2">
+                    <div class="title">電話</div>
+                    <div class="text-value">@Model.Phone</div>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title">手機</div>
+                    <div class="text-value">@Model.Mobile</div>
+                </div>
+                <div class="col-2">
+                    <div class="title">Email</div>
+                    <div class="text-value">@Model.Email</div>
+                </div>
+            </li>                
+            <li>
+                <div class="col-1">
+                    <div class="title">身份類別</div>
+                    <div class="text-value">
+                        @if (ListIdentityCategories != null) {
+                            List<string> categoryList = new List<string>();
+                            foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListIdentityCategories) {
+                                if (Model.IdenityTypeList != null && Model.IdenityTypeList.Count > 0) {
+                                    var selectItem = Model.IdenityTypeList.Where(c => c.ID == cate.ID);
+                                    if (selectItem != null && selectItem.Count() > 0) {
+                                        categoryList.Add(cate.Title);
+                                    }
+                                }
+                            }
+                            if(categoryList.Count > 0) {
+                                @:@(string.Join("、", categoryList))
+                            }
+                        }
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">你的喜好</div>
+                    <div class="text-value">
+                        @if (ListFavorityCategories != null) {
+                            List<string> categoryList = new List<string>();
+                            foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListFavorityCategories) {
+                                if (Model.FavorityList != null && Model.FavorityList.Count > 0) {
+                                    var selectItem = Model.FavorityList.Where(c => c.ID == cate.ID);
+                                    if (selectItem != null && selectItem.Count() > 0) {
+                                        categoryList.Add(cate.Title);
+                                    }
+                                }
+                            }
+                            if (categoryList.Count > 0) {
+                                @:@(string.Join("、", categoryList))
+                            }
+                        }
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-2">
+                    <div class="title">狀態</div>
+                    <div class="text-value">@(Model.Status ? "正常" : "停權")</div>
+                </div>
+                <div class="col-2">
+                    <div class="title">是否驗證</div>
+                    <div class="text-value">@(string.IsNullOrWhiteSpace(Model.VerifyTime) ? "尚未驗證" : "已驗證")</div>
+                </div>
+            </li> 
+        </ul>
+        <div class="control-bar">                          
+            <a class="btn-cancel" href="javascript:parent.$.colorbox.close();"><i class="cc cc-close"></i>關閉</a>                
+        </div>
+    </div>        
+</div>

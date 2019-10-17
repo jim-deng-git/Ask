@@ -1,0 +1,67 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    ArticleSettingModels setting = ViewBag.Setting;
+
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+@foreach (ArticleModels item in Model)
+{
+    List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+    string filterClass = (articleTypes?.Count > 0 ? "all, " + string.Join(", ", articleTypes.Select(t => t.ID)) : "all");
+    SitePage page = itemPages[item.CardNo];
+    string target = "_self";
+    string url = string.Empty;
+    if (item.Type == "page")
+    {
+        url = Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN });
+    }
+    else if (item.Type == "link")
+    {
+        url = item.Link;
+        if (item.IsOpenNew)
+        {
+            target = "_blank";
+        }
+    }
+    else if (item.Type == "archive")
+    {
+        target = "_blank";
+        if (!string.IsNullOrWhiteSpace(item.Archive))
+        {
+            ResourceFilesModels file = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.Archive);
+            url = uploadUrl + file.FileInfo;
+        }
+    }
+
+    string img = item.GetFirstImg(setting);
+    ResourceVideosModels video = item.GetFirstVideo();
+    <li class="item-static" data-filter-class="@filterClass" data-color="">
+        <a href="@Html.Raw(url)" target="@target">
+            <div class="card shadow-none">
+                <div class="card-box">
+                    @if (!string.IsNullOrWhiteSpace(img))
+                    {
+                        <div class="card-img square circle @(video == null ? string.Empty : "hasVideo")" style="background-image:url(@(uploadUrl + Server.UrlPathEncode(img)))">
+                            <div class="card-img-content" style="background-image:url(@(uploadUrl + Server.UrlPathEncode(img)))"></div>
+                        </div>
+                    }
+                    <div class="card-text">
+                        @if (articleTypes?.Count() > 0)
+                        {
+                            foreach (ArticleTypesModels type in articleTypes)
+                            {
+                                <div class="article-list-type" data-type="@type.Name">
+                                    <span data-color="@type.Color">@type.Name</span>
+                                </div>
+                            }
+                        }
+                        <div class="card-text-name">@item.Title</div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </li>
+}

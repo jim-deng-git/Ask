@@ -1,0 +1,168 @@
+﻿@model IEnumerable<AdsCustomizeAccountSet>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+@Styles.Render("~/Css/BackCss")
+<link href="/css/card.css" rel="stylesheet" />
+<div class="col-4-partner p-4 border-T border-L m-B-12">
+    <table id="listTable" class="fixTable">
+        <thead>
+            <tr>
+                <th>刊登期間</th>
+                <th>計價方式</th>
+                <th>
+                    刊登廣告總額
+                    <br>
+                    <span class="font-grey">每月/日金額</span>
+                </th>
+                <th>
+                    點擊量
+                    <br>
+                    <span class="font-grey">點擊廣告總額</span>
+                </th>
+                <th>
+                    瀏覽人次
+                    <br>
+                    <span class="font-grey">瀏覽廣告總額</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                string inDurationBgColor = "bg-blue-lighten-5";
+                string latestBgColor = "bg-green-lighten-5";
+
+                string colorClass = string.Empty;
+
+                if (item.SpecialRow == AdsCustomizeAccountSet.SpecialRowType.InDuration)
+                {
+                    colorClass = $" class={inDurationBgColor}";
+                }
+                else if (item.SpecialRow == AdsCustomizeAccountSet.SpecialRowType.Latest)
+                {
+                    colorClass = $" class={latestBgColor}";
+                }
+
+                string IssueStartStr = item.IssueStart.HasValue ? item.IssueStart.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+                string IssueEndStr = item.IssueEnd.HasValue ? item.IssueEnd.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+
+                string IssueDate = "";
+                if (item.IssueStart.ToString("yyyy/MM/dd") == item.IssueEnd.ToString("yyyy/MM/dd"))
+                {
+                    IssueDate = $@"{item.IssueStart.ToString("yyyy/MM/dd")}<br />{item.IssueStart.ToString("HH:mm")} ~ {item.IssueEnd.ToString("HH:mm")}";
+                }
+                else
+                {
+                    IssueDate = $"{IssueStartStr} ~ {IssueEndStr}";
+                }
+
+                @*<tr data-id="@item.ID" @colorClass>*@
+                <tr data-id="@item.ID">
+                    <td class="text-L">
+                        <p class="font-grey font-sm">
+                            @Html.Raw(IssueDate)
+                        </p>
+                    </td>
+                    <td class="text-L">
+                        <p class="font-grey font-sm">
+                            @Html.Raw(item.IssueSetTypeName)
+
+                        </p>
+                    </td>
+                    <td class="text-L">
+                        @if (item.IssueSetType != IssueSetType.Click)
+                        {
+                            string periodCurrency = string.Empty;
+                            //item.CostOfPeriodCurrency
+                            if ((item.CostOfPeriodCurrency ?? "").ToLower() == "ntd")
+                            {
+                                periodCurrency = "NT$";
+                            }
+                            else if ((item.CostOfPeriodCurrency ?? "").ToLower() == "usd")
+                            {
+                                periodCurrency = "US$";
+                            }
+                            string price = string.Empty;
+                            if (item.CostOfPeriod.HasValue)
+                            {
+                                long cost = Convert.ToInt64(item.CostOfPeriod);
+                                if (cost > 0)
+                                {
+                                    price = string.Format($"{periodCurrency} {{0}}", cost.ToString("#,0"));
+                                }
+                            }
+                            if (!string.IsNullOrWhiteSpace(price))
+                            {
+                                <text>
+                                    @price
+                                    <p class="font-grey font-sm">
+                                        @if (item.GetCostPerMonth != 0 && !item.IsDurationBelowOneMonth())
+                                        {
+                                            <text>
+                                                @periodCurrency @item.GetCostPerMonth.ToString("#,0") /月
+                                                <br>
+                                            </text>
+                                        }
+                                        @if (item.GetCostPerDays != 0 && !item.IsDurationBelowOneDay())
+                                        {
+                                            <text>
+                                                @periodCurrency @item.GetCostPerDays.ToString("#,0") /日
+                                                <br>
+                                            </text>
+                                        }
+                                    </p>
+                                </text>
+                            }
+                        }
+                    </td>
+                    <td>
+                        @(item.QueryClicks.HasValue ? Convert.ToInt64(item.QueryClicks).ToString("#,0") : "0" )
+                        <p class="font-grey font-sm">
+                            @if (item.IssueSetType.ToLower() == "click")
+                            {
+                                string currency = string.Empty;
+                                if (item.BillingByClickCurrency.ToLower() == "ntd")
+                                {
+                                    currency = "NT$";
+                                }
+                                else if (item.BillingByClickCurrency.ToLower() == "usd")
+                                {
+                                    currency = "US$";
+                                }
+                                long billingByClick = Convert.ToInt64(item.BillingByClick ?? 0);
+                                long clicks = Convert.ToInt64(item.QueryClicks ?? 0);
+
+                                @($"{currency}{(clicks * billingByClick).ToString("#,0")}")
+                            }
+                        </p>
+                    </td>
+                    <td>
+                        @(item.QueryVisits.HasValue ? Convert.ToInt64(item.QueryVisits).ToString("#,0") : "0" )
+                        <p class="font-grey font-sm">
+                            @if (item.IssueSetType.ToLower() == "click")
+                            {
+                                string currency = string.Empty;
+                                if (item.BillingByBrowseCurrency.ToLower() == "ntd")
+                                {
+                                    currency = "NT$";
+                                }
+                                else if (item.BillingByBrowseCurrency.ToLower() == "usd")
+                                {
+                                    currency = "US$";
+                                }
+                                int billingByBrowse = item.BillingByBrowse ?? 0;
+                                long browses = Convert.ToInt64(item.QueryVisits ?? 0);
+
+                                @($"{currency}{(browses * billingByBrowse).ToString("#,0")}")
+                            }
+                        </p>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

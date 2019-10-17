@@ -1,0 +1,31 @@
+.card-html.WonTen[data-style="2"] {
+  height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -ms-flex-line-pack: justify;
+      align-content: space-between; }
+  .card-html.WonTen[data-style="2"] > * {
+    -webkit-box-flex: 0;
+        -ms-flex: 0 0 100%;
+            flex: 0 0 100%; }
+  .card-html.WonTen[data-style="2"] .contact-info > div {
+    margin-bottom: 10px; }
+  .card-html.WonTen[data-style="2"] .contact-info h3 {
+    margin-top: 20px;
+    margin-bottom: 10px; }
+  .card-html.WonTen[data-style="2"] .contact-info .inline a {
+    display: inline-block; }
+    .card-html.WonTen[data-style="2"] .contact-info .inline a + a {
+      margin-left: 15px; }
+  .card-html.WonTen[data-style="2"] .contact-info .inline .d-inline-block {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    font-size: 26px;
+    color: #ffffff;
+    border-radius: 100%;
+    background-color: #707070;
+    text-align: center; }

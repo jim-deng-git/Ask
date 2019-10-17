@@ -1,0 +1,22 @@
+﻿@model ParallaxModel
+
+<link href="~/css/Cards/Parallax/style1.css" rel="stylesheet" />
+
+<script src="~/script/Parallax/parallax.js"></script>
+<script type="text/javascript">
+	$(function(){
+		$('.parallax-img').parallax();
+	});
+</script>
+
+<div class="card-Parallax" data-style="1">
+    <div class="parallax-text">
+        <div class="parallax-text-title">@Model.Title</div>
+        <div class="parallax-text-content">@Html.Raw(Model.Description)</div> 
+    </div>
+    <div class="parallax-img">
+        <div class="parallax-blur"></div>
+        <img src="@(ViewBag.UploadVPath + ViewBag.ImgSrc)" alt="">
+    </div>
+</div>
+

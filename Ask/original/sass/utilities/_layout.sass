@@ -1,0 +1,659 @@
+﻿\::selection
+    background-color: color("shades", "black")
+    color: color("shades", "white")
+
+//::-webkit-scrollbar
+//width: 10px
+//height: 10px
+
+//::-webkit-scrollbar-thumb // scroll triggle
+//border-radius: 20px
+//background-color: #cccccc
+
+//::-webkit-scrollbar-track // bg
+//background: #b8c0c8
+//-webkit-box-shadow: inset 0 0 4px rgba(255,255,255,0.9)
+//border-radius: 0px
+
+%quotation-base
+    display: block
+    line-height: 1
+    font-size: 100px
+    font-family: Helvetica
+    position: absolute
+    color: color('grey','lighten-2')
+
+html, body, caption, th, input, textarea, select, option
+    font-family: "Clear Sans", Verdana, "Century Gothic", "PingFang", Helvetica, Arial, "PingFang TC", "LiHei Pro Medium", "Heiti TC", "Microsoft JhengHei", "DFKai-SB", sans-serif
+
+h1, h2, h3, h4, h5
+    text-rendering: optimizelegibility
+    letter-spacing: -0.025em
+    font-weight: 400
+    color: $title-main-color
+
+html
+    width: size(100)
+    font-size: 62.5%
+    min-height: size(100)
+    letter-spacing: 0px
+
+    +text-L
+
+    color: $title-sub-color
+
+    // +breakpoint(mobile)
+    //     font-size: 75%
+
+body
+    width: size(100)
+    height: size(100)
+    min-height: size(100)
+    background-color: color("shades", "white")
+    font-size: 16px
+    font-size: 1.6rem
+    line-height: map-get($line-heights, base)
+    color: $content-base-color
+    overflow-x: hidden
+
+    +breakpoint(pad-portrait)
+        -webkit-overflow-scrolling: touch
+
+
+    &.body-lightBox
+        .groove
+            white-space: normal
+
+        ul.forms
+            margin: 20px 25px
+
+    &.lightboxContent
+        [zonelayout="h-c1-s1000"]
+            display: none !important
+
+        [zonelayout="h-c1-s1002"]
+            display: none !important
+
+        [zonelayout="h-c1-s1001"]
+            display: none !important
+
+    // +overflow-x(hidden)
+
+    // scrollbar-face-color: slategray
+    // scrollbar-track-color: #b8c0c8
+
+.zone
+    width: size(100)
+    margin: map-get($spacers, auto)
+
+    @extend %border-box
+
+    +bg-pos-ct
+    +bg-repeat-none
+    +bg-cover
+
+.zone-base
+    width: map-get($zones, base)
+
+    +breakpoint(zone-base)
+        width: size(90)
+
+
+    // +breakpoint(pad-portrait)
+    //     width: size(90)
+
+.zone-wide
+    max-width: map-get($zones, wide)
+    width: 100%
+    // +breakpoint(zone-wide)
+    //     width: size(90)
+        
+    +breakpoint(pad-landscape)
+        width: size(90)
+
+
+    // +breakpoint(pad-portrait)
+    //     width: size(90)
+
+.zone-list
+    width: map-get($zones, list)
+
+    +breakpoint(pad-landscape)
+        width: size(90)
+
+.zone-full
+    width: map-get($zones, full)
+
+[zonelayout="h-c1-s1000"]
+    ~ .zone
+        padding-top: 82px
+
+        +breakpoint(pad-portrait)
+            padding-top: 100px
+
+
+        +breakpoint(mobile)
+            padding-top: 75px
+
+
+        [mT='main']
+            margin-top: 0
+
+        [mB='main']
+            margin-bottom: 0
+
+        ~ .zone
+            padding-top: 0
+
+            [mT='main']
+                margin-top: 2rem
+
+                +breakpoint(mobile)
+                    margin-top: 0
+
+            [mB='main']
+                margin-bottom: 2rem
+
+                +breakpoint(mobile)
+                    margin-bottom: 0
+
+.wrapper
+    width: size(100)
+    margin: map-get($spacers, auto)
+
+    @extend %border-box
+
+    @extend %flex
+
+    @extend %flex-wrap
+
+    -ms-flex-direction: column
+    -moz-flex-direction: column
+
+    // @extend %flex-column
+
+    +breakpoint(mobile)
+        +d-block
+
+// for ie11
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none)
+    .wrapper
+        flex-direction: row
+
+a
+    cursor: default
+    word-break: break-all
+
+    @extend %transition-btn
+
+    +hover-focus-active
+        color: color("grey", "base")
+
+
+    &:link
+        color: color("grey", "base")
+
+    &:visited
+        color: color("grey", "base")
+
+    &[href]
+        cursor: pointer
+
+    &.underline
+        text-decoration: none
+        border-bottom-width: 1px
+        border-style: solid
+        border-color: $gray
+
+        &:hover
+            border-color: $black
+    &.default //add 20190515 susan
+        cursor: default
+
+
+p
+    ~ p
+        margin-top: 17px
+
+div
+    +clearfix
+
+    @extend %border-box
+
+img
+    +img
+
+    @extend %border-box
+
+ul, ol
+    margin-left: 25px
+
+    &.inline
+        margin-left: 0
+        @extend %list-style-none
+
+        li
+            display: inline-block
+            @extend %list-style-none
+
+    &.unstyled
+        margin-left: 0
+        @extend %list-style-none
+
+        li
+            margin-bottom: 5px
+            @extend %list-style-none
+
+            ul
+                margin-top: 3px
+
+    &.style-dash
+        margin-left: 0
+        @extend %list-style-none
+
+        li
+            @extend %list-style-none
+            margin-bottom: 10px
+            margin-left: 16px
+
+            &::before
+                content: ''
+                display: inline-block
+                width: 10px
+                height: 1px
+                background-color: color('grey','base')
+                vertical-align: middle
+                margin-left: -16px
+                margin-right: 6px
+
+// a tag需要紅紅小圈圈請統一用以下樣式 cc 20190511
+a.tab-badge
+    display: inline-block
+
+    &, &:link
+        color: $black
+
+    +hover-focus-active
+        color: color('grey', 'darken-3')
+
+    i.cc
+        vertical-align: middle !important
+
+    .badge
+        display: inline-block
+        background-color: color("red","base")
+        color: $white
+        line-height: 1
+        padding: 1px 3px
+        border-radius: 20px
+        font-size: 13px
+        margin-left: -10px
+        position: relative
+        top: 5px
+        opacity: 1
+        visibility: visible
+        transform: scale(1)
+        transition: all .15s ease
+
+    &.is-empty
+        .badge
+            opacity: 0
+            visibility: hidden
+            transform: scale(0)
+            transition: all .15s ease
+
+.tilde
+    margin: 0 5px
+    color: color('grey', 'base')
+
+.blockquote
+    &.style1
+        padding: 3px 22px
+        font-size: 16px
+        font-size: 1.6rem
+        line-height: 30px
+        letter-spacing: 1px
+
+        &::before
+            content: ''
+            display: block
+            width: 2px
+            height: 50px
+            background-color: #0091a9
+            float: left
+            margin-left: -20px
+            margin-top: -3px
+
+        &:first-letter
+            font-size: 24px
+            font-size: 2.4rem
+
+    &.style2
+        line-height: 24px
+        letter-spacing: 1px
+
+        .blockquote-title
+            font-size: 22px
+            font-size: 2.2rem
+            line-height: 30px
+            letter-spacing: 1px
+            margin-bottom: 12px
+            color: $title-main-color
+
+            &::before
+                content: '“ '
+                display: block
+                float: left
+                margin-right: 8px
+
+    &.style3
+        padding: 20px
+        font-size: 16px
+        font-size: 1.6rem
+        line-height: 30px
+        letter-spacing: 1px
+        border-left: 2px solid #0091a9
+        background-color: color('grey','lighten-4')
+
+        &:first-letter
+            font-size: 24px
+            font-size: 2.4rem
+
+    &.style4
+        padding: 0 22px
+        font-size: 16px
+        font-size: 1.6rem
+        line-height: 30px
+        letter-spacing: 1px
+
+        &::before
+            content: ''
+            display: block
+            width: 2px
+            height: 25px
+            background-color: #0091a9
+            float: left
+            margin-left: -16px
+            transform: rotate(20deg)
+
+        &:first-letter
+            font-size: 24px
+            font-size: 2.4rem
+
+    &.style5
+        line-height: 24px
+        letter-spacing: 1px
+        padding: 60px 76px 50px 60px
+        position: relative
+        float: left
+        width: 100%
+
+        &::before
+            content: '“'
+            @extend %quotation-base
+            top: 16px
+            left: 10px
+
+        &::after
+            content: '”'
+            @extend %quotation-base
+            bottom: 60px
+            right: 25px
+
+// table
+table, thead, tfoot, th, td
+    white-space: normal
+    word-wrap: break-word
+    word-break: normal
+    border-collapse: collapse
+    border: none
+
+table
+    position: relative
+    background-color: #ffffff
+    width: size(100)
+    margin: 0 auto
+    color: #323232
+    text-align: center
+
+    @extend %transition-show
+
+    th
+        max-width: 200px
+        color: #9A9A9A
+        padding: 10px 8px
+        text-align: center
+        font-weight: normal
+        font-size: 13px
+        font-size: 1.3rem
+        background-color: #f7f7f7
+
+    td
+        max-width: 200px
+        vertical-align: middle
+        border-bottom: 1px solid #dedede
+        padding: 5px 8px
+        position: relative
+
+    tr
+        background-color: transparent
+
+        // &:nth-of-type(odd)
+        // // background-color: #f9f9f9
+
+        &:hover
+            background-color: #f7f7f7
+
+    thead
+        tr
+            // &:nth-of-type(odd)
+            // // background-color: #ffffff
+            // &:hover
+            // // background-color: #ffffff
+
+        th
+            border-top: 1px solid #dddddd
+            border-bottom: 1px solid #dddddd
+
+    tbody
+        tr
+            background-color: color("shades", "white")
+
+            &.highlight
+                background-color: color("red", "lighten-5")
+
+        td
+            &.icon
+                max-width: 60px
+
+            &.date, &.sort
+                font-size: 13px
+                font-size: 1.3rem
+                line-height: 1.2
+
+                .input-field
+                    margin: 0 auto
+                    width: 40px
+
+                    > input
+                        margin-bottom: 0
+                        text-align: center
+
+    tfoot
+        td
+            text-align: center
+
+    caption
+        padding: 7px 0px 5px 8px
+        font-size: 18px
+        font-size: 1.8rem
+        text-align: left
+        color: #303030
+        background-color: #ffffff
+        position: relative
+
+        @extend %border-box
+
+    span
+        &.info
+            display: inline-block
+            vertical-align: middle
+            color: color("grey", "base")
+            font-size: 13px
+            font-size: 1.3rem
+            line-height: 1.25
+            margin: 0 3px
+
+            > span
+                margin: 0 2px
+                color: color("shades", "black")
+                font-size: 15px
+
+    img
+        // max-height: 120px
+        // 20181126 yulin
+        // max-height: 80px
+        // margin-top: 9px
+        // 20190107 yulin
+        max-height: 70px
+        margin-top: 15px
+
+
+    .mobileImg
+        img
+            max-height: 120px
+
+#map, .mapFrame
+    position: relative
+    width: 100%
+    height: 0
+    padding-bottom: 100%
+
+    @extend %border-box
+
+    > *
+        position: absolute
+        width: 100%
+        height: 100%
+
+// 新增font-color 20190509 susan
+
+.cc-stack[data-color],.font-color[data-color]
+    background-color: transparent
+
+[data-color]
+    background-color: color("grey", "base")
+
+    &.cc-stack
+        color: color("grey", "base")
+
+    &.font-color
+        color: color("grey", "base")
+
+[data-color='red']
+    background-color: color("red", "accent-3")
+
+    &.cc-stack
+        color: color("red", "accent-3")
+
+    &.font-color
+        color: color("red", "accent-3")
+
+[data-color='orange']
+    background-color: color("orange", "darken-3")
+
+    &.cc-stack
+        color: color("orange", "darken-3")
+
+    &.font-color
+        color: color("orange", "darken-3")
+
+[data-color='yellow']
+    background-color: color("yellow", "darken-1")
+
+    &.cc-stack
+        color: color("yellow", "darken-1")
+
+    &.font-color
+        color: color("yellow", "darken-1")
+
+[data-color='green']
+    background-color: color("green", "darken-1")
+
+    &.cc-stack
+        color: color("green", "darken-1")
+
+    &.font-color
+        color: color("green", "darken-1")
+
+[data-color='light-green']
+    background-color: color("light-green", "base")
+
+    &.cc-stack
+        color: color("light-green", "base")
+
+    &.font-color
+        color: color("light-green", "base")
+
+[data-color='blue']
+    background-color: color("blue", "base")
+
+    &.cc-stack
+        color: color("blue", "base")
+
+    &.font-color
+        color: color("blue", "base")
+
+[data-color='teal']
+    background-color: color("teal", "base")
+
+    &.cc-stack
+        color: color("teal", "base")
+
+    &.font-color
+        color: color("teal", "base")
+
+[data-color='deep-purple']
+    background-color: color("deep-purple", "base")
+
+    &.cc-stack
+        color: color("deep-purple", "base")
+
+    &.font-color
+        color: color("deep-purple", "base")
+
+[data-color='gold']
+    background-color: color("gold", "base")
+
+    &.cc-stack
+        color: color("gold", "base")
+
+    &.font-color
+        color: color("gold", "base")
+
+[data-color='light-grey']
+    background-color: color("grey", "lighten-1")
+
+    &.cc-stack
+        color: color("grey", "lighten-1")
+
+    &.font-color
+        color: color("gold", "base")
+
+[data-color='grey']
+    background-color: color("grey", "darken-2")
+
+    &.cc-stack
+        color: color("grey", "darken-2")
+
+    &.font-color
+        color: color("grey", "darken-2")
+
+[data-color='black']
+    background-color: color("shades", "black")
+
+    &.cc-stack
+        color: color("shades", "black")
+
+    &.font-color
+        color: color("shades", "black")

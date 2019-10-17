@@ -1,0 +1,1044 @@
+﻿@model WorkV3.Areas.Backend.Models.ArticleModels
+
+@{
+    ViewBag.Title = "文章編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    IEnumerable<ArticleTypesModels> types = ViewBag.Types;
+    IEnumerable<ArticleSeriesModels> series = ViewBag.Series;
+    IEnumerable<CategoryModels> categories = ViewBag.Categories;
+    IEnumerable<long> articleCategories = ViewBag.ArticleCategories;
+    IEnumerable<long> articleTypes = ViewBag.ArticleTypes;
+    IEnumerable<long> articleSeries = ViewBag.ArticleSeries;
+    IEnumerable<ArticlePosterModels> articlePosters = ViewBag.ArticlePosters;
+    IEnumerable<CategoryModels> cateListIdentity = null;
+    if (ViewBag.ListIdentity != null)
+    {
+        cateListIdentity = (IEnumerable<CategoryModels>)ViewBag.ListIdentity;
+    }
+
+    string type = Model.Type;
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+
+    long templateId = (ViewBag.TemplateID as long?) ?? 0;
+    var youtubeCoverUrl = Request.Url.Scheme+"://img.youtube.com/vi/";
+
+    string DefaultSite = (ViewBag.DefaultSiteID != null) ? ViewBag.DefaultSiteID.ToString() : "";
+    List<long> DefaultMenus = (List<long>)ViewBag.DefaultMenus;
+    string DefaultPageTitle = ViewBag.DefaultPageTitle;
+}
+
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.JWPlayer()
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    @BundleConfig.Flexdatalist()
+<script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+<script type="text/javascript">
+    var youtubeReady = false;
+    var currentVideoType = "", youtubeID="",vimeoID="", customFileName = "";
+        function getScreenshotHtml(url, index) {
+            return '<div>' +
+                '   <input class="with-item video-img" name="videoDefaultImg" type="radio" id="videoImg_' + index + '" value="' + url + '" checked="checked" />' +
+                '   <img src="' + url + '" />' +
+                '   <label for="videoImg_' + index + '"></label>' +
+                '</div>';
+        }
+
+        function onYouTubeIframeAPIReady() {
+            youtubeReady = true;
+            BindVideoIDChange();
+            //}
+        }
+        function BindVideoIDChange()
+        { 
+            $('#video-website').change(function () { // ndGUClIX9ZE
+                
+                var type = $("input[name=VideoType]:checked").val();
+                //var type = $(document.getElementsByName('VideoType')).filter(':checked').val();
+                //if (type == 'youtube') {
+            var v = $.trim(this.value);
+            if (type  == 'youtube') {
+                if (!v) {
+                    $('#divPreview').html('');
+                    return;
+                }
+
+                $('#divPreview').html('<div id="divYoutube"></div>');
+                var youtube = new YT.Player('divYoutube', {
+                    height: '315',
+                    width: '560',
+                    videoId: v,
+                    events: {
+                        'onStateChange': function (e) {
+                            if (e.data == YT.PlayerState.CUED) {
+                                $('#Second').val(youtube.getDuration());
+                                $('#divScreenshot').html(getScreenshotHtml('@youtubeCoverUrl' + v + '/0.jpg', 0));
+                            }
+                        }
+                    }
+                });
+                setTimeout(function () {
+                    try
+                    {
+                        $('#Second').val(youtube.getDuration());
+                        var shotUrl = '@youtubeCoverUrl' + v + '/0.jpg';
+                        $('#divScreenshot').html(getScreenshotHtml(shotUrl, 0));
+                        if (shotUrl == $('#VideoImg').val())
+                            $('#divScreenshot').find('input[value="' + shotUrl + '"]').prop('checked', true);
+                    }
+                    catch(err){}
+                }, 1000);
+            }
+            if (type == 'tudou') {
+                if (!v) {
+                    $('#divPreview').html('');
+                    return;
+                }
+
+                $('#divPreview').html('<iframe width="560" height="315" src="http://www.tudou.com/programs/view/html5embed.action?code=' + v + '" frameborder="0" allowfullscreen></iframe>');
+            }
+            if (type == 'vimeo') {
+                if (!v) {
+                    $('#divPreview').html('');
+                    return;
+                }
+
+                $.get('http://vimeo.com/api/v2/video/' + v + '.json ', function (vimeoVideo) {
+                    if (vimeoVideo.length) {
+                        vimeoVideo = vimeoVideo[0];
+                        $('#Second').val(vimeoVideo.duration);
+
+                        var shotUrl = vimeoVideo.thumbnail_large;
+                        $('#divScreenshot').html(getScreenshotHtml(shotUrl, 0));
+                        if (shotUrl == $('#Screenshot').val())
+                            $('#divScreenshot').find('input[value="' + shotUrl + '"]').prop('checked', true);
+
+                        $('#divPreview').html('<iframe width="560" height="315" src="http://player.vimeo.com/video/' + v + '" frameborder="0" allowfullscreen></iframe>');
+                    }
+                });
+            }
+        }).triggerHandler('change');
+    }
+        function submitHandler() {
+            if ($('#VideoImgIsCustom').prop('checked')) {
+                $('#VideoImg').val($('#customVideoImg').val());
+            } else {
+                var selectedImg = $(document.getElementsByName('videoDefaultImg')).filter(':checked');
+                $('#VideoImg').val(selectedImg.length ? selectedImg.val() : '');
+            }
+        }
+
+        function Callbacks() {
+            @if (ViewBag.IsValid as bool? == false)
+            {
+            <text>
+            var msg = [];
+            $(".validationSummary li").each(function () {
+                msg.push($(this).text());
+            });
+            Component.alert(msg.join("\r\n"));
+            </text>
+            }
+
+            @if (ViewBag.EditResult != null )
+            {
+            <text>
+            Component.alert("@Html.Raw(ViewBag.EditResult)", function () {
+                parent.refreshList();
+                Component.closeCenter();
+            });
+            </text>
+            }
+        }
+
+    function initVideoType() {
+        $(document.getElementsByName('VideoType')).click(function () {
+            if(currentVideoType == "youtube")
+            {
+                youtubeID = $('#video-website').val();
+            }
+            if(currentVideoType == "vimeo")
+            {
+                vimeoID = $('#video-website').val();
+            }
+            if(currentVideoType == "custom")
+            {
+                customFileName = $('#videoUpload').val();
+            }
+            if (this.value == 'custom') {
+                $('#video-website-box').slideUp();
+                $('#video-upload-box').slideDown();
+                $('#divPreview').html('');
+            } else {
+                var inputElm = $('#video-website');
+                inputElm.attr('placeholder', '請填入' + $(this).nextAll('label').html() + '影片ID');
+                if(currentVideoType != this.value )
+                {
+                    if(this.value == "youtube")
+                        $(inputElm).val(youtubeID);
+                    if(this.value == "vimeo")
+                        $(inputElm).val(vimeoID);
+                }
+                inputElm.trigger('change');
+
+                var tooltip = '';
+                if (this.value == 'youtube')
+                {
+                    tooltip = 'YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE，輸入ndGUClIX9ZE';
+                }
+                else if (this.value == 'tudou')
+                    tooltip = '土豆網影片網址範例：http://www.tudou.com/programs/view/html5embed.action?code=kbPzDzCIeBE，輸入kbPzDzCIeBE';
+                else if (this.value == 'vimeo')
+                {
+                    tooltip = 'Vimeo影片網址範例：https://player.vimeo.com/video/15205149，輸入15205149';
+                    
+                }
+                inputElm.parent().next().tooltipster('content', tooltip);
+
+                $('#video-website-box').slideDown();
+                $('#video-upload-box').slideUp();
+                //$('#divPreview').html('');
+            }
+
+            if (this.value == 'tudou') {
+                $('#video-repeat').slideUp();
+            } else {
+                $('#video-repeat').slideDown();
+            }
+            currentVideoType = this.value;
+        });
+
+        setTimeout(function () {
+            $(document.getElementsByName('VideoType')).filter(':checked').triggerHandler('click');
+        }, 100);
+    }
+    </script>
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script> 
+    <script type="text/javascript">
+        var menus = [];
+        @if (DefaultMenus != null && DefaultMenus.Count > 0)
+        {
+            for (int i = 0; i < DefaultMenus.Count; i++)
+            {
+            <text>
+            menus.push("@DefaultMenus[i]");
+            </text>
+            }
+        }
+        (function () {
+            initVideoType();
+            Component.radioList('[data-radioGroup]');
+
+            $("input[name='ReadMode']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "ReadMode1":
+                        $("#readSetting").slideDown();
+                        break;
+                    default:
+                        $("#readSetting").slideUp();
+                }
+            });
+
+            if ($("#ReadMode").val() == "1") {
+                $("#readSetting").slideDown();
+            }
+
+            $("input#readModeSetAll").change(function () {
+                var checkboxes = $(this).parents(".radio-box").find("input[name='readModeCategories']:checkbox");
+                if ($(this).is(":checked")) {
+                    checkboxes.prop("checked", true);
+                } else {
+                    checkboxes.prop("checked", false);
+                }
+            });
+
+            LoadSites();
+            $('input[id=LinkType]').on('click', function () {
+                setLinkBoxDisplay(this.checked);
+            });
+            setLinkBoxDisplay($("#LinkType").prop("checked"));
+            var video = '@(Model.VideoType == "custom" ? Model.VideoID : string.Empty)';
+            Component.singleVideoUpload('#videoUpload', '@Html.Raw(Url.Action("VideoUpload", siteQuery))', '@ViewBag.UploadUrl', video, function (jw) {
+            });
+            
+            var typeselected = $("input[name=VideoType]:checked");
+            //alert($(typeselected).val());
+            currentVideoType= $(typeselected).val();
+            if(typeselected != null)
+            {
+                if ($(typeselected).val() == 'custom') {
+                    $('#video-website-box').slideUp();
+                    $('#video-upload-box').slideDown();
+                } else {
+                    var inputElm = $('#video-website');
+                    inputElm.attr('placeholder', '請填入' + $(typeselected).nextAll('label').html() + '影片ID');
+                    
+                    var tooltip = '';
+                    if (this.value == 'youtube')
+                        tooltip = 'YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE，輸入ndGUClIX9ZE';
+                    else if (this.value == 'tudou')
+                        tooltip = '土豆網影片網址範例：http://www.tudou.com/programs/view/html5embed.action?code=kbPzDzCIeBE，輸入kbPzDzCIeBE';
+                    else if (this.value == 'vimeo')
+                        tooltip = 'Vimeo影片網址範例：https://player.vimeo.com/video/15205149，輸入15205149';
+                    //inputElm.parent().next().tooltipster('content', tooltip);
+
+                    $('#video-website-box').slideDown();
+                    $('#video-upload-box').slideUp();
+                }
+
+                if ($(typeselected).val() == 'tudou') {
+                    $('#video-repeat').slideUp();
+                } else {
+                    $('#video-repeat').slideDown();
+                }
+            }
+            
+            var editUrl = '@Html.Raw(Url.Action("ParagraphEdit", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID }))';
+            var matchUrl = '@Html.Raw(Url.Action("ParagraphMatch", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.menuId }))';
+            var matchDelUrl = '@Html.Raw(Url.Action("ParagraphMatchDel", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.menuId }))';
+            Component.paragraph('#ulParagraphs', editUrl, matchUrl, matchDelUrl, '@Model.ID');
+            Component.editor('RemarkText');
+
+            $('div.swiper-slide').click(function () {
+                var prevType = $('div.swiper-slide.selected').attr('data-type');
+                var type = $(this).attr('data-type');
+                if (type == 'page') {
+                    $('#btnTemplate').fadeIn();
+                } else {
+                    $('#btnTemplate').fadeOut();
+                }
+
+                var prevAreas = $('#ul_' + prevType).children('li[data-area]');
+                $('#ul_' + type).children('li').each(function () {
+                    var area = $(this).attr('data-area');
+                    if (area) {
+                        $(this).append(prevAreas.filter('[data-area="' + area + '"]').children());
+                    }
+                });
+            });
+
+            $('.btn-openDetail').on('click', function () {
+                var $this = $(this),
+                    SettingBox = $this.closest('.detailSetting').children('ul.forms');
+                if (SettingBox.is(':visible')) {
+                    SettingBox.slideUp();
+                    $this.html('<i class="cc cc-settings"></i>頁面細節');
+                } else {
+                    SettingBox.slideDown();
+                    $this.html('<i class="cc cc-close"></i>收合');
+                }
+            }).click();
+
+            $('#CustomIcon').change(function () {
+                if (this.checked) {
+                    $('#imgSetting-box').slideDown();
+                } else {
+                    $('#imgSetting-box').slideUp();
+                }
+            }).change();
+
+            $('input[id=isShowVideo]').on('change', function(){
+                if(this.checked) {
+                    $('#showMainVideo-box').slideDown();
+                } else {
+                    $('#showMainVideo-box').slideUp();
+                }
+            }).change();
+
+            $('input[id=showSet]').on('change', function(){
+                if(this.checked) {
+                    $('#showSet-box').slideDown();
+                } else {
+                    $('#showSet-box').slideUp();
+                }
+            }).change();
+            @if (articleSeries.Count() > 0)
+            {
+                <text>
+            $('input[id=showSet]').prop("checked", true);
+            $('input[id=showSet]').trigger("change");
+            </text>
+            }
+            $('#IsIssue').click(function () {
+                if (this.checked)
+                    $('#divIssueRange').fadeIn();
+                else
+                    $('#divIssueRange').fadeOut();
+            }).triggerHandler('click');
+
+            $('#dropdown-store').each(function () {
+                if ($(this).find('input:not(:checked)').length == 0)
+                    $('#indeterminate-checkbox').prop('checked', true);
+            });
+
+            setTimeout(function () {
+                var type = $('#Type').val();
+                if (type) {
+                    $('div.swiper-slide[data-type="' + type + '"]').click();
+                }
+
+                if ($('#CustomIcon').prop('checked'))
+                    $('#CustomIcon').triggerHandler('click');
+
+                Component.singleImageUpload('#fIcon', '@(Href("~/"))', '@uploadUrl', false);
+                Component.singleFileUpload('#fArchive', '@(Href("~/"))', '@uploadUrl', @Html.Raw(string.IsNullOrWhiteSpace(Model.Archive) ? "null" : Model.Archive));
+                Component.singleImageUpload('#fVideoImg', '@(Href("~/"))', '@uploadUrl', false);
+            }, 10);
+        })();
+
+        function setPosters(posters) {
+            posters = posters || [];
+
+            var divPostersElm = $('#divPosters');
+            divPostersElm.children('div.chip').each(function () {
+                var id = $(this).attr('data-id');
+                var index = 0, len = posters.length;
+                for (; index < len; ++index) {
+                    if (posters[index].ID == id)
+                        break;
+                }
+                if (index < len)
+                    posters.splice(index, 1);
+                else
+                    $(this).fadeOut(function () {
+                        $(this).remove();
+                    });
+            });
+
+            var html = '';
+            for (var i = 0, len = posters.length; i < len; ++i) {
+                var item = posters[i];
+                html += '<div class="chip" data-id="' + item.ID + '">';
+                if (item.Photo)
+                    html += '<img src="' + item.Photo + '" alt="' + item.Name + '" /> ';
+                html += item.Name;
+                html += '</div>';
+            }
+
+            var lastItem = divPostersElm.children('div.chip:last');
+            if (lastItem.length)
+                lastItem.after(html);
+            else
+                divPostersElm.prepend(html);
+        }
+
+        function checkDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var date = Component.parseDate(v);
+                if (!date)
+                    return '* 日期格式錯誤';
+            }
+        }
+
+        function checkEndDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var endDate = Component.parseDate(v);
+                if (!endDate)
+                    return '* 日期格式錯誤';
+
+                var startDate = $.trim(field.prevAll('input:first').val());
+                if (startDate) {
+                    startDate = Component.parseDate(startDate);
+                    if (startDate && startDate > endDate)
+                        return '* 結束日期不能小於開始日期';
+                }
+            }
+        }
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (!v)
+                return '* 必填欄位';
+
+            if (!/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+        $('#VideoImgIsCustom').on('change', function () {
+            if (this.checked) {
+                $('#videoImgUpload-box').slideDown();
+                $('#divScreenshot').slideUp();
+            } else {
+                $('#videoImgUpload-box').slideUp();
+                $('#divScreenshot').slideDown();
+            }
+        }).change();
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.find('div.swiper-slide-active').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                window.scrollTo(0, document.body.scrollHeight);
+                if (form.find('div.control-bar').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    var type = $('div.swiper-slide.selected').attr('data-type');
+                    $('#Type').val(type);
+
+                    var posters = [];
+                    $('#divPosters').children('div[data-id]').each(function () {
+                        posters.push($(this).attr('data-id'));
+                    });
+                    $('#Posters').val(JSON.stringify(posters));
+                    submitHandler();
+                    form.submit();
+                }
+            }
+        });
+
+        $('#btnTemplate').click(function () {
+            var src = $(this);
+            if (!src.hasClass('openEdit')) {
+                Component.confirm('存成範本前會將當前頁面儲存，確定要繼續嗎？', function (isOk) {
+                    if (isOk) {
+                        src.next().val('true');
+                        $('#btnSave').click();
+                    }
+                });
+            }
+        });
+
+        $('#btnCancel').click(function () {
+            @if (ViewBag.FromTemplate as bool? == true) {
+            <text>
+            $.post('ArticleDel?siteId=@ViewBag.SiteID&menuId=@ViewBag.MenuID', { 'ids': [ '@Model.ID' ] }, function () {
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+            </text>
+            } else {
+            <text>
+            Component.closeLeft();
+            Component.closeCenter();
+            </text>
+            }
+        });
+
+        @if (ViewBag.Exit as bool? == true) {
+        <text>
+        Component.alert('文章已儲存', function () {
+            parent.refreshList();
+            Component.closeCenter();
+        });
+        </text>
+        } else if (templateId > 0) {
+        <text>
+        setTimeout(function () {
+            $('#btnTemplate').click();
+        }, 500);
+        </text>
+        }
+
+        
+        function setLinkBoxDisplay(isInLink) {
+
+            if (isInLink) {
+                $('#insideLink-box').slideDown();
+                $('#outsideLink-box').slideUp();
+            } else {
+                $('#insideLink-box').slideUp();
+                $('#outsideLink-box').slideDown();
+            }
+        }
+        
+        function LoadSites() {
+            var url = "@Url.Action("GetSites", "Common")";
+            $.post(url, '', function (data) {
+                var sel = $("#LinkSites");
+                $(sel).html("");
+                $(sel).append("<option value='' disabled selected>網站</option>");
+                for (var i = 0; i < data.length; i++) {
+                    $(sel).append("<option value='" + data[i].Id + "'>" + data[i].Title + "</option>");
+                }
+                var defaultValue = "@DefaultSite";
+                if (defaultValue != "") {
+                    $(sel).val(defaultValue);
+                }
+                $(sel).change(function () {
+                    var v = $(this).val();
+                    if (v && v != "") {
+                        LoadChildMenu(v, "0", 0);
+                    }
+                }).material_select();
+                if (defaultValue != "") {
+                    $(sel).trigger("change");
+                }
+            });
+        }
+        function LoadChildMenu(siteID, parentID, lev) {
+            //console.log(lev);
+            $.post("@Url.Action("SelectMenus", "Statistic")", { SiteId: siteID, parentID: parentID }, function (data) {
+            var container = $("#Menus-box");
+            for (var k = lev; k < $(container).children("div").length; k++) {
+                $(container).children("div").eq((k)).remove();
+            }
+                @*if (parentID != "") {
+                    var chekIsMenuUrl = "@Url.Action("CheckIsMenu", "Common")";
+                    $.post(chekIsMenuUrl, { menuID: parentID }, function (data) {
+                        console.log(data);
+                        if (data == "true") {
+                            $("#divPageName").show();
+                            BindAutoComplete(parentID);
+                        }
+                        else {
+                            $("#divPageName").hide();
+                        }
+                    });
+                }*@
+                if (data.length > 0) {
+                    var defaultValue = "";
+                    if (lev <= menus.length)
+                    {
+                        defaultValue = menus[lev];
+                    }
+                    var IsMenuItem = false;
+                    var divContent2 = $("<div class=\"input-field inline col-4\"></div>");
+                    var sel = $('<select id="ChildRoot_' + parentID + '"  name="Pages" data-level="' + (lev + 1) + '"></select>');
+                    $(sel).append("<option value=''>次選單</option>");
+                    for (var i = 0; i < data.length; i++) {
+                        $(sel).append("<option value='" + data[i].ID + "'>" + data[i].Title + "</option>");
+                        //console.log(data[i].Type);
+                        if (data[i].Type == "@((int)WorkV3.Areas.Backend.ViewModels.StructureType.Menu)")
+                        { IsMenuItem = true; }
+                    }
+                    $(divContent2).append($(sel));
+                    $(container).append($(divContent2));
+                    if (defaultValue != "") {
+                        $(sel).val(defaultValue);
+                    }
+                    $(sel).material_select();
+                    var index = $(container).children("div").length;
+                    $(sel).change(function () {
+                        var v = $(this).val();
+                        if ($(container).children("div").length > 1) {
+                            for (var k = 2; k < $(container).children("div").length; k++) {
+                                $(container).children("div").eq((k)).remove();
+                            }
+                        }
+                        if (v && v != "") {
+                            LoadChildMenu(siteID, v, index);
+                        }
+
+                    }).material_select();
+                    if (defaultValue != "") {
+                        $(sel).trigger("change");
+                    }
+                    if (!IsMenuItem) {
+                        $("#divPageName").show();
+                        BindAutoComplete(parentID);
+                        $(divContent2).hide();
+                    }
+                    else {
+                        $("#divPageName").hide();
+                    }
+                    //if (index && isSetDefault && defaultValue != "")
+                    //{
+                    //    LoadChildMenu(defaultValue, index);
+                    //}
+                }
+        else {
+                    $("#divPageName").hide();
+                //$("#divPageName").show();
+                //BindAutoComplete(parentID);
+        }
+        });
+        }
+        function BindAutoComplete(menuID) {
+            var siteID = $("#LinkSites").val();
+            var menuUrl = "@Url.Action("SelectMenus", "Statistic")";
+            var obj =   $('#PageDetail').flexdatalist({
+                selectionRequired: true,
+                minLength: 1,
+                valueProperty: ["ID"],
+                visibleProperties: ["Title"],
+                searchIn: 'Title',
+                focusFirstResult: true,
+                requestContentType: 'json',
+                url: menuUrl,
+                disabled: true,
+                params: { SiteID: siteID, parentID: menuID }
+            });
+            $(obj).on('select:flexdatalist', function (event, item, options) {
+                $("#PageDetailID").val(item.ID);
+            });
+        }
+    </script>
+}
+
+<div class="groove groove-1" style="min-height:1000px;">
+    <form id="editForm" method="post" action="@Url.Action("Edit", siteQuery)" enctype="multipart/form-data">
+        <input type="hidden" name="ID" value="@Model.ID" />
+        <input type="hidden" id="Type" name="Type" value="@Model.Type" />        
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected" data-type="page"><i class="cc cc-file-o cc-rotate-270"></i>新網頁</div>
+                <div class="swiper-slide" data-type="link"><i class="cc cc-link-variant"></i>連結</div>
+                <div class="swiper-slide" data-type="archive"><i class="cc cc-download"></i>檔案</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide p-T-10">
+                    <ul id="ul_page" class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="radio-box m-T-none">
+                                    <div>             
+                                        @Html.CheckBoxFor(model => model.isShowVideo)                        
+                                        <label for="isShowVideo">主影片</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="showMainVideo-box" class="flexUpload">
+                                <div class="flex-16">
+                                    <div class="col-1">
+                                        <ul class="forms">
+                                            <li>
+                                                <div class="col-1">
+                                                    <div class="title inline">影片種類</div>
+                                                    <div class="radio-box inline">
+                                                        <div>
+                                                            <input class="with-item transparent" name="VideoType" type="radio" id="video-youtube" value="youtube" @((Model.VideoType == "youtube" || string.IsNullOrEmpty(Model.VideoType)) ? "checked=\"checked\"" : string.Empty) />
+                                                            <i class="cc cc-youtube"></i>
+                                                            <label for="video-youtube">Youtube</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-item transparent" name="VideoType" type="radio" id="video-vimeo" value="vimeo" @(Model.VideoType == "vimeo" ? "checked=\"checked\"" : string.Empty) />
+                                                            <i class="cc cc-vimeo"></i>
+                                                            <label for="video-vimeo">Vimeo</label>
+                                                        </div>
+                                                        <div style="display: none;">
+                                                            <input class="with-item transparent" name="VideoType" type="radio" id="video-tudou" value="tudou" @(Model.VideoType == "tudou" ? "checked=\"checked\"" : string.Empty) />
+                                                            <i class="cc cc-tudou"></i>
+                                                            <label for="video-tudou">土豆網</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-item transparent" name="VideoType" type="radio" id="video-custom" value="custom" @(Model.VideoType == "custom" ? "checked=\"checked\"" : string.Empty) />
+                                                            <i class="cc cc-upload-o"></i>
+                                                            <label for="video-custom">自行上傳</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li id="video-website-box">
+                                                <div class="col-1">
+                                                    <div class="title inline">影片網址</div>
+                                                    <div class="input-field inline full">
+                                                        <input placeholder="請填入YouTube影片ID" id="video-website" name="VideoID" type="text" value="@Model.VideoID" class="validate[required]" />
+                                                    </div>
+                                                    <a class="tooltip" title="YouTube影片ID範例：https://www.youtube.com/watch?v=ndGUClIX9ZE"><i class="cc cc-attention"></i></a>
+                                                    <div id="divPreview" class="preview"></div>
+                                                </div>
+                                            </li>
+                                            <li id="video-upload-box">
+                                                <div class="col-1">
+                                                    <div class="input-field">
+                                                        <input type="file" id="videoUpload" name="videoUpload" data-field="customVideo" />
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flex-9">
+                                    <div class="title m-T-8">影片截圖</div>
+                                    <div id="divScreenshot" class="radio-box inline full with-img m-T-10"></div>
+                                    <div class="radio-box inline full">
+                                        <div>
+                                            @Html.CheckBoxFor(model => model.VideoImgIsCustom)
+                                            <label for="VideoImgIsCustom">自行上傳圖片</label>
+                                        </div>
+                                    </div>
+                                    <div id="videoImgUpload-box" class="input-field inline full m-T-10">
+                                        <input type="file" id="fVideoImg" name="fVideoImg" />
+                                        @{
+                                            string customVideoImg = string.Empty;
+                                            if (!string.IsNullOrWhiteSpace(Model.VideoImg) && Model.VideoImg[0] == '{')
+                                            {
+                                                customVideoImg = Model.VideoImg;
+                                            }
+                                        }
+                                        <input type="hidden" id="customVideoImg" value='@customVideoImg' />
+                                        <input type="hidden" id="fVideoImgBase64" name="fVideoImgBase64" />
+                                        <input type="hidden" id="fVideoImgBase64_Resize" name="fVideoImgBase64_Resize" />
+                                    </div>
+                                    <input type="hidden" id="VideoImg" name="VideoImg" value='@Model.VideoImg' />
+                                </div>
+                            </div>
+                        </li>
+                        @*客製 YuMing 20190722 隱藏 系列*@
+                        @*<li>
+                            <div class="col-1 no-title">
+                                <div class="radio-box inline full no-label">
+                                    <div>
+                                        <input type="checkbox" id="showSet">
+                                        <label for="showSet">系列</label>
+                                    </div>
+
+                                    <div id="showSet-box" class="m-B-none" style="display: none;">
+                                        <div class="radio-box inline no-label">
+
+                                            @for (int i = 0, len = series.Count(); i < len; ++i)
+                                            {
+                                                ArticleSeriesModels item = series.ElementAt(i);
+                                                <div>
+                                                    <input type="checkbox" id="series_@i" name="series" value="@item.ID" @(articleSeries.Contains(item.ID) ? "checked=\"checked\"" : string.Empty) />
+                                                    <label for="series_@i">@item.Name</label>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </li>*@
+                        <li data-area="title">
+                            <div class="col-1">
+                                <div class="title inline">主標題</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Title" name="Title" value="@Model.Title" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-2">
+                                <div class="title inline">次標題</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="SubTitle" name="SubTitle" value="@Model.SubTitle" />
+                                </div>
+                            </div>
+                        </li>
+                        @*客製 YuMing 20190722 隱藏 對應喜好*@
+                        @*<li data-area="categories">
+                            <div class="col-1">
+                                <div class="title inline">對應喜好</div>
+                                <div class="radio-box inline categoryGroup">
+                                    @for (int i = 0, len = categories.Count(); i < len; ++i)
+                                    {
+                                        CategoryModels item = categories.ElementAt(i);
+                                        <div>
+                                            <input type="checkbox" id="categories_@i" name="categories" value="@item.ID" @(articleCategories.Contains(item.ID) ? "checked=\"checked\"" : string.Empty) />
+                                            <label for="categories_@i">@item.Title</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </li>*@
+                        <li data-area="types">
+                            <div class="col-1">
+                                <div class="title inline">對應類別</div>
+                                <div class="radio-box inline typeGroup">
+                                    @for (int i = 0, len = types.Count(); i < len; ++i) {
+                                        ArticleTypesModels item = types.ElementAt(i);
+                                    <div>
+                                        <input type="checkbox" id="types_@i" name="types" value="@item.ID" @(articleTypes.Contains(item.ID) ? "checked=\"checked\"" : string.Empty) />
+                                        <label for="types_@i">@item.Name</label>
+                                    </div>
+                                    }
+                                </div>                                
+                            </div>
+                        </li>
+                        <li data-area="pageDetail" class="detailSetting">
+                            <a class="btn-openDetail" href="javascript:"><i class="cc cc-close"></i>收合</a>
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">發文日期</div>
+                                        <div class="input-field inline">
+                                            <input type="text" id="IssueDate" name="IssueDate" class="datetimepicker validate[funcCall[checkDate]]" value="@Model.IssueDate.ToString("yyyy.MM.dd HH:mm")" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">撰文者</div>
+                                        <div id="divPosters" class="chips inline">
+                                            @foreach (ArticlePosterModels item in articlePosters) {
+                                            <div class="chip" data-id="@item.ID">
+                                                @if (!string.IsNullOrWhiteSpace(item.Photo)) {
+                                                <img src="@(uploadUrl + "/" + item.Photo)" alt="@item.Name" />
+                                                }
+                                                @item.Name
+                                            </div>
+                                            }                                            
+                                            <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choicePoster" title="選擇撰文者"><i class="cc cc-plus"></i></a>
+                                            <ul id="choicePoster" class="dropdown-content customContent large closeOnClick">
+                                                <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("PosterSelect", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, articleId = Model.ID }))" frameborder="0"></iframe></li>
+                                            </ul>
+                                            <input type="hidden" id="Posters" name="Posters" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title">宣告、備註文字<a class="tooltip m-h-2" title="宣告、備註文字會出現在全文下方，可宣告版權、感謝贊助、或備註次要資訊。"><i class="cc cc-attention"></i></a></div>
+
+                                        <div class="input-field img-text-height">
+                                            @Html.TextAreaFor(x => x.RemarkText, new { contenteditable = "true" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.CheckBoxFor(model => model.CustomIcon)
+                                                <label for="CustomIcon">自行設定代表圖 與 社群分享圖</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="imgSetting-box" class="col-2" style="display: none;">
+                                        <div class="input-field m-T-none">
+                                            <input type="file" id="fIcon" name="fIcon" />
+                                            <input type="hidden" id="Icon" name="Icon" value='@Model.Icon' />
+                                            <input type="hidden" id="fIconBase64" name="fIconBase64" />
+                                            <input type="hidden" id="fIconBase64_Resize" name="fIconBase64_Resize" />
+                                        </div>
+                                    </div>
+                                </li>
+                                @*客製 YuMing 20190722 隱藏 限制會員觀看*@
+                                @*<li>
+                                    <div class="col-1">
+                                        <div class="title inline">限制會員觀看</div>
+                                        <div class="radio-box inline full" data-radioGroup="ReadMode">
+                                            <div class="col-1">
+                                                <input class="with-gap" type="radio" checked="checked" value="0">
+                                                <label for="readMode0">全部開放，不登入也可觀看全文</label>
+                                            </div>
+                                            <div class="col-1">
+                                                <input class="with-gap" type="radio" value="1">
+                                                <label for="readMode1">只限會員登入後，才可觀看全文</label>
+                                                <div id="readSetting" class="p-L-8" style="display: none;">
+                                                    <div class="radio-box inline full">
+                                                        <div>
+                                                            <input type="checkbox" id="readModeSetAll">
+                                                            <label for="readModeSetAll">全部身分別</label>
+                                                        </div>
+                                                        @if(cateListIdentity != null && cateListIdentity.Count() > 0)
+                                                        {
+                                                            int i = 0;
+                                                            foreach(var Identity in cateListIdentity)
+                                                            {
+                                                                <div>
+                                                                    <input type="checkbox" id="ReadModeSet_@i" name="readModeCategories" value="@Identity.ID" @(articleCategories.Contains(Identity.ID) ? "checked=\"checked\"" : string.Empty) />
+                                                                    <label for="ReadModeSet_@i">@Identity.Title</label>
+                                                                </div>
+                                                                i++;
+                                                            }
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="ReadMode" name="ReadMode" value="@Model.ReadMode" />
+                                        </div>
+                                    </div>
+                                </li>*@
+                            </ul>
+                        </li>                        
+                    </ul>
+                    <ul id="ulParagraphs" data-field="paragraphs" class="forms"></ul>
+                    <a class="btn-grey-darken-4-o transparent paragraph-add" href="javascript:" style="margin-top:-30px; margin-bottom:30px;"><i class="cc cc-plus"></i>增加段落</a>
+                    <input type="hidden" id="deletedParagraphs" name="deletedParagraphs" />
+                </div>
+                <div class="swiper-slide p-T-10">
+                    <ul id="ul_link" class="forms">
+                        <li data-area="title"></li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">連結</div>
+                                <div id="outsideLink-box" class="input-field inline full">
+                                    <input type="text" id="Link" name="Link" class="m-B-none validate[funcCall[checkLink]]" placeholder="http://" value="@Model.Link" />
+                                </div>
+                                <div class="radio-box inline full">
+                                    <div>
+                                        @Html.CheckBoxFor(model => model.IsOpenNew)
+                                        <label for="IsOpenNew">另開</label>
+                                    </div>
+                                    <div>
+                                        @Html.CheckBox("LinkType", Model.LinkType == "inLink" ? true : false)
+                                        <label for="LinkType">站內連結</label>
+                                    </div>
+                                </div>
+                                <div id="insideLink-box" class="inline-follow" style="display: none;">
+                                    <div class="input-field inline col-4">
+                                        <select id="LinkSites" name="LinkSites">
+                                            <option value="" disabled selected>網站</option>
+                                        </select>
+                                    </div>
+                                    <div id="Menus-box">
+
+                                    </div>
+
+                                    <div class="input-field inline col-4" id="divPageName" style="display: none;">
+                                        <input type='text' placeholder='單筆' class='flexdatalist' id='PageDetail' name='PageDetail' value="@DefaultPageTitle">
+                                        <input type='hidden' id='PageDetailID' name='PageDetailID' value="@Model.LinkDetail">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li data-area="types"></li>
+                        <li data-area="pageDetail" class="detailSetting"></li>
+                    </ul>
+                </div>
+                <div class="swiper-slide p-T-10">
+                    <ul id="ul_archive" class="forms">
+                        <li data-area="title"></li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">檔案</div>
+                                <div class="input-field inline full">
+                                    <input type="file" id="fArchive" name="fArchive" data-field="Archive" />
+                                </div>
+                            </div>
+                        </li>
+                        <li data-area="types"></li>
+                        <li data-area="pageDetail" class="detailSetting"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-bar">
+            <a class="btn-grey float-L" href="javascript:Component.openRight('@Url.Action("seoEdit", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = Model.ID })')"><i class="cc cc-search-text"></i>SEO設定</a>
+            <a style="display:none;" id="btnTemplate" class="btn-grey float-L @(templateId > 0 ? "openEdit" : string.Empty)" href="@Html.Raw(templateId > 0 ? Url.Action("Template", siteQuery) + "&templateId=" + templateId + "&sourceId=" + Model.ID : "javascript:")" data-width="300" data-height="290" data-left="70"><i class="cc cc-template"></i>存成範本</a>
+            <input type="hidden" name="SaveTemplate" value="false" />            
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                                    
+                    @*<a class="btn-grey-darken-2-o transparent p-none dropdown-button" href="javascript:" data-activates="dropdown-published"><i class="cc cc-chevron-down"></i></a>
+                    <ul id="dropdown-published" class="dropdown-content btnStyle closeOnClick">
+                        @{
+                            List<WorkV3.Models.SitesModels> sites = ViewBag.Sites;
+                            IEnumerable<long> itemSites = (Model.GetSites() ?? new List<WorkV3.Models.SitesModels>()).Select(s => s.Id);
+                        }                        
+                        @foreach (WorkV3.Models.SitesModels site in sites) {
+                        <li>
+                            <div class="p-h-4">
+                                <input type="checkbox" id="site_@site.Id" name="sites" value="@site.Id" @(itemSites.Contains(site.Id) ? "checked=\"checked\"" : string.Empty) />
+                                <label for="site_@site.Id">@site.Title</label>
+                            </div>
+                        </li>
+                        }                        
+                    </ul>*@
+                </div>
+            </div>
+            <div id="divIssueRange" class="bar-item float-L" style="display:none;">
+                <div class="input-field inline m-T-none">
+                    <input type="text" id="IssueStart" name="IssueStart" value="@Model.IssueStart.ToString("yyyy.MM.dd HH:mm")" class="input-cal datetimepicker validate[funcCall[checkDate]]" placeholder="開始時間" />
+                </div>
+                <div class="input-field inline m-T-none">
+                    <input type="text" id="IssueEnd" name="IssueEnd" value="@Model.IssueEnd.ToString("yyyy.MM.dd HH:mm")" class="input-cal datetimepicker validate[funcCall[checkEndDate]]" placeholder="結束時間" />
+                </div>
+            </div>            
+            <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>
+

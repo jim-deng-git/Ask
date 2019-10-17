@@ -1,0 +1,115 @@
+﻿@model IEnumerable<WorkV3.Models.StorePlanServiceModel>
+@{
+    ViewBag.Title = "服務紀錄項目管理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script src="~/Script/StickyTableHeaders/jquery.stickytableheaders.js"></script>
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            var tableElm = $('#ServiceTable');
+            var type = "Service";
+            var listObj = Component.dataList('ServiceTable');
+            listObj.sorted = function (sortItems) {
+                $.post('Sort?siteId=@(ViewBag.SiteID)&parentId=@(ViewBag.ParentID)&type=' + type, { 'items': sortItems }, function () {
+                    location.replace('@Html.Raw(Url.Action("PlanServiceList", new { siteId = ViewBag.SiteID , parentId = ViewBag.ParentID }))');
+                });
+            }
+            listObj.deleted = function (delIds) {
+                $.post('Del?siteId=@(ViewBag.SiteID)&type=' + type, { 'ids': delIds }, function () {
+                    location.replace('@Html.Raw(Url.Action("PlanServiceList", new { siteId = ViewBag.SiteID, parentId = ViewBag.ParentID }))');
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    tableElm.find('span.info').html('');
+                }
+            }
+            listObj.statusChange = function (id) {
+                $.post('ChangeStatus/' + id + '?siteId=@(ViewBag.SiteID)&type=' + type);
+            }
+
+            tableElm.on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tableElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+
+            window.parent.refreshList = function refreshList() {
+                location.replace(location.href);
+            }
+        });
+
+
+        
+        //function refreshList() {
+        //    location.replace(location.href);
+        //}
+    </script>
+
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <table class="fixTable" id="ServiceTable">
+            <caption>
+                <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;">
+                    <i class="cc cc-arrow-left"></i>
+                </a>
+                免年費一般方案 服務紀錄項目管理
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" data-action="add" href="@Html.Raw(Url.Action("PlanServiceEdit", new { siteId = ViewBag.SiteID, parentId = ViewBag.ParentID}))" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>名稱</th>
+                    <th>說明</th>
+                    <th>附件</th>
+                    <th>刊登</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody class="font-sm">
+                @for (int i = 0, len = Model.Count(); i < len; ++i)
+                {
+                    WorkV3.Models.StorePlanServiceModel item = Model.ElementAt(i);
+
+                    <tr data-id="@item.ID">
+                        <td class="sort">@(i + 1)</td>
+                        <td class="text-L">@item.Name</td>
+                        <td class="text-L">@Html.Raw(item.Description)</td>
+                        <td>@(item.UploadFile ? "須上傳檔案" : "")</td>
+                        <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                        <td class="icon edit"><a class="btn-grey-darken-4-o transparent square p-h-none openEdit-m" href="@Html.Raw(Url.Action("PlanServiceEdit", new {id = item.ID, siteId = ViewBag.SiteID, parentId = ViewBag.ParentID}))"><i class="cc cc-edit-o"></i></a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

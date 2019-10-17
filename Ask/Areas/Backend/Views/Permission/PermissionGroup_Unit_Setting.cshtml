@@ -1,0 +1,130 @@
+﻿
+@{
+    ViewBag.Title = "PermissionGroup_Unit_Setting";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string strSetting = (string)ViewBag.Setting;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            $('#btnSave').click(function () {
+
+                var itemc = $('input[type="checkbox"]:checked');
+                var checkItem = "";
+                for (var i = 0; i < itemc.length; i++) {
+                    checkItem += $(itemc[i]).prop("id") + ",";
+                }
+
+                $.ajax({
+                    type: "get",
+                    url: '@Url.Action("PermissionGroupSetting")?id=@ViewBag.GroupId&SiteID=1&PermissionGroup=' + checkItem,
+                    contentType: false,
+                    processData: false,
+                    success: function () {
+                        Component.alert('開放單元已儲存', function () {
+                            Component.closeRight();
+                            Component.closeLeft();
+                            Component.closeCenter();
+                        });
+
+                    },
+                    error: function (error) {
+
+                    }
+                });
+            });
+
+            GetData();
+        });
+
+        function GetData() {
+            $.ajax({
+                type: "post",
+                url: '@Url.Action("GetPermissionGroup")?id=@ViewBag.GroupId',
+                contentType: false,
+                processData: false,
+                success: function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        $("#" + result[i].PermissionName).prop("checked", "checked");
+                    }
+                },
+                error: function (error) {
+
+                }
+            });
+        }
+    </script>
+    <style>
+        ul {
+            list-style-type: none;
+        }
+    </style>
+}
+
+
+@section FArea {
+
+}
+
+@Html.Hidden("hdSetting", strSetting)
+<div class="groove groove-1">
+    <h1 class="title-admin-page">開放單元設定</h1>
+    <div class="col-12 border-T">
+        <ul class="forms relative">
+            <li>
+                <div class="title">本群組可見哪些單元？</div>
+                <ul class="forms relative">
+                    <li>
+                        <input type="checkbox" id="all" />
+                        <label for="all">網站權限</label>
+                        <ul class="forms relative">
+                            <li>
+                                <input type="checkbox" id="backend" />
+                                <label for="backend">後臺管理系統</label>
+                                <ul class="forms relative">
+                                    <li>
+                                        <input type="checkbox" id="MenuManage" />
+                                        <label for="MenuManage">選單管理</label>
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" id="ContentManage" />
+                                        <label for="ContentManage">內容管理</label>
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" id="Marketing" />
+                                        <label for="Marketing">行銷管理</label>
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" id="Member" />
+                                        <label for="Member">會員管理</label>
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" id="Permission" />
+                                        <label for="Permission">系統設定</label>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+    </div>
+</div>
+<div class="control-bar">
+    <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+</div>

@@ -1,0 +1,39 @@
+﻿
+@{
+    ViewBag.Title = "重新命名";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">    
+    <ul class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title">修改檔案顯示名稱</div>
+                <div class="input-field">
+                    <input type="text" id="ShowName" />
+                </div>
+            </div>
+            <div class="control-bar flex">
+                <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+                <a id="btnSaveSuccessFile" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            </div>    
+        </li>
+    </ul>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var fileItem = parent.getSuccessFileItem(@ViewBag.FileIndex);
+
+        $('#ShowName').val(fileItem.ShowName);
+
+        $('#btnSaveSuccessFile').click(function () {
+            fileItem.ShowName = $.trim($('#ShowName').val());
+            parent.setSuccessFileItem(fileItem, @ViewBag.FileIndex);
+            parent.$.colorbox.close();
+        });
+        
+    </script>
+}
+

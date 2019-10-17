@@ -1,0 +1,145 @@
+﻿@model WorkV3.Models.EshopSettingModel
+@{
+    WorkV3.Models.EshopOrderReceiptModel receiptItem = null;
+    if (ViewBag.ReceiptItem != null)
+    {
+        receiptItem = ViewBag.ReceiptItem as WorkV3.Models.EshopOrderReceiptModel;
+    }
+}
+@if (receiptItem != null)
+{
+if (receiptItem.Receipt == 0)
+{
+    if (Model.IsPersonalReceipt)
+    {
+        <li>
+            <div class="col-1">
+                <div class="title">個人發票</div>
+
+                @if (Model.PersonalReceiptType.HasValue)
+                {
+                    string ReceiptTypeName = "", ReceiptMailTarget = "";
+                    if (receiptItem.ReceiptType.HasValue)
+                    {
+                        EshopPersonalReceiptType selectedType = (EshopPersonalReceiptType)receiptItem.ReceiptType.Value;
+                        switch (selectedType)
+                        {
+                            case EshopPersonalReceiptType.EReceipt:
+                                ReceiptTypeName = "電子發票Email寄送至";
+                                ReceiptMailTarget = receiptItem.ReceiptMailTo;
+                                break;
+                            case EshopPersonalReceiptType.PaperReceipt:
+                                ReceiptTypeName = "紙本發票郵寄地址";
+                                ReceiptMailTarget = receiptItem.ReceiptMailTo;
+                                break;
+                        }
+                    }
+                    <div class="text-value">
+                        @ReceiptTypeName<span>@ReceiptMailTarget</span>
+                    </div>
+                }
+            </div>
+        </li>
+    }
+}
+
+if (receiptItem.Receipt == 1)
+{
+    if (Model.IsDonationReceipt)
+    {
+        <li>
+            <div class="col-1">
+                <div class="title">捐贈發票</div>
+                <div class="text-value">
+                    捐贈對象<span>@receiptItem.DonationTarget</span>
+                </div>
+            </div>
+        </li>
+
+    }
+}
+
+if (receiptItem.Receipt == 2)
+{
+    if (Model.IsCompanyReceipt)
+    {
+        <li>
+            <div class="col-1">
+                <div class="title">公司發票</div>
+
+                @{
+                    string companyNo = "", companyTitle = "", CopiesTitle = "";
+
+                    if (receiptItem.ReceiptKind.HasValue)
+                    {
+                        EshopCompanyReceiptType selectedKind = (EshopCompanyReceiptType)receiptItem.ReceiptKind.Value;
+                        switch (selectedKind)
+                        {
+                            case EshopCompanyReceiptType.TwoCopies:
+                                CopiesTitle = "二聯式";
+                                companyNo = receiptItem.CompanyNo;
+                                break;
+                            case EshopCompanyReceiptType.ThreeCopies:
+                                CopiesTitle = "三聯式";
+                                companyNo = receiptItem.CompanyNo;
+                                companyTitle = receiptItem.CompanyTitle;
+                                break;
+                        }
+
+                        <div class="text-value">
+                            @CopiesTitle
+                        </div>
+                        if (!string.IsNullOrEmpty(companyNo))
+                        {
+                            <div class="text-value">
+                                統一編號<span>@companyNo</span>
+                            </div>
+                        }
+                        if (!string.IsNullOrEmpty(companyTitle))
+                        {
+                            <div class="text-value">
+                                公司抬頭<span>@companyTitle</span>
+                            </div>
+                        }
+                    }
+                    if (receiptItem.ReceiptType.HasValue)
+                    {
+                        string ReceiptTypeName = "", ReceiptMailTarget = "";
+                        if (receiptItem.ReceiptType.HasValue)
+                        {
+                            EshopPersonalReceiptType selectedType = (EshopPersonalReceiptType)receiptItem.ReceiptType.Value;
+                            switch (selectedType)
+                            {
+                                case EshopPersonalReceiptType.EReceipt:
+                                    ReceiptTypeName = "電子發票Email寄送至";
+                                    ReceiptMailTarget = receiptItem.ReceiptMailTo;
+                                    break;
+                                case EshopPersonalReceiptType.PaperReceipt:
+                                    ReceiptTypeName = "紙本發票郵寄地址";
+                                    ReceiptMailTarget = receiptItem.ReceiptMailTo;
+                                    break;
+                            }
+                        }
+                            <div class="text-value">
+                                @ReceiptTypeName<span>@ReceiptMailTarget</span>
+                            </div>
+                    }
+                }
+                </div>
+                </li>
+
+
+
+
+                        }
+                    }
+                    }
+<li>
+    <div class="alert transparent">
+        <i class="cc cc-attention"></i>
+        <div>
+            依統一發票使用辦法規定：發票一經開立不得任意更改或改開發票。 <br>
+            電子發票與實體發票具有相同效力，皆能兌獎，可收信或至會員區查詢/下載。
+        </div>
+    </div>
+</li>

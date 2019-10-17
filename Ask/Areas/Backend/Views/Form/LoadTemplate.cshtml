@@ -1,0 +1,39 @@
+﻿@model IEnumerable<IDValue>
+@{
+    ViewBag.Title = "表單－套用範本";
+    ViewBag.BodyClass = "body-light-box";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";    
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title">您要套用哪個範本呢？</div>
+                <div id="divTemplate" class="btnGroup">
+                    @foreach (IDValue item in Model) {
+                    <a class="btn-with-item img square" data-id="@item.ID"><img src="~/images/temp/cube3.jpg" /><span>@item.Value</span></a>
+                    }
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+@section FArea {
+    <script type="text/javascript">
+        $('#divTemplate').on('click', 'a', function () {
+            var templateId = $(this).attr('data-id');
+            parent.Component.confirm('套用範本將會刪除已有的欄位，并且不可恢復，確定要套用嗎？', function (isOK) {
+                if (isOK) {
+                    var url = '@Html.Raw(Url.Action("LoadTemplate", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, formId = ViewBag.FormID }))&templateId=' + templateId;
+                    $.post(url, function () {
+                        parent.location.replace(parent.location.href);
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+

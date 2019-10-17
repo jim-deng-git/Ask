@@ -1,0 +1,224 @@
+﻿@model List<MemberModels>
+@{
+    ViewBag.Title = "管理者";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    IEnumerable<GroupModels> groups = ViewBag.Groups;
+
+    MemberSearch search = ViewBag.Search;
+    search.Groups = search.Groups ?? new long[0];
+    search.MStatus = search.MStatus ?? new int[0];
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            $('#btnSearch').click(function () {
+                var form = $('#searchForm');
+                form.submit();
+            });
+
+            Component.checkList('[data-checkGroup]');
+            $(".fixTable").stickyTableHeaders();
+
+            var listObj = Component.dataList('listTable');
+
+            listObj.sorted = function (sortItems) {
+                $.post("Sort", { "SiteID": "@ViewBag.SiteID", "items": sortItems }, function () {
+                    location.replace(location.href);
+                });
+            }
+
+            listObj.deleted = function (delIds) {
+                $.post('@Url.Action("DeleteManager", "Manager")', { 'ids': delIds });
+                location.replace(location.href);
+            }
+
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                }
+            }
+
+            $('#listTable').on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+        });
+
+        $(window).on('load', function () {
+            if ($('#SearchBox').length) {
+                var $SearchBoxH = $('#SearchBox').outerHeight();
+                if ($('#SearchBox').hasClass('pushup')) {
+                    // $('.fixTable, .pagination').css({
+                    //     top: $SearchBoxH
+                    // });
+
+                    $('#closeSerach').on('click', function () {
+                        $('#SearchBox').removeClass('pushup');
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    });
+                } else {
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                }
+
+                $('#openSearch').on('click', function () {
+                    $('#SearchBox').toggleClass('pushup');
+                    if ($('#SearchBox').hasClass('pushup')) {
+                        // $('.fixTable, .pagination').css({
+                        //     top: $SearchBoxH
+                        // });
+                    } else {
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    }
+                });
+            }
+        });
+    </script>
+}
+
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="SearchBox" class="search-box pushup">
+            <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+            <form id="searchForm" method="post" action="@Url.Action("Manager", "Manager", new { siteId = ViewBag.SiteID})">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字 </div>
+                            <div class="input-field inline full">
+                                <input id="KW" name="Keyword" type="text" placeholder="請輸入帳號、姓名/名稱、Email、手機、電話等關鍵字">
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">權限群組</div>
+                            <div class="radio-box inline" data-checkGroup="Groups">
+                                <div>
+                                    <input class="select-all" type="checkbox" id="group" />
+                                    <label for="group">全選</label>
+                                </div>
+                                @foreach (GroupModels group in groups)
+                                {
+                                    <div>
+                                        <input type="checkbox" id="group-@(group.Id)" @(search.Groups.Contains(group.Id)? "checked": "") value="@group.Id" />
+                                        <label for="group-@(group.Id)">@group.Name</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">啟用狀態</div>
+                            <div class="radio-box inline" data-checkGroup="MStatus">
+                                <div>
+                                    <input type="checkbox" class="select-all" id="kind1" />
+                                    <label for="kind1">全選</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="kind2" @(search.MStatus.Contains(0) ? "checked": "") value="0" />
+                                    <label for="kind2">正常</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="kind3" @(search.MStatus.Contains(1) ? "checked": "") value="1" />
+                                    <label for="kind3">停權</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <br />
+                <div class="float-R"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+            </form>
+        </div>
+
+        <table id="listTable" class="fixTable">
+            <caption>
+                @{
+                    BackendMenuModel menu = WorkV3.Areas.Backend.Models.DataAccess.BackendMenuDAO.GetItemBySn("Permission") ?? new BackendMenuModel();
+                    if (Utility.HavePermission(menu.Type, menu.ID, ViewBag.SiteID))
+                    {
+                        <a href="@Url.Action("PermissionGroup", "Permission")" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>
+                    }
+                }
+                管理者名單
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-o square tooltip-info dropdown-button" href="javascript:" title="匯出名單" data-activates="dropdown2"><i class="cc cc-playlist-play"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Url.Action("Edit","Manager", new { siteId = ViewBag.SiteID })" title="新增"><i class="cc cc-plus"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="停權"><i class="cc cc-trash-o"></i></a>
+                    <ul id="dropdown2" class="dropdown-content btnStyle">
+                        <li><a class="btn-grey-darken-4-o transparent" href="@Url.Action("Export")"><i class="cc cc-file-o"></i>詳細清單</a></li>
+                        <li><a class="btn-grey-darken-4-o transparent" href="@Url.Action("Export", new { privacy = true })"><i class="cc cc-file-o"></i>詳細清單(隱藏個資)</a></li>
+                    </ul>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>帳號</th>
+                    <th>姓名 / 名稱</th>
+                    <th>Email</th>
+                    <th>權限群組</th>
+                    <th>狀態</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0, len = Model.Count(); i < len; ++i)
+                {
+                    MemberModels item = Model.ElementAt(i);
+                    <tr data-id="@item.Id">
+                        <td class="sort">@pagination.GetItemIndex(i)</td>
+                        <td class="">@item.LoginID</td>
+                        <td class="">@item.Name</td>
+                        <td class="">@item.Email</td>
+                        <td class="">@item.GroupName</td>
+                        <td class="">@Html.Raw(((item.MStatus == 0) ? "正常" : "<span  class=\"font-red\">停權</span>"))</td>
+                        <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("Edit", "Manager", new { ID = item.Id, siteId = ViewBag.SiteID })"><i class="cc cc-edit-o"></i></a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>

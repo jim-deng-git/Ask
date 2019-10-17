@@ -1,0 +1,83 @@
+﻿
+@{
+    ViewBag.Title = "手動增減點數記錄";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("Edit", new { siteId = 1, menuId = ViewBag.MenuID,memberID = ViewBag.MemberID }))">
+    <div class="groove groove-1">
+        <div class="card shadow-none">
+            <div class="lightbox-top-bar">
+                <div class="lightbox-top-bar-title">手動增減點數記錄</div>
+            </div>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">選擇行為<span class="required">*</span></div>
+                        <div class="radio-box inline full" data-radioGroup="PointType">
+                            <div>
+                                <input type="radio" id="PointType-0" name="PointType" class="with-gap" value="0" checked="checked" />
+                                <label for="PointType-0">增加點數</label>
+                            </div>
+                            <div>
+                                <input type="radio" id="PointType-1" name="PointType" class="with-gap" value="1" />
+                                <label for="PointType-1">扣除點數</label>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">點數<span class="required">*</span></div>
+                        <div class="input-field inline short">
+                            <input type="text" id="Point" name="Point" class="validate[required,funcCall[checkNum]]">
+                        </div>
+                        <span>點</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">原因</div>
+                        <div class="input-field inline full">
+                            <input type="text" id="Description" name="Description" maxlength="20">
+                        </div>
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>
+                                原因請勿超過 20 全形字。
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="control-bar">
+                <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+                <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+            </div>
+
+        </div>
+    </div>
+</form>
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/Script/workV3/check.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        Component.radioList('div[data-radioGroup]');
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+    })
+
+    @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+        if (parent.refreshList)
+            parent.refreshList();
+        parent.$.colorbox.close();
+        </text>
+        }
+</script>

@@ -1,0 +1,118 @@
+﻿@model IEnumerable<MainVisionModel>
+
+@{ 
+    SitePage sitePage = ViewBag.SitePage;
+    string uploadUrl = ViewBag.UploadVPath;
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(sitePage.SiteID, sitePage.MenuID);
+    string rootUrl = Href("~/");
+}
+
+@if (Model?.Count() > 0) {
+    <link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />
+    <link href="~/css/Cards/MainVision/style11.css" rel="stylesheet" />
+    <script src="~/script/ytplayer/jquery.youtubebackground.js"></script>
+    @BundleConfig.Swiper()
+    
+    <div class="card-mainVision" data-style="11">
+        <div class="swiper-container" id="hero--image">
+            <div class="swiper-wrapper">
+                <div id="hero--overlay"><div id="hero--overlay1" style="width: 200%;"></div><div id="hero--overlay2" style="width: 200%;"></div></div>
+                
+                @foreach(MainVisionModel item in Model)
+                {
+                    string icon = string.IsNullOrWhiteSpace(item.Icon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Icon).Img;
+                    string hover_icon = string.IsNullOrWhiteSpace(item.HoverIcon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.HoverIcon).Img;
+
+                    if(item.Type == "Image")
+                    {
+                        string img = WorkLib.uCheck.IsMobile() ? item.ImgM : item.Img;
+                        if (!string.IsNullOrWhiteSpace(img))
+                        {
+                            string imgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(img).Img;
+                            if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, imgFileName)))
+                            {
+                                imgFileName = string.Format("R_{0}", imgFileName);
+                            }
+                            img = uploadUrl + Server.UrlPathEncode(imgFileName);
+                            <div class="swiper-slide" data-swiper-autoplay="@(item.Second * 1000)">
+                                <div class="mainVisionImg @(string.IsNullOrEmpty(item.Link) ? "" : "openLink" )" data-target="@(item.IsOpenNew ? "_blank" : "")" data-href="@item.Link" style="background-image: url(@img);"></div>
+                                <div class="mainVision-text">
+                                    <div class="title">@item.Title</div>                    
+                                    <div class="info">@Html.Raw(item.Content)</div>                    
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        string videoImg = item.VideoImg, videoImgFileName = "";
+                        if (WorkLib.uCheck.IsMobile() && !string.IsNullOrWhiteSpace(item.VideoImgM))
+                        {
+                            videoImg = item.VideoImgM;
+                        }
+                        if (item.VideoImgIsCustom && !string.IsNullOrWhiteSpace(videoImg) && videoImg[0] == '{')
+                        {
+                            videoImgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(videoImg).Img;
+                            if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, videoImgFileName)))
+                            {
+                                videoImgFileName = string.Format("R_{0}", videoImgFileName);
+                            }
+                            videoImg = uploadUrl + Server.UrlPathEncode(videoImgFileName);
+                        }
+
+                        <div class="swiper-slide swiperVideo" data-swiper-autoplay="@(item.Second * 1000)">
+                            <div id="@item.ID" class="videoPlayer" data-youtubr-id='@(item.VideoID)'></div>
+                            <div class="mainVision-text">
+                                <div class="title">@item.Title</div>                    
+                                <div class="info">@Html.Raw(item.Content)</div>                    
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <!-- Add Arrows -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function(){
+            $(".swiperVideo").each(function () {
+                const o = $(this).children(".videoPlayer");
+                const getID = o.attr("id");
+                const getYtId = o.data("youtubr-id");
+                $('#' + getID).YTPlayer({
+                    fitToBackground: true,
+                    videoId: getYtId,
+                    playerVars: {
+                        modestbranding: 1,
+                        autoplay: 1,
+                        controls: 1,
+                        showinfo: 0,
+                        rel: 0
+                    }
+                });
+            })
+
+            const swiper = new Swiper('#hero--image', {
+                effect: 'fade',
+                fade: {
+                    crossFade: true,
+                },
+                speed: 1000,
+                autoplay: true,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+            });
+            swiper.on('slideChangeTransitionEnd', function () {
+                const step = swiper.realIndex % 4;
+                $("#hero--overlay").attr("class", "").addClass("step" + step);
+            });
+        });
+    </script>
+    
+
+}

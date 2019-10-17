@@ -1,0 +1,140 @@
+﻿@model IEnumerable<MainVisionModel>
+
+@{ 
+    SitePage sitePage = ViewBag.SitePage;
+    string uploadUrl = ViewBag.UploadVPath;
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(sitePage.SiteID, sitePage.MenuID);
+    string rootUrl = Href("~/");
+}
+
+@if (Model?.Count() > 0) {
+    <link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+    <link href="~/css/Cards/MainVision/style5.css" rel="stylesheet" />
+
+    <div class="card-mainVision" data-style="5" style="background-image: url('../../Websites/WonTen/images/mainVision02.jpg')">
+        <div class="mainLogo">
+            <img src="~/Websites/WonTen/images/mainVision01.png" alt="">
+        </div>
+        <div class="imgList">
+        @foreach (MainVisionModel item in Model) {
+            string icon = string.IsNullOrWhiteSpace(item.Icon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Icon).Img;
+            string hover_icon = string.IsNullOrWhiteSpace(item.HoverIcon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.HoverIcon).Img;
+            if (item.Type == "Image") {
+                string img = WorkLib.uCheck.IsMobile() ? item.ImgM : item.Img;
+                if (!string.IsNullOrWhiteSpace(img)) {
+                    string imgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(img).Img;
+                    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, imgFileName)))
+                    {
+                        imgFileName = string.Format("R_{0}", imgFileName);
+                    }
+                    img = uploadUrl + Server.UrlPathEncode(imgFileName);
+                    if(string.IsNullOrEmpty(item.Link)){
+                    <div class="diamondBox">
+                        @*<a href="@img" class="openImg" target="_blank">*@
+                            <div style="background-image: url('@img');"></div>
+                        @*</a>*@
+                    </div>
+                    }else{
+                    <div class="diamondBox openLink" data-target="@(item.IsOpenNew?"_blank":"")" data-href="@item.Link">
+                        <div style="background-image: url('@img');"></div>
+                    </div>
+                    }
+                }
+            }else
+            {
+                string videoImg = item.VideoImg, videoImgFileName = "";
+                if (WorkLib.uCheck.IsMobile() && !string.IsNullOrWhiteSpace(item.VideoImgM))
+                {
+                    videoImg = item.VideoImgM;
+                }
+                if (item.VideoImgIsCustom && !string.IsNullOrWhiteSpace(videoImg) && videoImg[0] == '{')
+                {
+                    videoImgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(videoImg).Img;
+                    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, videoImgFileName)))
+                    {
+                        videoImgFileName = string.Format("R_{0}", videoImgFileName);
+                    }
+                    videoImg = uploadUrl + Server.UrlPathEncode(videoImgFileName);
+                }
+                if (!string.IsNullOrWhiteSpace(videoImg))
+                {
+                <div class="diamondBox openVideo" data-href="https://www.youtube.com/embed/@(item.VideoID)">
+                    <i class="cc cc-play"></i>
+                    <div style="background-image: url('@videoImg');"></div>
+                </div>
+                }
+            }
+        }
+        </div>
+        <div class="GeometryColor">
+            <div class="svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1920" height="500" viewBox="0 0 1920 500">
+                    <g transform="translate(1093.5 1973)">
+                        <path class="upBox" d="M0,0V123.2L723.839,312,960,250.4Z" transform="translate(-1093.5 -1973)"/>
+                        <path class="lowBox" d="M0,127V377L724,188.5,0,0Z" transform="translate(-1093.5 -1850)"/>
+                        <path class="upBox" d="M960,0,0,250.4,236.16,312,960,123.2Z" transform="translate(-133.5 -1973)"/>
+                        <path class="lowBox" d="M0,188.5,724,377V0Z" transform="translate(102.5 -1850)"/>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="~/script/colorbox/jquery.colorbox.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            // 不需要
+            // $(".openImg").click(function (e) {
+            //     e.preventDefault();
+            //     var ImgHref = $(this).attr('href');
+            //     //console.log(ImgHref);
+            //     $.colorbox({
+            //         href: ImgHref,
+            //         maxWidth: "90%",
+            //         maxHeight: "90%",
+            //         closeButton: true
+            //     });
+            //  })
+            $(".openVideo").click(function () {
+                var VideoHref = $(this).data('href');
+                //console.log(VideoHref);
+                $.colorbox({
+                    href: VideoHref,
+                    iframe: true,
+                    width: "1408px",
+                    height: "792px",
+                    maxWidth: "90%",
+                    maxHeight: "90%",
+                    closeButton: true
+                });
+            });
+
+            var headerH = $("#header").outerHeight();
+                windowH = $(window).height();
+            $('.card-mainVision').css('height',windowH - headerH);
+
+            var mainLogoH = $('.mainLogo').outerHeight(),
+                    imgListH = $('.imgList').outerHeight(),
+                    svgH = $('.GeometryColor').find('svg').outerHeight();
+            
+            if(mainLogoH + imgListH + svgH > windowH){
+                $('.card-mainVision').css('height',mainLogoH + imgListH + (svgH / 2));
+            }else{
+                $('.card-mainVision').css('height',windowH - headerH);
+            }
+
+            if ($(".openLink").length > 0){
+                $(".openLink").on('click', function (e) {
+                    e.preventDefault();
+                    var self = $(this);
+                    if ($(self).attr("data-target") != null && $(self).attr("data-target") == "_blank") {
+                        window.open($(self).attr("data-href"));
+                    }
+                    else {
+                        location = $(self).attr("data-href");
+                    }
+                    
+                });
+            }
+        }) 
+    </script>
+}

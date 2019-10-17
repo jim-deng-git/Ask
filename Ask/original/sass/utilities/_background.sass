@@ -1,0 +1,23 @@
+// @each $name, $color in $colors
+//     .bg-#{$name}
+//         background-color: $color !important
+
+//     .bg-#{$name}-light
+//         background-color: lighten($color, 10%) !important
+
+//     .bg-#{$name}-dark
+//         background-color: darken($color, 10%) !important
+
+@each $color_name, $color in $colors
+    @each $color_type, $color_value in $color
+        @if $color_type == "base"
+            .bg-#{$color_name}
+                background-color: $color_value !important
+        @else if $color_name != "shades"
+            .bg-#{$color_name}-#{$color_type}
+                background-color: $color_value !important
+
+// Shade classes
+@each $color, $color_value in $shades
+    .bg-#{$color}
+        background-color: $color_value !important

@@ -1,0 +1,116 @@
+.card-imageText[data-style="12"] .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-imageText[data-style="12"] .imgInfo {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-imageText[data-style="12"] .imgInfo {
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
+
+.card-imageText[data-style="12"] .imgInfo {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
+
+.card-imageText[data-style="12"] {
+  text-align: center; }
+  .card-imageText[data-style="12"] .card-img {
+    text-align: center; }
+    .card-imageText[data-style="12"] .card-img img {
+      width: 100%;
+      max-width: 250px; }
+    .card-imageText[data-style="12"] .card-img:focus .activeWrap, .card-imageText[data-style="12"] .card-img:hover .activeWrap {
+      opacity: 0;
+      bottom: -100%; }
+  .card-imageText[data-style="12"] .card-text {
+    padding: 15px 20px;
+    color: #979797;
+    font-size: 20px;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+    white-space: nowrap; }
+    @media only screen and (max-width: 800px) {
+      .card-imageText[data-style="12"] .card-text {
+        padding: 10px 17px; } }
+    .card-imageText[data-style="12"] .card-text > a {
+      display: inline-block;
+      padding: 0 10px; }
+  .card-imageText[data-style="12"] .card-text-info {
+    font-size: 20px;
+    color: #bdbdbd;
+    font-style: normal;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+    white-space: nowrap; }
+    .card-imageText[data-style="12"] .card-text-info * {
+      font-style: normal; }
+  .card-imageText[data-style="12"] .card-text-name {
+    font-size: 24px;
+    color: #ffffff;
+    font-weight: bold; }
+    .card-imageText[data-style="12"] .card-text-name a {
+      color: #ffffff; }
+      .card-imageText[data-style="12"] .card-text-name a:focus, .card-imageText[data-style="12"] .card-text-name a:active, .card-imageText[data-style="12"] .card-text-name a:hover {
+        color: #ffffff; }
+    .card-imageText[data-style="12"] .card-text-name ~ .card-text-info {
+      margin-top: 5px;
+      color: #fafafa; }
+  .card-imageText[data-style="12"] .imgInfo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 auto; }
+    .card-imageText[data-style="12"] .imgInfo > span {
+      font-size: 24px;
+      color: #ffffff;
+      display: inline-block;
+      width: 45px;
+      height: 45px;
+      text-align: center;
+      line-height: 47px;
+      border-radius: 100%;
+      border: 2px solid #ffffff;
+      background-color: rgba(0, 0, 0, 0.5); }
+      .card-imageText[data-style="12"] .imgInfo > span > i {
+        margin-left: 2px; }
+    .card-imageText[data-style="12"] .imgInfo .imgTitle {
+      font-size: 24px;
+      color: #ffffff; }
+    .card-imageText[data-style="12"] .imgInfo .imgKind {
+      font-size: 24px;
+      color: #ffffff; }
+    .card-imageText[data-style="12"] .imgInfo .imgIntro {
+      font-size: 18px;
+      margin: 0;
+      width: 100%;
+      display: block;
+      color: #ffffff;
+      max-width: 100%;
+      margin: 0; }
+      .card-imageText[data-style="12"] .imgInfo .imgIntro a:focus, .card-imageText[data-style="12"] .imgInfo .imgIntro a:active, .card-imageText[data-style="12"] .imgInfo .imgIntro a:hover {
+        color: #ffffff; }
+  .card-imageText[data-style="12"] .activeWrap {
+    opacity: 1;
+    bottom: 0;
+    max-height: 105px;
+    background-color: #282828; }
+
+.jw-flag-audio-player .jw-controlbar-center-group {
+  padding: 0 1em 0 0em; }
+
+.jw-flag-audio-player .jw-slider-time.jw-slider-horizontal {
+  line-height: 1; }
+
+.jw-flag-audio-player .jw-slider-volume.jw-slider-horizontal {
+  line-height: 21px; }

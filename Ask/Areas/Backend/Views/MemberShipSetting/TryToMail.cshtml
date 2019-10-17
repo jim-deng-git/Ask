@@ -1,0 +1,109 @@
+﻿@model MailTemplateSetModels
+@{
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    string templateName = ViewBag.TemplateName;
+    ViewBag.Title = "測試發送";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@BundleConfig.Component()
+@BundleConfig.Validate()
+<script type="text/javascript">
+    $(function () {
+        $('#btnSentToMail').on('click', function (e) {  
+            var form = $('#mailForm');
+            if (form.validationEngine('validate')) {
+                sentTryMail();
+            }
+        });
+    });
+    function checkEmail(field) {
+        var v = $.trim(field.val());
+        if (v == "")
+        {
+            return '* 不可空白';
+        }
+        if (v) {
+            var emails = v.split(';');
+            for (var i = 0, len = emails.length; i < len; ++i) {
+                var email = $.trim(emails[i]);
+                if (email && !/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(email))
+                    return '* Email 格式不正確';
+            }
+        }
+
+    }
+    function sentTryMail()
+    {
+        var mailToList = $("#MailToList").val();
+        console.log(mailToList);
+        if (mailToList == "") {
+            
+        }
+        else {
+            var mailToAddress = mailToList.split(';');
+            for (var i = 0; i < mailToAddress.length; i++)
+            {
+
+            }
+        }
+        var formData = new FormData();
+        formData.append("SiteId", "@siteId");
+        formData.append("MenuId", "@menuId");
+        formData.append("TemplateName", "@templateName");
+        formData.append("MailToList", $("#MailToList").val());
+        $.ajax({
+            url: "@Url.Action("SentTryMail", "MemberShipSetting")",
+            data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                console.log(data);
+                if (data != null) {
+                    var msg = "";
+                    if (data.result == "success") {
+                        msg += "動作執行成功!";
+                    }
+                    else {
+                        msg += "動作執行失敗!";
+                    }
+                    if (data.message != "")
+                    {
+                        msg += "\n" + data.message;
+                    }
+                    Component.alert(msg, function () {
+                        if (data.result == "success")
+                        {
+                            parent.$.colorbox.close();
+                        }
+                    });
+                }
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+    }
+</script>
+<div class="groove groove-1">
+    <form id="mailForm">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title no-label">請輸入測試用信箱，多筆時請用分號 ; 分隔<span class="required">*</span></div>
+                    <div class="input-field no-label">
+                        <textarea id="MailToList" name="MailToList" class="materialize-textarea height-lg validate[funcCall[checkEmail]]"></textarea>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar flex">
+            <a class="btn btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:" id="btnSentToMail"><i class="cc cc-email"></i>測試發送</a>
+        </div>
+        <input id="TemplateName" name="TemplateName" value="@Model.TemplateName" />
+    </form>
+</div>

@@ -1,0 +1,73 @@
+﻿@{ 
+    List<string> PaymentTypeList = ViewBag.PaymentTypeList as List<string>;
+    string choicePayemnt = ViewBag.ChoidePayment;
+
+    bool OptionIsEabled = true;
+    if (ViewBag.OptionIsEabled != null)
+    {
+        OptionIsEabled = (bool)ViewBag.OptionIsEabled;
+    }
+
+}
+<ul class="forms radio-box m-h-none p-10" id="ulPaymentCode">
+        @{ int appendCount = 0;}
+        @foreach (string PaymentType in PaymentTypeList)
+        {
+            appendCount++;
+            string iconImage = "", paymentTitle = "";
+
+            switch (PaymentType)
+            {
+                case "CreditCardPay":
+                    iconImage = "刷卡.png";
+                    paymentTitle = "線上刷卡";
+                    break;
+                case "CreditCardStaging":
+                    iconImage = "分期付款.png";
+                    paymentTitle = "線上刷卡(分期)";
+                    break;
+                case "WebATM":
+                    iconImage = "網路atm.png";
+                    paymentTitle = "網路ATM匯款";
+                    break;
+                case "CashATM":
+                    iconImage = "實體atm.png";
+                    paymentTitle = "實體ATM匯款";
+                    break;
+                case "AliPay":
+                    iconImage = "支付寶.png";
+                    paymentTitle = "支付寶";
+                    break;
+                case "WeChatPay":
+                    iconImage = "微信.png";
+                    paymentTitle = "微信支付";
+                    break;
+                case "PayPal":
+                    iconImage = "paypal.png";
+                    paymentTitle = "PayPal";
+                    break;
+            }
+            if (appendCount % 4 == 1)
+            {
+                
+    @:<li class="pay">
+                
+    }
+    <div class="col-4">
+        <input class="with-gap" name="PaymentCode" type="radio" id="PaymentCode_@PaymentType" value="@PaymentType" @(!string.IsNullOrEmpty(choicePayemnt)?(choicePayemnt == PaymentType?"checked":""):"") @(!OptionIsEabled? "disabled" : "")>
+        <label for="PaymentCode_@PaymentType">
+            <img src="~/images/icon/@iconImage" alt="">
+            <p>@paymentTitle</p>
+        </label>
+    </div>
+    if (appendCount % 4 == 0 || appendCount == PaymentTypeList.Count)
+    {
+        
+        @:</li>
+        
+    }
+}
+
+
+
+</ul>

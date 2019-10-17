@@ -1,0 +1,31 @@
+﻿@model WorkV3.Areas.Backend.Models.ArticlePosterModels
+    @{
+        var menuModel = WorkV3.Areas.Backend.Models.DataAccess.MenusDAO.GetInfo(Model.MenuID);
+        string uploadUrl = WorkV3.Golbal.UpdFileInfo.GetVPathByMenuID(menuModel.SiteID, menuModel.ID).TrimEnd('/') + "/";
+        ResourceImagesModels img = (string.IsNullOrWhiteSpace(Model.Photo) ? null : Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(Model.Photo));
+    }
+<div id="posterIntro" class="poster-intro">
+    <div class="card shadow-none">
+        <div class="card-box">
+            <div class="poster-left">
+                @if (!string.IsNullOrWhiteSpace(img?.Img))
+                {
+                    <div class="card-img" style="background-image: url('@(uploadUrl + img.Img)');"></div>
+                }
+                <div class="card-text-name">@Model.Name</div>
+            </div>
+            <div class="card-text">
+                <div class="card-text-info">
+                    @Html.Raw(Model.Intro)
+                </div>
+                <div class="card-text-experience">
+                    @Html.Raw( Model.Resume)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<a id="openPosterIntro" class="openPosterIntro arrow-icon" href="javascript:">
+    <span class="arrow-icon-left"></span>
+    <span class="arrow-icon-right"></span>
+</a>

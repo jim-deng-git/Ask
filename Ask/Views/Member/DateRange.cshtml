@@ -1,0 +1,186 @@
+﻿
+@{
+    ViewBag.Title = "DateRange";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    DateTime startDate = ViewBag.StartDate;
+    DateTime endDate = ViewBag.EndDate;
+}
+
+<div class="groove groove-1 ">
+    <ul class="forms selectDateRange">
+        <li>
+            <div class="input-field inline m-T-none">
+                <input type='text' name="DateStart" class="input-cal startAnalyticsDate" placeholder="開始時間" value="@startDate.ToString("yyyy/MM/dd")">
+            </div>
+            <span>-</span>
+            <div class="input-field inline m-T-none">
+                <input type='text' name="DateEnd" class="input-cal endAnalyticsDate" placeholder="結束時間" value="@endDate.ToString("yyyy/MM/dd")">
+            </div>
+            <div class="analyticsDatePicker"></div>
+        </li>
+    </ul>
+    <div class="control-bar">
+        <div class="bar-item float-L">
+            <div class="radio-box inline m-T-none">
+                <div>
+                    <input class="with-gap" name="kind" type="radio" id="kind1" />
+                    <label for="kind1">兩週內</label>
+                </div>
+                <div>
+                    <input class="with-gap" name="kind" type="radio" id="kind2" />
+                    <label for="kind2">一個月內</label>
+                </div>
+                <div>
+                    <input class="with-gap" name="kind" type="radio" id="kind3" />
+                    <label for="kind3">三個月內</label>
+                </div>
+                <div>
+                    <input class="with-gap" name="kind" type="radio" id="kind4" />
+                    <label for="kind4">半年內</label>
+                </div>
+                <div>
+                    <input class="with-gap" name="kind" type="radio" id="kind5" />
+                    <label for="kind5">一年內</label>
+                </div>
+                <div>
+                    <input class="with-gap" name="kind" type="radio" id="kind6" />
+                    <label for="kind6">自訂</label>
+                </div>
+            </div>
+        </div>
+        <a class="btn-cancel" href="javascript:" onclick="parent.$('#choiceDateRange').slideUp()"><i class="cc cc-close"></i>取消</a>
+        <a class="btn-bulid" href="javascript:" onclick="returnDate()"><i class="cc cc-check"></i>確定</a>
+    </div>
+</div>
+
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<script src="~/Script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+        function returnDate() {
+            var startDate = $('.startAnalyticsDate').val();
+            var endDate = $('.endAnalyticsDate').val();
+
+            if (!startDate || !endDate) {
+                parent.$('#choiceDateRange').slideUp();
+                return;
+            }
+
+            parent.setChartDate(startDate, endDate);
+            parent.$('#choiceDateRange').slideUp();
+        }
+
+            $(function () {
+                var to = new Date();
+                var from = new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+
+                var datepicker = $('.analyticsDatePicker').DatePicker({
+                  inline: true,
+                  date: [from, to],
+                  calendars: 3,
+                  mode: 'range',
+                  current: new Date(to.getFullYear(), to.getMonth() - 1, 1),
+                  onChange: function(dates,el) {
+                    $('input.startAnalyticsDate').val(
+                      dates[0].getFullYear()+'/'+
+                      dates[0].getMonthName(true)+'/'+
+                      dates[0].getDate()
+                    );
+
+                    $('input.endAnalyticsDate').val(
+                      dates[1].getFullYear()+'/'+
+                      dates[1].getMonthName(true)+'/'+
+                      dates[1].getDate()
+                    );
+                  }
+                });
+
+                $('.dropdown-toggle').dropdown();
+
+                $('#kind1').on('click', function () {
+                    var startDate = '@DateTime.Now.AddDays(-14).ToString("yyyy/MM/dd")';
+                    var endDate = '@DateTime.Now.ToString("yyyy/MM/dd")';
+
+                    setDate(startDate, endDate);
+                });
+
+                $('#kind2').on('click', function () {
+                    var startDate = '@DateTime.Now.AddDays(-30).ToString("yyyy/MM/dd")';
+                    var endDate = '@DateTime.Now.ToString("yyyy/MM/dd")';
+
+                    setDate(startDate, endDate);
+                });
+
+                $('#kind3').on('click', function () {
+                    var startDate = '@DateTime.Now.AddMonths(-3).ToString("yyyy/MM/dd")';
+                    var endDate = '@DateTime.Now.ToString("yyyy/MM/dd")';
+
+                    setDate(startDate, endDate);
+                });
+
+                $('#kind4').on('click', function () {
+                    var startDate = '@DateTime.Now.AddMonths(-6).ToString("yyyy/MM/dd")';
+                    var endDate = '@DateTime.Now.ToString("yyyy/MM/dd")';
+
+                    setDate(startDate, endDate);
+                });
+
+                $('#kind5').on('click', function () {
+                    var startDate = '@DateTime.Now.AddYears(-1).ToString("yyyy/MM/dd")';
+                    var endDate = '@DateTime.Now.ToString("yyyy/MM/dd")';
+
+                    setDate(startDate, endDate);
+                });
+
+                $('#kind6').on('click', function () {
+                    resetDate();
+                });
+
+                function setDate(start, end) {
+                    var dateArray = [start, end];
+
+                    datepicker.DatePickerSetDate(dateArray, true);
+                    $('.startAnalyticsDate').val(start);
+                    $('.endAnalyticsDate').val(end);
+                }
+
+                function resetDate()
+                {
+                    $('.startAnalyticsDate').val('');
+                    $('.endAnalyticsDate').val('');
+                    datepicker.DatePickerSetDate([], true);
+                }
+            });
+</script>
+@*<script type="text/javascript">
+    $(function () {
+        var to = new Date();
+        var from = new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+
+        $('.analyticsDatePicker').DatePicker({
+            inline: true,
+            date: [from, to],
+            calendars: 3,
+            mode: 'range',
+            current: new Date(to.getFullYear(), to.getMonth() - 1, 1),
+            onChange: function (dates, el) {
+                $('input.startAnalyticsDate').val(
+                    dates[0].getFullYear() + '/' +
+                    dates[0].getMonthName(true) + '/' +
+                    dates[0].getDate()
+                );
+
+                $('input.endAnalyticsDate').val(
+                    dates[1].getFullYear() + '/' +
+                    dates[1].getMonthName(true) + '/' +
+                    dates[1].getDate()
+                );
+            }
+        });
+
+        $('.dropdown-toggle').dropdown();
+    });
+</script>*@  

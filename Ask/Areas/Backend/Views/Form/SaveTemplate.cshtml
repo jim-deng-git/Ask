@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.Title = "表單－存成範本";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="title">範本名稱<span class="required">*</span></div>
+            <div class="input-field">
+                <input id="txtName" type="text" maxlength="50" />
+            </div>
+        </li>        
+    </ul>
+    <div class="control-bar">        
+        <a class="btn-cancel" href="javascript:parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>
+
+@section FArea {
+    <script type="text/javascript">
+        $('#btnSave').click(function () {
+            var name = $.trim($('#txtName').val());
+            if (!name) {
+                parent.Component.alert('請輸入範本名稱');
+                return;
+            }
+
+            var url = '@Html.Raw(Url.Action("SaveTemplate", new { id = ViewBag.ID }))?name=' + encodeURIComponent(name);
+            $.post(url, function () {
+                parent.Component.alert('範本已儲存', function () {
+                    parent.$.colorbox.close();
+                });
+            });
+        });
+
+        $('#txtName').keypress(function (e) {
+            if (e.keyCode == '13') {
+                $('#btnSave').click();
+            }
+        });
+    </script>
+}
+
+

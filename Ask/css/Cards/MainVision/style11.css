@@ -1,0 +1,95 @@
+.card-mainVision[data-style="11"] .swiper-container {
+  width: 100%;
+  height: 100vh;
+}
+.card-mainVision[data-style="11"] .swiper-container .swiper-slide {
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 7;
+  overflow: hidden;
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay #hero--overlay1,
+.card-mainVision[data-style="11"] #hero--image #hero--overlay #hero--overlay2 {
+  position: absolute;
+  left: -160%;
+  top: 0;
+  width: 200%;
+  height: 100%;
+  z-index: 8;
+  background: rgba(14, 22, 104, 0.5);
+  transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+  transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  transform: skew(-30deg);
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay #hero--overlay2 {
+  left: -165%;
+  z-index: 7;
+  background: rgba(30, 72, 157, 0.5);
+  transition-delay: 0.2s;
+  transform: skew(30deg);
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step1 #hero--overlay1,
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step1 #hero--overlay2 {
+  transform: skew(70deg);
+  left: 70%;
+  width: 300% !important;
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step1 #hero--overlay2 {
+  transform: skew(50deg);
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step2 #hero--overlay1,
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step2 #hero--overlay2 {
+  transform: skew(-20deg);
+  left: 70%;
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step2 #hero--overlay2 {
+  transform: skew(40deg);
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step3 #hero--overlay1,
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step3 #hero--overlay2 {
+  transform: skew(-70deg);
+  left: 80%;
+  width: 300% !important;
+}
+.card-mainVision[data-style="11"] #hero--image #hero--overlay.step3 #hero--overlay2 {
+  transform: skew(-50deg);
+  left: 60%;
+}
+.card-mainVision[data-style="11"] .mainVision-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 500px;
+  width: 100%;
+}
+.card-mainVision[data-style="11"] .mainVision-text .title {
+  font-size: 72px;
+  font-weight: 600;
+  line-height: 1;
+  color: #3C5AA5;
+}
+.card-mainVision[data-style="11"] .mainVision-text .info {
+  color: #4A4B4D;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+  margin-top: 30px;
+}
+.card-mainVision[data-style="11"] .mainVisionImg {
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+  background-position: center;
+}

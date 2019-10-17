@@ -1,0 +1,441 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model AnalysisMemberLogViewModel
+@{
+    ViewBag.Title = "分析";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    List<AnalysisMemberGroupViewModel> groupMembers = (List<AnalysisMemberGroupViewModel>)ViewBag.GroupMembers;
+    string UploadUrl = ViewBag.UploadUrl;
+    string  OrderByColumn = "0", OrderByDesc = "0";
+    if (Model.OrderBy.SortDesc == SortDesc.Desc)
+    {
+        OrderByDesc = "0";
+    }
+    OrderByColumn = ((int)Model.OrderBy.SortColumn).ToString();
+    string OrdreBySortColumnAddTime = Url.Action("MemberAnalysisDetails", new { MemberID=Model.MemberID, OrderColumn = (int)WorkV3.Areas.Backend.ViewModels.SortColumn.AddTime, OrderSort = (int)Model.OrderBy.SortDesc, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrdreBySortColumnStaySeconds = Url.Action("MemberAnalysisDetails", new { MemberID = Model.MemberID, OrderColumn = (int)WorkV3.Areas.Backend.ViewModels.SortColumn.StaySeconds, OrderSort = (int)Model.OrderBy.SortDesc, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrderByDescUrl = Url.Action("MemberAnalysisDetails", new { MemberID = Model.MemberID, OrderColumn = OrderByColumn, OrderSort = (int)SortDesc.Desc, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrderByAscUrl = Url.Action("MemberAnalysisDetails", new { MemberID = Model.MemberID, OrderColumn = OrderByColumn, OrderSort = (int)SortDesc.Asc, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    }
+
+    @section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.HighCharts()
+
+}
+
+    @section Script {
+        @BundleConfig.Component()
+    <script type="text/javascript">
+        function SetIsShowLabelLine(isShow)
+        {
+            $("#IsShowCustomLableLine").prop("checked" , isShow);
+            var form = $('#searchForm');
+            form.submit();
+        }
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+        
+        $('.modify_label_line').click(function (e) {
+            e.preventDefault();
+            window.parent.$.colorbox({
+                href: $(this).attr("href"),
+                width: "600",
+                height: "95%",
+                right: "20",
+                iframe: true,
+                transition: false,
+                speed: 0,
+                fadeOut: 100,
+                onClosed: function () {
+                    location.reload(true);
+                }
+            });
+        });
+
+        function refreshList()
+        {
+            location.replace(location.href);
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            // $(".fixTable").stickyTableHeaders();
+            var dateArray = [], dailayTotalViews = [], statistic_celling = [], plot_lines = [];
+            var range_max = 0, range_min = 0, celling_interval = 100;
+            @if (Model.LogDailyList != null && Model.LogDailyList.Count() > 0)
+            {
+                int cell_interval = 100;
+                long max = 0, min = 0;
+                for (int i = 0; i < Model.LogDailyList.Count(); i++)
+                {
+                    AnalysisDailyLogViewModel daily_item = Model.LogDailyList.ElementAt(i);
+                    if (Model.IsShowCustomLableLine)
+                    {
+                        for (int m = 0; m < Model.LabelLineList.Count(); m++)
+                        {
+                            AnalysisLogCustomLabelLineViewModel label_item = Model.LabelLineList.ElementAt(m);
+
+                            if (label_item.LabelDate == daily_item.LogDate)
+                            {
+                    <text>
+            var plotLineOption = {
+                                    color: '@label_item.LabelColor',
+                width: 2,
+                value: @i.ToString(),
+                label: {
+                                        text: '@label_item.Title',
+                    verticalAlign: 'top',
+                    textAlign: 'center',
+                    rotation: 0,
+                    y: -20,
+                }
+                                };
+                                plot_lines.push(plotLineOption);
+            </text>
+                            }
+                        }
+                    }
+                    <text>
+            dateArray.push("@daily_item.LogDate");
+                    dailayTotalViews.push(@daily_item.TotalViewCount);
+            </text>
+                if (i == 0)
+                    {
+                        max = Math.Max(daily_item.TotalViewCount, daily_item.TotalMemberViewCount);
+                    }
+                    else
+                    {
+                        max = Math.Max(daily_item.TotalViewCount, max);
+                    }
+                }
+                if (max < 100)
+                {
+                    cell_interval = 10;
+                }
+                int cell_count = (int)(max / cell_interval);
+                if (max % cell_interval != 0)
+                {
+                    cell_count++;
+                }
+                for (int i = 0; i <= cell_count; i++)
+                {
+                <text>
+            statistic_celling.push(@(cell_interval * i))
+            </text>
+                }
+                max = cell_count * cell_interval;
+                <text>
+            range_max=@max;
+                range_min=@min;
+                celling_interval =@cell_interval;
+            </text>
+        }
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+            $('.chart-line').highcharts({
+                chart: {
+                    height: 500,
+                    /*style: {
+                        padding: '30px 0 20px'
+                    },*/
+                    type: 'line',
+                    spacingTop: 50
+                },
+                title: {
+                    text: null,
+                },
+                subtitle: {
+                    text: null,
+                },
+                /*legend: {
+                    enabled: false
+                },*/
+                xAxis: {
+                    title: {
+                        text: '日期',
+                        margin: 20
+                    },
+                    categories: dateArray,
+                    tickmarkPlacement: 'on',
+                    labels: {
+                        style: {
+                            fontSize: '18px'
+                        },
+                    },
+                    plotLines: plot_lines
+                },
+                yAxis: {
+                    min: range_min,
+                    max: range_max,
+                    tickInterval: celling_interval,
+                    title: {
+                        text: '瀏量',
+                        rotation: 0,
+                        align: 'high',
+                        offset: 0,
+                        y: -20,
+                        x: -15
+                    },
+                    categories: statistic_celling,
+                    labels: {
+                        style: {
+                            fontSize: '18px'
+                        }
+                    },
+                    maxPadding: 0.05
+                },
+                series: [
+                {
+                    name: '本 會員 的瀏覽量',
+                    data: dailayTotalViews,
+                    marker: {
+                        enabled: false
+                    },
+                    // lineWidth:5,
+                    color: '#2196F3'
+                }
+                ]
+            });
+            BindMemberSelect();
+        });
+    </script>
+}
+        
+        <div class="groove groove-1">
+            <h1 class="title-admin-page ">
+                <a href="javascript:history.back()" class="d-inline-block"><i class="cc cc-arrow-left"></i></a>
+                <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Member/BackEnd/List.aspx" class="font-black">
+                    @if (!string.IsNullOrEmpty(Model.MemberPhoto))
+                    {
+                    <div class="d-inline-block top-profile-img">
+                        <img src="@Model.MemberPhoto">
+                    </div>
+                    }
+                    <div class="d-inline-block">
+                        <div class="font-xs font-grey">會員姓名 / 帳號</div>
+                        @Model.MemberName @Model.MemberAccount
+                    </div>
+                </a>
+            </h1>
+            <div class="analytics-control-bar">
+                <form id="searchForm" method="post" action="@Url.Action("MemberAnalysisDetails")">
+                    <div class="selectDateRange" style="float:left;">
+                        <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title="" id="selectedDates"><span id="spDateRange">@(Model.SearchStartDate.ToString("yyyy/MM/dd") + " - " + ((Model.SearchEndDate.Year == Model.SearchStartDate.Year) ? Model.SearchEndDate.ToString("MM/dd") : Model.SearchEndDate.ToString("yyyy/MM/dd")))</span> <i class="cc cc-chevron-down"></i></a>
+                        <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                            <li>
+                                <input type='hidden' name="SearchStartDate" id="SearchStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                                <input type='hidden' name="SearchEndDate" id="SearchEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                                <input type='hidden' name="RangeType" id="RangeType" value="@Model.RangeType">
+                                <iframe class="dropdownIframe" src="@Url.Action("SelectRangeDate", "Common", new { start=Model.SearchStartDate.ToString("yyyy/MM/dd"), end=Model.SearchEndDate.ToString("yyyy/MM/dd"), select =Model.RangeType})" frameborder="0"></iframe>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="selectGroup" style="float:left;">
+                        <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="allPage" id="aSelectMemberNames" title="">全部管理員創建的頁面 <i class="cc cc-chevron-down"></i></a>
+
+                        <ul id="allPage" class="dropdown-content customContent large closeOnClick">
+                            <li>
+                                <iframe class="dropdownIframe" src="@Url.Action("SelectManagers", "Common", new { SelectMembers=Model.SelectMembers })" frameborder="0"></iframe>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="selectCreator" style="float:right">
+                        <a href="@Url.Action("CustomLabelLine", "Analysis")" class="btn-grey-o modify_label_line"><i class="cc cc-edit"></i>自訂標線</a>
+                        <a href="@Url.Action("ExportMemberToXLS", "Analysis",  new { MemberID=Model.MemberID, startDate= Model.SearchStartDate, endDate = Model.SearchEndDate, OrderColumn=OrderByColumn, OrderSort = OrderByDesc })" target="_blank" class="btn-grey-o"><i class="cc cc-playlist-play"></i>匯出統計</a>
+                    </div>
+
+                    <input type="hidden" id="SelectMembers" name="SelectMembers" value="@Model.SelectMembers" />
+                    <input type="hidden" id="MemberID" name="MemberID" value="@Model.MemberID" />
+                    <input type="checkbox" id="IsShowCustomLableLine" name="IsShowCustomLableLine" @((Model != null) ? (Model.IsShowCustomLableLine ? "checked" : string.Empty) : string.Empty ) />
+                </form>
+</div>
+
+
+            <div class="charts">
+                <div class="chart-line highcharts"></div>
+            </div>
+
+            <div class="chartContent">
+                <span>本 會員 的瀏覽量</span>
+                <a style="color: #2196F3;">@Model.TotalViewCount</a>
+            </div>
+
+            <div class="card shadow-none m-T-12">
+                <table class="fixTable">
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>來源網址</th>
+                            <th>目標網址</th>
+                            <th>創建者</th>
+                            <th>
+                                @if (Model.OrderBy.SortColumn == SortColumn.AddTime)
+                                {
+                                    <text>進入時間  </text>
+
+                                    if (Model.OrderBy.SortDesc == SortDesc.Desc)
+                                    {
+                                        <a href="@OrderByAscUrl"><i class="cc cc-chevron-down"></i></a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@OrderByDescUrl"><i class="cc cc-chevron-up"></i></a>
+                                    }
+                                }
+                                else
+                                {
+                                    <a href="@OrdreBySortColumnAddTime">進入時間</a>
+                                }
+                            </th>
+                            <th>
+                                @if (Model.OrderBy.SortColumn == SortColumn.StaySeconds)
+                                {
+                                    <text>停留秒數  </text>
+
+                                    if (Model.OrderBy.SortDesc == SortDesc.Desc)
+                                    {
+                                        <a href="@OrderByAscUrl"><i class="cc cc-chevron-down"></i></a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@OrderByDescUrl"><i class="cc cc-chevron-up"></i></a>
+                                    }
+                                }
+                                else
+                                {
+                                    <a href="@OrdreBySortColumnStaySeconds">停留秒數</a>
+                                }
+                            </th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                         @for (int i = 0, len = Model.LogSessionList.Count(); i < len; ++i)
+                         {
+                             AnalysisPageViewSessionViewModel item = Model.LogSessionList.ElementAt(i);
+                                <tr>
+                                    <td class="sort">@pagination.GetItemIndex(i)</td>
+                                    <td class="text-L">
+
+                                        <div class="hover-show">
+                                            @if (!string.IsNullOrEmpty(item.RefererUrl))
+                                            {
+                                                string refAnalysisUrl = Url.Action("PageAnalysisDetails", "Analysis", new { PageID = item.RefererPageNo, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType=Model.RangeType });
+                                                <a class="btn-grey-darken-4-o transparent p-none hide" href="@item.RefererUrl" target="_blank"><i class="cc cc-laptop"></i></a>
+                                                <a href="@refAnalysisUrl">
+                                                    @(string.IsNullOrEmpty(item.RefererTitle) ? item.RefererUrl : item.RefererTitle)
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-L">
+
+                                        @{
+                                            string pageUrl = item.Url;
+                                            string pageAnalysisUrl = Url.Action("PageAnalysisDetails", "Analysis", new { PageID = item.No, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+                                        }
+                                        <a class="btn-grey-darken-4-o transparent p-none hide" href="@pageUrl" target="_blank">
+                                            <i class="cc cc-laptop"></i>
+                                        </a>
+                                        <a href="@pageAnalysisUrl">
+                                            @item.Title
+                                        </a>
+                                    </td>
+                                    <td>@item.PageCreator</td>
+                                    <td class="time">@item.LogDate</td>
+                                    <td>@item.StaySeconds</td>
+                                    <td>@item.IP</td>
+                                </tr>
+                            }
+                        
+                    </tbody>
+                </table>
+                <div class="pagination text-C">
+                    @Html.Action("Pager", "Common", pagination)
+                </div>
+            </div>
+        </div>
+    
+
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+<script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+
+        $("input[name=kind]").bind("click", function () {
+            SetQuickDateRangeSelect($(this).val());
+        });
+    });
+    //function setSelectedDateRange(startdate, enddate)
+    //{
+    //    var selectedDate =startdate ;
+    //    if(startdate.split("/")[0] == enddate.split("/")[0])
+    //        selectedDate +=  " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+    //    else
+    //        selectedDate +=  " - " + enddate;
+    //    $("#SearchStartDate").val(startdate);
+    //    $("#SearchEndDate").val(enddate);
+    //    $("#spDateRange").html(selectedDate);
+    //    $('#choiceDateRange').hide();
+    //    $("#searchForm").submit();
+    //}
+    
+    function setSelectedDateRange(startdate, enddate, selectCbxValue)
+    {
+        var selectedDate =startdate ;
+        if(startdate.split("/")[0] == enddate.split("/")[0])
+            selectedDate +=  " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+        else
+            selectedDate +=  " - " + enddate;
+
+        $("#SearchStartDate").val(startdate);
+        $("#SearchEndDate").val(enddate);
+        $("#RangeType").val(selectCbxValue);
+        $("#spDateRange").html(selectedDate);
+        $('#choiceDateRange').hide();
+       
+        var checkStartDateResult = Component.parseDate($("#SearchStartDate").val());
+        var checkEndDateResult = Component.parseDate($("#SearchEndDate").val());
+        if (checkStartDateResult == null) {
+            Component.alert('開始日期格式錯誤。');
+            return;
+        }
+        if (checkEndDateResult == null) {
+            Component.alert('結束日期格式錯誤。');
+            return;
+
+        }
+        $("#searchForm").submit();
+    }
+    var maxShowLength = 25;
+    function setSelectedManagers(selectMembers, selectMemberNames, selectMemberCount)
+    {
+        if (selectMemberNames.length > maxShowLength)
+            selectMemberNames = selectMemberNames.substring(0, maxShowLength) + "...";
+        $("#aSelectMemberNames").html(selectMemberNames + "...(" + selectMemberCount.toString() + ")");
+        $("#SelectMembers").val(selectMembers);
+        $("#allPage").hide();
+        $("#searchForm").submit();
+    }
+    function setSelectedManagersNames( selectMemberNames, selectMemberCount)
+    {
+        if (selectMemberNames.length > maxShowLength)
+            selectMemberNames = selectMemberNames.substring(0, maxShowLength) + "...";
+        $("#aSelectMemberNames").html(selectMemberNames + "...(" + selectMemberCount.toString() + ")");
+    }
+    
+</script>

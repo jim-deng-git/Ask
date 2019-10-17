@@ -1,0 +1,721 @@
+﻿@using WorkV3.Models
+@model StoreModels
+@{
+    ViewBag.Title = "產品編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    var siteQuery = new { SiteID = ViewBag.SiteID, CustomFolder = ViewBag.CustomFolder };
+    IEnumerable<WorkV3.Models.ShippingToStoreModel> shippingSelectList = ViewBag.ShippingToStore as IEnumerable<WorkV3.Models.ShippingToStoreModel>;
+    IEnumerable<WorkV3.Models.ShippingToSiteModel> ShippingToSiteItems = ViewBag.ShippingToSite as IEnumerable<WorkV3.Models.ShippingToSiteModel>;
+}
+@section HArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.JWPlayer()
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+}
+@section FArea{
+    <script type="text/javascript" src="~/Script/workV3/check.js"></script>
+    <script type="text/javascript">
+        Component.singleImageUpload('#fSquareLogoComputer', '@(Href("~/"))', '@uploadUrl', true);
+        Component.singleImageUpload('#fRectangleLogoComputer', '@(Href("~/"))', '@uploadUrl', true)
+        Component.singleImageUpload('#fLogoMobile', '@(Href("~/"))', '@uploadUrl', true)
+        Component.singleImageUpload('#fMainVisionComputer', '@(Href("~/"))', '@uploadUrl', true)
+        Component.singleImageUpload('#fMainVisionMobile', '@(Href("~/"))', '@uploadUrl', true)
+        Component.radioList('div[data-radioGroup]');
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            $('.flexdatalist').flexdatalist({
+                 minLength: 0,
+                 valueProperty: '*',
+                 selectionRequired: true,
+                 visibleProperties: ["name","capital","continent"],
+                 searchIn: 'name',
+                 data: 'http://demo.kidtech.com.tw/demo/CCWorkV3/script/forms/countries.json'
+            });
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function(e){
+                e.stopPropagation();
+            });
+
+            $(".openEdit-m").on('click', function (e) {
+                e.preventDefault();
+                window.parent.$.colorbox({
+                    href: $(this).attr('href'),
+                    width: function() {
+                        var NW = "600";
+                        if ($.isNumeric($(this).data("width"))) {
+                            NW = $(this).data("width");
+                        }
+                        //console.log("NW:" + NW);
+                        return NW;
+                    },
+                    height: "95%",
+                    right: "20",
+                    iframe: true,
+                    transition: false,
+                    speed: 0,
+                    fadeOut: 100,
+                    onClosed: function() {
+                      var formBox = window.parent.$("#leftEditBox");
+
+                      if (formBox.length) {
+                        if (formBox.hasClass('active')) {
+                          formBox.fadeOut(300).removeClass('active');
+                        }
+                      }
+                    }
+                });
+            });
+            $('.openEdit-c').colorbox({
+                width: function() {
+                    var NW = "430";
+                    if ($.isNumeric($(this).data("width"))) {
+                        NW = $(this).data("width");
+                    }
+                    //console.log("NW:" + NW);
+                    return NW;
+                },
+                height: function() {
+                    var NH = "300";
+                    if ($.isNumeric($(this).data("height"))) {
+                        NH = $(this).data("height");
+                    }
+                    //console.log("NH:" + NH);
+                    return NH;
+                },
+                transition: false,
+                maxWidth: "85%",
+                maxHeight: "85%",
+                opacity: 0,
+                iframe: true,
+                // speed: 0,
+                fadeOut: 100
+            });
+
+            $("input[name='MessageMode']").on('change', function() {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "MessageMode0":
+                        $("#messageModeSetting").slideDown();
+                        break;
+
+                    default:
+                        $("#messageModeSetting").slideUp();
+                }
+            });
+
+            // control bar 強迫停權
+            $('input[id=IsEnabled]').on('change', function(){
+                if(this.checked) {
+                    $('#IsEnabledNote').fadeIn();
+                } else {
+                    $('#IsEnabledNote').fadeOut();
+                }
+            }).change();
+
+            // 提醒填寫公司名
+            $('.alert-company').on('click', function() {
+                parent.window.swal({
+                    // title: 'Are you sure?',
+                    text: '請先填寫公司中英文名。',
+                    type: 'warning',
+                    showCancelButton: true,
+                    // confirmButtonColor: '#3085d6',
+                    // cancelButtonColor: '#d33',
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                });
+            });
+
+        });
+
+        // $('.open-img').each(function(){
+        //     $(this).colorbox({
+        //         transition: "fade",
+        //         opacity: 0.5,
+        //         maxWidth: "85%",
+        //         height: "90%",
+        //         // scrolling: false,
+        //         html: '<div><img style="width:1000px;" src="' + $(this).attr('href') + '" /></div>'
+        //     });
+        // })
+        $("#btnSave").click(function () {
+
+            var form = $('#editForm');
+            if (!form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                return false;
+            }
+            $()
+            form.submit();
+        });
+    @if (ViewBag.ExitPage != null)
+        {
+            <text>
+            Component.alert('商店已儲存', function () {
+                location='@Url.Action("List", new { SiteID= ViewBag.SiteID})';
+            });
+            </text>
+        }
+    </script>
+}
+<script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="fixTable border-B">
+            <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;">
+                <i class="cc cc-arrow-left"></i>
+            </a>
+            商店設定
+            <div class="float-R">
+                <div class="btn-mini p-T-none p-B-none transparent">
+                    <span class="font-grey">建立時間：@(Model != null ? (Model.CreateTime.HasValue ? Model.CreateTime.Value.ToString("yyyy/MM/dd hh:mm") : DateTime.Now.ToString("yyyy/MM/dd hh:mm")) : DateTime.Now.ToString("yyyy/MM/dd hh:mm"))</span>
+                </div>
+                <!-- <div class="btn-mini p-none transparent">
+                    <a class="btn-grey-darken-4-o transparent square btn-message" href="">
+                        <i class="cc cc-comment-o"></i>
+                        <span class="message">5</span>
+                    </a>
+                    <span>1則未讀訊息</span>
+                </div> -->
+            </div>
+        </div>
+        <form method="post" action="@Url.Action("Save", new { ID=Model.ID, SiteID=ViewBag.SiteID})" id="editForm" enctype="multipart/form-data">
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="col-2">
+                            <div class="input-field inline full">
+                                <input type="text" placeholder="中文店名(品牌名稱)" name="Name" id="Name" value="@Model.Name" class="validate[required]">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="input-field inline full">
+                                <input type="text" placeholder="英文店名(品牌名稱)" name="NameEn" id="NameEn" value="@Model.NameEn" class="validate[required]">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">商店編碼</div>
+                        <div class="input-field inline full">
+                            <div class="input-field inline">
+                                <input type="text" placeholder="請輸入英數代碼" name="SN" id="SN" value="@Model.SN" class="validate[required]">
+                                <a class="tooltip" title="商店編碼限 20半形英數代碼，只有在商店新增時可修改，並且不可與其他商店相同編號。"><i class="cc cc-attention"></i></a>
+                            </div>
+
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">公司資訊</div>
+                        <div class="input-field inline full">
+                            <div class="col-1">
+                                <div class="col-2">
+                                    <div class="title inline">公司中文名</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyName" id="CompanyName" value="@Model.CompanyName">
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="title inline">公司英文名</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyNameEn" id="CompanyNameEn" value="@Model.CompanyNameEn">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="col-2">
+                                    <div class="title inline">統一編號</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyNum" id="CompanyNum" value="@Model.CompanyNum">
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="title inline">負責人</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyPerson" id="CompanyPerson" value="@Model.CompanyPerson">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="col-2">
+                                    <div class="title inline">客服專線</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyPhone" id="CompanyPhone" value="@Model.CompanyPhone">
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="title inline">聯繫Email</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyEmail" id="CompanyEmail" value="@Model.CompanyEmail" class="validate[custom[email]]">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="col-1">
+                                    <div class="title inline">聯繫地址</div>
+                                    <div class="input-field inline full">
+                                        <input type="text" name="CompanyAddress" id="CompanyAddress" value="@Model.CompanyAddress">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1 m-T-2">
+                                <div class="col-1 multiple">
+                                    <div class="title">收款帳戶</div>
+                                    <div class="constant">
+                                        <div class="input-field">
+                                            @{
+                                                var Banks = WorkV3.Areas.Backend.Models.DataAccess.BankDAO.GetBanks().Where(m => string.IsNullOrWhiteSpace(m.ParentID));
+                                                var Branch = WorkV3.Areas.Backend.Models.DataAccess.BankDAO.GetBanks().Where(m => !string.IsNullOrWhiteSpace(m.ParentID));
+                                            }
+                                            @if (Banks != null && Banks.Count() > 0)
+                                            {
+                                                <select name="BankID" id="BankID">
+                                                    <option value="" disbled>選擇銀行</option>
+                                                    @foreach (var bank in Banks)
+                                                    {
+                                                        <option value="@bank.ID" @(bank.ID == Model.BankID ? "selected" : string.Empty)>@bank.Name @bank.ID</option>
+                                                    }
+                                                </select>
+                                            }
+                                        </div>
+                                        <div class="input-field">
+                                            @if (Branch != null && Branch.Count() > 0)
+                                            {
+                                                <select name="BankBranchID" id="BankBranchID">
+                                                    <option value="" disbled>選擇分行</option>
+                                                    @foreach (var branch in Branch)
+                                                    {
+                                                        <option value="@branch.ID" @(branch.ID == Model.BankBranchID ? "selected" : string.Empty)>@branch.Name @branch.ID</option>
+                                                    }
+                                                </select>
+                                            }
+                                        </div>
+                                        <div class="input-field">
+                                            <input type="text" name="BankAccount" id="BankAccount" placeholder="輸入帳號" value="@Model.BankAccount">
+                                        </div>
+                                        <div class="input-field">
+                                            <input type="text" name="BankAccountName" id="BankAccountName" placeholder="帳戶名稱" value="@Model.BankAccountName">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="col-1">
+                                    <div class="title inline">附註</div>
+                                    <div class="input-field inline full">
+                                        <textarea name="Remark" id="Remark" cols="30" rows="3">@Model.Remark</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                @*<li>
+                        <div class="col-1">
+                            <div class="title inline">商店類型</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input type="checkbox" id="storeType1">
+                                    <label for="storeType1">類型A</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="storeType2">
+                                    <label for="storeType2">類型B</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="storeType3">
+                                    <label for="storeType3">類型C</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="storeType4">
+                                    <label for="storeType4">類型D</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>*@
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">商店LOGO</div>
+                        <div class="input-field inline full">
+                            <div class="col-3">
+                                <div class="title">電腦版-方形LOGO</div>
+                                <div class="input-field m-T-none" data-visual="square">
+                                    <input type="file" name="fSquareLogoComputer" id="fSquareLogoComputer">
+                                    <input type="hidden" id="SquareLogoComputer" name="SquareLogoComputer" value='@Model.SquareLogoComputer' />
+                                    <input type="hidden" id="fSquareLogoComputerBase64" name="fSquareLogoComputerBase64" />
+                                    <input type="hidden" id="fSquareLogoComputerBase64_Resize" name="fSquareLogoComputerBase64_Resize" />
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>適用於正方形顯示的LOGO <br />建議尺寸：128 x 128 px</div>
+                                </div>
+                            </div>
+                            <div class="col-3-partner">
+                                <div class="title">電腦版-長形LOGO</div>
+                                <div class="input-field m-T-none">
+                                    <input type="file" name="fRectangleLogoComputer" id="fRectangleLogoComputer">
+                                    <input type="hidden" id="RectangleLogoComputer" name="RectangleLogoComputer" value='@Model.RectangleLogoComputer' />
+                                    <input type="hidden" id="fRectangleLogoComputerBase64" name="fRectangleLogoComputerBase64" />
+                                    <input type="hidden" id="fRectangleLogoComputerBase64_Resize" name="fRectangleLogoComputerBase64_Resize" />
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>適用於扁長顯示的LOGO <br />建議尺寸：250 x 100px 以內 <br />最佳尺寸：220 x 80px</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-field inline full">
+                            <div class="col-2">
+                                <div class="title">手機版LOGO</div>
+                                <div class="input-field m-T-none">
+                                    <input type="file" name="fLogoMobile" id="fLogoMobile">
+                                    <input type="hidden" id="LogoMobile" name="LogoMobile" value='@Model.LogoMobile' />
+                                    <input type="hidden" id="fLogoMobileBase64" name="fLogoMobileBase64" />
+                                    <input type="hidden" id="fLogoMobileBase64_Resize" name="fLogoMobileBase64_Resize" />
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>適用於手機顯示的LOGO <br />建議尺寸：250 x 100px 以內 <br />最佳尺寸：220 x 80px</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">商店主視覺</div>
+                        <div class="input-field inline full">
+                            <div class="col-3-partner">
+                                <div class="title">電腦版</div>
+                                <div class="input-field m-T-none">
+                                    <input type="file" name="fMainVisionComputer" id="fMainVisionComputer">
+                                    <input type="hidden" id="MainVisionComputer" name="MainVisionComputer" value='@Model.MainVisionComputer' />
+                                    <input type="hidden" id="fMainVisionComputerBase64" name="fMainVisionComputerBase64" />
+                                    <input type="hidden" id="fMainVisionComputerBase64_Resize" name="fMainVisionComputerBase64_Resize" />
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>建議尺寸：1920 x 930 px (滿版)</div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="title">手機版</div>
+                                <div class="input-field m-T-none" data-visual="square">
+                                    <input type="file" name="fMainVisionMobile" id="fMainVisionMobile">
+                                    <input type="hidden" id="MainVisionMobile" name="MainVisionMobile" value='@Model.MainVisionMobile' />
+                                    <input type="hidden" id="fMainVisionMobileBase64" name="fMainVisionMobileBase64" />
+                                    <input type="hidden" id="fMainVisionMobileBase64_Resize" name="fMainVisionMobileBase64_Resize" />
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>建議尺寸：640 x 640 px</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">品牌頁樣式</div>
+                        <div class="radio-box inline full" data-radioGroup="StyleMode">
+                            <div class="col-5 m-B-4">
+                                <input class="with-gap" name="StyleMode" type="radio" id="StyleMode1" value="1">
+                                <label for="StyleMode1">
+                                    穩重內斂
+                                    <div><a href="~/images/temp/mall-setting/page-style1-b.jpg" class="openCenterEdit-m"><img src="~/images/temp/mall-setting/page-style1.jpg" alt=""></a></div>
+                                </label>
+                            </div>
+                            <div class="col-5 m-B-4">
+                                <input class="with-gap" name="StyleMode" type="radio" id="StyleMode2" value="2">
+                                <label for="StyleMode2">
+                                    清新自然
+                                    <div><a href="~/images/temp/mall-setting/page-style2-b.jpg" class="openCenterEdit-m"><img src="~/images/temp/mall-setting/page-style2.jpg" alt=""></a></div>
+                                </label>
+                            </div>
+                            <div class="col-5 m-B-4">
+                                <input class="with-gap" name="StyleMode" type="radio" id="StyleMode3" value="3">
+                                <label for="StyleMode3">
+                                    陽光活潑
+                                    <div><a href="~/images/temp/mall-setting/page-style3-b.jpg" class="openCenterEdit-m"><img src="~/images/temp/mall-setting/page-style3.jpg" alt=""></a></div>
+                                </label>
+                            </div>
+                            <div class="col-5 m-B-4">
+                                <input class="with-gap" name="StyleMode" type="radio" id="StyleMode4" value="4">
+                                <label for="StyleMode4">
+                                    科技時尚
+                                    <div><a href="~/images/temp/mall-setting/page-style4-b.jpg" class="openCenterEdit-m"><img src="~/images/temp/mall-setting/page-style4.jpg" alt=""></a></div>
+                                </label>
+                            </div>
+                            <input type="hidden" id="StyleMode" name="StyleMode" value="@Model.StyleMode" />
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">精神標語</div>
+                        <div class="input-field inline full">
+                            <input type="text" name="Slogan" id="Slogan" value="@Model.Slogan">
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">品牌簡介</div>
+                        <div class="input-field inline full">
+                            <textarea id="Intro" name="Intro" cols="30" rows="5">@Model.Intro</textarea>
+                            <div class="alert transparent">
+                                <i class="cc cc-attention"></i>
+                                <div>若字數過多前台顯示可能會被截斷，建議不要超過 500 全形字，並以「預覽」功能查閱前台顯示狀況，以符合最適閱讀。</div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="col-2">
+                            <div class="title inline">品牌來自</div>
+                            <div class="input-field inline full">
+                                <input type='text'
+                                       placeholder='Write your country name'
+                                       class='flexdatalist'
+                                       data-data='countries.json'
+                                       data-search-in='name'
+                                       data-visible-properties='["name","capital","continent"]'
+                                       data-selection-required='true'
+                                       data-value-property='*'
+                                       data-min-length='0'
+                                       id='Country'
+                                       name='Country' value="@Model.Country">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">預設幣別</div>
+                            <div class="input-field inline full">
+                                <select name="" id="">
+                                    <option value="">請選擇幣別</option>
+                                    <option value="NTD">新台幣NTD</option>
+                                    <option value="HKD">港幣HKD</option>
+                                    <option value="CNY">人民幣CNY</option>
+                                    <option value="JPY">日幣JPY</option>
+                                    <option value="KRW">韓圓KRW</option>
+                                    <option value="USD">美金USD</option>
+                                    <option value="CAD">加幣CAD</option>
+                                    <option value="ERU">歐元EUR</option>
+                                    <option value="GBP">英鎊GBP</option>
+                                    <option value="AUD">澳幣AUD</option>
+                                    <option value="NZD">紐元NZD</option>
+                                    <option value="SGD">新幣SGD</option>
+                                    <option value="CHF">令吉MYR</option>
+                                    <option value="THB">泰銖THB</option>
+                                    <option value="PHP">披索PHP</option>
+                                    <option value="IDR">印尼盾IDR</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">預設運費</div>
+                        <div class="radio-box inline full">
+                            <div class="col-1">
+                                <div class="title inline col-3">國內運送</div>
+                                <div class="radio-box inline full col-3-partner">
+                                    @{
+                                        int shippingCount = 0;
+                                        if (ShippingToSiteItems != null && ShippingToSiteItems.Count() > 0)
+                                        {
+                                            foreach (WorkV3.Models.ShippingToSiteModel shippingToSiteItem in ShippingToSiteItems.Where(m => m.ShippingRegion == 0))
+                                            {
+                                                string isChecked = "", feeValue = "0";
+
+                                                if (shippingSelectList != null)
+                                                {
+                                                    var selectItems = shippingSelectList.Where(m => m.ShippingCode == shippingToSiteItem.ShippingCode);
+
+                                                    if (selectItems != null && selectItems.Count() > 0)
+                                                    {
+                                                        if (selectItems.First().IsSupport)
+                                                        {
+                                                            isChecked = "checked";
+                                                            feeValue = selectItems.First().Fee.ToString();
+                                                        }
+                                                    }
+                                                }
+                                                <div class="col-1">
+                                                    <input name="Shippings[@shippingCount].IsEnabled" type="checkbox" id="ShippingCode_@shippingToSiteItem.ShippingCode" value="True" @isChecked />
+                                                    <label for="ShippingCode_@(shippingToSiteItem.ShippingCode)" class="m-R-4">@(shippingToSiteItem.Title)</label>
+                                                    <div class="input-field inline">
+                                                        NT$
+                                                        <div class="input-field inline small">
+                                                            <input id="Shippings[@shippingCount].Fee" name="Shippings[@shippingCount].Fee" type="text" value="@(feeValue)">
+                                                            <input id="Shippings[@shippingCount].Code" name="Shippings[@shippingCount].Code" type="hidden" value="@(shippingToSiteItem.ShippingCode)">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                shippingCount++;
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="title inline col-3">國外運送</div>
+                                <div class="radio-box inline full col-3-partner">
+
+                                    @{
+                                        if (ShippingToSiteItems != null && ShippingToSiteItems.Count() > 0)
+                                        {
+                                            foreach (WorkV3.Models.ShippingToSiteModel shippingToSiteItem in ShippingToSiteItems.Where(m => m.ShippingRegion == 1))
+                                            {
+                                                string isChecked = "", feeValue = "0";
+
+                                                if (shippingSelectList != null)
+                                                {
+                                                    var selectItems = shippingSelectList.Where(m => m.ShippingCode == shippingToSiteItem.ShippingCode);
+
+                                                    if (selectItems != null && selectItems.Count() > 0)
+                                                    {
+                                                        if (selectItems.First().IsSupport)
+                                                        {
+                                                            isChecked = "checked";
+                                                            feeValue = selectItems.First().Fee.ToString();
+                                                        }
+                                                    }
+                                                }
+                                                <div class="col-1">
+                                                    <input name="Shippings[@shippingCount].IsEnabled" type="checkbox" id="ShippingCode_@shippingToSiteItem.ShippingCode" value="True" @isChecked />
+                                                    <label for="ShippingCode_@(shippingToSiteItem.ShippingCode)" class="m-R-4">@(shippingToSiteItem.Title)</label>
+                                                    <div class="input-field inline">
+                                                        NT$
+                                                        <div class="input-field inline small">
+                                                            <input id="Shippings[@shippingCount].Fee" name="Shippings[@shippingCount].Fee" type="text" value="@(feeValue)">
+                                                            <input id="Shippings[@shippingCount].Code" name="Shippings[@shippingCount].Code" type="hidden" value="@(shippingToSiteItem.ShippingCode)">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                shippingCount++;
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>本店在前台只提供此處有勾選的運送方式。</div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">開發票方式</div>
+                        <div class="radio-box inline full" data-radioGroup="Reciept">
+                            <div>
+                                <input class="with-gap" name="Reciept" type="radio" id="Reciept1" value="1" />
+                                <label for="Reciept1">免開發票</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="Reciept" type="radio" id="Reciept2" value="2" />
+                                <label for="Reciept2">自開發票</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="Reciept" type="radio" id="Reciept3" value="3" />
+                                <label for="Reciept3">商城統一代開發票 (商店可對開月結發票)</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="Reciept" type="radio" id="Reciept4" value="4" />
+                                <label for="Reciept4">商城統一代開發票 (商店不提供任何發票)</label>
+                            </div>
+                            <input type="hidden" id="Reciept" name="Reciept" value="@Model.Reciept" />
+                        </div>
+
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>免開發票 或 自開發票 都是商店自行負責發票事宜。如果是商城統一代開發票，且商店可對開月結發票，每代開一張發票，商城額外收取代開費用 NT$10；若商店無法提供任何發票，每代開一張發票，商城額外取代開費用 20%。</div>
+                        </div>
+
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>月營業額不足時，商店可「免開發票」，否則請選擇「自開發票」，由商店自行負責開立發票事宜。</div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">快速回訊</div>
+                        <div class="radio-box inline full" data-radioGroup="MessageMode">
+                            <div>
+                                <input class="with-gap" name="MessageMode" type="radio" id="MessageMode0" value="1">
+                                <label for="MessageMode0" class="">使用快速回訊功能</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="MessageMode" type="radio" id="MessageMode1" value="2" />
+                                <label for="MessageMode1" class="">一律手動回訊，不使用快速回訊功能</label>
+                            </div>
+                            <div class="col-1" id="messageModeSetting">
+                                <textarea name="Message" id="Message" cols="30" rows="5">@Model.Message</textarea>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>當會員於「聯繫客服」中留下諮詢訊息時，系統會自動於第一時間先協助您回應以上訊息，您可以在<a href="" target="_blank" class="font-blue">訂單管理</a>中接續回應。</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="MessageMode" name="MessageMode" value="@Model.MessageMode" />
+                        </div>
+                    </div>
+                </li>
+
+
+
+
+            </ul>
+            <div class="control-bar">
+                <a class="btn-grey float-L openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Share/BackEnd/seoEdit.aspx"><i class="cc cc-search-text"></i>SEO設定</a>
+                <a class="btn-grey float-L" href="javascript:;"><i class="cc cc-cellphone-link"></i>預覽</a>
+                <div class="bar-item float-L">
+                    <div>
+                        <input type="checkbox" id="IsRecommand" name="IsRecommand" value="true" @(Model != null ? (Model.IsRecommand ? "checked" : "") : "")>
+                        <label for="IsRecommand">推薦商店</label>
+                        <div class="input-field inline long" id="recommend-note">
+                            <input type="text" placeholder="請輸入備註" id="RecommandNote" name="RecommandNote" value="@Model.RecommandNote">
+                        </div>
+                    </div>
+                </div>
+                <div class="bar-item float-L">
+                    <div>
+                        <input type="checkbox" id="IsEnabled" name="IsEnabled" value="" @(Model != null ? (Model.IsEnabled ? "" : "checked") : "")>
+                        <label for="IsEnabled">強迫停權</label>
+                    </div>
+                </div>
+                @*<a class="btn-cancel" href="javascript:" onclick="parent.window.closeCenterEdit();"><i class="cc cc-close"></i>取消</a>*@
+                <a class="btn-bulid" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+            </div>
+        </form>
+    </div>
+</div>
+

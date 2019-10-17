@@ -1,0 +1,99 @@
+﻿@{
+    ViewBag.Title = "批次處理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    var MemberShipVerifyType = (MemberShipVerifyType)ViewBag.MemberShipVerifyType;
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">是否批次變更會員狀態？</div>
+        </div>
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">會員狀態<span class="required">*</span></div>
+                    <div class="radio-box inline full">
+                        <div>
+                            <input class="with-gap" type="radio" value="true" name="Status" id="Status1">
+                            <label for="Status1">正常</label>
+                        </div>
+                        <div>
+                            <input class="with-gap" type="radio" value="false" name="Status" id="Status2">
+                            <label for="Status2">停權</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            @if (MemberShipVerifyType == MemberShipVerifyType.Email)
+            {
+            <li>
+                <div class="col-1">
+                    <div class="title">驗證狀態？<span class="required">*</span></div>
+                    <div class="radio-box inline full">
+                        <div>
+                            <input class="with-gap" type="radio" value="true" name="VerifyStatus" id="VerifyStatus1">
+                            <label for="VerifyStatus1">已驗證</label>
+                        </div>
+                        <div>
+                            <input class="with-gap" type="radio" value="false" name="VerifyStatus" id="VerifyStatus2">
+                            <label for="VerifyStatus2">尚未驗證</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            }
+            <li>
+                <div class="col-1">
+                    <div class="title">備註/停權原因</div>
+                    <div class="input-field">
+                        <input id="StatusNote" type="text" value="" name="StatusNote">
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-grey prev" href="javascript:parent.$.colorbox.close();"><i class="cc cc-arrow-left"></i>上一步，已選了<span id="spanCount"></span>筆</a>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:save();"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</div>
+@section FArea {    
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var selectIds = parent.getSelectIds();    
+        $('#spanCount').html(selectIds.length);
+
+        function save() {
+            var VerifyStatus = $("input[name=VerifyStatus]:checked").val();
+            var MemberStatus = $("input[name=Status]:checked").val();
+            var StatusNote = $("#StatusNote").val();
+            if (VerifyStatus == null &&
+                MemberStatus == null)
+            {
+                Component.alert('請至少選擇一項變更設定');
+                return;
+            }
+        //    var flags = $('#txtFlags').val();
+        //    if (!flags) {
+        //        Component.alert('請至少填寫一項標記');
+        //        return;
+        //    }
+
+        //    flags = $.unique(flags.split(';'));
+            $.post('@Url.Action("ModifyStatus", new { siteId = siteId })', { 'MemberShipIds[]': selectIds, 'VerifyStatus': VerifyStatus, 'MemberStatus': MemberStatus, 'StatusNote': StatusNote }, function (data) {
+                if (data == null || data == "") {
+                    Component.alert('批次處理回存失敗');
+                    return;
+                }
+                else {
+                    Component.alert('批次處理作業成功，共變更'+data+'筆資料。');
+                    parent.refreshList();
+                    parent.$.colorbox.close();
+                }
+            });
+        }
+    </script>
+}

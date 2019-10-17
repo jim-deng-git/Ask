@@ -1,0 +1,172 @@
+﻿@model MemberModels
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            $('#btnSave').click(function () {
+
+                if ('@ViewBag.ID' == "0" && !$('#password').val()) {
+                    Component.alert('請輸入密碼');
+                    return false;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("checkPasswordSimilarity", "Manager")',
+                    data: {
+                        memberId: '@Model.Id',
+                        password: $('#password').val(),
+                    },
+                    success: function (response) {
+                        if (response == 0) {
+                            $('#hidpassword').val($('#password').val());
+                            $("#editForm").submit();
+                        } else {
+                            Component.alert('這個密碼與原先的太像，請再次修改');
+                        }
+                    },
+                });
+
+            });
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            @if (ViewBag.Exit as bool? == true)
+            {
+                    <text>
+            Component.alert('資料已儲存', function () {
+                try {
+                    parent.refreshList();
+                } catch (e) {
+
+                }
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+
+                 parent.ResetMemberInfo($("#Name").val(), $("#Email").val());
+            });
+
+                </text>
+            }
+        });
+
+
+    </script>
+}
+
+<form id="editForm" method="post" action="@Url.Action("EditMemberInfo", "Home")">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">管理者新增/編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-2">
+
+                                <div class="title">帳號</div>
+                                <div class="input-field full no-label">
+                                    <span>@Model.LoginID</span>
+                                    @Html.TextBoxFor(x => x.LoginID, new { style = "display: none;" })
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>
+                                        @if (Model.IsSupremeAuthority && !Model.IsChangedPassword)
+                                        {
+                                            <text>
+最高管理員初次登入需修改密碼
+                                            </text>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li>
+                            <div class="col-3">
+                                <div class="title">姓名</div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBoxFor(x => x.Name)
+                                </div>
+                            </div>
+
+                            <div class="col-3">
+                                <div class="title">密碼</div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBox("password", "", new { id = "password", @class = "", placeholder = "如不更新請保持空白", type = "password" })
+                                    @Html.Hidden("hidpassword", "", new { id = "hidpassword" })
+                                </div>
+                            </div>
+
+                        </li>
+
+                        <li>
+                            <div class="col-3">
+                                <div class="title">E-Mail</div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBoxFor(x => x.Email)
+                                </div>
+                            </div>
+                        </li>
+
+                        <li style="display:none;">
+                            <div class="col-1">
+                                <div class="title inline">權限群組</div>
+                                <div class="radio-box inline full">
+                                    @foreach (var item in ViewBag.group as List<GroupModels>)
+                                    {
+                                        <div class="">
+                                            @Html.RadioButtonFor(x => x.GroupId, item.Id, new { @id = item.Id })
+                                            <label for="@item.Id">@item.Name</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="control-bar">
+                        <div class="bar-item float-L" style="display:none;">
+
+                            <div class="">
+                                @Html.RadioButtonFor(x => x.MStatus, "0", new { @id = "MStatus_0" })
+                                <label for="MStatus_0">正常</label>
+                            </div>
+                        </div>
+                        <div class="bar-item float-L" style="display:none;">
+                            <div class="">
+                                @Html.RadioButtonFor(x => x.MStatus, "1", new { @id = "MStatus_1" })
+                                <label for="MStatus_1">停權</label>
+                            </div>
+                        </div>
+                        @if (Model.IsChangedPassword)
+                        {
+                            <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        }
+                        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+

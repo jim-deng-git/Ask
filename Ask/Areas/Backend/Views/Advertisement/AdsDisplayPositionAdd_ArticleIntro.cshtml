@@ -1,0 +1,175 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model AdsPositionSetViewModel
+@{
+    //ArticleIntro = 單篇(single)
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@section FArea{
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript">
+    var areaIsSubmit = false;
+    $(function($) {
+        //"列表位置"中的選項
+        $('li.overlay_setting').hide();
+        $('#Overlay').on('click', function () {
+            $(this).change(function () {
+                if ($(this).prop("checked")) {
+                    $('li.overlay_setting').show();
+                } else {
+                    $('li.overlay_setting').hide();
+                }
+            })
+        });
+
+        if ($('#Overlay:checked').length > 0) {
+            $('li.overlay_setting').show();
+        }
+        $('.already_have_ad label,.already_have_ad input').click(function(){
+        	return false
+        });
+        $("#Savebtn").click(function () {
+            checkOverlay();
+
+            if (areaIsSubmit)
+                return;
+            var form = $("#editForm");
+            if (form.validationEngine('validate')) {
+                areaIsSubmit = true;
+                form.submit();
+            }
+        });
+    });
+
+    function checkOverlay() {
+        if ($("input[name='ListOverlayType']:checked").length == 0 && $("#@DisplayAreaTypeArticleIntro.Overlay:checked").length > 0) {
+            return "* 請選擇蓋台選項";
+        }
+
+        if ($("#@(OverlayType.Chance):checked").length == 1) {
+            var v = $("#OverlayChance").val();
+            if (!v) {
+                return "* 請輸入機率";
+            }
+        } else if ($("#@(OverlayType.AfrerSec):checked").length == 1) {
+            var v = $("#OverlayRepeatSeconds").val();
+            if (!v) {
+                return "* 請輸入時間";
+            }
+        } else if ($("#@(OverlayType.AfterIdle):checked").length == 1) {
+            var v = $("#OverlayIdleSeconds").val();
+            if (!v) {
+                return "* 請輸入時間";
+            }
+        }
+    }
+    @if ((ViewBag.Exit as bool?) == true)
+    {
+        var msg = ViewBag.ResultMsg;
+        <text>
+        Component.alert('@msg', function () {
+        });
+        parent.refresh_area_set_index();
+    </text>
+    }
+</script>
+}
+
+<form id="editForm" method="post" action="@Url.Action("AdsDisplayPositionAdd","Advertisement")" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <ul class="forms">
+            <li>
+                <h1 class="title-admin-page bg-transparent">
+                    @ViewBag.Title
+                </h1>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">單頁位置<span class="required">*</span></div>
+                    <div class="radio-box inline ad_position">
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Top" type="checkbox" value="@DisplayAreaTypeArticleIntro.Top" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Top) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-top.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Top">上橫幅</label>
+                        </div>
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Bottom" type="checkbox" value="@DisplayAreaTypeArticleIntro.Bottom" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Bottom) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-bottom.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Bottom">下橫幅</label>
+                        </div>
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Right_1" type="checkbox" value="@DisplayAreaTypeArticleIntro.Right_1" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Right_1) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-right-1.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Right_1">右一橫幅</label>
+                        </div>
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Right_2" type="checkbox" value="@DisplayAreaTypeArticleIntro.Right_2" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Right_2) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-right-2.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Right_2">右二橫幅</label>
+                        </div>
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Right_3" type="checkbox" value="@DisplayAreaTypeArticleIntro.Right_3" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Right_3) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-right-3.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Right_3">右三橫幅</label>
+                        </div>
+                        <div class="m-b-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Right_4" type="checkbox" value="@DisplayAreaTypeArticleIntro.Right_4" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Right_4) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-right-4.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Right_4">右四橫幅</label>
+                        </div>
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeArticleIntro.Overlay" type="checkbox" value="@DisplayAreaTypeArticleIntro.Overlay" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeArticleIntro.Overlay) ? "checked" : "") />
+                            <img src="~/images/temp/single-setting/single-overlay.jpg" alt="">
+                            <label for="@DisplayAreaTypeArticleIntro.Overlay">蓋台廣告</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="overlay_setting border-T m-T-4">
+                <div class="col-1">
+                    <div class="title m-T-4">蓋台設定：</div>
+                    <div>
+                        @Html.RadioButtonFor(m => m.ListOverlayType, OverlayType.Chance, new { @Id = OverlayType.Chance, @Class = "with-gap validate[funcCall[checkOverlay]]" })
+                        <label for="@OverlayType.Chance">蓋台廣告出現機率為</label>
+                        <div class="input-field inline mini m-none no-label">
+                            @Html.TextBoxFor(m => m.ListOverlayChance, new { value = "20", id = "OverlayChance", @class = "m-none" })
+                        </div><span class="font-xs">%。</span>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div>
+                        @Html.RadioButtonFor(m => m.ListOverlayType, OverlayType.Once, new { @Id = OverlayType.Once, @Class = "with-gap validate[funcCall[checkOverlay]]" })
+                        <label for="@OverlayType.Once">只有第一次出現，除非清除瀏覽紀錄後，才會再次出現。</label>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div>
+                        @Html.RadioButtonFor(m => m.ListOverlayType, OverlayType.AfrerSec, new { @Id = OverlayType.AfrerSec, @Class = "with-gap validate[funcCall[checkOverlay]]" })
+                        <label for="@OverlayType.AfrerSec">第一次必出現，過了</label>
+                        <div class="input-field inline mini m-none no-label">
+                            @Html.TextBoxFor(m => m.ListOverlayRepeatSeconds, new { value = "20", id = "OverlayRepeatSeconds", @class = "m-none" })
+                        </div><span class="font-xs">分鐘後才會再次出現。</span>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div>
+                        @Html.RadioButtonFor(m => m.ListOverlayType, OverlayType.AfterIdle, new { @Id = OverlayType.AfterIdle, @Class = "with-gap validate[funcCall[checkOverlay]]" })
+                        <label for="@OverlayType.AfterIdle">在同一個頁面，閒置 </label>
+                        <div class="input-field inline mini m-none no-label">
+                            @Html.TextBoxFor(m => m.ListOverlayIdleSeconds, new { value = "20", id = "OverlayIdleSeconds", @class = "m-none" })
+                        </div><span class="font-xs">秒後才會出現蓋台廣告。</span>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="Savebtn" class="btn btn-bulid" href="javascript:"><i class="cc cc-check"></i>建立</a>
+            @Html.HiddenFor(m => m.AdvertisementId)
+            @Html.HiddenFor(m => m.SiteId)
+            @Html.HiddenFor(m => m.MenuId)
+            @Html.HiddenFor(m => m.DataType)
+        </div>
+    </div>
+</form>

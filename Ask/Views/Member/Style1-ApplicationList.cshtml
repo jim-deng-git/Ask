@@ -1,0 +1,227 @@
+﻿@using WorkV3.Common;
+@using WorkV3.Models.Repository
+@model WorkV3.Models.MemberShipModels
+@{
+    RecruitsRepository recruitRepo = new RecruitsRepository();
+    RecruitJobsRepository jobRepos = new RecruitJobsRepository();
+    RecruitPlaceRepository placeRepos = new RecruitPlaceRepository();
+    ChatRoomRepository chatRoomRep = new ChatRoomRepository();
+
+    var SiteSN = ViewBag.SiteSN;
+    string uploadUrl = ViewBag.UploadVPath;
+
+    DateTime now = DateTime.Now;
+    var Applications = Model.ApplicationList.Where(m => !m.IsOld);
+    var oldApplications = Model.ApplicationList.Where(m => m.IsOld);
+
+}
+
+<div class="mainPage card-member recruit" data-style="1">
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+    <div class="article-wrap">
+        <!-- 應徵 -->
+        <div class="article-list" id="list-item-recruit">
+            <div class="article-title filter-activity">
+                <!--利用data-target 去控制顯示-->
+                <a href="#applicated" data-target="applicated" class="active">已應徵工作<span>@Applications.Count()</span></a>
+                <a href="#historyWork" data-target="historyWork">歷史工作紀錄<span>@oldApplications.Count()</span></a>
+            </div>
+            <ul class="activity-content">
+                @if (Model.ApplicationList != null && Model.ApplicationList.Count() > 0)
+                {
+                    int i = 0;
+                    foreach (var item in Model.ApplicationList)
+                    {
+                        string liClass = (item.IsOld ? "class=\"historyWork\" style=\"display: none; \"" : "class=\"applicated\"");
+                        string image = recruitRepo.GetFirstImg(item.CustomIcon, item.Icon, item.RecruitID);
+
+                        <li @Html.Raw(liClass)>
+                            <a href="@Url.RouteUrl("FrontSitePage", new { SiteSN = SiteSN, PageSn = "RecruitSignUp", jobApplicationId = item.ID })">
+                                <div class="article-img" style="background-image: url('@(uploadUrl + image)');"></div>
+                                <div class="float-R pays">
+                                    <div class="pay-box">
+                                        <div>@EnumExt.Description(item.SalaryOption)</div>
+                                        <div class="money">@item.Salary.ToString("N0")</div>
+                                    </div>
+                                </div>
+                                <div class="article-list-title">@item.RecruitTitle @item.JobName</div>
+                                <div class="article-list-info">
+                                    <div class="d-flex">
+                                        <div class="inline-box-solve">
+                                            <div class="title inline">報到地點</div>
+                                            <div class="inline-partner font-base">
+                                                @{
+                                                    string address = string.Empty;
+                                                    if (item.CheckInPlace == 1)
+                                                    {
+                                                        var jobToPlaces = jobRepos.GetItemPlaces(item.RecruitJobID);
+                                                        foreach (var place in jobToPlaces)
+                                                        {
+                                                            address = placeRepos.GetFullAddress(place.Regions, place.Address);
+                                                            @:@place.Name @(!string.IsNullOrWhiteSpace(address) ? $"({address})" : "") <br />
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        address = placeRepos.GetFullAddress(item.PlaceRegions, item.PlaceAddress);
+                                                        @:@item.PlaceName @(!string.IsNullOrWhiteSpace(address) ? $"({address})" : "")<br />
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="inline-box-solve">
+                                            <div class="title inline">工作內容</div>
+                                            <div class="inline-partner font-base">@Html.Raw(item.JobContent)</div>
+                                        </div>
+                                    </div>
+                                    <div class="status">
+                                        @{ 
+                                            string checkStatusStr = EnumExt.Description(item.CheckStatus), checkStatusClass = string.Empty;
+                                            switch (item.CheckStatus)
+                                            {
+                                                case FormCheckStatus.待審核:
+                                                    checkStatusClass = "font-blue";
+                                                    break;
+                                                case FormCheckStatus.不通過:
+                                                    checkStatusClass = "font-red";
+                                                    break;
+                                                case FormCheckStatus.正取:
+                                                    checkStatusClass = "font-green";
+                                                    break;
+                                                case FormCheckStatus.備取:
+                                                    checkStatusClass = "font-green";
+                                                    break;
+                                                case FormCheckStatus.前台取消:
+                                                case FormCheckStatus.後台取消:
+                                                    checkStatusStr = "取消應徵";
+                                                    checkStatusClass = "font-grey";
+                                                    break;
+                                            }
+                                        }
+                                        <div class="@checkStatusClass">@checkStatusStr</div>
+                                    </div>
+                                </div>
+                            </a>
+                            <!-- 應徵成功才會出現聊天室按鈕 -->
+                            <!-- 歷史工作紀錄都會出現聊天室按鈕 -->
+                            @{ 
+                                bool showChat = item.CheckStatus == FormCheckStatus.正取 ? true : false;
+                                var GroupChatRoom = chatRoomRep.getChatRoomByModel(item.RecruitID, 2).First();
+                            }
+                            <div class="ChatBtn">
+
+                                <a href="javascript:" class="tooltip-info openEdit-m" id="SingleChat-@item.RecruitID-@i" title="線上客服">
+                                    <i class="cc cc-user-o cc-2x"></i>
+                                    @*<span class="number font-xxs">23</span>*@
+                                </a>
+
+                                @if (showChat)
+                                {
+                                    <a href="javascript:" class="tooltip-info openEdit-m" id="GroupChat-@item.RecruitID-@i" title="群組訊息">
+                                        <i class="cc cc-business-users cc-2x"></i>
+                                        @*<span class="number font-xxs">1</span>*@
+                                    </a>
+                                }
+
+                                <script src="~/Script/jquery.signalR-2.4.1.js"></script>
+                                <script src="~/Signalr/hubs"></script>
+                                <script>
+                                    var chat = $.connection.chatHub;
+                                    $.connection.hub.start();
+                                    $('#SingleChat-@item.RecruitID-@i').on('click', function () {
+                                        var formData = new FormData();
+                                        formData.append("MemberShipID", "@Member.Current.ID");
+                                        formData.append("RecruitID", "@item.RecruitID");
+                                        formData.append("SiteID", "@Model.SiteID");
+                                        $.ajax({
+                                            url: "@Url.Action("CheckChatRoom", "Chat")",
+                                            data: formData,
+                                            type: "POST",
+                                            dataType: 'json',
+                                            processData: false,
+                                            contentType: false,
+                                            async: false,
+                                            success: function (result) {
+                                                if (result[1] == 'isNewChat') {
+                                                    chat.server.newChatCreat(result[0], '@item.RecruitID', '@Member.Current.ID');
+                                                }
+                                                $('#SingleChat-@item.RecruitID-@i').attr('href', '@Html.Raw(Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Chat"}))' + '?RoomID=' + result[0]);
+                                            }
+                                        });
+                                    });
+
+                                    $('#GroupChat-@item.RecruitID-@i').on('click', function () {
+                                        $('#GroupChat-@item.RecruitID-@i').attr('href', '@Html.Raw(Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Chat"}))' + '?RoomID=' + '@GroupChatRoom.ID');
+                                    });
+                                </script>
+                            </div>
+                        </li>
+                        i++;
+                    }
+                }
+                else 
+                {
+                    <!-- 如果沒報名 -->
+                    <li class="none-recruit">您目前沒有應徵記錄，切換至「<a id="aLinkPush1" href="@Url.RouteUrl("FrontSitePage", new { SiteSN = SiteSN, PageSn = "Recruits" })">應徵</a>」列表看看吧。</li>
+                }
+            </ul>
+        </div>
+
+    </div>
+
+</div>
+
+<link href="~/css/vendor/tooltipster/tooltipster.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<script src="~/Script/tooltipster/tooltipster.bundle.js"></script>
+<script src="~/Script/stickyKit/sticky-kit.js"></script>
+<script src="~/Script/colorbox/jquery.colorbox.js"></script>
+
+<script>
+    $('.tooltip-info').tooltipster({
+        maxWidth: 250,
+    });
+    $('.filter-activity a').click(function () {
+        // alert($(this).data('target'));
+        var _filter_target = $(this).data('target');
+        $(this).addClass('active').siblings().removeClass('active');
+
+        var _content = $(this).parents('.filter-activity').siblings('.activity-content');
+
+        _content.find('li').stop().hide(100).addClass('hide_this');
+        _content.find('.' + _filter_target).stop().show().removeClass('hide_this');
+    });
+    $(".openEdit-m").on('click', function (e) {
+        e.preventDefault();
+        window.parent.$.colorbox({
+            href: $(this).attr('href'),
+            maxWidth: function () {
+                var NW = "600";
+                if ($.isNumeric($(this).data("width"))) {
+                    NW = $(this).data("width");
+                }
+                //console.log("NW:" + NW);
+                return NW;
+            },
+            width: "100%",
+            height: "95%",
+            right: "20",
+            iframe: true,
+            transition: false,
+            speed: 0,
+            fadeOut: 100,
+            onClosed: function () {
+                var formBox = window.parent.$("#leftEditBox");
+
+                if (formBox.length) {
+                    if (formBox.hasClass('active')) {
+                        formBox.fadeOut(300).removeClass('active');
+                    }
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,251 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model MemberAnalysisLogViewModel
+@{
+    bool SelectCustomLabel = true;
+    ViewBag.Title = "自訂標線";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@section HArea {
+    <title>自訂查詢時間</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+}
+@section FArea {
+}
+<div class="body-dropdown">
+    <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <ul class="forms">
+                    <li>
+                        <div class="input-field inline m-T-none">
+                            <input type='text' class="input-cal startAnalyticsDate" placeholder="開始時間" name="SearchStartDate" id="SearchStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                            <input type='hidden' placeholder="開始時間" name="InitStartDate" id="InitStartDate" value="">
+                        </div>
+                        <span style="display:inline">-</span>
+                        <div class="input-field inline m-T-none">
+                            <input type='text' class="input-cal endAnalyticsDate" placeholder="結束時間" name="SearchEndDate" id="SearchEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                            <input type='hidden' placeholder="結束時間" name="InitEndDate" id="InitEndDate" value="">
+                        </div>
+                        <div class="analyticsDatePicker"></div>
+                    </li>
+                </ul>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="radio-box inline m-T-none">
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="rdDateRange1" value="1" style="z-index:999" checked />
+                                <label for="kind1">兩週內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="rdDateRange2" value="2" style="z-index:999" />
+                                <label for="kind2">一個月內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="rdDateRange3" value="3" style="z-index:999" />
+                                <label for="kind3">三個月內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="rdDateRange4" value="4" style="z-index:999" />
+                                <label for="kind4">半年內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="rdDateRange5" value="5" style="z-index:999" />
+                                <label for="kind5">一年內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="rdDateRange6" value="6" />
+                                <label for="kind6">自訂</label>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="btn-cancel" href="javascript:" onclick="CancelSelectedDate();"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:" onclick="SetSelectedDate();"><i class="cc cc-check"></i>確定</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            @*<div class="groove groove-1">
+                <ul class="forms">
+                    <li>
+                        <div class="input-field inline m-T-none no-label">
+                            <input type="text" class="input-cal startAnalyticsDate" placeholder="開始時間">
+                        </div>
+                        <span>-</span>
+                        <div class="input-field inline m-T-none no-label">
+                            <input type="text" class="input-cal endAnalyticsDate" placeholder="結束時間">
+                        </div>
+                        <div class="analyticsDatePicker"><div class="datepicker" id="datepicker_301" style="display: block; position: relative; width: 0px; height: 0px;"><div class="datepickerBorderT"></div><div class="datepickerBorderB"></div><div class="datepickerBorderL"></div><div class="datepickerBorderR"></div><div class="datepickerBorderTL"></div><div class="datepickerBorderTR"></div><div class="datepickerBorderBL"></div><div class="datepickerBorderBR"></div><div class="datepickerContainer" style="width: 0px; height: 0px;"><table cellspacing="0" cellpadding="0"><tbody><tr><td class="datepickerBlock"><table cellspacing="0" cellpadding="0" class="datepickerViewDays datepickerFirstView"><thead><tr><th colspan="7"><a class="datepickerGoPrev" href="#"><span>◀</span></a><a class="datepickerMonth" href="#"><span>2018 / 02</span></a><a class="datepickerGoNext" href="#"><span>▶</span></a></th></tr><tr class="datepickerDoW"><th class="week-sun"><span>S</span></th><th><span>M</span></th><th><span>T</span></th><th><span>W</span></th><th><span>T</span></th><th><span>F</span></th><th class="week-sat"><span>S</span></th></tr></thead><tbody class="datepickerMonths"><tr><td colspan="2"><a href="#"><span>01</span></a></td><td colspan="2"><a href="#"><span>02</span></a></td><td colspan="2"><a href="#"><span>03</span></a></td><td colspan="1"><a href="#"><span>04</span></a></td></tr><tr><td colspan="2"><a href="#"><span>05</span></a></td><td colspan="2"><a href="#"><span>06</span></a></td><td colspan="2"><a href="#"><span>07</span></a></td><td colspan="1"><a href="#"><span>08</span></a></td></tr><tr><td colspan="2"><a href="#"><span>09</span></a></td><td colspan="2"><a href="#"><span>10</span></a></td><td colspan="2"><a href="#"><span>11</span></a></td><td colspan="1"><a href="#"><span>12</span></a></td></tr></tbody><tbody class="datepickerDays"><tr><td class="datepickerNotInMonth datepickerDisabled datepickerSunday"><a href="#"><span>28</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>29</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>30</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>31</span></a></td><td class=""><a href="#"><span>1</span></a></td><td class=""><a href="#"><span>2</span></a></td><td class="datepickerSaturday"><a href="#"><span>3</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>4</span></a></td><td class=""><a href="#"><span>5</span></a></td><td class=""><a href="#"><span>6</span></a></td><td class=""><a href="#"><span>7</span></a></td><td class=""><a href="#"><span>8</span></a></td><td class=""><a href="#"><span>9</span></a></td><td class="datepickerSaturday"><a href="#"><span>10</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>11</span></a></td><td class=""><a href="#"><span>12</span></a></td><td class=""><a href="#"><span>13</span></a></td><td class=""><a href="#"><span>14</span></a></td><td class=""><a href="#"><span>15</span></a></td><td class=""><a href="#"><span>16</span></a></td><td class="datepickerSaturday"><a href="#"><span>17</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>18</span></a></td><td class=""><a href="#"><span>19</span></a></td><td class=""><a href="#"><span>20</span></a></td><td class=""><a href="#"><span>21</span></a></td><td class=""><a href="#"><span>22</span></a></td><td class=""><a href="#"><span>23</span></a></td><td class="datepickerSaturday"><a href="#"><span>24</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>25</span></a></td><td class=""><a href="#"><span>26</span></a></td><td class=""><a href="#"><span>27</span></a></td><td class=""><a href="#"><span>28</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>1</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>2</span></a></td><td class="datepickerNotInMonth datepickerDisabled datepickerSaturday"><a href="#"><span>3</span></a></td></tr><tr><td class="datepickerNotInMonth datepickerDisabled datepickerSunday"><a href="#"><span>4</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>5</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>6</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>7</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>8</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>9</span></a></td><td class="datepickerNotInMonth datepickerDisabled datepickerSaturday"><a href="#"><span>10</span></a></td></tr></tbody><tbody class="datepickerYears"><tr><td colspan="2"><a href="#"><span>2012</span></a></td><td colspan="2"><a href="#"><span>2013</span></a></td><td colspan="2"><a href="#"><span>2014</span></a></td><td colspan="1"><a href="#"><span>2015</span></a></td></tr><tr><td colspan="2"><a href="#"><span>2016</span></a></td><td colspan="2"><a href="#"><span>2017</span></a></td><td colspan="2"><a href="#"><span>2018</span></a></td><td colspan="1"><a href="#"><span>2019</span></a></td></tr><tr><td colspan="2"><a href="#"><span>2020</span></a></td><td colspan="2"><a href="#"><span>2021</span></a></td><td colspan="2"><a href="#"><span>2022</span></a></td><td colspan="1"><a href="#"><span>2023</span></a></td></tr></tbody></table></td><td class="datepickerSpace"><div class="top"></div><div></div></td><td class="datepickerBlock"><table cellspacing="0" cellpadding="0" class="datepickerViewDays"><thead><tr><th colspan="7"><a class="datepickerGoPrev" href="#"><span>◀</span></a><a class="datepickerMonth" href="#"><span>2018 / 03</span></a><a class="datepickerGoNext" href="#"><span>▶</span></a></th></tr><tr class="datepickerDoW"><th class="week-sun"><span>S</span></th><th><span>M</span></th><th><span>T</span></th><th><span>W</span></th><th><span>T</span></th><th><span>F</span></th><th class="week-sat"><span>S</span></th></tr></thead><tbody class="datepickerMonths"><tr><td colspan="2"><a href="#"><span>01</span></a></td><td colspan="2"><a href="#"><span>02</span></a></td><td colspan="2"><a href="#"><span>03</span></a></td><td colspan="1"><a href="#"><span>04</span></a></td></tr><tr><td colspan="2"><a href="#"><span>05</span></a></td><td colspan="2"><a href="#"><span>06</span></a></td><td colspan="2"><a href="#"><span>07</span></a></td><td colspan="1"><a href="#"><span>08</span></a></td></tr><tr><td colspan="2"><a href="#"><span>09</span></a></td><td colspan="2"><a href="#"><span>10</span></a></td><td colspan="2"><a href="#"><span>11</span></a></td><td colspan="1"><a href="#"><span>12</span></a></td></tr></tbody><tbody class="datepickerDays"><tr><td class="datepickerNotInMonth datepickerDisabled datepickerSunday"><a href="#"><span>25</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>26</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>27</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>28</span></a></td><td class=""><a href="#"><span>1</span></a></td><td class=""><a href="#"><span>2</span></a></td><td class="datepickerSaturday"><a href="#"><span>3</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>4</span></a></td><td class=""><a href="#"><span>5</span></a></td><td class=""><a href="#"><span>6</span></a></td><td class=""><a href="#"><span>7</span></a></td><td class=""><a href="#"><span>8</span></a></td><td class=""><a href="#"><span>9</span></a></td><td class="datepickerSaturday"><a href="#"><span>10</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>11</span></a></td><td class=""><a href="#"><span>12</span></a></td><td class=""><a href="#"><span>13</span></a></td><td class=""><a href="#"><span>14</span></a></td><td class=""><a href="#"><span>15</span></a></td><td class=""><a href="#"><span>16</span></a></td><td class="datepickerSaturday"><a href="#"><span>17</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>18</span></a></td><td class=""><a href="#"><span>19</span></a></td><td class=""><a href="#"><span>20</span></a></td><td class=""><a href="#"><span>21</span></a></td><td class=""><a href="#"><span>22</span></a></td><td class=""><a href="#"><span>23</span></a></td><td class="datepickerSaturday"><a href="#"><span>24</span></a></td></tr><tr><td class="datepickerSunday"><a href="#"><span>25</span></a></td><td class=""><a href="#"><span>26</span></a></td><td class=""><a href="#"><span>27</span></a></td><td class=""><a href="#"><span>28</span></a></td><td class=""><a href="#"><span>29</span></a></td><td class=""><a href="#"><span>30</span></a></td><td class="datepickerSaturday"><a href="#"><span>31</span></a></td></tr><tr><td class="datepickerNotInMonth datepickerDisabled datepickerSunday"><a href="#"><span>1</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>2</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>3</span></a></td><td class="datepickerNotInMonth datepickerDisabled"><a href="#"><span>4</span></a></td><td class="datepickerNotInMonth datepickerDisabled datepickerSelected"><a href="#"><span>5</span></a></td><td class="datepickerNotInMonth datepickerDisabled datepickerSelected"><a href="#"><span>6</span></a></td><td class="datepickerNotInMonth datepickerDisabled datepickerSaturday datepickerSelected"><a href="#"><span>7</span></a></td></tr></tbody><tbody class="datepickerYears"><tr><td colspan="2"><a href="#"><span>2012</span></a></td><td colspan="2"><a href="#"><span>2013</span></a></td><td colspan="2"><a href="#"><span>2014</span></a></td><td colspan="1"><a href="#"><span>2015</span></a></td></tr><tr><td colspan="2"><a href="#"><span>2016</span></a></td><td colspan="2"><a href="#"><span>2017</span></a></td><td colspan="2"><a href="#"><span>2018</span></a></td><td colspan="1"><a href="#"><span>2019</span></a></td></tr><tr><td colspan="2"><a href="#"><span>2020</span></a></td><td colspan="2"><a href="#"><span>2021</span></a></td><td colspan="2"><a href="#"><span>2022</span></a></td><td colspan="1"><a href="#"><span>2023</span></a></td></tr></tbody></table></td><td class="datepickerSpace"><div class="top"></div><div></div></td><td class="datepickerBlock"><table cellspacing="0" cellpadding="0" class="datepickerViewDays datepickerLastView"><thead><tr><th colspan="7"><a class="datepickerGoPrev" href="#"><span>◀</span></a><a class="datepickerMonth" href="#"><span>2018 / 04</span></a><a class="datepickerGoNext" href="#"><span>▶</span></a></th></tr><tr class="datepickerDoW"><th class="week-sun"><span>S</span></th><th><span>M</span></th><th><span>T</span></th><th><span>W</span></th><th><span>T</span></th><th><span>F</span></th><th class="week-sat"><span>S</span></th></tr></thead><tbody class="datepickerMonths"><tr><td colspan="2"><a href="#"><span>01</span></a></td><td colspan="2"><a href="#"><span>02</span></a></td><td colspan="2"><a href="#"><span>03</span></a></td><td colspan="1"><a href="#"><span>04</span></a></td></tr><tr><td colspan="2"><a href="#"><span>05</span></a></td><td colspan="2"><a href="#"><span>06</span></a></td><td colspan="2"><a href="#"><span>07</span></a></td><td colspan="1"><a href="#"><span>08</span></a></td></tr><tr><td colspan="2"><a href="#"><span>09</span></a></td><td colspan="2"><a href="#"><span>10</span></a></td><td colspan="2"><a href="#"><span>11</span></a></td><td colspan="1"><a href="#"><span>12</span></a></td></tr></tbody><tbody class="datepickerDays"><tr><td class="datepickerSunday"><a href="#"><span>1</span></a></td><td class=""><a href="#"><span>2</span></a></td><td class=""><a href="#"><span>3</span></a></td><td class=""><a href="#"><span>4</span></a></td><td class="datepickerSelected"><a href="#"><span>5</span></a></td><td class="datepickerSelected"><a href="#"><span>6</span></a></td><td class="datepickerSaturday datepickerSelected"><a href="#"><span>7</span></a></td></tr><tr><td class="datepickerSunday datepickerSelected"><a href="#"><span>8</span></a></td><td class="datepickerSelected"><a href="#"><span>9</span></a></td><td class="datepickerSelected"><a href="#"><span>10</span></a></td><td class="datepickerSelected"><a href="#"><span>11</span></a></td><td class="datepickerSelected"><a href="#"><span>12</span></a></td><td class="datepickerSelected"><a href="#"><span>13</span></a></td><td class="datepickerSaturday datepickerSelected"><a href="#"><span>14</span></a></td></tr><tr><td class="datepickerSunday datepickerSelected"><a href="#"><span>15</span></a></td><td class="datepickerSelected"><a href="#"><span>16</span></a></td><td class="datepickerSelected"><a href="#"><span>17</span></a></td><td class="datepickerSelected"><a href="#"><span>18</span></a></td><td class="datepickerToday datepickerSelected"><a href="#"><span>19</span></a></td><td class="datepickerFuture"><a href="#"><span>20</span></a></td><td class="datepickerFuture datepickerSaturday"><a href="#"><span>21</span></a></td></tr><tr><td class="datepickerFuture datepickerSunday"><a href="#"><span>22</span></a></td><td class="datepickerFuture"><a href="#"><span>23</span></a></td><td class="datepickerFuture"><a href="#"><span>24</span></a></td><td class="datepickerFuture"><a href="#"><span>25</span></a></td><td class="datepickerFuture"><a href="#"><span>26</span></a></td><td class="datepickerFuture"><a href="#"><span>27</span></a></td><td class="datepickerFuture datepickerSaturday"><a href="#"><span>28</span></a></td></tr><tr><td class="datepickerFuture datepickerSunday"><a href="#"><span>29</span></a></td><td class="datepickerFuture"><a href="#"><span>30</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>1</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>2</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>3</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>4</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled datepickerSaturday"><a href="#"><span>5</span></a></td></tr><tr><td class="datepickerFuture datepickerNotInMonth datepickerDisabled datepickerSunday"><a href="#"><span>6</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>7</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>8</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>9</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>10</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled"><a href="#"><span>11</span></a></td><td class="datepickerFuture datepickerNotInMonth datepickerDisabled datepickerSaturday"><a href="#"><span>12</span></a></td></tr></tbody><tbody class="datepickerYears"><tr><td colspan="2"><a href="#"><span>2012</span></a></td><td colspan="2"><a href="#"><span>2013</span></a></td><td colspan="2"><a href="#"><span>2014</span></a></td><td colspan="1"><a href="#"><span>2015</span></a></td></tr><tr><td colspan="2"><a href="#"><span>2016</span></a></td><td colspan="2"><a href="#"><span>2017</span></a></td><td colspan="2"><a href="#"><span>2018</span></a></td><td colspan="1"><a href="#"><span>2019</span></a></td></tr><tr><td colspan="2"><a href="#"><span>2020</span></a></td><td colspan="2"><a href="#"><span>2021</span></a></td><td colspan="2"><a href="#"><span>2022</span></a></td><td colspan="1"><a href="#"><span>2023</span></a></td></tr></tbody></table></td></tr></tbody></table></div></div></div>
+                    </li>
+                </ul>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="radio-box inline m-T-none">
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="kind1">
+                                <label for="kind1">兩週內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="kind2">
+                                <label for="kind2">一個月內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="kind3">
+                                <label for="kind3">三個月內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="kind4">
+                                <label for="kind4">半年內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="kind5">
+                                <label for="kind5">一年內</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="kind" type="radio" id="kind6">
+                                <label for="kind6">自訂</label>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                </div>
+            </div>*@
+
+    <link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+    <script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        var to = new Date();
+        var from = new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+
+        $('.analyticsDatePicker').DatePicker({
+            inline: true,
+            date: [from, to],
+            calendars: 3,
+            mode: 'range',
+            current: new Date(to.getFullYear(), to.getMonth() - 1, 1),
+            onChange: function(dates,el) {
+                // update the range display
+                // $('#analyticsDate > div.clickBtn > span').html(
+                //   dates[0].getFullYear()+'<span>/</span>'+
+                //   dates[0].getMonthName(true)+'<span>/</span>'+
+                //   dates[0].getDate()+'<span>-</span>'+
+
+                //   dates[1].getFullYear()+'<span>/</span>'+
+                //   dates[1].getMonthName(true)+'<span>/</span>'+
+                //   dates[1].getDate()
+
+                // );
+
+                $('input.startAnalyticsDate').val(
+                  dates[0].getFullYear()+'/'+
+                  dates[0].getMonthName(true)+'/'+
+                  dates[0].getDate()
+                );
+
+                $('input.endAnalyticsDate').val(
+                  dates[1].getFullYear()+'/'+
+                  dates[1].getMonthName(true)+'/'+
+                  dates[1].getDate()
+                );
+
+            }
+        });
+
+        $("#aLinkExportToDaily").bind("click", function(){
+            var url = "ExportToXLS_Daily?SearchStartDate=" + $('#SearchStartDate').val()+"&SearchEndDate="+$('#SearchEndDate').val();
+            window.open( url);
+        });
+
+        $("#aLinkExportToMonth").bind("click", function(){
+            var url = "ExportToXLS_Month?SearchStartDate=" + $('#SearchStartDate').val()+"&SearchEndDate="+$('#SearchEndDate').val();
+            window.open( url);
+        });
+    });
+
+
+    function SetQuickDateRangeSelect(selectedValue) {
+        var sDate = "", eDate = "";
+        var today = new Date(), minday = new Date();
+        switch (selectedValue)
+        {
+            case "1":
+                minday = AddDays(minday, -14);
+                sDate = TosDateString(minday);
+                eDate = TosDateString(today);
+                break;
+            case "2":
+                minday = AddMonths(minday, -1);
+                sDate = TosDateString(minday);
+                eDate = TosDateString(today);
+                break;
+            case "3":
+                minday = AddMonths(minday, -3);
+                sDate = TosDateString(minday);
+                eDate = TosDateString(today);
+                break;
+            case "4":
+                minday = AddMonths(minday, -6);
+                sDate = TosDateString(minday);
+                eDate = TosDateString(today);
+                break;
+            case "5":
+                minday = AddMonths(minday, -12);
+                sDate = TosDateString(minday);
+                eDate = TosDateString(today);
+                break;
+            case "6":
+                sDate = "";
+                eDate = "";
+                break;
+        }
+        $('#SearchStartDate').val(sDate);
+        $('#SearchEndDate').val(eDate);
+    }
+    function AddDays (dat, days) {
+        dat.setDate(dat.getDate() + days );
+        return dat;
+    }
+    function AddMonths(dat, months) {
+        dat.setMonth(dat.getMonth() + months);
+        return dat;
+    }
+    function TosDateString(dat) {
+        var mm_str = (dat.getMonth() + 1).toString(), dd_str = dat.getDate().toString(), yy_str = dat.getFullYear().toString();
+        if (mm_str.length < 2) mm_str = '0' + mm_str;
+        if (dd_str.length < 2) dd_str = '0' + dd_str;
+        return yy_str + "/" + mm_str + "/" + dd_str;
+    }
+
+    function SetSelectedDate()
+    {
+        var selectedDate = $('#SearchStartDate').val() ;
+        if($('#SearchStartDate').val().split("/")[0] == $('#SearchEndDate').val().split("/")[0])
+            selectedDate +=  " - " + $('#SearchEndDate').val().split("/")[1] + "/" + $('#SearchEndDate').val().split("/")[2];
+        else
+            selectedDate +=  " - " +$('#SearchEndDate').val() ;
+        $("#spDateRange").html(selectedDate);
+        $('#choiceDateRange').hide();
+        $('#choiceDateRange').attr("class", $('#choiceDateRange').attr("class").replace("active", ""));
+        $('#selectedDates').attr("class", $('#selectedDates').attr("class").replace("active", ""));
+        var form = $('#searchForm');
+        form.submit();
+    }
+    function CancelSelectedDate() {
+        var selectedDate = $('#InitStartDate').val() ;
+        if($('#InitStartDate').val().split("/")[0] == $('#InitEndDate').val().split("/")[0])
+            selectedDate +=  " - " + $('#InitEndDate').val().split("/")[1] + "/" + $('#InitEndDate').val().split("/")[2];
+        else
+            selectedDate +=  " - " +$('#InitEndDate').val() ;
+
+        $("#spDateRange").html(selectedDate);
+        $('#choiceDateRange').hide();
+        $('#choiceDateRange').attr("class", $('#choiceDateRange').attr("class").replace("active", ""));
+        $('#selectedDates').attr("class", $('#selectedDates').attr("class").replace("active", ""));
+    }
+
+</script>

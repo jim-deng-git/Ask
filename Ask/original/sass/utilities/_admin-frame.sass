@@ -1,0 +1,311 @@
+%words-one-line
+    text-overflow: ellipsis
+    overflow: hidden
+    white-space: nowrap
+
+// left Menu
+.sideBarMenu
+    &:not(.mm-menu)
+        display: none
+
+.cclogo
+    +text-C
+
+    margin: 10px 0 30px
+
+    img
+        max-width: 180px
+
+.publish
+    position: fixed
+    width: size(100)
+    bottom: 0
+    text-align: center
+    padding: 20px 0
+
+a.btn-MianUpload
+    > i
+        font-size: 45px
+        display: block
+
+    +hover-focus
+        color: $black
+
+.barContent
+    width: size(100)
+    height: size(100)
+
+    @extend %border-box
+
+    +absolute
+
+// right main site
+.frameContent
+    +absolute
+
+    @extend %border-box
+
+    top: 0
+    left: 280px
+    right: 0
+    bottom: 0
+    padding: 50px 20px 0 0
+    height: size(100)
+    transition: all 0.6s ease-in-out
+
+    +breakpoint(pad-landscape)
+        left: 240px
+
+    &.full
+        left: 0
+        padding: 50px 20px 0 20px
+
+        +breakpoint(pad-landscape)
+            left: 0
+
+        .contentTop
+            width: calc(100% - 40px)
+
+
+    .expander
+        +absolute
+
+        @extend %border-box
+
+        top: -10px
+        left: -10px
+        height: 44px
+        width: 44px
+
+        +overflow(hidden)
+
+        pointer-events: none
+        cursor: pointer
+        z-index: 1001
+        transition: all 0.3s ease-in-out
+
+        &::before, &::after
+            transition: all 0.2s ease-in-out
+
+        &::after
+            content: ""
+
+            +d-block
+            +absolute
+
+            height: 100%
+            width: 100%
+            left: 0
+            top: 0
+            transition: all 0.2s ease-in-out
+            pointer-events: auto
+            border-left: 1px solid #cccccc
+            border-top: 1px solid #cccccc
+
+        &::before
+            content: ""
+
+            +d-block
+            +absolute
+
+            left: -11%
+            top: 37%
+            width: 100%
+            height: 1px
+            transform: rotate(45deg)
+            pointer-events: auto
+
+            // border: 1px solid #cccccc
+            background-color: #cccccc
+            opacity: 0
+
+    &.pushdown
+        left: 0
+        padding: 0
+
+        .expander
+            &::after
+                width: size(60)
+                height: size(60)
+                border-left: none
+                border-top: none
+                border-right: 2px solid #000000
+                border-bottom: 2px solid #000000
+
+            &::before
+                height: 2px
+                opacity: 1
+                background-color: #000000
+                width: size(90)
+                left: 0
+                transform: rotate(135deg)
+
+        &:hover
+            .expander
+                &::after
+                    width: size(60)
+                    height: size(60)
+                    border-left: none
+                    border-top: none
+                    border-right: 2px solid #000000
+                    border-bottom: 2px solid #000000
+
+                &::before
+                    background-color: #000000
+
+.contentTop
+    position: absolute
+    @extend %border-box
+    width: 100%
+    height: 50px
+    top: 0
+    padding-right: 20px
+
+    #contentTop
+        display: flex
+        flex-wrap: wrap
+        justify-content: flex-end
+        height: 100%
+
+        div
+            &.float-R
+                float: none !important
+
+        > *
+            &:not(.info-detail)
+                display: inline-flex
+                margin-left: 10px
+                align-items: center
+
+        .login-info
+            &.d-flex
+                align-items: center
+                position: relative
+                text-decoration: none
+                margin-top: 10px
+                display: inline-flex !important // 20190318 yulin 聊天室icon(對齊)
+
+                .login-name
+                    padding-left: 5px
+
+        .info-detail
+            display: none
+            position: absolute
+            top: 50px
+            right: 0
+            z-index: 9
+            background-color: white
+
+            &.hoved
+                display: flex
+
+            .imgfile,
+            .info-forms
+                padding: 1em
+
+            ul.forms
+                margin: 0
+
+        img
+            width: 30px
+            height: 30px
+            border-radius: 40px
+            margin-top: 0px
+
+        .nav-chat
+            // vertical-align: sub
+            display: inline-block
+            margin-right: 10px
+
+            #header-chat-list
+                right: 20px
+                top: 100%
+
+    &.menu-bar
+
+        #contentTop
+
+            > *
+                &:not(.info-detail)
+                    padding-left: 10px
+                    border-left: 1px solid color('grey','lighten-1')
+                    font-size: 14px
+
+                i
+                    font-size: 20px
+                    margin-right: 3px
+                    vertical-align: top
+
+            .logo
+                margin-right: auto
+                margin-left: 0
+                border: none
+                padding: 0
+
+                img
+                    width: auto
+                    height: auto
+                    max-height: 30px
+                    border-radius: 0
+
+                &.has--menu
+                    margin-right: 0
+
+            .menu
+                margin-right: auto
+                margin-left: 10px
+                border-left-color: transparent
+
+                a
+                    padding: 2px 15px
+                    border-right: 1px solid color('grey', 'lighten-2')
+                    line-height: 1
+
+                    &.active
+                        color: $white
+                        background: $black
+
+            .other-content
+                margin-right: auto
+
+            .login-info
+                &.d-flex
+                    margin-top: 0px
+
+            a.tab-badge
+                i.cc
+                    vertical-align: initial !important
+
+        a
+            text-decoration: none
+            color: color('grey','darken-3')
+
+.contentMain
+    @extend %border-box
+
+    +relative
+
+    width: size(100)
+    height: size(100)
+    background-color: #ffffff
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.11)
+
+    &:hover
+        .expander
+            &::after
+                height: 50%
+                width: 50%
+                border-left: 1px solid #999999
+                border-top: 1px solid #999999
+
+            &::before
+                // border: 1px solid #dddddd
+                background-color: #999999
+                opacity: 1
+
+    #mainWebContent
+        position: absolute
+        top: 0
+        left: 0
+        width: size(100)
+        height: size(100)

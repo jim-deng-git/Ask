@@ -1,0 +1,115 @@
+.card-articleSet[data-style="12"] ol {
+  list-style: none; }
+
+.card-articleSet[data-style="12"] {
+  position: relative; }
+  .card-articleSet[data-style="12"] ol {
+    margin: 0;
+    padding: 0; }
+  .card-articleSet[data-style="12"] .filters-bar {
+    position: absolute;
+    top: 64%;
+    left: 0;
+    color: #ffffff;
+    margin-bottom: 15px; }
+    .card-articleSet[data-style="12"] .filters-bar #filter-bar {
+      border-right: 1px solid #ffffff;
+      padding-right: 20px; }
+      @media only screen and (max-width: 580px) {
+        .card-articleSet[data-style="12"] .filters-bar #filter-bar {
+          border: none; } }
+    .card-articleSet[data-style="12"] .filters-bar li {
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      will-change: all;
+      -webkit-transition: 0.4s all ease-out;
+      -o-transition: 0.4s all ease-out;
+      transition: 0.4s all ease-out;
+      -webkit-transition-delay: 0.1s;
+           -o-transition-delay: 0.1s;
+              transition-delay: 0.1s; }
+      .card-articleSet[data-style="12"] .filters-bar li + li {
+        padding-top: 15px; }
+      .card-articleSet[data-style="12"] .filters-bar li.active, .card-articleSet[data-style="12"] .filters-bar li:hover {
+        color: #FE5757;
+        border-bottom: 1px solid #FE5757; }
+  .card-articleSet[data-style="12"] .article-list {
+    width: calc(100% - 320px);
+    margin-right: 0;
+    margin-left: auto;
+    padding-top: 60px;
+    padding-left: 50px; }
+    @media only screen and (max-width: 1024px) {
+      .card-articleSet[data-style="12"] .article-list {
+        padding-left: 20px; } }
+    @media only screen and (max-width: 800px) {
+      .card-articleSet[data-style="12"] .article-list {
+        width: calc(100% - 60px); } }
+    @media only screen and (max-width: 420px) {
+      .card-articleSet[data-style="12"] .article-list {
+        padding-top: 100px;
+        padding-left: 0;
+        margin-right: -5%; } }
+    .card-articleSet[data-style="12"] .article-list .article {
+      font-size: 0; }
+      @media only screen and (max-width: 580px) {
+        .card-articleSet[data-style="12"] .article-list .article {
+          display: -webkit-box;
+          display: -ms-flexbox;
+          display: flex;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch; }
+          .card-articleSet[data-style="12"] .article-list .article::-webkit-scrollbar {
+            display: none; } }
+      .card-articleSet[data-style="12"] .article-list .article .card {
+        font-size: initial;
+        width: 50%;
+        display: inline-block;
+        padding: 30px 30px 0 30px; }
+        @media only screen and (max-width: 1024px) {
+          .card-articleSet[data-style="12"] .article-list .article .card {
+            padding: 15px 15px 0 15px; } }
+        @media only screen and (max-width: 580px) {
+          .card-articleSet[data-style="12"] .article-list .article .card {
+            -webkit-box-flex: 0;
+                -ms-flex: 0 0 80%;
+                    flex: 0 0 80%; } }
+  .card-articleSet[data-style="12"] .card-img a {
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+    padding: 15px; }
+  .card-articleSet[data-style="12"] .card-img img {
+    width: 100%;
+    height: 0;
+    padding-bottom: 60%; }
+  .card-articleSet[data-style="12"] .card-img:hover .card-img-content {
+    width: 100%;
+    height: 100%; }
+  .card-articleSet[data-style="12"] .card-img-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+    width: calc(100% - 30px);
+    height: calc(100% - 30px);
+    opacity: 1;
+    background-color: transparent;
+    will-change: all;
+    -webkit-transition: 0.4s all ease-out;
+    -o-transition: 0.4s all ease-out;
+    transition: 0.4s all ease-out;
+    -webkit-transition-delay: 0.1s;
+         -o-transition-delay: 0.1s;
+            transition-delay: 0.1s; }
+  .card-articleSet[data-style="12"] .card-text .card-text-name {
+    text-align: center;
+    color: #ffffff;
+    font-size: 16px; }
+    @media only screen and (max-width: 580px) {
+      .card-articleSet[data-style="12"] .card-text .card-text-name {
+        font-size: 14px; } }

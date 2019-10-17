@@ -1,0 +1,123 @@
+﻿@model IEnumerable<EventModels>
+@{    
+    EventSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<EventTypesModels>> itemTypes = ViewBag.ItemTypes;
+
+    DateTime today = DateTime.Today;
+
+    DateTime startDate = (Model.Where(m => m.DateStart != null).Min(m => m.DateStart) ?? new DateTime(today.Year, 1, 1));
+    startDate = new DateTime(startDate.Year, startDate.Month, 1);
+    DateTime endDate = Model.Select(m => m.DateKind == "單日" ? m.DateStart : m.DateEnd).Where(date => date != null).Max(date => date) ?? new DateTime(today.Year, 12, 1);
+    endDate = new DateTime(endDate.Year, endDate.Month, 1);
+}
+
+@BundleConfig.Swiper()
+@*<link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />*@
+<link href="~/css/Cards/EventSet/style1.css" rel="stylesheet" />
+
+<div id="card_@(setting.CardNo)" class="card-common card-eventSet" data-style="1">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            @while(startDate <= endDate) {
+                DateTime start = startDate;
+                DateTime end = startDate.AddMonths(1).AddMilliseconds(-10);
+
+                startDate = startDate.AddMonths(1);
+
+                IEnumerable<EventModels> items = Model.Where(m => {
+                    if (m.DateKind == "多日") {
+                        return (m.DateStart == null || m.DateStart <= end) && (m.DateEnd == null || m.DateEnd >= start);
+                    }
+
+                    if (m.DateKind == "單日") {
+                        return m.DateStart != null && m.DateStart >= start && m.DateStart <= end;
+                    }
+
+                    return false;
+                });
+                int len = items.Count();
+                if(len > setting.PageSize) {
+                    len = setting.PageSize;
+                }
+                if (len > 0) {
+                    <div class="swiper-slide" data-date="@(start.ToString("yyyy-MM"))">
+                        <div class="swiper-heading">
+                            <span>@start.Month</span>月
+                        </div>
+                        @for (int j = 0; j < len; ++j) {
+                            EventModels item = items.ElementAt(j);
+                            string singleDateText = (item.DateKind == "單日") ? item.DateStart.ToString("MM.dd") : string.Empty;
+                            string startDateText = (item.DateStart == null || item.DateStart < start ? start.ToString("MM.dd") : item.DateStart.ToString("MM.dd"));
+                            string endDateText = (item.DateEnd == null || item.DateEnd > end ? end.ToString("MM.dd") : item.DateEnd.ToString("MM.dd"));
+                            SitePage page = itemPages.GetValue(item.CardNo);
+                            if (page != null) {
+                        <div class="swiper-body">
+                            @if (!string.IsNullOrWhiteSpace(item.Icon)) {
+                            <img src="@item.Icon" alt="" onclick="location.href='@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))'"/>
+                            }                            
+                            <div class="swiper-body-text" onclick="location.href='@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))'">
+                                <div class="swiper-body-text-name">@item.Title</div>
+                                <div class="swiper-body-text-date">
+                                    @if (singleDateText == string.Empty) {
+                                        @startDateText<span>-</span>@endDateText
+                                    } else {
+                                        @singleDateText
+                                    }
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(item.TimeStart) || !string.IsNullOrWhiteSpace(item.TimeEnd)) {
+                                    <div class="swiper-body-text-time">
+                                        @if (string.IsNullOrWhiteSpace(item.TimeStart)) {
+                                            @item.TimeEnd
+                                        } else if (string.IsNullOrWhiteSpace(item.TimeEnd)) {
+                                            @item.TimeStart
+                                        } else {
+                                            @item.TimeStart<span>-</span>@item.TimeEnd
+                                        }
+                                    </div>
+                                }                                
+                            </div>
+                        </div>
+                            }
+                        }
+                    </div>
+                }
+            }
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        
+        <!-- 華山客製20170902 carrie -->
+        <div class="pagination text-C huashan1914 d-none">
+            <a class="btn-black-o" href="exhibition">More</a>
+        </div>
+
+        <!-- 烏梅客製20170910 carrie -->
+        <div class="pagination text-C umaytheater d-none">
+            <a class="btn-black-o" href="performance">More</a>
+        </div>
+    </div>
+</div>
+@*<script type="text/javascript" src="~/script/swiper/swiper.jquery.js"></script>*@
+<script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(setting.CardNo)');
+        var initSlide = 0;
+        outerElm.find('div.swiper-slide').each(function (index) {
+            if ($(this).attr('data-date') == '@(today.ToString("yyyy-MM"))') {
+                initSlide = index;
+                return false;
+            }                
+        });
+        var swiper = new Swiper(outerElm.find('.swiper-container'), {
+            // pagination: '.swiper-pagination',
+            slidesPerView: 'auto',
+            centeredSlides: true,
+            paginationClickable: true,
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev',
+            spaceBetween: 0,
+            initialSlide: initSlide
+        });
+    })();
+</script>

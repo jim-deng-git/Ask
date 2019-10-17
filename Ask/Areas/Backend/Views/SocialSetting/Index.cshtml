@@ -1,0 +1,630 @@
+﻿@model SocialSettingModels
+@{
+    ViewBag.Title = "社群關聯設定";
+
+    long siteId = ViewBag.SiteID;
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    var siteQuery = new { SiteID = ViewBag.SiteID };
+    string baseUrl = Url.Action("Index", "SocialSetting", new { siteId = siteId });
+    string uploadUrl = ViewBag.UploadUrl;
+    IEnumerable<SocialRelationModels> ShareRelationModels = (IEnumerable<SocialRelationModels>)ViewBag.ShareModels;
+    IEnumerable<SocialRelationModels> ChannelRelationModels = (IEnumerable<SocialRelationModels>)ViewBag.ChannelModels;
+
+}
+
+@section Script {
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+}
+<div class="groove groove-1">
+    <h1 class="title-admin-page border-B p-B-5">社群關連設定</h1>
+    <div class="card shadow-none">
+        <table class="fixTable" id="listTable" name="listTable">
+            <caption class="border-B">
+                <span class="font-xs">社群分享</span>
+                <div class="radio-box inline m-T-2 m-L-5">
+                    <div>
+                        <input type="checkbox" id="IsOpen" name="IsOpen" value="True" @(Model != null ? (Model.IsOpen ? "checked" : "") : "") />
+                        <label for="IsOpen">開放分享</label>
+                    </div>
+                </div>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" title="排序" data-action="sort"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Url.Action("ShareEdit", new { SiteID = siteId })" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" title="刪除" data-action="del"><i class="cc cc-trash-o"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <tbody id="list_share"></tbody>
+        </table>
+        <div class="alert transparent m-T-2">
+            <i class="cc cc-attention"></i>
+            <div>此處設定的社群網站，將在本站各單元出現，使用者可點擊將頁面分享至社群。</div>
+        </div>
+        @*客製 YuMing 20190722 隱藏 社群分享預設圖*@
+        @*
+        <ul class="forms m-h-none">
+            <li>
+                <div class="col-2">
+                    <div class="title inline">社群分享預設圖</div>
+                    <div class="input-field inline full align-v-top">
+                        <input type="file" id="fSocialDefaultImage" name="fSocialDefaultImage" />
+                        <input type="hidden" id="SocialDefaultImage" name="SocialDefaultImage" value='@Model.SocialDefaultImage' />
+                        <input type="hidden" id="fSocialDefaultImageBase64" name="fSocialDefaultImageBase64" />
+                    </div>
+                    <div class="alert transparent">
+                        <!--remove align-inline fay 20180329-->
+                        <i class="cc cc-attention"></i>
+                        <div>如果本站頁面沒有任何圖片，也沒有自行設定SEO內容，分享至社群網站時，會預設抓此處的圖片。</div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        *@
+        <table class="fixTable" id="listTable2" name="listTable2">
+            <caption class="border-B">
+                <span class="font-xs">官方頻道</span>
+                <div class="radio-box inline m-T-2 m-L-5">
+                    <div>
+                        <input type="checkbox" id="IsHeaderOpenChannel" name="IsHeaderOpenChannel" value="True" @(Model != null ? (Model.IsHeaderOpenChannel ? "checked" : "") : "") />
+                        <label for="IsHeaderOpenChannel">顯示在頁首 ( header )</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="IsFooterOpenChannel" name="IsFooterOpenChannel" value="True" @(Model != null ? (Model.IsFooterOpenChannel ? "checked" : "") : "") />
+                        <label for="IsFooterOpenChannel">顯示在頁尾 ( footer )</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="IsEDMOpenChannel" name="IsEDMOpenChannel" value="True" @(Model != null ? (Model.IsEDMOpenChannel ? "checked" : "") : "") />
+                        <label for="IsEDMOpenChannel">顯示在電子報 ( EDM )</label>
+                    </div>
+                </div>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" title="排序" data-action="sort"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Url.Action("ChannelEdit", new { SiteID = siteId })" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" title="刪除" data-action="del"><i class="cc cc-trash-o"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <tbody id="list_channel"></tbody>
+        </table>
+        <div class="alert transparent m-T-2">
+            <i class="cc cc-attention"></i>
+            <div>請於此處設定 貴公司的「粉絲團」或「官方頻道」，使用者可點擊連結至粉絲團。</div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        custom_singleImageUpload('#fSocialDefaultImage', '@(Href("~/"))', '@uploadUrl');
+        $("#IsOpen").bind("click",function(){
+            saveSetting($(this).attr("name"), $(this).prop("checked"));
+        } );
+        $("#IsHeaderOpenChannel").bind("click",function(){
+            saveSetting($(this).attr("name"), $(this).prop("checked"));
+        } );
+        $("#IsFooterOpenChannel").bind("click",function(){
+            saveSetting($(this).attr("name"), $(this).prop("checked"));
+        } );
+        $("#IsEDMOpenChannel").bind("click",function(){
+            saveSetting($(this).attr("name"), $(this).prop("checked"));
+        } );
+        refreshShareList();
+        refreshChannelList();
+
+        // cc 20180705
+        // $('.openEdit-c').colorbox({
+        //     height: function () {
+        //         var NH = "330";
+        //         if ($.isNumeric($(this).data("height"))) {
+        //             NH = $(this).data("height");
+        //         }
+        //         //console.log("NH:" + NH);
+        //         return NH;
+        //     },
+        // });
+
+        var listObj = Component.dataList('listTable');
+        listObj.deleted = function (delIds) {
+            console.log(delIds);
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    $.post('@Url.Action("ShareDel")', { 'siteID': '@siteId',  'ids': delIds }, function () {
+                        var btnOuterElm = $("#listTable").find('div.float-R');
+                        console.log(btnOuterElm);
+                        btnOuterElm.children('span[data-for]').hide();
+                        btnOuterElm.children('a').fadeIn();
+                        refreshShareList();
+                    });
+                }
+            }, 'warning');
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                refreshShareList();
+            }
+            if (action == "sort") {
+                refreshShareList();
+            }
+        }
+
+        listObj.sorted = function (sortItems) {
+            $.post('@Url.Action("ShareSort")', { 'siteID': '@siteId', 'items': sortItems }, function () {
+
+                var btnOuterElm = $("#listTable").find('div.float-R');
+                console.log(btnOuterElm);
+                btnOuterElm.children('span[data-for]').hide();
+                btnOuterElm.children('a').fadeIn();
+                refreshShareList();
+            });
+        }
+        var listObj2 = Component.dataList('listTable2');
+        listObj2.deleted = function (delIds) {
+            console.log(delIds);
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    $.post('@Url.Action("ChannelDel")', { 'siteID': '@siteId',  'ids': delIds }, function () {
+                        var btnOuterElm = $("#listTable2").find('div.float-R');
+                        console.log(btnOuterElm);
+                        btnOuterElm.children('span[data-for]').hide();
+                        btnOuterElm.children('a').fadeIn();
+                        refreshChannelList();
+                    });
+                }
+            }, 'warning');
+        }
+        listObj2.canceled = function (action) {
+            if (action == "del") {
+                refreshChannelList();
+            }
+            if (action == "sort") {
+                refreshChannelList();
+            }
+        }
+
+        listObj2.sorted = function (sortItems) {
+            $.post('@Url.Action("ChannelSort")', { 'siteID': '@siteId', 'items': sortItems }, function () {
+
+                var btnOuterElm = $("#listTable2").find('div.float-R');
+                console.log(btnOuterElm);
+                btnOuterElm.children('span[data-for]').hide();
+                btnOuterElm.children('a').fadeIn();
+                refreshChannelList();
+            });
+        }
+    });
+
+    function refreshShareList() {
+        var listUrl = "@Url.Action("GetShareList")?SiteID=@siteId";
+        $.post(listUrl, function(data){
+            var htmlContent = "";
+            for (var i = 0; i < data.length; i++) {
+                htmlContent += "<tr data-id=\""+data[i].ID +"\">";
+                htmlContent += "<td class=\"sort\">"+(i+1).toString()+"</td>";
+                htmlContent += "<td class='social-icons'><i class='cc "+data[i].SocialStyle+"  font-hg'></i></td>";
+                htmlContent += "<td class='text-L'>" + data[i].SocialTitle + "</td>";
+                htmlContent += "<td>" + data[i].ShowTypeName + "</td>";
+                var openClass = "cc-eye";
+                var IsOpen = true;
+                if(!data[i].IsOpen)
+                {
+                    openClass = "cc-eye-off font-red";
+                    IsOpen = false;
+                }
+                htmlContent += "<td class=\"icon\"><a class=\"btn-grey-darken-4-o transparent square\" href=\"javascript:\" onclick=\"SetShareIsOpen('" + data[i].ID + "', "+!IsOpen+")\"><i class=\"cc "+openClass+"\"></i></a></td>";
+                htmlContent += "<td class=\"icon edit\"><a class=\"btn-grey-darken-4-o transparent square\" title=\"編輯\"onclick=\"EditShare('" + data[i].ID + "')\"><i class=\"cc cc-edit\"></i></a></td>";
+                htmlContent += "</tr>";
+            }
+
+            $("#list_share").html(htmlContent);
+
+
+        });
+    }
+
+    function refreshChannelList() {
+        var listUrl = "@Url.Action("GetChannelList")?SiteID=@siteId";
+        $.post(listUrl, function(data){
+            var htmlContent = "";
+            for (var i = 0; i < data.length; i++) {
+                htmlContent += "<tr data-id=\""+data[i].ID +"\">";
+                htmlContent += "<td class=\"sort\">"+(i+1).toString()+"</td>";
+                htmlContent += "<td class='social-icons'><i class='cc "+data[i].SocialStyle+"  font-hg'></i></td>";
+                htmlContent += "<td class='text-L'>" + data[i].SocialTitle + "</td>";
+                htmlContent += "<td class='text-L'>" + data[i].LinkTitle + "</td>";
+                htmlContent += "<td class='text-L'><a href=\""+data[i].LinkUrl+"\" target=\"_blank\">"+data[i].LinkUrl+"</a></td>";
+                var openClass = "cc-eye";
+                var IsOpen = true;
+                if(!data[i].IsOpen)
+                {
+                    openClass = "cc-eye-off font-red";
+                    IsOpen = false;
+                }
+                htmlContent += "<td class=\"icon\"><a class=\"btn-grey-darken-4-o transparent square\" href=\"javascript:\" onclick=\"SetChannelIsOpen('" + data[i].ID + "', "+!IsOpen+")\"><i class=\"cc "+openClass+"\"></i></a></td>";
+                htmlContent += "<td class=\"icon edit\"><a class=\"btn-grey-darken-4-o transparent square\" title=\"編輯\"onclick=\"EditChannel('" + data[i].ID + "')\"><i class=\"cc cc-edit\"></i></a></td>";
+                htmlContent += "</tr>";
+            }
+
+            $("#list_channel").html(htmlContent);
+
+
+        });
+    }
+
+    function SetShareIsOpen(ID, IsOpen) {
+        var formData = new FormData();
+            formData.append("ID", ID);
+            formData.append("IsOpen", IsOpen);
+            $.ajax({
+                url: "@Url.Action("ShareChangeStatus")",
+                data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                refreshShareList();
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+    }
+
+    function EditShare(id)
+    {
+        var editUrl = "@Html.Raw( Url.Action("ShareEdit", new { SiteId=siteId}))&DetailID=" + id;
+
+        // cc edit 20180705
+        window.parent.$.colorbox({
+            href: editUrl,
+            width: function() {
+                var NW = "600";
+                if ($.isNumeric($(this).data("width"))) {
+                    NW = $(this).data("width");
+                }
+                return NW;
+            },
+            height: "95%",
+            transition: false,
+            iframe: true,
+            fadeOut: 100,
+            right: "20",
+            speed: 0,
+            onOpen: function () {
+                window.parent.$("#loader").fadeIn();
+            },
+            onComplete: function () {
+                window.parent.$("#loader").fadeOut();
+            },
+        });
+        // cc edit 20180705
+    }
+    function SetChannelIsOpen(ID, IsOpen) {
+        var formData = new FormData();
+            formData.append("ID", ID);
+            formData.append("IsOpen", IsOpen);
+            $.ajax({
+                url: "@Url.Action("ChannelChangeStatus")",
+                data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                refreshChannelList();
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+    }
+
+    function EditChannel(id)
+    {
+        var editUrl = "@Html.Raw( Url.Action("ChannelEdit", new { SiteId=siteId}))&DetailID=" + id;
+
+        // cc edit 20180705
+        window.parent.$.colorbox({
+            href: editUrl,
+            width: function() {
+                var NW = "600";
+                if ($.isNumeric($(this).data("width"))) {
+                    NW = $(this).data("width");
+                }
+                return NW;
+            },
+            height: "95%",
+            transition: false,
+            iframe: true,
+            fadeOut: 100,
+            right: "20",
+            speed: 0,
+            onOpen: function () {
+                window.parent.$("#loader").fadeIn();
+            },
+            onComplete: function () {
+                window.parent.$("#loader").fadeOut();
+            },
+        });
+        // cc edit 20180705 END
+    }
+    function saveSetting(columnName, isChecked) {
+        var formData = new FormData();
+        formData.append("SiteID", '@siteId');
+        formData.append("Column", columnName);
+        formData.append("IsChecked", isChecked);
+        $.ajax({
+            url: "@Url.Action("SetSocialSetting", "SocialSetting")",
+            data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    //Component.alert('資料已儲存');
+                }
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+        }
+        function saveSettingImage(columnName, isChecked) {
+            var formData = new FormData();
+            formData.append("SiteID", '@siteId');
+            formData.append("Column", columnName);
+            formData.append("IsChecked", isChecked);
+            $.ajax({
+                url: '@Url.Action("SetSocialSetting", "SocialSetting")',
+                data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    //Component.alert('資料已儲存');
+                }
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+        }
+
+    custom_singleImageUpload = function (elms, basePath, uploadUrl, disableAction) {
+            var boxHtml =
+                '<div class="fileuploader-items singleImg">' +
+                '   <ul class="fileuploader-items-list">' +
+                '       <li class="fileuploader-thumbnails-input">' +
+                '           <div class="fileuploader-thumbnails-input-inner">' +
+                '               <i class="cc cc-cloud-upload-o"></i>' +
+                '               <h3 class="fileuploader-input-caption"><span>Drag and drop files here</span></h3>' +
+                '               <p>or</p>' +
+                '               <div class="fileuploader-input-button"><span>Browse Files</span></div>' +
+                '           </div>' +
+                '       </li>' +
+                '   </ul>' +
+                '</div>';
+
+            var itemHtml =
+                '<li class="fileuploader-item">' +
+                '   <div class="fileuploader-item-inner">' +
+                '       <div class="thumbnail-holder">${image}</div>' +
+                '       <div class="actions-holder">';
+            //if (!disableAction) {
+            //    itemHtml +=
+            //    '           <a class="btn-white-o square transparent fileuploader-action-text tooltip openLeftEdit" title="編輯圖說" href="' + basePath + '/Backend/Common/ImgTextEdit"><i class="cc cc-edit-o"></i></a>' +
+            //    '           <a class="btn-white-o square transparent fileuploader-action-show tooltip showStatus" title="顯示" href="javascript:"><i class="cc cc-eye"></i></a>';
+            //}
+
+            itemHtml +=
+                '           <a class="btn-del btn-white-o square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                '       </div>' +
+                '       <div class="progress-holder">${progressBar}</div>' +
+                '   </div>' +
+                '</li>';
+            var item2Html = itemHtml;
+
+            $(elms).each(function () {
+                var fileElm = $(this);
+                var valElm = fileElm.next();
+
+                var file = null;
+                var val = valElm.val();
+                if (val) {
+                    var img = $.parseJSON(val);
+                    var m = img.Img.match(/\.([^\.]+)$/);
+                    file = { name: img.Spec || img.Img, file: uploadUrl + '/' + img.Img, type: 'image/' + m[1], size: 0 };
+                }
+
+                fileElm.fileuploader({
+                    limit: 1,
+                    files: file,
+                    extensions: ['jpg', 'jpeg', 'png', 'gif'],
+                    changeInput: ' ',
+                    theme: 'thumbnails',
+                    enableApi: true,
+                    addMore: false,
+                    thumbnails: {
+                        box: boxHtml,
+                        item: itemHtml, // 剛上傳的圖片顯示格式
+                        item2: item2Html, // 以前上傳的圖片顯示
+                        startImageRenderer: true,
+                        canvasImage: false,
+                        _selectors: {
+                            list: '.fileuploader-items-list',
+                            item: '.fileuploader-item',
+                            start: '.fileuploader-action-start',
+                            retry: '.fileuploader-action-retry',
+                            remove: '.fileuploader-action-remove'
+                        },
+                        onImageLoaded: function (item, listEl, parentEl, newInputEl, inputEl) {
+
+                            if (item != null && item.input != null) {
+                                var file = item.input[0].files[0];
+                                var reader = new FileReader();
+                                reader.onload = function (e) {
+                                    var img = new Image();
+                                    img.src = e.target.result;
+                                    var canvas = document.createElement('canvas');
+                                    var context = canvas.getContext('2d');
+                                    canvas.width = img.width;
+                                    canvas.height = img.height;
+                                    context.drawImage(img, 0, 0, img.width, img.height);
+                                    var base64input = $(newInputEl).attr("name") + "Base64";
+                                    $("#"+base64input).val(canvas.toDataURL(file.type, 0.3));
+
+                                    var formData = new FormData();
+                                    formData.append("SiteID", @siteId);
+                                    formData.append("postedFile", file);
+                                    formData.append("FileBase64", $("#"+base64input).val());
+                                    $.ajax({
+                                        url: "@Url.Action("SetSocialSettingImage", "SocialSetting")",
+                                        data: formData,
+                                    type: "POST",
+                                    dataType: 'json',
+                                    processData: false,
+                                    contentType: false,
+                                    async: false,
+                                    success: function (data) {
+                                        if (data != null) {
+                                            console.log(data);
+                                                //Component.alert('資料已儲存');
+                                            }
+                                        },
+                                        fail: function () {
+                                            console.log("refresh fail ");
+                                        }
+                                    });
+                                }
+                                reader.readAsDataURL(file);
+                            }
+                        },
+                        onItemShow: function (item, listEl, parentEl, newInputEl, inputEl) {
+                            var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                                api = $.fileuploader.getInstance(inputEl.get(0));
+
+                            if (api.getFiles().length >= api.getOptions().limit) {
+                                plusInput.hide();
+                            }
+
+                            plusInput.insertAfter(item.html);
+
+                            if (item.format == 'image') {
+                                item.html.find('.fileuploader-item-icon').hide();
+                            };
+
+                            listEl.find('.openLeftEdit').on('click', function (e) {
+                                e.preventDefault();
+                                var mainWin = Component.toggleLeft(this.href);
+                                mainWin.getImageItem = function () {
+                                    return $.parseJSON(valElm.val());
+                                };
+
+                                mainWin.setImageItem = function (imgItem) {
+                                    valElm.val(JSON.stringify(imgItem));
+                                };
+                            });
+
+                            listEl.find('.showStatus').click(function () {
+                                var iconElm = $(this).find('i');
+                                var isShow = true;
+                                if (iconElm.hasClass('cc-eye')) {
+                                    iconElm.removeClass('cc-eye').addClass('cc-eye-off');
+                                    isShow = false;
+                                } else {
+                                    iconElm.removeClass('cc-eye-off').addClass('cc-eye');
+                                }
+
+                                var imgItem = $.parseJSON(valElm.val());
+                                imgItem.IsShow = isShow;
+                                valElm.val(JSON.stringify(imgItem));
+                            });
+
+                            if (!valElm.val()) {
+                                valElm.val(JSON.stringify({ "ID": "0", "IsShow": true, "IsOriginalSize": true }));
+
+                                listEl.find('.tooltip').tooltipster({
+                                    maxWidth: 100
+                                });
+                            } else {
+                                var img = $.parseJSON(valElm.val());
+                                if (!img.IsShow) {
+                                    listEl.find('.showStatus').click();
+                                }
+                            }
+                        },
+                        onItemRemove: function (html, listEl, parentEl, newInputEl, inputEl) {
+                            valElm.val('');
+
+                            var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                                api = $.fileuploader.getInstance(inputEl.get(0));
+
+                            html.children().animate({ 'opacity': 0 }, 200, function () {
+                                setTimeout(function () {
+                                    html.remove();
+
+                                    if (api.getFiles().length - 1 < api.getOptions().limit) {
+                                        plusInput.show();
+                                    }
+                                }, 100);
+                            });
+
+                            var formData = new FormData();
+                            formData.append("SiteID", @siteId);
+                            formData.append("FileBase64", "");
+                            $.ajax({
+                                url: "@Url.Action("SetSocialSettingImage", "SocialSetting")",
+                                data: formData,
+                            type: "POST",
+                            dataType: 'json',
+                            processData: false,
+                            contentType: false,
+                            async: false,
+                            success: function (data) {
+                                if (data != null) {
+                                    console.log(data);
+                                    //Component.alert('資料已儲存');
+                                }
+                            },
+                            fail: function () {
+                                console.log("refresh fail ");
+                            }
+                        });
+                        }
+                    },
+                    afterRender: function (listEl, parentEl, newInputEl, inputEl) {
+                        var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                            api = $.fileuploader.getInstance(inputEl.get(0));
+
+                        plusInput.on('click', function () {
+                            api.open();
+                        });
+                    },
+
+                });
+            });
+        }
+</script>

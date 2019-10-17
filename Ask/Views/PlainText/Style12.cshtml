@@ -1,0 +1,8 @@
+﻿@model PlainTextModel
+
+<link href="~/css/Cards/PlainText/style12.css" rel="stylesheet" />
+
+<div id="plainText_@Model.CardNo" class="card-plainText" data-style="12">
+    <div class="title-main wow fadeInUp">@Model.Title</div>
+    <div class="title-sub wow fadeInUp">@Html.Raw(Model.Description)</div>
+</div>

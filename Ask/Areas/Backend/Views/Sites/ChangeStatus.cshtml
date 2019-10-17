@@ -1,0 +1,89 @@
+﻿@model WorkV3.Models.SitesModels 
+@{
+    ViewBag.Title = "網站上線/隱藏";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+<script src="~/script/workV3/check.js" type="text/javascript"></script>
+
+
+<form action="@Url.Action("ChangeStatus")" id="editForm" method="post">
+    <div class="zone zone-base p-T-8">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">網站開放設定</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="radio-box inline full">
+                                            <div>
+                                                <input name="Issue" type="radio" id="Issue_1" class="with-gap" @(Model.Issue ? "checked" : "") value="True" />
+                                                <label for="Issue_1">上線</label>
+                                            </div>
+                                            <div>
+                                                <input name="Issue" type="radio" id="Issue_0" class="with-gap" @(!Model.Issue ? "checked" : "") value="False" />
+                                                <label for="Issue_0">隱藏</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar">
+                    <a class="btn-cancel" href="#" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="#" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+                    <input type="hidden" id="ID" name="ID" value="@(Model.Id)" />
+                    <input type="hidden" id="OldIssue" name="OldIssue" value="@(Model.Issue.ToString())" />
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+
+@BundleConfig.Component()
+@BundleConfig.Validate()
+    <script type="text/javascript">
+        $(function () {
+
+            $('#btnCancel').click(function () {
+                CloseWindow();
+            });
+            $('#btnSave').click(function () {
+
+                var url = "@Url.Action("ChangeIssue", "Sites")";
+                var ID = $("#ID").val();
+                var Issue = false;
+                var confirmMsg = "確定網站暫時關閉?";
+                if ($("#Issue_1").prop("checked")) {
+                    Issue = true;
+                    confirmMsg = "確定網站上線?";
+                }
+
+                Component.confirm(confirmMsg, function (isConfirm) {
+                    if (!isConfirm)
+                        return;
+                    $.post(url, { 'id': ID, 'Issue': Issue }, function (data) {
+                        Component.alert('儲存成功。', function () {
+                            CloseWindow();
+                            parent.refreshList();
+                        });
+                    });
+
+                });
+            });
+
+        });
+        function CloseWindow() {
+            parent.$.colorbox.close();
+        }
+    </script>

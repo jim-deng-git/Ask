@@ -1,0 +1,18 @@
+.card-imageTextList[data-style="30"] {
+  text-align: center;
+  font-size: 0; }
+  .card-imageTextList[data-style="30"] > div {
+    font-size: initial;
+    float: none;
+    width: calc((100% - (20px * 5)) / 5);
+    margin: 0 10px 20px;
+    display: inline-block; }
+    @media only screen and (max-width: 1024px) {
+      .card-imageTextList[data-style="30"] > div {
+        width: calc((100% - (20px * 3)) / 3); } }
+    @media only screen and (max-width: 800px) {
+      .card-imageTextList[data-style="30"] > div {
+        width: calc((100% - (20px * 2)) / 2); } }
+    @media only screen and (max-width: 420px) {
+      .card-imageTextList[data-style="30"] > div .card-img > a {
+        width: 100%; } }

@@ -1,0 +1,61 @@
+﻿
+@{
+    ViewBag.Title = "Log into WebSite";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminLayout.cshtml";
+    string message = (string)TempData["message"];
+}
+
+@section HArea{
+    @Styles.Render("~/Css/forms")
+    @Styles.Render("~/Css/BackCssLogin")
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+
+    <script type="text/javascript">
+        $(function () {
+            var message = "@message";
+            function checkForm() {
+                var form = $('#SendForm');
+                if (form.validationEngine('validate')) {
+                    form.submit();
+                }
+            }
+
+            $('#btnSave').click(function () {             
+                checkForm();
+            });
+            $('#SendForm').keypress(function (e) {
+                if (e.keyCode == 13) {
+                    checkForm();
+                }
+            });
+            if (message != "")
+            {
+                Component.alert(message, function () {
+                });
+            }
+        });
+    </script>
+
+}
+<div class="login backend">
+    <div class="login-logo"><img src="~/images/login-logo.png" alt="">後端管理平台</div>
+    <div class="login-box">
+        <form id="SendForm" action="@Url.Action("LoginCheck","Home")" method="post" enctype="multipart/form-data">
+            
+            <div class="input-field">
+                @Html.TextBox("txtLoginID","",new { @placeholder = "帳號", @class = "validate[required]" })
+            </div>
+
+            <div class="input-field">
+                @Html.Password("txtPwd","", new { @placeholder = "密碼", @class = "validate[required]" })
+            </div>
+
+            <div class="btnBox">
+                <a class="btn-grey-lighten-1-o btn-large block" href="javascript:void(0);" id="btnSave">Log In</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>

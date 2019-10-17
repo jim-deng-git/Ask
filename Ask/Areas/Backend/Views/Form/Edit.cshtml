@@ -1,0 +1,344 @@
+﻿@model WorkV3.Models.FormModel
+@{
+    ViewBag.Title = "表單編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    SitePage curPage = ViewBag.SitePage;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    <link href="~/css/Cards/Form/style1.css" rel="stylesheet" />
+}
+
+@section Script {
+    @BundleConfig.Component()  
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()    
+    <script type="text/javascript">
+        Component.editor("Description");
+        Component.editor('Statement');
+        Component.singleImageUpload('#fImage', '@(Href("~/"))', '@uploadUrl', true);
+
+        $('#btnShowDescription').each(function () {
+            $(this).click(function () {
+                var iElm = $(this).find('i');
+                if (iElm.hasClass('cc-eye')) {
+                    iElm.removeClass('cc-eye').addClass('cc-eye-off');
+                    $(this).find('input').val('False');
+                } else {
+                    iElm.removeClass('cc-eye-off').addClass('cc-eye');
+                    $(this).find('input').val('True');
+                }
+            });
+
+            var val = $(this).find('input').val();
+            if (val == 'False') {
+                $(this).click();
+            }
+        });
+
+        (function () {
+            var outerElm = $('#liCustomField');
+
+            function initFields(container) {
+                container.find(':file').each(function () {
+                    var $this = $(this);
+                    if ($this.hasClass("fieldFile")) {
+                        Component.singleFileUpload('#' + this.id, '@(Href("~/"))', '@uploadUrl', null, true);
+                    } else if ($this.hasClass('fieldImage')) {
+                        Component.singleImageUpload('#' + this.id, '@(Href("~/"))', '@uploadUrl', true);
+                    }
+                });
+
+                container.find('input.fieldRegion').each(function () {
+                    Component.worldRegion(this, '@Html.Raw(Url.Action("Regions", "Common"))', { fix: this.value ? $.parseJSON(this.value) : [] });
+                });
+            }
+
+            function newFieldHandler(html) {
+                html = $(html);
+                html.find('select').material_select();
+                html.find('.tooltip').tooltipster({ maxWidth: 250 });
+                return html;
+            }
+
+            initFields(outerElm);
+
+            $('#btnAdd').click(function (e) {
+                e.preventDefault();
+                var mainWin = Component.openRight(this.href);
+                mainWin.setField = function (id) {
+                    $.post('@Url.Action("FieldDesignViewAsync")', { ids: ($.isArray(id) ? id.join() : id) }, function (html) {
+                        html = newFieldHandler(html);
+                        outerElm.append(html);
+                        initFields(html);
+                    });
+                }
+            });
+
+            outerElm.on('click', 'a.fieldEdit', function (e) {
+                var $this = $(this);
+                e.preventDefault();
+                var mainWin = Component.openLeft(this.href, '50%', '25%');
+                mainWin.setField = function (id) {
+                    $.post('@Url.Action("FieldDesignViewAsync")', { ids: ($.isArray(id) ? id.join() : id) }, function (html) {
+                        html = newFieldHandler(html);
+                        $this.closest('div.field-outer').replaceWith(html);
+                        initFields(html);
+                    });
+                }
+            });
+
+            outerElm.on('click', 'a.fieldCopy', function () {
+                var item = $.parseJSON($(this).parent().find('input[type="hidden"]').val());
+                $.get('@Url.Action("FieldCopy")/' + item.ID, function (html) {
+                    html = newFieldHandler(html);
+                    outerElm.append(html);
+                    initFields(html);
+                });
+            });
+
+            outerElm.on('click', 'a.fieldShow', function () {
+                var $this = $(this);
+                var valElm = $this.parent().find('input[type="hidden"]');
+                var item = $.parseJSON(valElm.val());
+                item.Enable = !item.Enable;
+                valElm.val(JSON.stringify(item));
+
+                if (item.Enable) {
+                    Component.autoAlert('欄位已顯示', 2, function () {
+                        $this.find('i').removeClass('cc-eye-off').addClass('cc-eye');
+                    });
+                } else {
+                    Component.autoAlert('欄位已隱藏', 2, function () {
+                        $this.find('i').removeClass('cc-eye').addClass('cc-eye-off');
+                    });                    
+                }
+            });
+
+            outerElm.on('click', 'a.fieldDel', function () {
+                $(this).closest('div.field-outer').remove();
+            });
+
+            outerElm.sortable({ items: 'div.field-outer' });
+        })();
+
+        $('#ForceStatement,#NotifyAdmin').each(function () {
+            $(this).click(function () {
+                if (this.checked)
+                    $(this).closest('div.outerElm').nextAll('div').slideDown();
+                else
+                    $(this).closest('div.outerElm').nextAll('div').slideUp();
+            });
+            
+            if (this.id == 'ForceStatement') {
+                setTimeout(function () {
+                    $('#ForceStatement').triggerHandler('click');
+                }, 500);
+            } else {
+                $(this).triggerHandler('click');
+            }            
+        });
+
+        $('#divAdmins').on('click', 'a', function () {
+            $(this).parent().remove();
+        });
+
+        function setAdmins(admins) {
+            admins = admins || [];
+
+            var divAdminsElm = $('#divAdmins');
+            divAdminsElm.children('div.chip').each(function () {
+                var item = $.parseJSON($(this).attr('data-val'));
+                var index = 0, len = admins.length;
+                for (; index < len; ++index) {
+                    if (admins[index].Email.toLowerCase() == item.Email.toLowerCase() && admins[index].MemberID == item.MemberID)
+                        break;
+                }
+                if (index < len)
+                    admins.splice(index, 1);
+            });
+
+            var html = '';
+            for (var i = 0, len = admins.length; i < len; ++i) {
+                var item = admins[i];
+                html += '<div class="chip" data-val=\'' + JSON.stringify(item) + '\'>';
+                if (item.Img)
+                    html += '<img src="' + item.Img + '" alt="' + item.Name + '" /> ';
+                html += (item.Name || '') + " " + item.Email;
+                html += '<a class="tooltip" title="刪除"><i class="cc cc-close"></i></a>';
+                html += '</div>';
+            }
+
+            divAdminsElm.children('a').before(html);
+        }
+
+        $('#btnCancel').click(function () {
+            Component.confirm('取消後你當前編輯的頁面將不會儲存，確定取消嗎？', function (isOK) {
+                if (isOK) {
+                    location.replace(location.href);
+                }
+            }, 'warning');
+        });
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                var fields = [];
+                $('#liCustomField').children('div.field-outer').each(function () {
+                    var item = $.parseJSON($(this).find('input[type="hidden"]').val());
+                    fields.push(item);
+                });
+                if (fields.length)
+                    $(document.getElementsByName('Fields')).val(JSON.stringify(fields));
+
+                var admins = [];
+                $('#divAdmins').children('div[data-val]').each(function () {
+                    admins.push($.parseJSON($(this).attr('data-val')));
+                });
+                if (admins.length > 0)
+                    $('#Admins').val(JSON.stringify(admins));
+
+                form.submit();
+            }
+        });
+
+        @if(ViewBag.Exit as bool? == true) {
+            <text>
+        Component.alert('表單已儲存');
+            </text>
+        }
+    </script>
+}
+
+<div class="groove groove-1">
+    <form id="editForm" action="@Url.Action("Edit", new { siteId = siteId, menuId = menuId })" method="post" enctype="multipart/form-data">
+        <div class="card shadow-none">
+            <div class="float-R">
+                <a class="btn-grey-darken-2-o openEdit-c" href="@Url.Action("LoadTemplate", new { siteId = siteId, menuId = menuId, formId = Model.ID })">
+                    <i class="cc cc-desktop-message"></i>套用範本
+                </a>
+            </div>
+            <a id="btnAdd" class="addFiled btn-with-item btn-grey-darken-2-o square empty" href="@Url.Action("AddField", new { formId = Model.ID })">
+                <i class="cc cc-plus"></i>
+                <div>新增欄位</div>
+            </a>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title">主標題</div>
+                        <div class="input-field">
+                            <input type="text" id="Title" name="Title" value="@Model.Title" />
+                        </div>
+                    </div>
+                </li>
+                <li class="paragraph m-B-8">
+                    <a id="btnShowDescription" class="btn-del square btn-large transparent" href="javascript:">
+                        <i class="cc cc-eye"></i>
+                        <input type="hidden" name="ShowDescription" value="@Model.ShowDescription.ToString()" />
+                    </a>
+                    <div class="col-3-partner m-T-6">
+                        <textarea id="Description" name="Description">@(string.IsNullOrWhiteSpace(Model.Description) ? "請填入段落內文" : Model.Description)</textarea>
+                    </div>
+                    <div class="col-3">
+                        <input type="file" id="fImage" name="fImage" />
+                        <input type="hidden" id="Image" name="Image" value='@(string.IsNullOrWhiteSpace(Model.Image) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.Image }))' />
+                    </div>
+                </li>
+                <li id="liCustomField">
+                    @{ IEnumerable<WorkV3.Models.FieldModel> fields = Model.GetFields(); }
+                    @if (fields?.Count() > 0) {
+                        Html.RenderPartial("FieldDesignView", fields);
+                    }
+                </li>
+            </ul>
+            <input type="hidden" name="Fields" />
+            <div class="line">
+                <div class="something-setting">
+                    <div>表單相關設定</div>
+                    <ul class="forms m-h-none">
+                        <li>
+                            <div class="col-1">
+                                <div class="check-box inline full">
+                                    <div class="outerElm">
+                                        @Html.CheckBoxFor(m => m.ForceStatement)                                        
+                                        <label for="ForceStatement">填表聲明</label>
+                                        <div class="alert inline transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>若此項不勾選，使用者在前台填寫時，不用先同意填表聲明。</div>
+                                        </div>
+                                    </div>
+                                    <textarea id="Statement" name="Statement">@(string.IsNullOrWhiteSpace(Model.Statement) ? "請填入段落內文" : Model.Statement)</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="check-box inline full">
+                                    <div>
+                                        @Html.CheckBoxFor(m => m.HasCaptcha)
+                                        <label for="HasCaptcha">使用驗證碼</label>
+                                        <div class="alert inline transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>為了防範駭客機器人攻擊，填表時必須輸入正確驗證碼，才能提交本表單。</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="check-box inline full outerElm">
+                                    <div>
+                                        @Html.CheckBoxFor(m => m.NotifyAdmin)                                        
+                                        <label for="NotifyAdmin">通知管理員</label>
+                                        <div class="alert inline transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>有人填寫此表單時，會自動通知以下管理員的Email信箱。</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="inline full">
+                                    <div id="divAdmins" class="chips inline">
+                                        @{ IEnumerable<WorkV3.Models.FormAdmin> admins = Model.GetAdmins(); }
+                                        @foreach (WorkV3.Models.FormAdmin item in admins) {
+                                        <div class="chip" data-val='@Newtonsoft.Json.JsonConvert.SerializeObject(item, ViewBag.Int64Convert)'>
+                                            @if (!string.IsNullOrWhiteSpace(item.Img)) {
+                                            <img src="@item.Img" alt="@item.Name" />
+                                            }
+                                            @item.Name @item.Email
+                                            <a class="tooltip" title="刪除">
+                                                <i class="cc cc-close"></i>
+                                            </a>
+                                        </div>
+                                        }                                        
+                                        <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choicePoster" title="選擇管理員"><i class="cc cc-plus"></i></a>
+                                        <ul id="choicePoster" class="dropdown-content customContent large closeOnClick">
+                                            <li>
+                                                <iframe class="dropdownIframe" src="@Html.Raw(Url.Action("AdminSelect", new { siteId = siteId, formId = Model.ID }))" frameborder="0"></iframe>
+                                            </li>
+                                        </ul>
+                                        <input type="hidden" id="Admins" name="Admins" />
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="control-bar">
+                <div class="bar-item float-L">                    
+                    <a class="btn-grey transparent font-grey float-L" href="javascript:Component.openRight('@Url.Action("seoEdit", "Common", new { siteId = siteId, menuId = menuId, sourceNo = Model.ID })')"><i class="cc cc-search-text"></i>SEO設定</a>
+                    <a class="btn-grey transparent font-grey float-L openEdit" data-width="300" data-height="290" data-left="70" href="@Url.Action("SaveTemplate", new { id = Model.ID })"><i class="cc cc-template"></i>存成範本</a>
+                    <a class="btn-grey transparent font-grey float-L" href="@Url.Action("Index", "Home", new { siteSn = curPage.SiteSN, pageSn = curPage.PageSN, area = string.Empty })" target="_blank"><i class="cc cc-cellphone-link"></i>預覽</a>                    
+                </div>
+                <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            </div>
+        </div>
+        <input type="hidden" name="ID" value="@Model.ID" />
+    </form>
+</div>

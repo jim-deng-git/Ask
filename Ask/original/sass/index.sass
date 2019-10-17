@@ -1,0 +1,59 @@
+@charset "utf-8"
+
+@import variables
+@import utilities
+@import extend
+@import mixins/rwd
+@import mixins/hover
+
+//col區塊間距
+$box-space: 1.5px  
+@import ask/global
+@import ask/navbar
+@import ask/_footer
+
+
+.groove
+  margin: 5em 0
+  +breakpoint(mobile)
+    margin: 2em 0
+.card-plainText
+  text-align: center
+  .title-main
+    color: $color-main
+    font-size: 38px
+    line-height: 1
+    position: relative
+    display: inline-block
+    +breakpoint(mobile)
+      font-size: $h3
+  .title-sub
+    color: #4a4a4a
+    font-size: 22px
+  .title-detail
+    color: black
+    font-size: 22px
+    margin-top: 30px
+    margin-bottom: 45px
+.first-card
+  padding-top: 111px
+.card-plainText[data-style="2"]
+  max-width: 800px
+  margin: 0 auto
+  .card-btn
+    display: block
+    width: 145px
+    height: 71px
+    border-radius: 35.5px 
+    background-color: $color-main
+    margin: 0 auto
+    a
+      display: block
+      color: white
+      font-size: 35px
+      padding-top: 5px
+    +hover
+      background-color: #5e8f26
+      @extend  %transition-btn
+
+

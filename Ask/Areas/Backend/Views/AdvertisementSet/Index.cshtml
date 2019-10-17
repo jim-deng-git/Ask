@@ -1,0 +1,204 @@
+﻿@model List<AdvertisersModel>
+@{ 
+    ViewBag.Title = "廣告區設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+    Pagination pagination = ViewBag.Pagination;
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+}
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+
+        $(function () {
+
+        });
+
+        $(".fixTable").stickyTableHeaders();
+
+        var listObj = Component.dataList('listTable');
+
+        listObj.sorted = function (sortItems) {
+            var url = '@Url.Action("AdvertisersSort", "AdvertisementSet")';
+            $.post(url, { 'items': sortItems }, function () {
+                location.replace(location.href);
+            });
+        }
+        listObj.deleted = function (delIds) {
+            Component.confirm('是否刪除選定資料？', function(isOk){
+                if(isOk){
+                    var url = '@Url.Action("AdvertisersDel", "AdvertisementSet")';
+                    $.post(url, { 'ids': delIds }, function () {
+                        location.replace('@Html.Raw(Url.Action("Index", siteQuery))&page=' + @pagination.PageIndex);
+                    });
+                }
+            });
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+        listObj.statusChange = function (id) {
+            var url = '@Url.Action("AdvertisementSetToggleIssue")';
+            $.get(url+ '/' + id);
+        }
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+    </script>
+}
+<div class="groove groove-1">
+    <h1 class="title-admin-page">廣告區設定</h1>
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected"><i class="cc cc-voice-o"></i>廣告主</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide p-T-10">
+                <table id="listTable" class="fixTable" style="padding: 0px;">
+                    <caption>
+                        廣告主
+                        <span class="info"></span>
+                        <div class="float-R">
+                            <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                            <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Html.Raw(Url.Action("AdvertisersEdit", siteQuery))"><i class="cc cc-plus"></i></a>
+                            <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                            <span data-for="sort" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>企業身分</th>
+                            <th>聯絡人</th>
+                            <th>職稱</th>
+                            <th>連絡電話</th>
+                            <th>Email</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Count(); i++)
+                        {
+                            AdvertisersModel item = Model.ElementAt(i);
+                            <tr data-id="@item.ID">
+                                <td class="sort">@(i + 1)</td>
+                                <td class="text-L">@item.CompanyName</td>
+                                <td class="text-L">@item.ContactPerson</td>
+                                <td class="text-L">@item.JobTitle</td>
+                                <td>@item.ContactPhone</td>
+                                <td class="font-grey">@item.Email</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="#"><i class="cc cc-eye@(item.IsIssue?"":"-off font-red")"></i></a> </td>
+                                <td class="icon edit">
+                                    <a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("AdvertisersEdit",new { siteId = 1, menuId = 1000, id = item.ID })">
+                                        <i class="cc cc-edit-o"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        @*
+                            <tr>
+                                <td class="sort">1</td>
+                                <td class="text-L">可口可樂公司</td>
+                                <td class="text-L">賴思思</td>
+                                <td class="text-L">技術總監</td>
+                                <td>02-12345678</td>
+                                <td class="font-grey">ulyan_lai@kidtech.com.tw</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Advertising/BackEnd/Advertising-Customer-Edit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="sort">2</td>
+                                <td class="text-L">學齡前幼兒</td>
+                                <td class="text-L">陳小潔</td>
+                                <td class="text-L">經理</td>
+                                <td>0912345678</td>
+                                <td class="font-grey">cathy@kidtech.com.tw</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye-off font-red"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Advertising/BackEnd/Advertising-Customer-Edit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="sort">
+                                    <input type="checkbox" id="checks1" />
+                                    <label for="checks1"></label>
+                                </td>
+                                <td class="text-L">可口可樂公司</td>
+                                <td class="text-L">賴思思</td>
+                                <td class="text-L">技術總監</td>
+                                <td>02-12345678</td>
+                                <td class="font-grey">ulyan_lai@kidtech.com.tw</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Advertising/BackEnd/Advertising-Customer-Edit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="sort">4</td>
+                                <td class="text-L">學齡前幼兒</td>
+                                <td class="text-L">陳小潔</td>
+                                <td class="text-L">經理</td>
+                                <td>0912345678</td>
+                                <td class="font-grey">cathy@kidtech.com.tw</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye-off font-red"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Advertising/BackEnd/Advertising-Customer-Edit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="sort">
+                                    <div class="input-field">
+                                        <input placeholder="" id="" type="text" value="5">
+                                    </div>
+                                </td>
+                                <td class="text-L">可口可樂公司</td>
+                                <td class="text-L">賴思思</td>
+                                <td class="text-L">技術總監</td>
+                                <td>02-12345678</td>
+                                <td class="font-grey">ulyan_lai@kidtech.com.tw</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Advertising/BackEnd/Advertising-Customer-Edit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="sort">6</td>
+                                <td class="text-L">學齡前幼兒</td>
+                                <td class="text-L">陳小潔</td>
+                                <td class="text-L">經理</td>
+                                <td>0912345678</td>
+                                <td class="font-grey">cathy@kidtech.com.tw</td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-eye-off font-red"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-m" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Advertising/BackEnd/Advertising-Customer-Edit.aspx"><i class="cc cc-edit-o"></i></a></td>
+                            </tr>
+                        *@
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

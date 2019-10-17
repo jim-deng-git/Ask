@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "QRCode";
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+    ViewBag.BodyClass = "body-lightBox";    
+}
+
+<link href="~/css/admin.css" type="text/css" rel="stylesheet" />
+<link href="~/css/forms.css" type="text/css" rel="stylesheet" />
+<div class="zone zone-full">
+    <div class="wrapper">
+        <div class="groove groove-1">
+            <div class="card shadow-none">
+                <div class="lightbox-top-bar">
+                    <div class="lightbox-top-bar-title">@ViewBag.PageTitle</div>
+                </div>
+                <ul class="forms text-C m-B-none">
+                    <li>
+                        <div class="col-1">
+                            <img src="http://chart.apis.google.com/chart?cht=qr&chl=@(Server.UrlEncode(ViewBag.Url))&chs=170x170" alt="" />
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="btn-grey-o m-5">
+                                <a href="@Url.Action("DownQRCode", new { url = ViewBag.Url })"><i class="cc cc-arrow-down"></i>下載QRcode圖檔</a>
+                                @*<a href="http://chart.apis.google.com/chart?cht=qr&chl=@(Server.UrlEncode(ViewBag.Url))&chs=170x170" target="_blank" download="QRCode.png"><i class="cc cc-arrow-down"></i>下載QRcode圖檔</a>*@
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+﻿@model IEnumerable<WorkV3.Models.RewardMailLogModel>
+
+@{
+    ViewBag.Title = "寄信名單";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    IEnumerable<WorkV3.Models.RewardCollectInfoModel> infos = ViewBag.RewardCollectInfos;
+    long siteId = ViewBag.SiteID;    
+
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+}
+
+@section FArea {
+    @BundleConfig.Component()
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">寄信名單</div>
+        </div>
+        <table class="fixTable">
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>投稿者</th>
+                    <th>投稿時間</th>                    
+                    <th>追蹤標記</th>
+                    <th>備註</th>
+                    <th>已處理</th>                    
+                    <th>已讀</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int index = 0; }
+                @foreach (WorkV3.Models.RewardMailLogModel item in Model) {
+                    WorkV3.Models.RewardCollectInfoModel infoItem = infos.FirstOrDefault(f => f.ID == item.RewardCollectInfoID);
+                    if (infoItem != null) {
+                        IEnumerable<string> flags = infoItem.GetFlags(siteId);
+                <tr>
+                    <td class="sort">@(++index)</td>
+                    <td>@infoItem.KeyValue @Html.Raw(infoItem.KeyType != "member" ? string.Empty : "<i class=\"cc cc-user-o\"></i>")</td>
+                    <td>
+                        <span class="info">
+                            @($"{ infoItem.CreateTime.ToString("MM/dd") }({ weeks[(int)((DateTime)infoItem.CreateTime).DayOfWeek] }) { infoItem.CreateTime.ToString("HH:mm") }")                            
+                        </span>
+                    </td>
+                    <td>@string.Join(", ", flags)</td>                   
+                    <td>@((infoItem.ProcessRemark ?? string.Empty).ReplaceEnterToBr())</td>
+                    <td>@Html.Raw(infoItem.IsProcess ? "<i class=\"cc cc-check\"></i>" : string.Empty)</td>                    
+                    <td>@Html.Raw(item.ReadDate != null ? "<i class=\"cc cc-check\"></i>" : string.Empty)</td>
+                </tr>
+                    }
+                }
+            </tbody>
+        </table>        
+    </div>
+    <div class="control-bar">
+        <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>
+    </div> 
+</div>
+

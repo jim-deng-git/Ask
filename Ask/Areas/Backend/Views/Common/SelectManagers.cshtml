@@ -1,0 +1,167 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@{
+    ViewBag.Title = "選擇管理員";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    List<AnalysisMemberGroupViewModel> groupMembers = (List<AnalysisMemberGroupViewModel>)ViewBag.GroupMembers;
+    string UploadUrl = ViewBag.UploadUrl;
+    string SelectMembers = ViewBag.SelectMembers;
+
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            @if (ViewBag.EnumSelect != null)
+        {
+            var enumValue = (DateRange)ViewBag.EnumSelect;
+            <text>
+            $("input[name='kind'][value='@((int)enumValue)']").trigger('click');
+            </text>
+        }
+        });
+    </script>
+}
+
+@section FArea {
+}
+
+<div class="body-dropdown">
+    <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <ul class="forms">
+                    <li>
+                        <ol class="dd-list checkStyle">
+                            <li class="dd-item" data-id="1">
+                                <input type="checkbox" id="allUsers" checked />
+                                <label for="allUsers">全部管理員創建的頁面</label>
+                                <ol class="dd-list show">
+                                    @if (groupMembers != null && groupMembers.Count > 0)
+                                    {
+                                        foreach (AnalysisMemberGroupViewModel groupMember in groupMembers)
+                                        {
+                                    <li class="dd-item" data-id="@("group"+groupMember.GroupModel.Id.ToString())">
+                                        <div class="dd-handle">
+                                            <input class="with-chip group" type="checkbox" id="@("group"+groupMember.GroupModel.Id.ToString())" />
+                                            <label class="m-B-none" for="@("group"+groupMember.GroupModel.Id.ToString())">@groupMember.GroupModel.Name</label>
+                                        </div>
+                                        <ol class="dd-list show">
+                                            @if (groupMember.GroupMembers != null && groupMember.GroupMembers.Count > 0)
+                                                    {
+
+                                                        foreach (MemberModels member in groupMember.GroupMembers)
+                                                        {
+                                                    <text>
+                                                        <li class="dd-item" data-id="@groupMember.GroupModel.Id">
+                                                            <div class="dd-handle">
+                                                                <input class="with-chip member" type="checkbox" id="@("member"+member.Id.ToString())" />
+                                                                <label class="m-B-none" for="@("member"+member.Id.ToString())">
+                                                                    @if (string.IsNullOrEmpty(member.Img))
+                                                                            {
+                                                                            <i class="cc cc-user-o"></i>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                            <img src="@(UploadUrl + member.Img)" alt="">
+                                                                            }
+                                                                    @(member.Name + " ( " + member.LoginID + " ) ")
+                                                                </label>
+                                                            </div>
+                                                        </li>
+                                                    </text>
+                                                        }
+                                                    }
+                                        </ol>
+                                    </li>
+                                        }
+                                    }
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                </ul>
+                <div class="control-bar flex">
+                    <a class="btn-cancel" href="javascript:" onclick="ResetMemberSelectedValue();"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:" onclick="SetMemberSelectedValue();"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="SelectMembers" name="SelectMembers" value="@SelectMembers" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+<script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        BindMemberSelect();
+        if ($("#SelectMembers").val() != "")
+            ResetMemberSelectedValue();
+    });
+
+
+    function BindMemberSelect() {
+        $(".group").bind("click", function () {
+            $(this).parent().parent().children("ol").find(".member").prop("checked", $(this).prop("checked"));
+        });
+        $(".member").bind("click", function () {
+            if (!$(this).prop("checked"))
+                $(this).parent().parent().parent().parent().children("div").find(".group").prop("checked", false);
+        });
+    }
+
+    function SetMemberSelectedValue() {
+        var selectMemberCount = 0;
+        var maxShowLength = 25;
+        var selectMembers = "", selectMemberNames = "";
+        $(".member:checked").each(function () {
+            if (selectMembers != "")
+                selectMembers += ";";
+            selectMembers += $(this).prop("id").replace("member", "");
+            if (selectMemberNames != "")
+                selectMemberNames += "、";
+            selectMemberNames += $("label[for=" + $(this).prop("id") + "]").text().trim();
+            selectMemberCount++;
+        });
+
+        if ($("#allUsers").prop("checked")) {
+            $("#SelectMembers").val("");
+            selectMembers = "";
+        }
+        if (selectMemberNames.length > maxShowLength)
+            selectMemberNames = selectMemberNames.substring(0, maxShowLength) + "...";
+        $("#SelectMembers").val(selectMembers);
+        window.parent.setSelectedManagers(selectMembers, selectMemberNames, selectMemberCount);
+        this.close();
+    }
+    function ResetMemberSelectedValue() {
+        var selectMemberCount = 0;
+        var isSelectAllUser = true;
+        var selectMembers = $("#SelectMembers").val().split(";");
+        var selectMemberNames = "";
+        $(".member").each(function () {
+            for (var i = 0; i < selectMembers.length; i++) {
+                if ($(this).prop("id") == "member" + selectMembers[i]) {
+                    $(this).prop("checked", true);
+                    if (selectMemberNames != "")
+                        selectMemberNames += "、";
+                    selectMemberNames += $("label[for=" + $(this).prop("id") + "]").text().trim();
+                    selectMemberCount++;
+                }
+            }
+            if (!$(this).prop("checked")) {
+                isSelectAllUser = false;
+            }
+        });
+        $("#allUsers").prop("checked", isSelectAllUser);
+        window.parent.setSelectedManagersNames( selectMemberNames, selectMemberCount);
+        this.close();
+
+    }
+
+</script>
+
+

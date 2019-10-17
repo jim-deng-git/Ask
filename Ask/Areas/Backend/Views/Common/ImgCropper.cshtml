@@ -1,0 +1,727 @@
+﻿@{
+    ViewBag.Title = "圖片裁切";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo };
+}
+<link href="~/css/vendor/flexslider/flexslider.css" rel="stylesheet" />
+<script type="text/javascript" src="~/script/flexslider/jquery.flexslider.js"></script>
+<div class="groove groove-1">
+    <ul class="forms img-cropper">
+        <li>
+            <div class="col-1">
+                <div class="col-4-partner">
+                    <div class="img-container">
+                        <img src="" id="imgCurrent" alt="">
+                    </div>
+
+                    <div class="flexslider m-T-4">
+                        <ul class="slides" id="ulPhotoList"></ul>
+                    </div>
+                </div>
+                <div class="col-4-partner" id="ulCroppers" style="visibility:hidden; z-index:0; position:fixed" >
+
+
+                </div>
+                <div class="col-4">
+                    <div class="preview"></div>
+                    <div class="mobile-bottom-controller">
+                        <div>
+                            <button data-method="reset" class="btn btn-cropper btn-grey-darken-3-o tooltip-info" title="reset">Reset</button>
+                            <div class="trigger-value btn-grey-darken-3-o square mobile-show">
+                                <i class="cc cc-settings"></i>
+                            </div>
+                            <div data-method="circle" class="trigger-circle btn-cropper btn-grey-darken-3-o square tooltip-info mobile-show" title="圓形">
+                                <i class="cc cc-circle-o"></i>
+                            </div>
+                        </div>
+                        <div class="value-controller">
+                            <span style="display:none">
+                                <div class="input-field full">
+                                    <span class="label">Image Width</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataImageWidth" data-value="width" class="value-control" class="text-C" placeholder="Image width">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Image Height</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataImageHeight" data-value="height" class="value-control" class="text-C" placeholder="Image height">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                            </span>
+                            <span style="display:none">
+                                <div class="input-field full">
+                                    <span class="label">Crop Width</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataCropWidth" data-value="width" class="value-control" class="text-C" placeholder="Crop width">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Crop Height</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataCropHeight" data-value="height" class="value-control" class="text-C" placeholder="Crop height">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Crop Left</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataCropLeft" data-value="width" class="value-control" class="text-C" placeholder="Crop Left">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Crop Top</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataCropTop" data-value="height" class="value-control" class="text-C" placeholder="Crop Top">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                            </span>
+                            <span>
+                                <div class="input-field full">
+                                    <span class="label">Width</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataWidth" data-value="width" class="value-control" class="text-C" placeholder="width">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Height</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataHeight" data-value="height" class="value-control" class="text-C" placeholder="height">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                            </span>
+                            <span>
+                                <div class="input-field full">
+                                    <span class="label">X</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataX" data-value="positionX" class="value-control" class="text-C" placeholder="x">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Y</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataY" data-value="positionY" class="value-control" class="text-C" placeholder="y">
+                                    </span>
+                                    <span class="unit">px</span>
+                                </div>
+                                <div class="input-field full">
+                                    <span class="label">Rotate</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataRotate" data-value="rotate" class="value-control" class="text-C" placeholder="rotate">
+                                    </span>
+                                    <span class="unit">deg</span>
+                                </div>
+                                <div class="input-field full" style="display:none">
+                                    <span class="label">Rotate</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataRotate" data-value="rotate" class="value-control" class="text-C" placeholder="rotate">
+                                    </span>
+                                    <span class="unit">deg</span>
+                                </div>
+                            </span>
+                            <span style="display:none">
+                                <div class="input-field full">
+                                    <span class="label">Zoom</span>
+                                    <span class="input-field inline">
+                                        <input type="text" id="dataZoom" data-value="Zoom" class="value-control" class="text-C" placeholder="Zoom">
+                                    </span>
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-top-controller">
+                        <div class="">
+                            <div class="trigger-ratio btn-default mobile-show">
+                                <i class="cc cc-square-o"></i>
+                            </div>
+                            <div class="ratio-controller">
+                                <div class="controller-wrap">
+                                    <div>
+                                        <input type="radio" class="btn-cropper" data-method="setRatio1" name="ratioMode" id="ratioMode1" checked>
+                                        <label for="ratioMode1"><span data-ratio="16:9"></span></label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="btn-cropper" data-method="setRatio2" name="ratioMode" id="ratioMode2">
+                                        <label for="ratioMode2"><span data-ratio="4:3"></span></label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="btn-cropper" data-method="setRatio3" name="ratioMode" id="ratioMode3">
+                                        <label for="ratioMode3"><span data-ratio="1:1"></span></label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" class="btn-cropper" data-method="setRatio4" name="ratioMode" id="ratioMode4">
+                                        <label for="ratioMode4"><span data-ratio="Free"></span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="">
+                            <button data-method="reset" class="btn btn-cropper btn-grey-darken-3-o tooltip-info" title="reset">Reset</button>
+                            <button data-method="clear" class="btn btn-cropper btn-grey-darken-3-o tooltip-info" title="clear">
+                                <span class="mobile-none">Clear</span>
+                                <span class="mobile-show"><i class="cc cc-eye-off"></i></span>
+                            </button>
+                            <button data-method="crop" class="btn btn-cropper btn-grey-darken-3-o tooltip-info" title="crop" style="display:none">
+                                <span class="mobile-none">Crop</span>
+                                <span class="mobile-show"><i class="cc cc-eye"></i></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="basic-controller">
+                        <button data-method="rotateR" data-option="-45" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="向右旋轉45度">
+                            <i class="cc cc-reload"></i>
+                        </button>
+                        <button data-method="rotateL" data-option="45" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="向左旋轉45度">
+                            <i class="cc cc-reload cc-flip-horizontal"></i>
+                        </button>
+                        <button data-method="scaleX" data-option="-1" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="水平翻轉">
+                            <i class="cc cc-logout"></i>
+                        </button>
+                        <button data-method="scaleY" data-option="-1" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="垂直翻轉">
+                            <i class="cc cc-logout cc-rotate-90"></i>
+                        </button>
+                        <button data-method="zoomIn" data-option="0.1" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="放大">
+                            <i class="cc cc-plus"></i>
+                        </button>
+                        <button data-method="zoomOut" data-option="-0.1" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="縮小">
+                            --
+                        </button>
+                        <button data-method="circle" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info trigger-circle" title="圓形">
+                            <i class="cc cc-circle-o"></i>
+                        </button>
+                    </div>
+                    <div class="move-controller">
+                        <button data-method="moveUp" data-option="-10" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="向上移動"><i class="cc cc-arrow-up"></i></button>
+                        <button data-method="moveDown" data-option="10" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="向下移動"><i class="cc cc-arrow-down"></i></button>
+                        <button data-method="moveLeft" data-option="-10" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="向左移動"><i class="cc cc-arrow-left"></i></button>
+                        <button data-method="moveRight" data-option="10" class="btn btn-cropper btn-grey-darken-3-o square tooltip-info" title="向右移動"><i class="cc cc-arrow-right"></i></button>
+                    </div>
+
+                </div>
+            </div>
+            
+
+        </li>
+    </ul>
+    <div class="control-bar flex" id="divWaiting" style="display:none">
+        作業處理中...請稍候
+    </div>
+    <div class="control-bar flex" id="divAction">
+        <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+        <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+        <!-- 當有多張圖片時才出現 -->
+        <a href="javascript:;" class="btn-cropper" id="btnUsed">套用到所選圖片</a>
+    </div>
+</div>
+    @*<div>
+        <ul class="forms img-cropper" id="ulCroppers" >
+
+            </ul>
+            </div>*@
+    @section FArea {
+        @BundleConfig.SlidePips()
+        @BundleConfig.FileUploader()
+        @BundleConfig.Validate()
+        @BundleConfig.Component()
+        <script>
+            var cropper;
+            var isProcessFinish = false;
+            function sleep(milliseconds) {
+                var start = new Date().getTime();
+                for (var i = 0; i < 1e7; i++) {
+                    if ((new Date().getTime() - start) > milliseconds) {
+                        break;
+                    }
+                }
+            }
+            $(function () {
+                var defaultImage;
+                var mainWin = getMainWin();
+                var $width = $(window).width(),
+                    $height = $(window).height(),
+                    $cropperWrap = $("ul.img-cropper"),
+                    $cropViewBox = $(".cropper-view-box"),
+                    $ratioSelect = $("input[name='ratioMode']"),
+                    $preview = $(".preview"),
+                    $valueTigger = $(".trigger-value"),
+                    $ratioTrigger = $(".trigger-ratio"),
+                    $circleTrigger = $(".trigger-circle"),
+                    $valueController = $(".value-controller"),
+                    $ratioController = $(".ratio-controller");
+
+                if ($width <= 800) {
+                    // var $outer = $('div:not(".ratio-controller")');
+                    var $outer = $('div[class!="ratio-controller"]');
+                    // $('div:not(.first-bar)')
+
+                    $valueTigger.click(function () {
+                        $(this).parent().siblings($valueController).slideToggle();
+                    });
+                    $ratioTrigger.click(function () {
+                        $(this).siblings($ratioController).stop().slideDown();
+                        // $(this).siblings($ratioController).stop().slideToggle();
+                        // $ratioSelect.click(function(){
+                        //     $ratioController.slideUp();
+                        // });
+                        // if($ratioController.height() > 0) {
+                        //     $("div").on("click", function(){
+                        //         var target = $("div").not("ratio-controller");
+                        //         $ratioController.slideUp();
+                        //         // console.log(target);
+                        //     })
+                        // }
+                    });
+                    $(document).mouseup(function (e) {
+                        var _con = $(".ratio-controller");
+                        if (!_con.is(e.target) && _con.has(e.target).length === 0) {
+                            _con.slideUp('active');
+                        }
+                    });
+                }
+
+                // 圓形裁切
+                $circleTrigger.click(function () {
+                    $cropperWrap.toggleClass("is-circle");
+                    // $cropViewBox.toggleClass("is-circle");
+                    // $preview.toggleClass("is-circle");
+                })
+                $("#btnCancel").click(function () {
+                    mainWin.closeWindow();
+                });
+                $("#btnSave").click(function () {
+                    CropperActiveImages(true);
+                });
+                $("#btnUsed").click(function () {
+                    CropperActiveImages(false);
+                });
+                var imgItems = mainWin.getImageItemList();
+                var currentImgItem = mainWin.getImageItem();
+                var browserUrl = mainWin.getBrowserUrl();
+                $("#ulPhotoList").html("");
+                if (imgItems != null && imgItems.length > 0) {
+                    for (var index = 0; index < imgItems.length; index++) {
+                        var imgItem = imgItems[index];
+                        var imgSrc = browserUrl + imgItem.Img;
+                        var img = "<a class=\"bg-img\" href=\"javascript:;\" id=\"aPreview" + index + "\"  data-sourceurl=\"" + imgSrc + "\"><img src=\""+imgSrc+"\"/></a>";
+                        $("#ulPhotoList").append("<li>" + img + "</li>");
+                    }
+                }
+                if (currentImgItem != null) {
+                    var imgSrc = browserUrl + currentImgItem.Img;
+                    $("#imgCurrent").attr("src", imgSrc);
+                    defaultImage = currentImgItem;
+                }
+            })
+            function CropperActiveImages(isUpload) {
+                var url = "@Url.Action("ImgCropperUpload", "Common")";
+                var imgDataWidth = $("#dataImageWidth").val(), imgDataHeight = $("#dataImageHeight").val();
+                var cropwidth = $("#dataCropWidth").val(), cropheight = $("#dataCropHeight").val();
+                var cropleft = $("#dataCropLeft").val(), croptop = $("#dataCropTop").val();
+                var rotate = $("#dataRotate").val();
+                var zoom_rotate = $("#dataZoom").val();
+                var image = $("#imgCurrent");
+                var imgList = $("#ulPhotoList>li[class*=active]>a");
+                if (imgList.length <= 0) {
+                    Component.alert("請選擇要套用的圖片");
+                    return;
+                }
+                if (isProcessFinish) {
+                    Component.alert("尚在處理中，請靜候幾秒後再試");
+                    return;
+                }
+                var isOtherProcess = false;
+                isProcessFinish = true;
+                $("#divWaiting").show();
+                $("#divAction").hide();
+                $("#ulCroppers").html("");
+                var $dataX = $('#dataX');
+                var $dataY = $('#dataY');
+                var $dataWidth = $('#dataWidth');
+                var $dataHeight = $('#dataHeight');
+                var $dataRotate = $('#dataRotate');
+                var $dataZoom = $('#dataZoom');
+                var $dataImageWidth = $('#dataImageWidth');
+                var $dataImageHeight = $('#dataImageHeight');
+                var $dataCropWidth = $('#dataCropWidth');
+                var $dataCropHeight = $('#dataCropHeight');
+                var $dataCropLeft = $('#dataCropLeft');
+                var $dataCropTop = $('#dataCropTop');
+                var currentData = $(image).cropper("getData");
+                var currentZoom = currentData.width / currentData.naturalWidth;
+                console.log(currentZoom);
+                //console.log(currentData);
+                var processCount = 0;
+                for (var index = 0; index < imgList.length; index++) {
+                    var bgUrl = $(imgList[index]).attr("data-sourceurl");//.css('background-image');
+                    //bgUrl = bgUrl.replace('url(', '').replace(')', '').replace(/\"/gi, "");
+                    //$(cropper).cropper("destroy");
+                    //$('#imgCurrent').attr("src", bgUrl);
+                    //$(cropper).cropper("replace", bgUrl);
+                    //$(cropper).cropper("ready", function () {
+                    //    alert("aaa");
+                    //    $(cropper).cropper("rotateTo", rotate);
+                    //});
+                    var myImage = new Image();
+                    $(myImage).attr("id", "myCropperImage" + index);
+                    $(myImage).attr("data-target", $(imgList[index]).attr("id"));
+                    $(myImage).attr("index", index);
+                    $(myImage).attr("src", bgUrl);
+                    $(myImage).attr("data-sourceurl", bgUrl);
+                    //var container = "<li><div class='col-1'><div class='col-4-partner'><div class='img-container'></div></div></div></li>";
+                    //var container = "<div></div>";
+                    //$(container).append(myImage);
+                    var container = document.createElement("div");//"<div class=\"img-container\" ></div>";
+                    $(container).attr("class", "img-container");
+                    $(container).append(myImage);
+                    $("#ulCroppers").append(container);
+                    var myCropper = $(myImage).cropper({
+                        background: false,
+                        zoomOnWheel:false,
+                        movable: true,
+                        minCropBoxWidth: 50,
+                        minCropBoxHeight: 50,
+                        width:"100%",
+                        height:"100%",
+                        ready: function () {
+                            var imgUrl = $(this).attr("data-sourceurl");
+                            var imgIndex = $(this).attr("index");
+                            var cropData = $(this).cropper("getCropBoxData");
+                            var imgData = $(this).cropper("getImageData");
+                            var cData = $(this).cropper("getData");
+                            var rateWidth = parseFloat(imgData.width) / parseFloat(imgDataWidth);
+                            var rateHeight = parseFloat(imgData.height) / parseFloat(imgDataHeight);
+                            var newCropLeft = (currentData.x * rateWidth);
+                            var newCropTop = (currentData.y * rateHeight);
+                            var newCropWidth = (currentData.width * rateWidth);
+                            var newCropHeight = (currentData.height * rateHeight);
+                            if (zoom_rotate!= "")
+                                $(this).cropper("zoomTo", zoom_rotate);
+                            if (rotate != "")
+                                $(this).cropper("rotateTo", rotate);
+                            //console.log(cData);
+                            var IsOverImageSize = false;
+                            //裁圖框超出圖片尺寸
+                            if (newCropLeft > imgData.width || (newCropLeft + newCropWidth) > imgData.width ||
+                                newCropTop > imgData.height || (newCropTop + newCropHeight) > imgData.height) {
+                                IsOverImageSize = true;
+                            }
+                            $(this).cropper("setData", { x: newCropLeft, y: newCropTop, width: newCropWidth, height: newCropHeight, rotate: currentData.rotate, scaleX: currentData.scaleX, scaleY: currentData.scaleY });
+                            //if (!IsOverImageSize) {
+                            //    //$(this).cropper("setCropBoxData", { left: newCropLeft, top: newCropTop, width: newCropWidth, height: newCropHeight });
+                            //    $(this).cropper("setData", { x: newCropLeft, y: newCropTop, width: newCropWidth, height: newCropHeight, rotate: currentData.rotate, scaleX: currentData.scaleX, scaleY: currentData.scaleY });
+                            //}
+                            //else {
+                            //    $(this).cropper("setData", { x: newCropLeft, y: newCropTop, width: newCropWidth, height: newCropHeight, rotate: currentData.rotate, scaleX: currentData.scaleX, scaleY: currentData.scaleY });
+                            //}
+                            //sleep(10000);
+                            var curCorpper = $(this);
+                            setTimeout(function () {
+                                var curbase64;
+                                var croppedCanvas = $(curCorpper).cropper("getCroppedCanvas");
+                                if ($("ul.img-cropper").attr("class").indexOf("is-circle") >= 0) {
+                                    var curbaseCircle64 = getRoundedCanvas(croppedCanvas);
+                                    curbase64 = curbaseCircle64.toDataURL();
+                                }
+                                else {
+                                    curbase64 = croppedCanvas.toDataURL();
+                                }
+                                $("#" + $(curCorpper).attr("data-target")).children("img").attr("src", curbase64);
+                                processCount++;
+                                if (isUpload) {
+                                    var uploadUrl = "@Url.Action("ImgCropperUpload", "Common")"; //存實體檔案的方式
+                                    var fileName = imgUrl;
+                                    fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+                                    var targetID = $(curCorpper).attr("data-target");
+                                    $.post(uploadUrl, { 'SiteID': '@ViewBag.SiteID', 'MenuID': '@ViewBag.MenuID', 'FileName': fileName, 'Base64': curbase64 }, function (result) {
+                                        //console.log(result);
+                                        //$("#" + targetID).css("background-image", "url(" + curbase64 + ")");
+                                        //$(imgList[imgIndex]).css('background-image', "url('" + result + "')");
+                                        //processCount++;
+                                        if (processCount == imgList.length) {
+                                            isProcessFinish = false;
+                                            $("#divWaiting").hide();
+                                            $("#divAction").show();
+                                            Component.alert("儲存成功");
+                                            var mainWin = getMainWin();
+                                            mainWin.closeWindow();
+                                            mainWin.refreshWindows();
+                                        }
+                                    });
+                                }
+                                else {
+                                    if (processCount == imgList.length) {
+                                        isProcessFinish = false;
+                                        $("#divWaiting").hide();
+                                        $("#divAction").show();
+                                    }
+                                }
+                            }, 3000);
+                            //var curbase64 = $(this).cropper("getCroppedCanvas").toDataURL();
+                            //直接於前端凟取 base64 字串的方式
+                            //$("#" + $(this).attr("data-target")).css("background-image", "url(" + curbase64 + ")");
+                            //processCount++;
+                            //if (processCount == imgList.length) {
+                            //    isProcessFinish = false;
+                            //    $("#divWaiting").hide();
+                            //    $("#divAction").show();
+                            //}
+                            @*var uploadUrl = "@Url.Action("ImgCropperTempUpload", "Common")"; //存實體檔案的方式
+
+                            var fileName = imgUrl;
+                            fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+                            var targetID = $(this).attr("data-target");
+                            $.post(uploadUrl, { 'SiteID': '@ViewBag.SiteID', 'FileName': fileName, 'Base64': curbase64 }, function (result) {
+                                console.log(result);
+                                //$("#" + targetID).css("background-image", "url(" + curbase64 + ")");
+                                $(imgList[imgIndex]).css('background-image', "url('" + result + "')");
+                                processCount++;
+                                if (processCount == imgList.length) {
+                                    isProcessFinish = false;
+                                    $("#divWaiting").hide();
+                                    $("#divAction").show();
+                                }
+                            });*@
+                            //var myCover = new Image();
+                            //myCover.src = curbase64;
+                        }
+                    });
+
+                }
+            }
+        </script>
+
+        <script>
+            $(function () {
+                var $dataX = $('#dataX');
+                var $dataY = $('#dataY');
+                var $dataWidth = $('#dataWidth');
+                var $dataHeight = $('#dataHeight');
+                var $dataRotate = $('#dataRotate');
+                var $dataZoom = $('#dataZoom');
+                var $image = $("#imgCurrent");
+                var $cropperWrap = $("ul.img-cropper");
+                var $dataImageWidth = $('#dataImageWidth');
+                var $dataImageHeight = $('#dataImageHeight');
+                var $dataCropWidth = $('#dataCropWidth');
+                var $dataCropHeight = $('#dataCropHeight');
+                var $dataCropLeft = $('#dataCropLeft');
+                var $dataCropTop = $('#dataCropTop');
+
+                cropper = $('#imgCurrent').cropper({
+                    viewMode: 1,
+                    background: false,
+                    movable: true,
+                    zoomOnWheel: false,
+                    preview: '.preview',
+                    minCropBoxWidth: 50,
+                    minCropBoxHeight: 50,
+                    width:"100%",
+                    height:"100%",
+                    crop: function (e) {
+                        $dataX.val(Math.round(e.detail.x));
+                        $dataY.val(Math.round(e.detail.y));
+                        $dataHeight.val(Math.round(e.detail.height));
+                        $dataWidth.val(Math.round(e.detail.width));
+                        $dataRotate.val(e.detail.rotate);
+
+                    },
+                    zoom: function (e) {
+                        $(dataZoom).val(e.detail.ratio);
+                    },
+                    cropend: function (e) {
+                        var positionX = $("#dataX").val();
+                        var positionY = $("#dataY").val();
+                        var width = $("#dataWidth").val();
+                        var height = $("#dataHeight").val();
+                        var cropData = $(cropper).cropper("getCropBoxData");
+                        $dataCropWidth.val(cropData.width);
+                        $dataCropHeight.val(cropData.height);
+                        $dataCropLeft.val(cropData.left);
+                        $dataCropTop.val(cropData.top);
+
+                        // console.log($(this).cropper("getData"));
+                        // console.log(positionY);
+                        // console.log($(this).cropper("getCropBoxData"));
+                    },
+                    ready: function () {
+                        var imgData = $(cropper).cropper("getImageData");
+                        var cropData = $(cropper).cropper("getCropBoxData");
+                        $dataImageWidth.val(imgData.width);
+                        $dataImageHeight.val(imgData.height);
+                        $dataCropWidth.val(cropData.width);
+                        $dataCropHeight.val(cropData.height);
+                        $dataCropLeft.val(cropData.left);
+                        $dataCropTop.val(cropData.top);
+                    }
+                });
+
+                $(".btn-cropper").on("click", function (event) {
+                    var method = $(this).data("method"),
+                        option = $(this).data("option");
+                    switch (method) {
+                        case "reset":
+                            $image.cropper("reset");
+                            break;
+
+                        case "clear":
+                            $image.cropper("clear");
+                            break;
+
+                        case "crop":
+                            $image.cropper("crop");
+                            break;
+
+                        case "delete":
+                            $image.cropper("destroy");
+                            break;
+
+                        case "rotateR":
+                            $image.cropper("rotate", 45);
+                            break;
+
+                        case "rotateL":
+                            $image.cropper("rotate", -45);
+                            break;
+
+                        case "scaleX":
+                            $image.cropper("scaleX", option);
+                            $(this).data("option", -option);
+                            break;
+
+                        case "scaleY":
+                            $image.cropper("scaleY", option);
+                            $(this).data("option", -option);
+                            break;
+
+                        case "zoomIn":
+                        case "zoomOut":
+                            $image.cropper("zoom", option);
+                            break;
+
+                        case "moveUp":
+                        case "moveDown":
+                            $image.cropper("move", 0, option);
+                            break;
+
+                        case "moveLeft":
+                        case "moveRight":
+                            $image.cropper("move", option, 0);
+                            break;
+
+                        case "setRatio1":
+                            $image.cropper("setAspectRatio", 16 / 9);
+                            $cropperWrap.removeClass("is-circle");
+
+                            break;
+
+                        case "setRatio2":
+                            $image.cropper("setAspectRatio", 4 / 3);
+                            $cropperWrap.removeClass("is-circle");
+                            break;
+
+                        case "setRatio3":
+                            $image.cropper("setAspectRatio", 1 / 1);
+                            break;
+
+                        case "setRatio4":
+                            $image.cropper("setAspectRatio", NaN);
+                            $cropperWrap.removeClass("is-circle");
+                            break;
+
+                        case "circle":
+                            $image.cropper("setAspectRatio", 1 / 1);
+                            $("#ratioMode3").prop("checked", true);
+                            $("#ratioMode1", "#ratioMode2", "#ratioMode4").prop("checked", "unchecked");
+                            // console.log(qwer);
+                            break;
+                    }
+                });
+
+                $("input.value-control").on("change", function (e) {
+                    var inputValue = $(this).val();
+                    var value = $(this).data("value");
+
+                    var positionX = parseInt($("#dataX").val());
+                    var positionY = parseInt($("#dataY").val());
+                    var width = parseInt($("#dataWidth").val());
+                    var height = parseInt($("#dataHeight").val());
+
+
+                    switch (value) {
+                        case "rotate":
+                            $image.cropper("rotateTo", inputValue);
+                            break;
+
+                        case "positionX":
+                        case "positionY":
+                        case "width":
+                        case "height":
+                            // console.log(positionY);
+                            // console.log($("#image").cropper("getData"));
+                            // console.log("x: " + positionX + ", y: " + positionY + ", width: " + width + " , height: " + height);
+                            $image.cropper("setData", { x: positionX, y: positionY, width: width, height: height });
+                            break;
+                    }
+                });
+                $('.flexslider').flexslider({
+                    animation: "slide",
+                    smoothHeight: true,
+                    slideshow: false,
+                    controlNav: false,
+                    itemWidth: 100,
+                    minItems: 4,
+                    maxItems: 10,
+                    itemMargin: 10,
+                    // touch: $(this).children('ul.slides > li').length > 1, //只有一則行動裝置 停止輪播
+                    start: function () {
+                        // var $winWidth = $(window).width(),
+                        //     $centerWidth = $('.article-center').width();
+
+                        // $("ul.flex-direction-nav").css("width", $centerWidth);
+                    }
+                });
+
+                $('.flexslider .slides li').click(function () {
+                    $(this).toggleClass('active');
+                });
+            })
+
+            function getMainWin() {
+                var mainWin = window;
+                if (mainWin.parent != null) {
+                    while (mainWin.parent != mainWin)
+                        mainWin = mainWin.parent;
+                }
+                return mainWin;
+            }
+            function getRoundedCanvas(sourceCanvas) {
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+                var width = sourceCanvas.width;
+                var height = sourceCanvas.height;
+                canvas.width = width;
+                canvas.height = height;
+                context.imageSmoothingEnabled = true;
+                context.drawImage(sourceCanvas, 0, 0, width, height);
+                context.globalCompositeOperation = 'destination-in';
+                context.beginPath();
+                context.arc(width / 2, height / 2, Math.min(width, height) / 2, 0, 2 * Math.PI, true);
+                context.fill();
+                return canvas;
+            }
+
+        </script>
+        <link rel="stylesheet" href="~/css/vendor/cropper/cropper.css">
+        <script src="~/script/cropper/cropper.js"></script>
+    }

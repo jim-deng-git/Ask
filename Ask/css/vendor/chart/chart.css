@@ -1,0 +1,103 @@
+.chart-wrap > .bar {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.chart-wrap {
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative; }
+  .chart-wrap .chart-title {
+    margin-bottom: 10px;
+    font-size: 16px;
+    text-align: center;
+    text-transform: uppercase; }
+  .chart-wrap .row {
+    position: relative;
+    height: 30px;
+    margin-bottom: 15px; }
+  .chart-wrap .bar-wrap {
+    position: relative;
+    background: #d7dbde;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; }
+    .chart-wrap .bar-wrap .bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #f37167;
+      -webkit-transition: all 1s;
+      -o-transition: all 1s;
+      transition: all 1s;
+      -webkit-transform: translateX(-100%);
+          -ms-transform: translateX(-100%);
+              transform: translateX(-100%); }
+      .chart-wrap .bar-wrap .bar.in {
+        -webkit-transform: translateX(0%);
+            -ms-transform: translateX(0%);
+                transform: translateX(0%); }
+  .chart-wrap .label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150px;
+    padding-left: 10px;
+    text-align: left;
+    font-size: 12px;
+    line-height: 30px;
+    text-transform: uppercase;
+    font-weight: bold;
+    z-index: 10; }
+  .chart-wrap .number {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    padding-right: 10px;
+    font-size: 18px;
+    line-height: 30px;
+    font-weight: bold;
+    text-align: right;
+    z-index: 10; }
+  .chart-wrap .flex {
+    overflow: visible; }
+    .chart-wrap .flex .row {
+      margin-bottom: 70px; }
+    .chart-wrap .flex .bar-wrap {
+      overflow: visible; }
+      .chart-wrap .flex .bar-wrap .bar {
+        position: relative;
+        float: left; }
+    .chart-wrap .flex .bar-info {
+      top: 100%;
+      margin: 0 auto;
+      position: absolute;
+      line-height: 1;
+      min-width: 80px;
+      text-align: left;
+      left: 0;
+      right: 0;
+      border-left: 1px solid #CCCCCC;
+      padding: 10px 0 3px 8px; }
+      .chart-wrap .flex .bar-info .label, .chart-wrap .flex .bar-info .number, .chart-wrap .flex .bar-info .percent {
+        top: auto;
+        left: 0;
+        right: 0;
+        width: auto;
+        padding: 0;
+        text-align: left;
+        font-weight: normal;
+        position: static;
+        display: block;
+        line-height: 1.3; }
+      .chart-wrap .flex .bar-info .label, .chart-wrap .flex .bar-info .percent {
+        font-size: 12px;
+        font-weight: 300; }
+  .chart-wrap > .bar .box .chart {
+    padding: 2rem 0; }
+  .chart-wrap > .bar .box .text {
+    text-align: center;
+    font-size: 0.5rem;
+    color: grey; }

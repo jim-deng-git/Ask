@@ -1,0 +1,91 @@
+﻿@model CardsModels
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        function Callbacks() {
+            @if (ViewBag.IsValid as bool? == false)
+            {
+            <text>
+            var msg = [];
+            $(".validationSummary li").each(function () {
+                msg.push($(this).text());
+            });
+            Component.alert(msg.join("\r\n"));
+            </text>
+            }
+
+            @if (ViewBag.EditResult != null )
+            {
+            <text>
+            Component.alert("@Html.Raw(ViewBag.EditResult)", function () {
+                parent.refreshList();
+                Component.closeRight();
+            });
+            </text>
+            }
+        }
+
+        $(function () {
+            //Component.editor("Descriptions");
+
+            $('#btnSave').click(function () {
+                var form = $("#editForm");
+                if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    form.submit();
+                }
+            });
+
+            Callbacks();
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    @using (Html.BeginForm("Edit", "Intro", FormMethod.Post, new { enctype = "multipart/form-data", id = "editForm" }))
+    {
+        @Html.ValidationSummary(false, "", new { @class = "validationSummary", style = "display:none;" })
+        @Html.HiddenFor(m => m.No);
+
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title">標題</div>
+                    <div class="input-field">
+                        @Html.TextBoxFor(m => m.Title)
+                    </div>
+                </div>
+            </li>
+            @*
+    <li>
+        <div class="col-1">
+            <div class="input-field img-text-height">
+                @Html.TextAreaFor(x => x.Descriptions, new { contenteditable = "true" })
+            </div>
+        </div>
+    </li>*@
+        </ul>
+
+        <div class="control-bar">
+            @*<div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(m => m.Status)
+                    <label for="Status">刊登</label>
+                    <input type="checkbox" id="published" />
+                    <label for="published">刊登</label>
+                </div>
+            </div>*@
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    }
+</div>

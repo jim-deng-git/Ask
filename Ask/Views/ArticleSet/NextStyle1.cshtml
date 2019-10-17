@@ -1,0 +1,27 @@
+﻿@model IEnumerable<ArticleModels>
+@{    
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+@foreach (ArticleModels item in Model) {
+    List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+    SitePage page = itemPages.GetValue(item.CardNo);
+    if (page != null) {
+    <li>
+        <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))">
+            @if (item.IssueDate != null) {
+            <div class="article-list-date">
+                <div>@(((DateTime)item.IssueDate).Month.ToString("00"))</div>
+                <div>@(((DateTime)item.IssueDate).Day.ToString("00"))</div>
+            </div>
+            }
+            @if (articleTypes?.Count() > 0) {
+                ArticleTypesModels type = articleTypes.First();
+            <div class="article-list-type">@type.Name</div>
+            }
+            <div class="article-list-title">@item.Title</div>                        
+        </a>
+    </li>
+    }
+}

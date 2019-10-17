@@ -1,0 +1,344 @@
+﻿
+@{
+    ViewBag.Title = "PermissionSetting";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string strSetting = (string)ViewBag.Setting;
+    IEnumerable<WorkV3.Areas.Backend.ViewModels.GroupPermissionViewModel> rootMenu = ViewBag.RootMenu;
+    GroupModels group = ViewBag.Group;
+    string desc = group.GroupType == 1 ? "本群組隱藏哪些單元？" : "本群組可見哪些單元？";
+    long siteId = ViewBag.SiteID;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var isSetDefaultStyle = true;
+        $(function () {
+            setDefaultStyle();
+            isSetDefaultStyle = false;
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            $('#btnSave').click(function () {
+
+                var itemc = $('input[type="checkbox"]:checked').filter(function () { return $(this).data('category') == 'menu'; });
+                var permissions = [];
+
+                
+                itemc.each(function (item) {
+                    permissions.push({
+                        MenuType: $(this).data('type'),
+                        MenuID: $(this).val().toString(),
+                        GroupID: '@group.Id',
+                        SiteID: $(this).data('site'),
+                        PermissionType: @group.GroupType,
+                    });
+                });
+                console.log(permissions);
+                $.post({
+                    url: '@Url.Action("PermissionSetting")',
+                    data: {
+                        permissions: permissions,
+                        groupId: '@group.Id',
+                        siteId:@siteId,
+                    },
+                    success: function(){
+                        Component.alert('開放單元已儲存', function () {
+                            Component.closeRight();
+                            Component.closeLeft();
+                            Component.closeCenter();
+                        });
+                    },
+                });
+            });
+            
+            $(".openCustom-nav").on("click", function() {
+                var self = $(this);
+                self.parent().children(".slideToggle").slideToggle();
+                self.toggleClass("active");
+            })
+        });
+
+        function showConfirm(e){
+            if($(e.target).data('sn') !== 'Manager' && $(e.target).data('sn') !== 'Permission')
+                return;
+
+            if(!$(e.target).prop('checked'))
+                return;
+            if(!isSetDefaultStyle)
+            {
+                //e.preventDefault();
+                if($(e.target).data('sn') === 'Manager')
+                    message = '開放管理者功能，可能讓別的管理者停權您的帳號，確定開放？';
+                if($(e.target).data('sn') === 'Permission')
+                    message = '開放權限管理功能，可能讓別的管理者關閉您的權限，確定開放？';
+
+                Component.confirm(message, function(isOk){
+                    if(!isOk)
+                        $(e.target).prop('checked', false);
+                });
+            }
+        }
+        //function checkIsAllChildSelected(dataID)
+        //{
+        //    var isAllChildSelected = true, isAllChildNotSelected = true;
+        //    var childs = $("input[data-parent="+dataID+"]");
+        //    var current = $("input[data-id="+dataID+"]");
+        //    if(childs.length > 0)
+        //    {
+        //        for(var index =0;index<childs.length;index++)
+        //        {
+        //            var grandchilds = $("input[data-parent="+$(childs[index]).attr("data-id")+"]");
+        //            if(grandchilds.length > 0)
+        //            {
+        //                var grandChildSelected = checkIsAllChildSelected($(childs[index]).attr("data-id"));
+        //                if(!grandChildSelected)
+        //                    isAllChildSelected = false;
+        //            }
+        //            else
+        //            {
+        //                if(!$(childs[index]).prop("checked"))
+        //                {
+        //                    isAllChildSelected = false;
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    if(isAllChildSelected)
+        //    {
+        //        $(current).prop("checked", true);
+        //        //$(current).trigger("click");
+        //    }
+        //    else
+        //    {
+        //        $(current).prop("indeterminate", true);
+        //    }
+        //    return $(current).prop("checked");
+        //}
+        function setDefaultStyle()
+        {
+            var check_list = [];
+            var max_lev =10;
+            //$("input[data-lev=0]").each(function(){
+            //    var isAllChildSelected = false;
+            //    var dataID = $(this).attr("data-id");
+            //        checkIsAllChildSelected(dataID);
+            //});
+            for(var lev = max_lev;lev>=0;lev--)
+            {
+                $("input[data-lev="+lev+"]").each(function(){
+                    var parentID = $(this).attr("data-parent");
+                    if(parentID)
+                    {
+                        if(check_list.indexOf(parentID) < 0)
+                        {
+                            check_list.push(parentID);
+                            var isChildAllSelected = true, isChildAllNotSelected = true;
+                            $("input[data-parent="+parentID+"]").each(function(){
+                                if($(this).prop("checked")!= null && !$(this).prop("checked"))
+                                {
+                                    isChildAllSelected =  false;
+                                }
+                                if($(this).prop("checked")!= null && $(this).prop("checked"))
+                                {
+                                    isChildAllNotSelected =  false;
+                                }
+                                if($(this).prop("indeterminate")!= null && $(this).prop("indeterminate"))
+                                {
+                                    isChildAllNotSelected =  false;
+                                }
+                            });
+                            var parentObj = $("input[data-id="+parentID+"]");
+                            if(parentObj!= null)
+                            {
+                                if(isChildAllSelected)
+                                {
+                                    $(parentObj).prop("checked", true);
+                                }
+                                else if (isChildAllNotSelected)
+                                {
+                                    $(parentObj).prop("checked", false);
+                                    
+                                }
+                                else
+                                {
+                                    $(parentObj).prop("indeterminate", true);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            var isRootChildAllSelected = true, isRootChildAllNotSelected = true;
+            $("input[data-parent=site]").each(function(){
+                if($(this).prop("checked")!= null && !$(this).prop("checked"))
+                {
+                    isRootChildAllSelected =  false;
+                }
+                if($(this).prop("checked")!= null && $(this).prop("checked"))
+                {
+                    isRootChildAllNotSelected =  false;
+                }
+                if($(this).prop("indeterminate")!= null && $(this).prop("indeterminate"))
+                {
+                    isRootChildAllNotSelected =  false;
+                }
+            });
+            var rootObj = $("input[data-id=site]");
+            if(rootObj!= null)
+            {
+                if(isRootChildAllSelected)
+                {
+                    $(rootObj).prop("checked", true);
+                }
+                else if (isRootChildAllNotSelected)
+                {
+                    $(rootObj).prop("checked", false);
+                                    
+                }
+                else
+                {
+                    $(rootObj).prop("indeterminate", true);
+                }
+            }
+        }
+        function FindLeafNode(parentID)
+        {
+            var parentObj = $("input[data-parent='"+parentID+"']:not(:checked)");
+            if(parentObj!= null && parentObj.length > 0)
+            {
+                return  FindLeafNode($(parentObj).attr("data-id"));
+            }
+            var sObj = $("input[data-id='"+parentID+"']");
+            return sObj;
+        }
+    </script>
+    <style>
+        ul {
+            list-style-type: none;
+        }
+    </style>
+
+    <link rel="stylesheet" href="~/css/card.css" />
+    <link rel="stylesheet" href="~/css/Cards/Cooperation/style1.css" />
+}
+
+
+@section FArea {
+}
+
+@Html.Hidden("hdSetting", strSetting)
+<div class="groove groove-1">
+    <h1 class="title-admin-page">開放單元設定</h1>
+    <h1 class="title-admin-page">@desc</h1>
+    <div class="col-1 border-T">
+        <div id="permission" class="">
+            <ol class="dd-list checkStyle">
+                <li lass="dd-handle relative">
+
+                    <span class="DDmenu">
+                        <div class="section-heading dd nestable-mainMenu active divManager">
+                            <div class="section-heading-title">
+                                <input type="checkbox" id="all" data-id="site" data-parent="" />
+                                <label for="all">所有網站</label>
+                                <ol class="dd-list show">
+                                    @foreach (WorkV3.Areas.Backend.ViewModels.GroupPermissionViewModel siteList in rootMenu)
+                                    {
+                                        string currentID = string.Format("site-{0}", siteList.SiteID.ToString());
+                                        WorkV3.Models.SitesModels site = WorkV3.Models.DataAccess.SitesDAO.GetInfo(siteList.SiteID);
+                                        BackendMenuModel curMenu = new BackendMenuModel();
+                                        <li class="dd-item">
+                                            @if (siteList.menus.Count() > 0)
+                                            {
+                                                <div class="toggleBox openCustom-nav d-inline-block">
+                                                    <i class="cc cc-chevron-down"></i>
+                                                </div>
+                                            }
+                                            <input type="checkbox" value="@siteList.SiteID" id="site-@siteList.SiteID" data-lev="0" data-parent="site" data-id="@currentID" />
+                                            <label for="site-@siteList.SiteID">@site.SN</label>
+                                            @if (siteList.menus.Count() > 0)
+                                            {
+                                                <ol class="dd-list checkStyle slideToggle">
+                                                    @foreach (BackendMenuModel menu in siteList.menus)
+                                                    {
+                                                        @RenderSelfWithChildren(menu, currentID, group.Id, siteId, 0)
+                                                    }
+                                                </ol>
+                                            }
+                                        </li>
+                                    }
+                                </ol>
+                            </div>
+                        </div>
+                    </span>
+                </li>
+            </ol>
+
+        </div>
+    </div>
+</div>
+<div class="control-bar">
+    <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+</div>
+
+@helper RenderSelfWithChildren(WorkV3.Areas.Backend.Abstracts.Menu menu, string parentID, long groupId = -1, long siteId = -1, int lev = 0)
+{
+string check = "";
+
+if (groupId != -1 && siteId != -1)
+{
+    GroupModels group = GroupDAO.GetItem(groupId, siteId);
+    IEnumerable<GroupPermissionModels> permissions = group.GetPermissions(siteId);
+    bool hasPermission = WorkV3.Common.Utility.HavePermission(groupId, menu.SiteID, menu.Type, menu.ID);
+    bool isCheck = group.GroupType == 1 ? !hasPermission : hasPermission; // 黑名單模式(GroupType == 1)時，沒權限的會勾選；白名單模式同理
+    check = isCheck ? "checked" : "";
+    }
+
+    //遞迴 render 出子選單
+    string childrenList = "", childProp = "0";
+    string currentID = string.Format("{0}-{1}", parentID, menu.ID.ToString());
+    try
+    {
+    foreach (WorkV3.Areas.Backend.Abstracts.Menu childMenu in menu.Children)
+    {
+    childrenList += RenderSelfWithChildren(childMenu, currentID, groupId, siteId, lev + 1);
+    }
+    }
+    catch (Exception ex)
+    {
+    string a = "";
+    }
+
+    WorkV3.Models.SitesModels site = WorkV3.Models.DataAccess.SitesDAO.GetInfo(menu.SiteID);
+    //childrenList = childrenList == string.Empty ? "" : String.Format(@"<ul class="" dd-list show dd-list-second checkStyle forms relative"">{0}</ul>", childrenList);
+
+    <li class="dd-item">
+
+        <div class="dd-handle">
+            @if (!string.IsNullOrEmpty(childrenList))
+            {
+                childProp = "1";
+
+                <div class="toggleBox openCustom-nav d-inline-block">
+                    <i class="cc cc-chevron-down"></i>
+                </div>
+            }
+            <input type="checkbox" value="@menu.ID" id="menu-@menu.Type-@menu.ID" data-category="menu" data-parent="@parentID" data-id="@currentID" data-type="@menu.Type" data-sn="@menu.SN" data-site="@menu.SiteID" @check onchange="showConfirm(event)" child-prop="@childProp" data-lev="@lev" />
+            <label for="menu-@menu.Type-@menu.ID"> @menu.Title </label>
+            @if (!string.IsNullOrEmpty(childrenList))
+            {
+                <ol class="dd-list checkStyle slideToggle">
+                    @Html.Raw(childrenList)
+                </ol>
+            }
+        </div>
+    </li>
+    }

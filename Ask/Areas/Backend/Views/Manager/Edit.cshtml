@@ -1,0 +1,486 @@
+﻿@using WorkV3.Areas.Backend.ViewModels
+@model MemberModels
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            initItemParagraph();
+
+            $('#btnSave').click(function () {
+
+                @if (ViewBag.ID == 0)
+                {
+                <text>
+
+                if ($('#LoginID').val().trim() == '') {
+                    Component.alert('請輸入帳號', function () {
+                        $('#LoginID').trigger('focus');
+                    });
+                    return false;
+                }
+                </text>
+                }
+
+                if ($('#Name').val().trim() == '') {
+                    Component.alert('請輸入名稱', function () {
+                        $('#Name').trigger('focus');
+                    });
+                    return false;
+                }
+
+                @if (ViewBag.ID == 0)
+                {
+                <text>
+                if ($('#password').val().trim() == '') {
+                    Component.alert('請輸入密碼', function () {
+                        $('#password').trigger('focus');
+                    });
+                    return false;
+                }
+                </text>
+                }
+
+                @*如果是新增再判斷密碼及確認欄位*@
+                @if(Model.Id == 0)
+                {
+                    <text>
+                if ($('#password').val() !== $('#password-retype').val()) {
+                    Component.alert('密碼欄位和密碼確認欄位內容不一致');
+                    return false;
+                }
+                </text>
+                }
+
+                if ($('#Email').val().trim() == '') {
+                    Component.alert('請輸入 Email', function () {
+                        $('#Email').trigger('focus');
+                    });
+                    return false;
+                }
+
+                if ($('input[name="GroupId"]:checked').length == 0) {
+                    Component.alert('請選擇權限群組');
+                    return false;
+                }
+
+                @if (Model.Id == 0)
+                {
+                <text>
+                $.get({
+                    url: '@Url.Action("CheckUserID")',
+                    data: {
+                        userId: $('#LoginID').val(),
+                    },
+                    success: function (response) {
+                        if (response === '1') {
+                            Component.alert('使用者帳號已存在');
+                            return false;
+                        } else {
+                            $.get({
+                                url: '@Url.Action("CheckEmail")',
+                                data: {
+                                    email: $('#Email').val().trim()
+                                },
+                                success: function (response) {
+                                    if (response == '1') {
+                                        Component.alert('電子郵件帳號已存在');
+                                        return false;
+                                    } else {
+                                        $('#hidpassword').val($('#password').val());
+                                        $("#editForm").submit();
+                                    }
+                                },
+                            });
+
+                        }
+                    },
+                });
+                </text>
+                }
+                else
+                {
+                <text>
+                $('#hidpassword').val($('#password').val());
+                $("#editForm").submit();
+                </text>
+                }
+
+            });
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            @if (ViewBag.Exit as bool? == true)
+            {
+                    <text>
+            Component.alert('管理者已儲存', function () {
+                try {
+                    parent.refreshList();
+                } catch (e) {
+
+                }
+
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+            </text>
+                }
+
+            $('#LoginID').on('blur', function () {
+                var loginId = $(this).val();
+                if (/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(loginId)) {
+                    $('#Email').val(loginId);
+                }
+            });
+
+            var imgShow = '<a href="JavaScript:;" class="user" ><i class="cc cc-user-o" ></i></a>' +
+                              '<a href="JavaScript:;" class="camera"><i class="cc cc-camera-o"></i></a>';
+            @if (!string.IsNullOrEmpty(Model.Img))
+            {
+                <text>
+            imgShow = '<img src="@(uploadUrl)Manager/@(Model.Img)" style="width:100%;height:200%"/>';
+            </text>
+            }
+            $('input[name="imgFile"]').fileuploader({
+                limit: 1,
+                extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
+                changeInput: ' ',
+                theme: 'thumbnails',
+                enableApi: true,
+                addMore: false,
+                thumbnails: {
+                    box: '<div class="imgFileProfile"><div class="fileuploader-items singleImg b-radius" >' +
+                          '<ul class="fileuploader-items-list">' +
+                            '<li class="fileuploader-thumbnails-input" >' +
+                              imgShow +
+                            '</li>' +
+                          '</ul>' +
+                        '</div></div>',
+                    item: '<li class="fileuploader-item">' +
+                            '<div class="fileuploader-item-inner">' +
+                              '<div class="thumbnail-holder b-radius">${image}</div>' +
+                              '<div class="actions-holder">' +
+                                '<a class="btn-white-o square transparent fileuploader-action-image tooltip" title="裁切" href="javascript:"><i class="cc cc-camera-o"></i></a>' +
+                                '<a class="btn-del btn-white-o square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                              '</div>' +
+                              '<div class="progress-holder">${progressBar}</div>' +
+                            '</div>' +
+                          '</li>',
+                    item2: '<li class="fileuploader-item">' +
+                            '<div class="fileuploader-item-inner">' +
+                              '<div class="thumbnail-holder b-radius">${image}</div>' +
+                              '<div class="actions-holder">' +
+                                '<a class="btn-white-o square transparent fileuploader-action-image tooltip" title="裁切" href="javascript:"><i class="cc cc-camera-o"></i></a>' +
+                                '<a class="btn-del btn-white-o square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                              '</div>' +
+                            '</div>' +
+                          '</li>',
+                    startImageRenderer: true,
+                    canvasImage: false,
+                    _selectors: {
+                        list: '.fileuploader-items-list',
+                        item: '.fileuploader-item',
+                        start: '.fileuploader-action-start',
+                        retry: '.fileuploader-action-retry',
+                        remove: '.fileuploader-action-remove'
+                    },
+                    onItemShow: function (item, listEl, parentEl, newInputEl, inputEl) {
+                        var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                            api = $.fileuploader.getInstance(inputEl.get(0));
+                        if (api.getFiles().length >= api.getOptions().limit) {
+                            plusInput.hide();
+                        }
+
+                        plusInput.insertAfter(item.html);
+
+                        if (item.format == 'image') {
+                            item.html.find('.fileuploader-item-icon').hide();
+                        };
+
+                        function openLeftEdit(src) {
+                            var formBox = window.parent.$("#leftEditBox");
+
+                            if (formBox.is(':visible'))
+                                formBox.hide();
+
+                            var iframe = formBox.find('.iframe');
+
+                            iframe.prop('src', src);
+                            iframe.on('load', function () {
+
+                                window.parent.closeLeftEdit = function () {
+                                    formBox.fadeOut(300).removeClass('active');
+                                };
+
+                                formBox.fadeIn(300).addClass('active');
+                            });
+                        }
+                        $('.tooltip').tooltipster({
+                            maxWidth: 100,
+                        });
+                        $('.openLeftEdit').on('click', function (e) {
+                            var formBox = window.parent.$("#leftEditBox");
+                            e.preventDefault();
+                            if (formBox.hasClass('active')) {
+                                formBox.fadeOut(300).removeClass('active');
+                            } else {
+                                openLeftEdit(this.href);
+                            }
+                        });
+                    },
+                    onItemRemove: function (html, listEl, parentEl, newInputEl, inputEl) {
+                        var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                            api = $.fileuploader.getInstance(inputEl.get(0));
+
+                        html.children().animate({ 'opacity': 0 }, 200, function () {
+                            setTimeout(function () {
+                                html.remove();
+
+                                if (api.getFiles().length - 1 < api.getOptions().limit) {
+                                    plusInput.show();
+                                }
+                            }, 100);
+                        });
+                    }
+                },
+                afterRender: function (listEl, parentEl, newInputEl, inputEl) {
+                    var plusInput = listEl.find('.fileuploader-thumbnails-input'),
+                    api = $.fileuploader.getInstance(inputEl.get(0));
+                    plusInput.on('click', function () {
+                        api.open();
+                    });
+                }
+            });
+
+            $("#Salary").change(function () {
+                var thisVal = parseInt($(this).val());
+                if (!thisVal) thisVal = 0;
+                var laborPension = Math.round(thisVal * (6 / 100));
+                $("#LaborPension").val(laborPension);
+            });
+
+            var getDepartmentUrl = '@Url.Action("GetDepartments", "GlobalPara")';
+            $("#ulforms").on("change", "select[data-field='CompanyID']", function () {
+                var departmentElm = $(this).parents(".liparagraph").find("[data-field='DepartmentID']");
+                departmentElm.empty();
+                departmentElm.append('<option value="">請選擇</option>');
+                $.getJSON(getDepartmentUrl, { parentId: $(this).val() }, function (datas) {
+                    for (var i = 0; i < datas.length; i++) {
+                        var data = datas[i];
+                        departmentElm.append('<option value="' + data.ID + '">' + data.Name+'</option>');
+                    }
+                    departmentElm.material_select();
+                });
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+        function addCompany() {
+            var editUrl = "@Url.Action("AddCompany")";
+
+            $.get(editUrl, function (html) {
+                var pElm = $(html);
+                $("#liAdd").before(pElm);
+                initItemParagraph();
+            });
+        }
+
+        function initItemParagraph() {
+            var outerElm = $("#ulforms");
+
+            assignIds();
+
+            outerElm.find('a.delParagraph').click(function () {
+                var liElm = $(this).closest('li');
+                Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                    if (isConfirm) {
+                        liElm.fadeOut(function () {
+                            liElm.remove();
+                            assignIds();
+                        });
+                    }
+                }, 'warning');
+            });
+
+            outerElm.find('[data-field="CompanyID"]').each(function () {
+                $(this).material_select();
+            });
+
+            outerElm.find('[data-field="DepartmentID"]').each(function () {
+                $(this).material_select();
+            });
+
+            function assignIds() {
+                outerElm.children(".paragraph").each(function (n) {
+                    $(this).find('[data-field]').each(function () {
+                        var field = $(this).attr('data-field');
+                        this.name = this.id = "companyItems" + "[" + n + "]." + field;
+                        $(this).addClass("paragraphInp");
+                    });
+                });
+            }
+        }
+    </script>
+}
+
+<form id="editForm" method="post" action="@Url.Action("Edit", "Manager")" enctype="multipart/form-data">
+    <input type="hidden" value="@ViewBag.SiteID" name="siteId" />
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">管理者新增</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    <input type="file" name="imgFile" id="imgFileProfile" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            @if (Model.Id == 0)
+                            {
+                                <div class="col-2">
+                                    <div class="title">帳號<span class="required">*</span></div>
+                                    <div class="input-field full no-label">
+                                        @Html.TextBoxFor(x => x.LoginID)
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-2">
+                                    <div class="title">帳號</div>
+                                    <div class="title">
+                                        <span class="font-blue">@Model.LoginID</span>
+                                        <a href="@Url.Action("ChangePassword", new { memberId = Model.Id })" class="btn-grey-darken-4-o openEdit-c float-R">
+                                            <i class="cc cc-attention"></i>
+                                            修改密碼
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-2">
+                                <div class="title">名稱<span class="required">*</span></div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBoxFor(x => x.Name)
+                                </div>
+                            </div>
+                        </li>
+                        @if (Model.Id == 0)
+                        {
+                            <li>
+                                <div class="col-2">
+                                    <div class="title">密碼<span class="required">*</span></div>
+                                    <div class="input-field full no-label">
+                                        @Html.TextBox("password", "", new { id = "password", @class = "", placeholder = "", type = "password" })
+                                        @Html.Hidden("hidpassword", "", new { id = "hidpassword" })
+                                    </div>
+                                </div>
+
+                                <div class="col-2">
+                                    <div class="title">再輸入一次密碼<span class="required">*</span></div>
+                                    <div class="input-field full no-label">
+                                        <input type="password" value="" id="password-retype" />
+                                    </div>
+                                </div>
+
+                            </li>
+                        }
+                        <li>
+                            <div class="col-1">
+                                <div class="title">Email<span class="required">*</span></div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBoxFor(x => x.Email)
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>
+                                        此為系統通知信的 Email，請務必填寫正確。
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-2">
+                                <div class="title">手機</div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBoxFor(x => x.Mobile)
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="title">電話</div>
+                                <div class="input-field full no-label">
+                                    @Html.TextBoxFor(x => x.Phone)
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">權限群組<span class="required">*</span></div>
+                                <div class="radio-box inline full">
+                                    @foreach (var item in ViewBag.group as List<GroupModels>)
+                                    {
+                                        if (Model.IsSupremeAuthority)
+                                        {
+                                            if (item.Id != Model.GroupId)
+                                            {
+                                                continue;
+                                            }
+                                        }
+                                        <div class="">
+                                            @Html.RadioButtonFor(x => x.GroupId, item.Id, new { @id = item.Id })
+                                            <label for="@item.Id">@item.Name</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="control-bar">
+                        <div class="bar-item float-L">
+
+                            <div class="">
+                                @Html.RadioButtonFor(x => x.MStatus, "0", new { @id = "MStatus_0" })
+                                <label for="MStatus_0">可正常登入後台</label>
+                            </div>
+                        </div>
+                        <div class="bar-item float-L">
+                            <div class="">
+                                @Html.RadioButtonFor(x => x.MStatus, "1", new { @id = "MStatus_1" })
+                                <label for="MStatus_1">停權</label>
+                            </div>
+                        </div>
+                        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+

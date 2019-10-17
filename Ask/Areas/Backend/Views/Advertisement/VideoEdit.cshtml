@@ -1,0 +1,278 @@
+﻿@model AdsCustomizeToVideoModel
+@{
+    ViewBag.Title = "點擊事件-影片";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+@section FArea {
+    @BundleConfig.Component()
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.JWPlayer()
+    <link href="~/css/vendor/slider-pips/slider-pips.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/JavaScript">
+        function onYouTubeIframeAPIReady() {
+            $('#video-website').change(function () {
+                var v = $.trim(this.value);
+                if (!v) {
+                    $('#divPreview').html('');
+                    return;
+                }
+                $('#Link').val(v);
+
+                $('#divPreview').html('<div id="divYoutube"></div>');
+                var youtube = new YT.Player('divYoutube', {
+                    height: '315',
+                    width: '560',
+                    videoId: v,
+                });
+            }).triggerHandler('change');
+        }
+
+        $('#vimeo').change(function () {
+            var oEmbedObj = {};
+            $.ajax({
+                url: `https://vimeo.com/api/oembed.json?url=https%3A//vimeo.com/${$('#vimeo').val()}&autoplay=true`,
+                method: 'get',
+                success: function (response) {
+                    $('#divPreview').html(response.html);
+                    $('#Link').val($('#vimeo').val());
+                },
+                error: function () {
+                    $('#divPreview').html('');
+                },
+            });
+        });
+
+        function chooseVideoType(type) {
+            switch (type) {
+                case 'video-youtube':
+                default:
+                    chooseYoutube();
+                    break;
+                case 'video-vimeo':
+                    chooseVimeo();
+                    break;
+                case 'video-custom':
+                    chooseCustom();
+                    break;
+            }
+        }
+
+        function chooseYoutube() {
+            $('#video-upload-box').hide();
+
+            $('#video-type-desc').show();
+            $('#vimeo').hide();
+            $('#video-website').show();
+            $('#video-website').trigger('change');
+            $('#divPreview').show();
+            $('#fLink').attr('name', 'changeName');
+            $('#Link').attr('name', 'Link');
+            $('#Link').val($('#video-website').val());
+        }
+
+        function chooseVimeo() {
+            $('#video-upload-box').hide();
+
+            $('#video-type-desc').show();
+            $('#video-website').hide();
+            $('#vimeo').show();
+            $('#vimeo').trigger('change');
+            $('#divPreview').show();
+            $('#f-link-value').attr('name', 'changeName');
+            $('#Link').attr('name', 'Link');
+            $('#Link').val($('#vimeo').val());
+        }
+
+        function chooseCustom() {
+            $('#video-upload-box').show();
+
+            $('#video-type-desc').hide();
+            $('#vimeo').hide();
+            $('#video-website').hide();
+            $('#divPreview').hide();
+            $('#f-link-value').attr('name', 'Link');
+            $('#Link').attr('name', 'changeName');
+        }
+
+        var video = '';
+        function initPage() {
+            var type = $('input[name="Type"]:checked').attr('id');
+            chooseVideoType(type);
+            switch (type) {
+                case 'video-youtube':
+                default:
+                    $('#video-website').val('@Model.Link');
+                    chooseYoutube();
+                    break;
+                case 'video-vimeo':
+                    $('#vimeo').val('@Model.Link');
+                    chooseVimeo();
+                    break;
+                case 'video-custom':
+                    video = '@Model.Link';
+                    chooseCustom();
+                    $('#fLink').data('video', '@Model.Link');
+                    break;
+            }
+        }
+
+        Component.singleVideoUpload('#fLink', '@Html.Raw(Url.Action("FileUpload", "Click", new { siteId = siteId, menuId = menuId, sourceNo = 0 }))', '@uploadUrl', '@(Model.Type == VideoType.Custom? Model.Link: string.Empty)');
+
+        $(function () {
+            $('input[name="Type"]').change(function () {
+                $('#divPreview').html('');
+                chooseVideoType($(this).attr('id'));
+            });
+
+            initPage();
+
+            $('#btnSave').click(function () {
+                if (Component.singleVideoUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    var type = $('input[name="Type"]:checked').attr('id');
+
+                    if (type == 'video-custom') {
+                        $('input[name="Link"]').val($('#component-returned-file-name').val());
+                    }
+
+                    var form = $('#editForm');
+                    if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                        form.submit();
+                    }
+                }
+            });
+        });
+
+        function checkCoverTime(field) {
+            var v = $.trim(field.val());
+            var check = document.getElementById("IsCover").checked;
+            if (!v && check) {
+                return '* 請輸入秒數';
+            }
+        }
+
+        function checkVideo() {
+            if (!($.trim($('#video-website').val()) != '' || $.trim($('#vimeo').val()) != ''))
+                return '請輸入影片 ID';
+        }
+
+        @if ((ViewBag.Exit as bool?) == true) {
+        <text>
+        Component.alert('影片已儲存', function () {
+            Component.closeCenter();
+            top.mainWebContent.refresh_custom_detail();
+            top.mainWebContent.$.colorbox.close();
+        });
+        </text>
+         }
+    </script>
+}
+<div class="zone zone-full">
+    <form id="editForm" method="post" action="@Url.Action("VideoEdit","Advertisement")" enctype="multipart/form-data">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">上傳影片</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">影片種類</div>
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.RadioButtonFor(m => m.Type, WorkV3.Areas.Backend.Models.VideoType.Youtube, new { @checked = "checked", id = "video-youtube", @class = "with-item transparent" })
+                                                <i class="cc cc-youtube"></i>
+                                                <label for="video-youtube">Youtube</label>
+                                            </div>
+                                            <div>
+                                                @Html.RadioButtonFor(m => m.Type, WorkV3.Areas.Backend.Models.VideoType.Vimeo, new { id = "video-vimeo", @class = "with-item transparent" })
+                                                <i class="cc cc-vimeo"></i>
+                                                <label for="video-vimeo">Vimeo</label>
+                                            </div>
+                                            <div>
+                                                @Html.RadioButtonFor(m => m.Type, WorkV3.Areas.Backend.Models.VideoType.Custom, new { id = "video-custom", @class = "with-item transparent" })
+                                                <i class="cc cc-upload-o"></i>
+                                                <label for="video-custom">自行上傳</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="flexUpload">
+                                        <div class="flex-16">
+                                            <div id="video-website-box" class="col-1">
+                                                <div id="video-type-desc" class="title inline">影片ID</div>
+                                                <div class="input-field inline full">
+                                                    <input type="text" id="video-website" placeholder="請填入 Youtube 影片 ID" class="validate[funcCall[checkVideo]]" />
+                                                    <input type="text" id="vimeo" placeholder="請填入 Vimeo 影片 ID" class="validate[funcCall[checkVideo]]" style="display:none;" />
+                                                </div>
+                                                <a class="tooltip" title="YouTube影片 ID 範例：https://www.youtube.com/watch?v=ndGUClIX9ZE，輸入ndGUClIX9ZE">
+                                                    <i class="cc cc-attention"></i>
+                                                </a>
+                                                <div id="divPreview" class="preview"></div>
+                                            </div>
+                                            <div id="video-upload-box" class="col-1" style="display:none;">
+                                                <div class="input-field">
+                                                    <input type="file" id="fLink" name="fLink" data-field="fLink" data-video="@Model.Link"/>
+                                                    <input type="hidden" id="f-link-value" value="@Model.Link" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1 flex-16">
+                                        <div class="inline">
+                                            @Html.CheckBoxFor(m => m.IsCover)
+                                            @*<label for="IsCover">若為「蓋台廣告」或寬度超過 300px 的「頁面廣告」 ，請忽略圖片，直接自動撥放影片。 (未勾選代表點擊圖片後才展開撥放影片)自動播放影片時，會強制撥放</label>*@
+                                            <label for="IsCover">若為「蓋台廣告」，自動播放影片時，會強制撥放</label>
+                                            <div class="input-field inline mini m-none">
+                                                @Html.TextBoxFor(m => m.CoverSecond, new { @Class = "m-none validate[funcCall[checkCoverTime]]" })
+                                            </div>
+                                            <span class="font-xs">秒後，才能手動關閉廣告。</span>
+                                        </div>
+                                        <div id="video-upload-box" class="col-1" style="display:none;">
+                                            <div class="input-field">
+                                            </div>
+                                        </div>
+                                        <div class="alert transparent d-block">
+                                            <i class="cc cc-attention"></i>
+                                            <div>
+                                                若為寬度小於 300px 以下的「頁面廣告」，呈現方式必定為點擊圖片後，展開自動播放影片。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar flex">
+                    <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>
+                    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                    @Html.HiddenFor(m => m.ID)
+                    @Html.HiddenFor(m => m.Link)
+                    @Html.HiddenFor(m => m.AdsCustomize_ID)
+                    @Html.HiddenFor(m => m.SiteID, new { @Value = siteId })
+                    @Html.HiddenFor(m => m.MenuID, new { @Value = menuId })
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

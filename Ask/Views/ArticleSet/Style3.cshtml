@@ -1,0 +1,96 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+}
+
+@BundleConfig.Swiper()
+@*<link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />*@
+<link href="~/css/Cards/articleSet/style3.css" rel="stylesheet" />
+
+<div id="card_@setting.CardNo" class="card-articleSet" data-style="3">
+    <div id="swiper_@setting.CardNo" class="swiper-container">
+        <div class="swiper-wrapper">
+            @foreach (ArticleModels item in Model) {
+                string img = item.GetFirstImg(setting);
+                SitePage page = itemPages.GetValue(item.CardNo);
+                if (!string.IsNullOrEmpty(img))
+                {
+                    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(page.SiteID, page.MenuID);
+                    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, img)))
+                    {
+                        img = string.Format("R_{0}", img);
+                    }
+                }
+                if (page != null) {
+            <div class="swiper-slide">
+            	<div class="card shadow-none">
+            	    <div class="card-box">
+                        <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))">
+                            @if (!string.IsNullOrWhiteSpace(img)) {
+                            <div class="card-img square circle" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')">
+                                <div class="card-img-content flex" style="background-image:url(@(page.GetUploadUrl() + Server.UrlPathEncode(img)))"></div>
+                            </div>
+                            }
+                            <div class="card-text">
+                                <div class="card-text-name">@item.Title</div>
+                                <div class="card-text-info">@item.Summary.TrimTags().Truncate(48)</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+                }
+            }
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+    <div class="pagination text-C" style="display: none;">
+        <a id="btn-more" class="btn-black-o btn-more" href="javascript:">More</a>
+    </div>
+    <div class="pagination text-C">
+        <a class="btn-black-o btn-more" href="~/w/TaiSounds/figure">More</a>
+    </div>
+</div>
+@*<script type="text/javascript" src="~/script/swiper/swiper.jquery.js"></script>*@
+<script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(setting.CardNo)');
+        var swiper = new Swiper('#swiper_@setting.CardNo', {
+            // pagination: '.swiper-pagination',
+            slidesPerView: 'auto',
+            centeredSlides: false,
+            paginationClickable: true,
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev',
+            spaceBetween: 0,
+            initialSlide: 3,
+            // slidesPerView: 3,
+            loop: true,
+            speed: 800
+        });
+
+        var pageIndex = 1;
+        var processing = false;
+        // 改#  carrie 20171206
+        outerElm.find('a#btn-more').click(function () {
+            if (processing)
+                return;
+
+            processing = true;
+            var btn = $(this);
+            $.get('@Html.Raw(Url.Action("Next", "ArticleSet", new { siteId = ViewBag.SiteID, cardNo = setting.CardNo, style = 3 }))&pageIndex=' + (++pageIndex), function (html) {
+                if (!$.trim(html)) {
+                    btn.parent().fadeOut(function () {
+                        $(this).remove();
+                    });
+                }
+
+                swiper.appendSlide(html);
+
+                processing = false;
+            });
+        });
+    })();
+</script>

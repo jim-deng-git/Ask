@@ -1,0 +1,103 @@
+﻿@{
+    Layout = null;
+        
+    IEnumerable< WorkV3.Models.SeekItemModel> seekItems = ViewData["SeekItems"] as IEnumerable<WorkV3.Models.SeekItemModel>;
+    
+    bool privacy = (bool)ViewData["Privacy"];    
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+    table {
+        width:95%;
+        margin:0px auto;
+        text-align:center;
+        border-style:solid;
+    }
+
+    table th {
+        border:1px black solid;
+        padding:3px;
+        font-size: 12pt;
+        text-align: center;
+    }
+
+    table td {
+        border:1px black solid;
+        padding:3px;
+        font-size: 11pt;
+        text-align: center;
+        mso-number-format:"\@@";
+    }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>身份證字號</th>
+                <th>出生年月日</th>
+                <th>手機</th>
+                <th>電話</th>
+                <th>Email</th>
+                <th>地址</th>
+                <th>其他說明</th>
+                <th>投稿文件</th>
+                <th>投稿內容</th>                
+                <th>投稿時間</th>
+                <th>備註</th>
+                <th>處理狀態</th>
+                <th>標示中獎</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(WorkV3.Models.SeekItemModel item in seekItems) {
+                string fullAddress = string.Empty;
+                if(!string.IsNullOrWhiteSpace(item.District) || !string.IsNullOrWhiteSpace(item.Address)) {
+                    WorkV3.Models.FieldAddress address = new WorkV3.Models.FieldAddress { Address = item.Address };
+                    if(!string.IsNullOrWhiteSpace(item.District)) {
+                        address.Regions = Newtonsoft.Json.JsonConvert.DeserializeObject<int[]>(item.District);
+                    }
+                    fullAddress = address.GetAddress();
+                }
+
+                string file = item.Files;
+                if(file?[0] == '[') {
+                    file = string.Join("<br />", Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(file));
+                }
+                <tr>
+                    @if (privacy) {
+                    <td>*@(item.Name?.Length > 1 ? item.Name.Substring(1) : item.Name)</td>
+                    <td>@(item.IDCard?.Length > 5 ? item.IDCard.Substring(0, 5) : item.IDCard)*********</td>
+                    <td>@item.Birthday.ToString("yyyy")年**月**日</td>
+                    <td>@(item.Mobile?.Length > 5 ? item.Mobile.Substring(0, 5) : item.Mobile)*********</td>
+                    <td>@(item.Phone?.Length > 5 ? item.Phone.Substring(0, 5) : item.Phone)*********</td>
+                    <td>@(item.Email?.Length > 1 ? $"*****@{ item.Email.Substring(item.Email.IndexOf('@') + 1) }" : item.Email)</td>
+                    <td>@(fullAddress?.Length > 6 ? fullAddress.Substring(0, 6) : fullAddress)*********</td>
+                    } else {
+                    <td>@item.Name</td>
+                    <td>@item.IDCard</td>
+                    <td>@item.Birthday.ToString("yyyy年MM月dd日")</td>
+                    <td>@item.Mobile</td>
+                    <td>@item.Phone</td>
+                    <td>@item.Email</td>
+                    <td>@fullAddress</td>
+                    }
+                    <td>@item.Remark</td>
+                    <td>@Html.Raw(file)</td>
+                    <td>@item.Description</td>
+                    <td>@($"{ item.CreateDate.ToString("MM/dd") }({ weeks[(int)((DateTime)item.CreateDate).DayOfWeek] }) { item.CreateDate.ToString("HH:mm") }")</td>
+                    <td>@item.ProcessRemark</td>
+                    <td>@(item.IsProcess ? "是" : string.Empty)</td>
+                    <td>@(item.IsWinner ? "是" : string.Empty)</td>                    
+                </tr>
+            } 
+        </tbody>
+    </table>
+</body>
+</html>

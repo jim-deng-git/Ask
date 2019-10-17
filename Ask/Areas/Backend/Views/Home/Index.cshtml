@@ -1,0 +1,105 @@
+﻿@{
+    MemberModels memModel = ViewBag.Member as MemberModels;
+    ViewBag.Title = "index";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminLayout.cshtml";
+    List<MenusModels> mm = ViewBag.MenuList;
+    MemberModels currentUser = WorkV3.Areas.Backend.Models.DataAccess.MemberDAO.SysCurrent;
+}
+@section HArea{
+<script>
+
+    function closeCenterEdit()
+    {
+    }
+        //更新menu排序
+    function SaveMenuSort(AreaID) {
+
+        @if (currentUser != null)
+        {
+            long GroupID = WorkV3.Areas.Backend.Models.DataAccess.MemberDAO.SysCurrent.GroupId;
+            if (WorkV3.Areas.Backend.Models.DataAccess.MemberDAO.CheckGroupPermission(GroupID, "SaveMenuSort") == true)
+            {
+
+            <text>
+
+        var sortedMenus = [];
+        if ($("#sideBarMenu").length > 0) {
+
+            
+
+            $("#sideBarMenu").find("div.divSiderMenu").each(function (index, item) {
+                var $div = $(this);
+
+                if ($div.data("areaid") == AreaID) {
+                    var SiteID = $div.data("siteid");
+                    $div.find(".dd-item").each(function () {
+                        var $li = $(this);
+                        var thisID = $li.data('id');
+                        var ParentID = $li.parent().parent().data('id');
+                        if (ParentID == null)
+                            ParentID = 0;
+                        //console.log("AreaID_" + AreaID + " thisID_" + thisID + " ParentID_" + ParentID);
+                        if (thisID != null) {
+                            sortedMenus.push({ SiteID: SiteID, AreaID: AreaID, ParentID: ParentID, ID: thisID });
+                        }
+                    });
+                    var url = '@Url.Action("MenuEdit_Sort", "Menus")';
+                    $.post(url, { items: JSON.stringify(sortedMenus) }, function () {
+                        //console.log("Menu is Sorted!");
+                    });
+
+
+                }
+
+            });
+        }
+
+        </text>
+                }
+            }
+
+
+    }
+</script>
+
+}
+
+@* 20190419 susan add 載入動畫 (後台) *@
+<div id="loader" data-style="1" style="display:none;">
+    <div class="loader"></div>
+</div>
+
+<div id="sideBarMenu" class="sideBar">
+    @Html.Partial("Backend/SiderBar")
+</div>
+<div class="siteFrame">
+    <div id="frameContent" class="frameContent">
+        <div class="contentTop" >
+            @Html.Partial("Backend/PersonalInfo")
+        </div>
+        <div id="contentMain" class="contentMain">
+            <div id="expander" class="expander"></div>
+            @* iframe loading 效果 20190419 susan *@
+            <iframe onload="content_finished_loading(this)" name="mainWebContent" id="mainWebContent" src="@Url.Action("MainContent","Home")" frameborder="0"></iframe>
+        </div>
+    </div>
+    <!-- iframe中呼叫的左側編輯div -->
+    <div id="leftEditBox" class="setting-dialog-wrapper">
+        <iframe class="iframe" scrolling="scroll" style="width:100%;"></iframe>
+    </div>
+    <div id="leftEditBox-lg" class="setting-dialog-wrapper">
+        <iframe class="iframe" scrolling="scroll" style="width:100%;"></iframe>
+    </div>
+
+    <!-- iframe中呼叫的中間編輯div -->
+    <div id="centerEditBox" class="setting-dialog-wrapper">
+        <iframe class="iframe" scrolling="scroll" style="width:100%;"></iframe>
+    </div>
+    <div id="centerEditBox-middle" class="setting-dialog-wrapper">
+        <iframe class="iframe" scrolling="scroll" style="width:100%;"></iframe>
+    </div>
+    <div id="centerEditBox-middle-inner" class="setting-dialog-wrapper">
+        <iframe class="iframe" scrolling="scroll" style="width:100%;"></iframe>
+    </div>
+    <div class="overlayer" onclick="parent.window.closeCenterEdit();"></div>
+</div>

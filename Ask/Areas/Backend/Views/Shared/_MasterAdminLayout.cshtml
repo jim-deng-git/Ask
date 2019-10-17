@@ -1,0 +1,72 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta name="robots" content="NOINDEX,NOFOLLOW" />
+     @*行動裝置顯示設定*@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    @*ico*@
+    <link rel='shortcut icon' href='~/images/favicon.ico' />
+
+    <title>@ViewBag.Title</title>
+    
+        
+    @*放全域性的JS與CSS*@
+    
+    @* 20190419 susan add 載入動畫 (後台) *@
+    <link href="~/css/Cards/loaders/style1.css" rel="stylesheet" />
+    
+    @Styles.Render("~/Css/BackCss")
+    @Styles.Render("~/Css/mmenu")
+
+    <!--[if gte IE 9]><!-->
+    <link href="~/css/font-ccwork.css" type="text/css" rel="stylesheet" />
+    <link href="~/css/vendor/animate/animate.css" type="text/css" rel="stylesheet" />
+    <!--<![endif]-->
+
+    @Styles.Render("~/Css/jquery-ui")
+    @Styles.Render("~/Css/colorbox")
+    @Styles.Render("~/Css/tooltipster")
+    @Styles.Render("~/Css/sweetalert")
+    @Styles.Render("~/Css/admin")
+    
+    <!--[if lt IE 9]>
+    <script src="~/script/base/IE9.js"></script>
+    <![endif]-->
+
+    <!--[if !IE]><!-->
+    <script type="text/javascript">
+        if (/*@@cc_on!@@*/false) {
+        document.documentElement.className+=' ie10';
+        }
+    </script>
+    <!--<![endif]-->
+    @Scripts.Render("~/JS/modernizr")
+    @Scripts.Render("~/JS/jquery")
+    @Scripts.Render("~/JS/jquery-ui")
+    @Scripts.Render("~/JS/Core")
+    @*@Scripts.Render("~/JS/jquery.easing") 此檔無法壓縮*@
+    <script type="text/javascript" src="~/script/base/jquery.easing.1.3.js"></script>
+    @Scripts.Render("~/JS/jquery-mousewheel")
+    @Scripts.Render("~/JS/classie")
+    @Scripts.Render("~/JS/mmenu")
+    @Scripts.Render("~/JS/nestable")
+    @Scripts.Render("~/JS/colorbox")
+    @Scripts.Render("~/JS/sweetalert")
+    @Scripts.Render("~/JS/tooltipster")
+    @Scripts.Render("~/JS/admin")
+        
+    @RenderSection("HArea", required: false)
+</head>
+<body>
+    @RenderSection("ContTArea", required: false)
+    @*內容區*@
+    @RenderBody()
+    @RenderSection("ContDArea", required: false)
+    @RenderSection("FArea", required: false)
+</body>
+</html>

@@ -1,0 +1,291 @@
+﻿@model StatisticConditionModels
+@{
+    ViewBag.Title = "編輯條件";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long SiteId = (long)ViewBag.SiteId;
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+}
+@section FArea {
+    @BundleConfig.JWPlayer()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+     @if (ViewBag.Exit as bool? == true) {
+        <text>
+        Component.alert('條件已儲存', function () {
+            Component.closeLeft();
+            Component.closeCenter();
+            Component.closeRight();
+           // parent.finish;
+            //try {
+                parent.refreshList();
+            //} catch (e) {
+
+            //}
+        });
+        </text>
+    }
+
+        function checkDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var date = Component.parseDate(v);
+                if (!date)
+                    return '* 日期格式錯誤';
+            }
+        }
+    </script>
+}
+<div class="groove groove-1">
+    <form id="editForm" name="editForm" method="post" action="@Url.Action("StatisticConditionEdit", new { SiteID=SiteId})" enctype="multipart/form-data">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">編輯條件</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+
+                    <input type="hidden" name="ID" value="@(Model!= null?Model.ID.ToString():"")" id="ID" />
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field inline no-label">
+                                    <input id="Title" type="text" placeholder="條件名稱" name="Title" value="@(Model!= null?Model.Title:"")" class="validate[required]">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">色調</div>
+
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_red" value="red" @(Model != null ? (Model.LabelColor == "red" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_red" data-color="red"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_orange" value="orange" @(Model != null ? (Model.LabelColor == "orange" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_orange" data-color="orange"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_yellow" value="yellow" @(Model != null ? (Model.LabelColor == "yellow" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_yellow" data-color="yellow"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_green" value="green" @(Model != null ? (Model.LabelColor == "green" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_green" data-color="green"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_light-green" value="light-green" @(Model != null ? (Model.LabelColor == "light-green" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_light-green" data-color="light-green"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_blue" value="blue" @(Model != null ? (Model.LabelColor == "blue" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_blue" data-color="blue"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_teal" value="teal" @(Model != null ? (Model.LabelColor == "teal" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_teal" data-color="teal"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_deep-purple" value="deep-purple" @(Model != null ? (Model.LabelColor == "deep-purple" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_deep-purple" data-color="deep-purple"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_gold" value="gold" @(Model != null ? (Model.LabelColor == "gold" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_gold" data-color="gold"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_light-grey" value="light-grey" @(Model != null ? (Model.LabelColor == "light-grey" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_light-grey" data-color="light-grey"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_grey" value="grey" @(Model != null ? (Model.LabelColor == "grey" ? "checked=\"checked\"" : string.Empty) : "checked=\"checked\"") />
+                                        <label for="LabelColor_grey" data-color="grey"></label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" name="LabelColor" type="radio" id="LabelColor_black" value="black" @(Model != null ? (Model.LabelColor == "black" ? "checked=\"checked\"" : string.Empty) : string.Empty) />
+                                        <label for="LabelColor_black" data-color="black"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">分析項目</div>
+                                <div class="radio-box inline full">
+                                    <div>
+                                        <input class="with-gap validate[required]" type="radio" id="StatisticType_0" name="StatisticType" @(Model != null ? (Model.StatisticType == StatisticType.SummaryViewCount ? "checked=\"checked\"" : string.Empty) : "checked=\"checked\"") value="@((int)StatisticType.SummaryViewCount)">
+                                        <label for="StatisticType_0">瀏覽量</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" id="StatisticType_1" name="StatisticType" type="radio" @(Model != null ? (Model.StatisticType == StatisticType.DailyViewCount ? "checked=\"checked\"" : string.Empty) : string.Empty) value="@((int)StatisticType.DailyViewCount)">
+                                        <label for="StatisticType_1">每日瀏覽人次</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap validate[required]" id="StatisticType_2" name="StatisticType" type="radio" @(Model != null ? (Model.StatisticType == StatisticType.MemberViewCount ? "checked=\"checked\"" : string.Empty) : string.Empty) value="@((int)StatisticType.MemberViewCount)">
+                                        <label for="StatisticType_2">每日會員瀏覽</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="col-1">
+                        <table class="fixTable">
+                            <caption class="bg-transparent p-h-4">
+                                篩選條件
+                                <div class="float-R"><a class="btn-grey-darken-4-o my-openLeftEdit" href="@Url.Action("StatisticConditionDetailEdit", new { SiteId=SiteId, ConditionID =Model.ID})"><i class="cc cc-plus"></i> 新增條件</a></div>
+                            </caption>
+                            <thead>
+                                <tr>
+                                    <th>關聯</th>
+                                    <th>類型</th>
+                                    <th>篩選條件</th>
+                                    <th>編輯</th>
+                                    <th>移除</th>
+                                </tr>
+                            </thead>
+                            <tbody id="list_details"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    <input type="checkbox" id="ShowStatus" name="ShowStatus" @(Model != null ? (Model.ShowStatus ? "checked=\"checked\"" : string.Empty) : "checked=\"checked\"") value="true">
+                    <label for="ShowStatus">顯示</label>
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+            <input type="hidden" id="Sort" name="Sort" value="@(Model != null ? Model.Sort:0)" />
+        </div>
+    </form>
+</div>
+
+
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+<script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                window.scrollTo(0, document.body.scrollHeight);
+                form.submit();
+            }
+        });
+        $('#btnCancel').click(function () {
+            Component.closeLeft();
+            Component.closeCenter();
+            Component.closeRight();
+            parent.$.colorbox.close();
+        });
+
+        refreshList();
+        function openTheformBox(src, formBox) {
+            if (formBox.is(':visible'))
+                formBox.hide();
+            var iframe = formBox.find('.iframe');
+            iframe.prop('src', src);
+
+            iframe.prop('id', "editConditionForm");
+            iframe.on('load', function () {
+                if (parent!= null && parent.closeCenterEdit != null) {
+                    parent.closeCenterEdit = function () {
+                        formBox.fadeOut(300).removeClass('active');
+                    };
+                }
+                formBox.fadeIn(300).addClass('active');
+            });
+        }
+        $('.my-openLeftEdit').on('click', function (e) {
+            var formBox = window.parent.parent.$("#leftEditBox");
+            $(formBox).css('top', "10%");
+            $(formBox).css("height", "88%");
+            e.preventDefault();
+            if (formBox.hasClass('active')) {
+                formBox.fadeOut(300).removeClass('active');
+            } else {
+                openTheformBox(this.href, formBox);
+
+            }
+        });
+    });
+    function openLeftEdit(src) {
+        var formBox = window.parent.parent.$("#leftEditBox");
+        if (formBox.is(':visible'))
+            formBox.hide();
+        var iframe = formBox.find('.iframe');
+        iframe.prop('src', src);
+        iframe.prop('name', "editConditionDetailForm");
+        iframe.on('load', function () {
+            //window.parent.closeLeftEdit = function () {
+            //    formBox.fadeOut(300).removeClass('active');
+            //};
+            formBox.fadeIn(300).addClass('active');
+        });
+    }
+    function closeCenterEdit() {
+    }
+
+    function refreshList() {
+
+        //location.replace(location.href);
+        var listUrl = "@Url.Action("GetDetailList")?SiteID=@SiteId&ConditionID=" + $("#ID").val();
+        $.post(listUrl, function(data){
+            var htmlContent = "";
+
+            for (var i = 0; i < data.length; i++) {
+                htmlContent += "<tr>";
+                htmlContent += "<td>" + data[i].LogicTypeName + "</td>";
+                htmlContent += "<td>" + data[i].AnalysisTypeName + "</td>";
+                htmlContent += "<td>" + data[i].AnalysisItemsContent + "</td>";
+                htmlContent += "<td class=\"icon\"><a class=\"btn-grey-darken-4-o transparent square \" href=\"javascript:\" onclick='EditDetails(\"" + data[i].ID + "\")'><i class=\"cc cc-edit\"></i></a></td>";
+                htmlContent += "<td class=\"icon\"><a class=\"btn-grey-lighten-1-o transparent square\" href=\"javascript:\" onclick='DeleteDetails(\""+data[i].ID+"\")'><i class=\"cc cc-close\"></i></a></td>";
+                htmlContent += "</tr>";
+            }
+
+            $("#list_details").html(htmlContent);
+        });
+    }
+    function DeleteDetails(id)
+    {
+        Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+            if (isConfirm) {
+                $.post('@Url.Action("DeleteStatisticCondition")', { 'ID': id }, function () {
+                    location.replace(location.href);
+                });
+            }
+        }, 'warning');
+    }
+    function EditDetails(id) {
+        var editUrl = "@Html.Raw( Url.Action("StatisticConditionDetailEdit", new { SiteId=SiteId, ConditionID = (Model != null ? Model.ID.ToString() : "") }))&DetailID=" + id;
+        var formBox = window.parent.parent.$("#leftEditBox");
+        $(formBox).css('top', "10%");
+        $(formBox).css("height", "88%");
+        
+        if (formBox.hasClass('active')) {
+            formBox.fadeOut(300).removeClass('active');
+        } else {
+            openLeftEdit(editUrl);
+        }
+    }
+</script>
+

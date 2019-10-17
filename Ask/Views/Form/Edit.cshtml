@@ -1,0 +1,254 @@
+﻿@model FormModel
+@{ 
+    FormItem formItem = ViewBag.FormItem as FormItem;
+
+    SitePage curPage = ViewBag.CurPage;
+    string uploadDesignUrl = ViewBag.UploadDesignUrl;
+    string uploadUrl = ViewBag.UploadUrl;
+    string rootUrl = Href("~/");
+    var uploadQuery = new { siteId = curPage.SiteID, menuId = curPage.MenuID };
+
+    // neil 20180503 代入會員資料
+    Member currentMember = Member.Current;
+}
+
+@if (Model != null) {
+    @* 20190419 susan add 載入動畫 (前台所有V3的表單) *@
+    <link href="~/css/Cards/loaders/style1.css" rel="stylesheet" />
+    <link href="~/css/card.css" rel="stylesheet" />
+    <link href="~/css/forms.css" rel="stylesheet" />
+    <link href="~/css/Cards/form/style1.css" rel="stylesheet" />
+    <link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+    <link href="~/css/vendor/tooltipster/tooltipster.css" rel="stylesheet" />
+
+    @* 20190419 susan add 載入動畫 (前台所有V3的表單) *@
+    <div id="loader" data-style="1" style="display:none;">
+        <div class="loader"></div>
+    </div>
+
+    <div id="div_@Model.ID" class="card-common card-form" data-style="1">
+        <form id="editForm" action="@Url.Action("Index", "Home", new { siteSn = curPage.SiteSN, pageSn = curPage.PageSN })" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="article-main">
+                <div class="article-center">
+                    <div class="article-title page">@Model.Title</div>
+                    <div class="article-content">
+                        @if(Model.ShowDescription) {
+                        <div class="bg-grey-lighten-4 p-10 m-T-12 top-banner">
+                            <div class="">@*20181206 yulin remove float-L*@
+                                @if (!string.IsNullOrWhiteSpace(Model.Image)) {
+                                <img src="@(uploadDesignUrl + Server.UrlPathEncode(Model.Image))" class="float-R img" />
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.Description) && Model.Description.TrimTags().Trim() != "請填入段落內文") {
+                                @:@Html.Raw(Model.Description)
+                                }
+                            </div>                            
+                        </div>
+                        }                    
+                        <ul class="forms m-h-none p-10">
+                            <li>
+                                @{ 
+                                    IEnumerable<WorkV3.Models.FieldModel> fields = Model.GetFields().Where(f => f.Enable);
+                                    List<FieldValue> values = new List<FieldValue>();
+                                    if (formItem != null) {
+                                        values = formItem.GetValues().ToList();
+                                    }
+                                }
+                                @if (fields?.Count() > 0) {
+                                    foreach (WorkV3.Models.FieldModel field in fields) {
+                                        field.Value = values.FirstOrDefault(v => v.FieldID == field.ID);
+
+                                        // neil 20180503 代入會員資料 start
+                                        if (field.Value == null && currentMember != null)
+                                        {
+                                            FieldValue value = new FieldValue();
+
+                                            MemberShipModels memberShip = WorkV3.Models.DataAccess.MemberShipDAO.GetItem(currentMember.ID);
+
+                                            switch (field.DefaultType)
+                                            {
+                                                case 1:
+                                                    if (field.TypeID == "input")
+                                                    {
+                                                        value.Value = memberShip.Email;
+                                                    }
+                                                    break;
+                                                case 2:
+                                                    if (field.TypeID == "input")
+                                                    {
+                                                        value.Value = memberShip.Phone;
+                                                    }
+                                                    break;
+                                                case 3:
+                                                    if (field.TypeID == "input")
+                                                    {
+                                                        value.Value = memberShip.Name;
+                                                    }
+                                                    break;
+                                                case 4:
+                                                    if (field.TypeID == "radio")
+                                                    {
+                                                        string[] female = new string[] { "女", "女士" };
+                                                        memberShip.Sex = memberShip.Sex ?? "";
+                                                        value.Value = female.Where(x => x == memberShip.Sex.Trim()).Count() > 0 ? "女士" : "先生";
+                                                    }
+                                                    break;
+                                                case 5:
+                                                    if (field.TypeID == "input")
+                                                    {
+                                                        value.Value = memberShip.IDCard;
+                                                    }
+                                                    break;
+                                                case 6:
+                                                    if (field.TypeID == "input")
+                                                    {
+                                                        value.Value = memberShip.Mobile;
+                                                    }
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+
+                                            field.Value = value;
+                                        }
+                                        // neil 20180503 代入會員資料 end
+                                        Html.RenderPartial("FieldViewStyle1", field);
+                                    }
+                                }
+                            </li>
+                        </ul>                    
+                    </div>
+                </div>
+                <div class="control-bar pager">
+                    <div>
+                        <div class="float-L p-T-4">
+                            <div class="">
+                                @if (Model.ForceStatement) {
+                                    <input class="" name="pending" type="checkbox" id="IsAgree" />
+                                    <label for="IsAgree">我已了解並同意</label>
+                                    <a class="font-xs font-blue openEdit-c p-none p-R-5 m-R-5" data-width="800" data-height="600" href="javascript:openStatement()">填表聲明</a>
+                                }                            
+                            </div>
+                        </div>
+                        
+                        <div id="divStatement" style="display:none;">
+                            <div style="padding:15px;">@Html.Raw(Model.Statement)</div>
+                        </div>
+
+                        @if (Model.ShowResult) {
+                            <a class="btn-grey-lighten-1-o btn-huge right next btnSend" href="javascript:"><i class="cc cc-arrow-right"></i>確認送出，看結果</a>
+                        }
+                        else
+                        {
+                            <a class="btn-grey-lighten-1-o btn-huge right next btnSend" href="javascript:"><i class="cc cc-arrow-right"></i>確認送出</a>
+                        }
+                        
+                        <div class="bar-item float-R">
+                            <div id="divcaptcha">
+                                @if (Model.HasCaptcha)
+                                 {
+                                    @:@Html.CaptchaOnBar("captcha")
+                                 }
+                            </div>
+                        </div>
+
+                        <div class="bar-item float-R font-grey">
+                            <span id="spanProgress"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    @BundleConfig.SweetAlert()
+    @BundleConfig.JWPlayer()
+    @BundleConfig.Colorbox()
+    <script type="text/javascript" src="~/Script/pager/pager.js"></script>
+    <script type="text/javascript" src="~/Script/forms/dropdown.js"></script>
+    <script type="text/javascript" src="~/Script/forms/moment-with-locales.js"></script>
+    <script type="text/javascript" src="~/Script/forms/datetimepicker.js"></script>
+    <script type="text/javascript" src="~/Script/forms/forms.js"></script>
+    <script type="text/javascript" src="~/Script/workV3/customForm.js"></script>
+    <script type="text/javascript" src="~/Script/workV3/check.js"></script>
+    <script type="text/javascript">
+        function openStatement() {
+            $.colorbox({
+                html: $('#divStatement').html(),
+                width: '80%',
+                height: '80%'
+            });
+        }
+        var onReady = function() {
+            $.pager({
+                footer: "[zonelayout='h-c1-s1001']",              //設定要停止在那個DOM上 
+                theTarget: ".control-bar",            //PAGE使用的 Class Name
+                speed: 300,                     //效果速度
+                easing: "easeInExpo"            //可以直接套用 easing，直接給easing的名稱就可以
+            });
+        }
+
+        $(function () {
+            var outerElm = $('#div_@Model.ID');
+
+            Form.initField(outerElm, '@rootUrl', '@Html.Raw(Url.Action("FileUpload", "Form", new { siteId = curPage.SiteID, menuId = curPage.MenuID }))', '@uploadUrl', '@Html.Raw(Url.Action("Regions", "Common"))');
+
+            function formSubmit() {
+                var form = $('#editForm');
+                var agreeElm = outerElm.find('#IsAgree');
+                if (agreeElm.length && !agreeElm.prop('checked')) {
+                    Component.alert('請確認已閱讀填表聲明，並勾選我已了解並同意');
+                    $('#loader').fadeOut();
+
+                } else {
+                    var captchaElm = $('#spancaptcha');
+                    if (captchaElm.length) {
+                        var captcha = {};
+                        captchaElm.find('input').each(function () {
+                            captcha[this.name] = $.trim(this.value);
+                        });
+                        $.post('@Url.Action("CaptchaValidate", "Common")', captcha, function (rs) {
+                            if (rs == '1') {
+                                form.submit();
+                            } else {
+                                Component.alert('驗證碼填寫錯誤');
+                                $('#loader').fadeOut();
+                            }
+                        });
+                    } else {
+                        form.submit();
+                    }
+                }
+            }
+
+            outerElm.find('a.btnSend').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    //20190419 susan add 載入動畫 (前台所有V3的表單)
+                    $('#loader').fadeIn();
+                    Form.checkRepeat(outerElm, '@Model.ID', '@(formItem?.ID)', '@Url.Action("GetItemCount", "Form")', function () {
+                        formSubmit();
+                    });
+                }
+            });
+
+            @if(!string.IsNullOrWhiteSpace(ViewBag.Script)) {
+                @:@ViewBag.Script
+            } else if (ViewBag.Exit as bool? == true) {
+                <text>
+                    setTimeout(function () {
+                        //20190419 susan add 載入動畫 (前台所有V3的表單)
+                        $('#loader').fadeOut();
+                        Component.alert('@(Model.Title)已送出，謝謝您的參與！', function () {
+                            location.href = '@Html.Raw(Url.Action("Index", "Home", new { siteSn = curPage.SiteSN, pageSn = "Index" }))';
+                        });
+                    }, 10)
+                </text>
+            }
+        });
+    </script>
+}
+
+

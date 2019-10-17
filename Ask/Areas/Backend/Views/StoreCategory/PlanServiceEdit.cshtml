@@ -1,0 +1,104 @@
+﻿@model WorkV3.Models.StorePlanServiceModel
+@{
+    ViewBag.Title = "服務項目編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+}
+
+<form id="editForm" method="post" enctype="multipart/form-data" action="@Html.Raw(Url.Action("PlanServiceEdit", new { siteId = ViewBag.SiteID, parentId = ViewBag.ParentID}))">
+    <div class="groove groove-1">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title-admin-page bg-transparent">
+                        服務項目編輯
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="input-field inline full">
+                        <input type="text" id="Name" name="Name" placeholder="服務項目名稱" value="@Model.Name">
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">說明</div>
+                    <div class="input-field inline full">
+                        <div class="img-text-height">
+                            <textarea contenteditable="true" id="Description" name="Description">@Model.Description</textarea>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">附件</div>
+                    <div class="radio-box inline full">
+                        <div>
+                            @Html.CheckBoxFor(model => model.UploadFile)
+                            <label for="UploadFile">須上傳檔案</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>
+                </div>
+            </div>
+            <a class="btn-cancel" onclick="parent.$.colorbox.close();" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+@section FArea {
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            var editor = Component.editor('Description');
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate')) {
+                    form.submit();
+                }
+            });
+
+            function openTheformBox(src, formBox) {
+                if (formBox.is(':visible'))
+                    formBox.hide();
+                var iframe = formBox.find('.iframe');
+                iframe.prop('src', src);
+                iframe.on('load', function () {
+                    window.parent.closeCenterEdit = function () {
+                        formBox.fadeOut(300).removeClass('active');
+                    };
+                    formBox.fadeIn(300).addClass('active');
+                });
+            }
+            $('.openLeftEdit').on('click', function (e) {
+                var formBox = window.parent.$("#leftEditBox");
+                e.preventDefault();
+                if (formBox.hasClass('active')) {
+                    formBox.fadeOut(300).removeClass('active');
+                } else {
+                    openTheformBox(this.href, formBox);
+                }
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                //if (parent.refreshList)
+                    parent.refreshList();
+                parent.$.colorbox.close();
+                </text>
+            }
+        })
+    </script>
+    }

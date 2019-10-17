@@ -1,0 +1,350 @@
+﻿@model List<AdvertisementModel>
+@{ 
+    ViewBag.Title = "廣告區管理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+    AdvertisementSearchModel search = ViewBag.Search;
+    Pagination pagination = ViewBag.Pagination;
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script>
+        function refresh() {
+            location.reload();
+        }
+    </script>
+}
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+
+        $(function () {
+
+            $(".fixTable").stickyTableHeaders();
+
+            var listObj = Component.dataList('listTable');
+
+            listObj.deleted = function (delIds) {
+                Component.confirm('是否刪除所選廣告資料？', function (isOk) {
+                    if (isOk) {
+                        var url = '@Url.Action("AdvertisementDel", "Advertisement")';
+                        $.post(url, { 'ids': delIds }, refresh());
+                    }
+                });
+
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    $('#listTable').find('span.info').html('');
+                }
+            }
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                }
+            }
+
+            $('#listTable').on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+
+            $('.ad-image').each(function () {
+                var _width=$(this).data('img-width'),
+                    _height=$(this).data('img-height'),
+                    _padding=(_height/_width)*100;
+                $(this).find('span').css('padding-bottom',_padding+'%');
+            });
+
+            $("input[name^='AdvertisementType']").click(function(){
+                if(this.id=="ad_all"){
+                    $("input[name='AdvertisementType']").prop("checked",false);
+                }else{
+                    $("#ad_all").prop("checked",false);
+                }
+            });
+
+        });
+
+
+    $(window).on('load', function() {
+        if ($('#SearchBox').length) {
+
+            var $SearchBoxH = $('#SearchBox').outerHeight();
+            if ($('#SearchBox').hasClass('pushup')) {
+                // $('.fixTable, .pagination').css({
+                //     top: $SearchBoxH
+                // });
+
+                $('#closeSerach').on('click', function() {
+                    $('#SearchBox').removeClass('pushup');
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                });
+            } else {
+                // $('.fixTable, .pagination').css({
+                //     top: 0
+                // });
+            }
+
+            $('#openSearch').on('click', function() {
+                $('#SearchBox').toggleClass('pushup');
+                if ($('#SearchBox').hasClass('pushup')) {
+                    // $('.fixTable, .pagination').css({
+                    //     top: $SearchBoxH
+                    // });
+                } else {
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                }
+            });
+        }
+        @if(ViewBag.IsSearchMode == null)
+        {
+            <text>
+           $("#closeSerach")[0].click();
+            </text>
+        }
+    });
+
+    $('#btnSearch').click(function () {
+        var form = $('#searchForm');
+        form.submit();
+    });
+
+    </script>
+}
+<style>
+    .ad-image {
+        max-width: 300px;
+        background: #f2f2f2;
+        border: 1px solid #bfbfbf;
+    }
+
+        .ad-image > span {
+            display: block;
+            width: 100%;
+            height: 0px;
+            overflow: hidden;
+        }
+</style>
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="SearchBox" class="search-box pushup">
+            <form id="searchForm" action="@Url.Action("Index", siteQuery)" method="post">
+                <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input id="" type="text" name="keyword" placeholder="請輸入廣告區名稱關鍵字" value="@search.keyword">
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">類型</div>
+                            <div class="radio-box inline">
+                                <div>
+                                    <input class="select-all"  name="AdvertisementTypeAll" type="checkbox" id="ad_all" @(search?.AdvertisementType == null? "checked=\"checked\"" : string.Empty ) />
+                                    <label for="ad_all">全選</label>
+                                </div>
+                                @*<div>
+                                    <input type="checkbox" name="AdvertisementType" id="ad_third_party" value="@AdvertisementType.third_party" @( search?.AdvertisementType?.Any(m=>m.Contains(AdvertisementType.third_party)) == true  ? "checked=\"checked\"" : string.Empty) />
+                                    <label for="ad_third_party">第三方廣告</label>
+                                </div>*@
+                                <div>
+                                    <input type="checkbox" name="AdvertisementType" id="ad_custom" value="@AdvertisementType.custom" @( search?.AdvertisementType?.Any(m=>m.Contains(AdvertisementType.custom)) == true ? "checked=\"checked\"" : string.Empty) />
+                                    <label for="ad_custom">自訂廣告</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="float-R m-L-4">
+                    <a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a>
+                </div>
+            </form>
+
+        </div>
+        <table id="listTable" class="fixTable">
+            <caption>
+                廣告區
+                <span class="info"></span>
+                <!--
+                <div class="radio-box inline m-none col-4 m-L-4">
+                    <div>
+                        <input class="with-gap" name="group_ad-switch" type="radio" id="ad_random" />
+                        <label for="ad_random">隨機選擇廣告</label>
+                    </div>
+                    <div>
+                        <input class="with-gap" name="group_ad-switch" type="radio" id="ad_slide" />
+                        <label for="ad_slide">輪播顯示廣告</label>
+                    </div>
+                </div>
+                -->
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square tooltip-info openCenterEdit-m" href="@Html.Raw(Url.Action("AdvertisementEdit", siteQuery))" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i>篩選</a>
+
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>廣告區名稱</th>
+                    <th>電腦版尺寸</th>
+                    <th>手機板尺寸</th>
+                    <th>類型</th>
+                    <th>編輯</th>
+                    <th>顯示位置</th>
+                    <th>廣告管理</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Count(); i++)
+                {
+                    AdvertisementModel item = Model.ElementAt(i);
+                    <tr data-id="@item.ID">
+                        <td class="sort">@(i + 1)</td>
+                        <td class="">@item.AreaName</td>
+                        <td class="">
+                            @if (item.IsUseForComputer)
+                            {
+                                <div class="ad-image m-T-4" data-img-width="@(item.ComputerWidth ?? 0)" data-img-height="@(item.ComputerHeight ?? 0)">
+                                    <span></span>
+                                </div>
+                                <div class="image-size text-C p-T-2 m-B-4 font-grey">
+                                    <text>
+                                        @(item.ComputerWidth ?? 0) x @(item.ComputerHeight ?? 0) px
+                                    </text>
+                                </div>
+                            }
+                            else
+                            {
+                                <text>
+                                    關閉
+                                </text>
+                            }
+                        </td>
+                        <td class="">
+                            @if (item.IsUseForPhone)
+                            {
+                                <div class="ad-image m-T-4" data-img-width="@(item.PhoneWidth ?? 0)" data-img-height="@(item.PhoneHeight ?? 0)">
+                                    <span></span>
+                                </div>
+                                <div class="image-size text-C p-T-2 m-B-4 font-grey">
+                                    <text>
+                                        @(item.PhoneWidth ?? 0) x @(item.PhoneHeight ?? 0) px
+                                    </text>
+                                </div>
+                            }
+                            else
+                            {
+                                <text>
+                                    關閉
+                                </text>
+                            }
+                        </td>
+                        <td class="">@(item.Type == AdvertisementType.custom ? "自訂廣告" : "第三方廣告")</td>
+                        <td class="icon edit">
+                            <a class="font-black font-base openCenterEdit-m" href="@Url.Action("AdvertisementEdit",new { siteId=siteId,menuId=menuId,id=item.ID })">
+                                <i class="cc cc-edit"></i>
+                            </a>
+                        </td>
+                        <td class="">
+                            <div>
+                                @*頁面廣告項目數*@
+                                @{
+                                    IEnumerable<AdsDisplayAreaSetModel> areaSet = WorkV3.Areas.Backend.Models.DataAccess.AdvertisementDAO.GetAdsAreaSet(item.ID, siteId);
+                                    int overlayCount = areaSet.Where(m => m.GroupPosition.ToLower() == "overlay").Count();
+                                    int nonOverlayCount = areaSet.Where(m => m.GroupPosition.ToLower() != "overlay").Count();
+                                    string nonOverlayCountStr = nonOverlayCount != 0 ? nonOverlayCount.ToString() : "尚未設定";
+                                    string overlayCountStr = overlayCount != 0 ? overlayCount.ToString() : "尚未設定";
+                                }
+                                    @if (overlayCount == 0 && nonOverlayCount == 0)
+                                    {
+                                <a class="font-black font-base" href="@Url.Action("AdsDisplaySetting", new { Advertisement_ID = item.ID, SiteID = siteId })">
+                                    尚未設定
+                                </a>
+                                    }
+                                    else
+                                    {
+                                        <div>
+                                            <a class="font-black font-base" href="@Url.Action("AdsDisplaySetting", new { Advertisement_ID = item.ID, SiteID = siteId })">
+                                                <i class="cc cc-desktop-message"></i>
+                                                @(overlayCount + nonOverlayCount)
+                                            </a>
+                                        </div>
+
+                                        @*
+                if (nonOverlayCount != 0)
+                {
+    <div>
+        <a class="font-black font-base" href="@Url.Action("AdsDisplaySetting", new { Advertisement_ID = item.ID, SiteID = siteId })">
+            <i class="cc cc-desktop-message"></i>
+            @nonOverlayCountStr
+        </a>
+    </div>
+                }
+
+
+                if (overlayCount != 0)
+                {
+    <div>
+        <a class="font-black font-base" href="@Url.Action("AdsDisplaySetting",new { Advertisement_ID=item.ID,SiteID=siteId })">
+            <i class="cc cc-format-wrap-inline"></i>
+            @overlayCountStr
+        </a>
+    </div>
+                }*@
+                                    }
+</div>
+                            <div>
+                                @*蓋台廣告項目數*@
+                                @*<a class="font-black font-base" href="#">
+                                        <i class="cc cc-format-wrap-inline"></i>
+                                        Count
+                                    </a>*@
+                            </div>
+                        </td>
+                        <td class="">
+                            <div>
+                                @{
+                                    bool IsCustom = (item.Type == AdvertisementType.custom);
+                                    int CustomDataCount = WorkV3.Areas.Backend.Models.DataAccess.AdvertisementDAO.GetAdsCustomizeCount(item.ID);
+                                    string CustomDataCountStr = CustomDataCount != 0 ? CustomDataCount.ToString() : "尚未設定";
+                                    string link = IsCustom ? Url.Action("AdsCustomizeIndex", new { siteId = siteId, menuId = menuId, Advertisement_ID = item.ID }) : "#";
+                                    string icon = IsCustom ? "edit" : "link-variant";
+                                    string text = IsCustom ? CustomDataCountStr : "第三方";
+                                }
+                                <a class="font-black font-base" href="@link">
+                                    <i class="cc cc-@icon"></i>
+                                    @text
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                                    }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>

@@ -1,0 +1,22 @@
+.card-plainText[data-style="8"] {
+  position: relative; }
+  .card-plainText[data-style="8"] .title-main {
+    font-size: 28px;
+    color: #4a4a4a;
+    padding: 24px 15px 0;
+    border: 1px solid #cccccc;
+    border-bottom: none; }
+    @media only screen and (max-width: 800px) {
+      .card-plainText[data-style="8"] .title-main {
+        font-size: 30px; } }
+  .card-plainText[data-style="8"] .title-sub {
+    font-size: 18px;
+    color: #4a4a4a;
+    padding: 16px 15px 30px;
+    border: 1px solid #cccccc;
+    border-top: none; }
+  .card-plainText[data-style="8"] .item-bottom {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: calc(100% + 20px); }

@@ -1,0 +1,57 @@
+﻿@model CompanyModel
+@{
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    int? parentId = ViewBag.ParentID;
+    string title = (parentId == null ? "公司" : "部門");
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("Edit", new { siteId = siteId, parentId = parentId}))">
+    <div class="groove groove-1">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">
+                @(title)編輯
+            </div>
+        </div>
+        <ul class="forms">
+            <li>
+                <div class="input-field">
+                    <input type="text" placeholder="@(title)名稱" id="Name" name="Name" value="@Model.Name">
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(m => m.IsIssue)
+                    <label for="IsIssue">刊登</label>
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" id="ID" name="ID" value="@Model.ID" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

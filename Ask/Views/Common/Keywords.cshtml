@@ -1,0 +1,22 @@
+﻿@model  IEnumerable<string>
+<div class="chips keywords">
+    @if (Model != null)
+    {
+        foreach (string keyword in Model)
+        {
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                @* carrie 20180103 <div class="chip" data-listurl="@Href("~/w/TaiSounds/SearchResults?key="+@keyword)">
+                    <span class="chip-name">#@keyword</span>
+                </div>*@
+                @* fay 20180309 <div class="chip">
+                    <span class="chip-name">#@keyword</span>
+                </div>*@
+                <div class="chip">
+                        <a href="@Url.Action("Index","Home", new { SiteSN = ViewBag.SiteSN, PageSN = "SearchResults", key=keyword})" target="_blank"><span class="chip-name bg-grey-lighten-3 p-1 p-h-3">@keyword</span></a>
+                    
+                </div>
+            }
+        }
+    }
+</div>

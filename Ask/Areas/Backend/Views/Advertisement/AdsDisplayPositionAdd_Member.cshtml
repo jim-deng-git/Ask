@@ -1,0 +1,99 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model AdsPositionSetViewModel
+@{
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+@section FArea{
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script>
+    var areaIsSubmit = false;
+    jQuery(function ($) {
+
+        $('.already_have_ad label,.already_have_ad input').click(function () {
+            return false
+        });
+
+        $("#Savebtn").click(function () {
+            if (areaIsSubmit)
+                return;
+            var form = $("#editForm");
+            if (form.validationEngine('validate')) {
+                areaIsSubmit = true;
+                form.submit();
+            }
+        });
+    });
+
+    @if ((ViewBag.Exit as bool?) == true)
+    {
+        var msg = ViewBag.ResultMsg;
+        <text>
+        Component.alert('@msg', function () {
+        });
+        parent.refresh_area_set_index();
+        </text>
+    }
+    </script>
+}
+<form id="editForm" method="post" action="@Url.Action("AdsDisplayPositionAdd","Advertisement")" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <ul class="forms">
+            <li>
+                <h1 class="title-admin-page bg-transparent">
+                    @ViewBag.Title
+                    <!--會員 廣告區顯示設定-->
+                </h1>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">登入位置<span class="required">*</span></div>
+                    <div class="radio-box inline ad_position">
+                        @*<div class="m-B-4 already_have_ad">*@
+                        <div class="m-B-4">
+                            <input class="with-item" type="checkbox" id="Login_@DisplayAreaTypeMember.Bottom" value="@DisplayAreaTypeMember.Bottom" name="LoginGroup[]" @(Model.LoginGroup.Contains(DisplayAreaTypeMember.Bottom) ? "checked" : "") />
+                            <img src="~/images/temp/article-setting/article-list-bottom.jpg" alt="">
+                            <label for="Login_@DisplayAreaTypeMember.Bottom">下橫幅</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">主頁位置<span class="required">*</span></div>
+                    <div class="radio-box inline ad_position">
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeMember.Top" type="checkbox" value="@DisplayAreaTypeMember.Top" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeMember.Top) ? "checked" : "") />
+                            <img src="~/images/temp/member-setting/member-index-top.jpg" alt="">
+                            <label for="@DisplayAreaTypeMember.Top">上橫幅</label>
+                        </div>@*
+    <div class="m-B-4">
+        <input class="with-item" id="@DisplayAreaTypeMember.Middle_1" type="checkbox" value="@DisplayAreaTypeMember.Middle_1" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeMember.Middle_1) ? "checked" : "") />
+        <img src="~/images/temp/member-setting/member-index-mibble-1.jpg" alt="">
+        <label for="@DisplayAreaTypeMember.Middle_1">中一橫幅</label>
+    </div>
+    <div class="m-B-4">
+        <input class="with-item" id="@DisplayAreaTypeMember.Middle_2" type="checkbox" value="@DisplayAreaTypeMember.Middle_2" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeMember.Middle_2) ? "checked" : "") />
+        <img src="~/images/temp/member-setting/member-index-mibble-2.jpg" alt="">
+        <label for="@DisplayAreaTypeMember.Middle_2">中二橫幅</label>
+    </div>*@
+                        <div class="m-B-4">
+                            <input class="with-item" id="@DisplayAreaTypeMember.Bottom" type="checkbox" value="@DisplayAreaTypeMember.Bottom" name="ListGroup[]" @(Model.ListGroup.Contains(DisplayAreaTypeMember.Bottom) ? "checked" : "") />
+                            <img src="~/images/temp/member-setting/member-index-bottom.jpg" alt="">
+                            <label for="@DisplayAreaTypeMember.Bottom">下橫幅</label>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="Savebtn" class="btn btn-bulid" href="javascript:"><i class="cc cc-check"></i>建立</a>
+            @Html.HiddenFor(m => m.AdvertisementId)
+            @Html.HiddenFor(m => m.SiteId)
+            @Html.HiddenFor(m => m.MenuId)
+            @Html.HiddenFor(m => m.DataType)
+        </div>
+    </div>
+</form>

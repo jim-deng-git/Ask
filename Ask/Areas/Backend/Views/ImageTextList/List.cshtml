@@ -1,0 +1,176 @@
+﻿@model IEnumerable<WorkV3.Models.ImageTextModel>
+
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    int SN = 1;
+    WorkV3.Models.SearchModel search = ViewBag.Search;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, CardNo = ViewBag.CardNo };
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+
+        var listObj = Component.dataList('listTable');
+        listObj.sorted = function (sortItems) {
+            $.post("Sort", { "CardNo": "@ViewBag.CardNo", "items": sortItems }, function () {
+                location.replace(location.href);
+            });
+        }
+        listObj.deleted = function (delIds) {
+            $.post("Delete", { 'ids': delIds }, function () {
+                location.replace(location.href);
+            });
+
+        }
+        listObj.statusChange = function (id) {
+            $.get("ToggleIssue/" + id);
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="searchBox" class="search-box">
+            <a class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+            @using (Html.BeginForm("List", "ImageTextList", siteQuery, FormMethod.Post, new { enctype = "multipart/form-data", id = "searchForm" }))
+            {
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input type="text" id="Key" name="Key" placeholder="請輸入標題、內文等關鍵字" value="@search.Key" />
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">刊登期間</div>
+                            <div class="input-field inline">
+                                <input type="text" id="IssueStart" name="IssueStart" class="input-cal datepicker" value="@search.IssueStart.ToString("yyyy.MM.dd HH:mm")" />
+                            </div>
+                            <div class="input-field inline">
+                                <input type="text" id="IssueEnd" name="IssueEnd" class="input-cal datepicker" value="@search.IssueEnd.ToString("yyyy.MM.dd HH:mm")" />
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="float-R m-L-4"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+            }
+        </div>
+        <table id="listTable" class="fixTable">
+            <caption>
+                @if (!string.IsNullOrEmpty(Request.QueryString["BackUrl"]))
+                {
+                    <a class="btn-grey-darken-4-o transparent goBack" href="@Request.QueryString["BackUrl"]"><i class="cc cc-arrow-left"></i></a>
+                }
+                else
+                {
+                    <a class="btn-grey-darken-4-o transparent goBack" href="@Url.Action("List", "Intro", siteQuery)"><i class="cc cc-arrow-left"></i></a>
+                }
+                圖片列表
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info openCenter" href="@Url.Action("Edit", "ImageTextList", new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, CardNo = ViewBag.CardNo })" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>標題</th>
+                    <th>圖片</th>
+                    <th>開啟內容</th>
+                    <th>點擊數</th>
+                    <th>刊登</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.ID">
+                        <td class="sort">@(SN++)</td>
+                        <td class="">@item.Title</td>
+                        @{
+                            var imgSrc = ViewBag.UploadVPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Img).Img;
+                            var clickStr = "";
+                            switch (item.ClickType)
+                            {
+                                case 1:
+                                    clickStr = "開啟圖片";
+                                    break;
+                                case 2:
+                                    clickStr = "開啟影片";
+                                    break;
+                                case 3:
+                                    clickStr = "開啟聲音";
+                                    break;
+                                case 4:
+                                    clickStr = "檔案下載";
+                                    break;
+                                case 5:
+                                    clickStr = "開啟連結";
+                                    break;
+                            }
+                                    }
+                        <td class=""><img src="@imgSrc" alt=""></td>
+                        <td>@clickStr</td>
+                        <td>@item.Clicks</td>
+                        <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                        <td class="icon edit">
+                            <a class="btn-grey-darken-4-o transparent square openCenter" href="@Url.Action("Edit", "ImageTextList", new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, CardNo = ViewBag.CardNo, ID = item.ID })">
+                                <i class="cc cc-edit-o"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

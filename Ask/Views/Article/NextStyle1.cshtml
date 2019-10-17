@@ -1,0 +1,29 @@
+﻿@model IEnumerable<ArticleModels>
+@{ 
+    Dictionary <long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+@foreach (ArticleModels item in Model) {
+    List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+    string filterClass = (articleTypes?.Count > 0 ? "all, " + string.Join(", ", articleTypes.Select(t => t.ID)) : "all");
+    SitePage page = itemPages[item.CardNo];
+    <li data-filter-class="@filterClass">
+        <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+            @if (item.IssueDate != null) {
+                <div class="article-list-date">
+                    <div>@(((DateTime)item.IssueDate).Month.ToString("00"))</div>
+                    <div>@(((DateTime)item.IssueDate).Day.ToString("00"))</div>
+                </div>
+            }
+            @if (articleTypes?.Count() > 0) {
+                foreach (ArticleTypesModels type in articleTypes) {
+                    <div class="article-list-type" data-type="@type.Name">@type.Name</div>
+                }
+            }
+            <div class="article-list-title">@item.Title</div>
+        </a>
+    </li>
+}

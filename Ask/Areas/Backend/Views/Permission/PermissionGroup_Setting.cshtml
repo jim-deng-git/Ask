@@ -1,0 +1,141 @@
+﻿@model GroupModels
+@{
+    // 群組狀態預設為正常 
+    Model.Status = true;
+
+    ViewBag.Title = "PermissionGroup_Setting";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            $('#btnSave').click(function () {
+                $("#editForm").submit();
+            });
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            @if (ViewBag.Exit as bool? == true)
+            {
+                    <text>
+                Component.alert('權限群組已儲存', function () {
+                parent.refreshList();
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+                    </text>
+            }
+        });
+
+
+    </script>
+}
+
+
+<div class="groove groove-1">
+    <form id="editForm" method="post" action="@Url.Action("PermissionGroup_Setting", "Permission")">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">權限群組編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">名稱</div>
+                                <div class="input-field inline">
+                                    @Html.TextBoxFor(x => x.Name)
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">圖示</div>
+                                <div class="radio-box inline">
+                                    @{ string[] icons = { "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15" }; }
+                                    @foreach (string icon in icons)
+                                    {
+                                        <div>
+                                            <input id="icon-@icon" type="radio" class="with-gap" value="@icon" name="Icon" @(Model.Icon == icon ? "checked" : "") />
+                                            <label style="display: inline;" for="icon-@icon"><img src="/images/cooperation//@(icon).png" /></label>
+                                        </div>
+                                    }
+                                </div>
+
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">色調</div>
+                                <div class="radio-box inline">
+                                    @{ string[] colors = { "red", "orange", "yellow", "green", "light-green", "blue", "teal", "deep-purple", "gold", "light-grey", "grey", "black" }; }
+                                    @foreach (string color in colors)
+                                    {
+                                        <div>
+                                            <input id="color-@color" type="radio" class="with-gap" value="@color" name="Color" @(Model.Color == color? "checked": "") />
+                                            <label for="color-@color" data-color="@color"></label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">權限設定方式</div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input id="permission-black" type="radio" class="with-gap" value="1" name="GroupType" @(Model.GroupType != 2 ? "checked" : "") />
+                                        <label for="permission-black">開啟所有權限，僅勾選不需開啟的權限</label>
+                                    </div>
+                                    <div>
+                                        <input id="permission-white" type="radio" class="with-gap" value="2" name="GroupType" @(Model.GroupType == 2 ? "checked" : "") />
+                                        <label for="permission-white">關閉所有權限，僅勾選需開啟的權限</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">說明</div>
+                                <div class="input-field inline">
+                                    @Html.TextAreaFor(x => x.Desc, new { style = "height:150px" })
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.RadioButtonFor(x => x.Status, true, new { @id = "Status-Y" })
+                    <label for="Status-Y">正常</label>
+                </div>
+            </div>
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.RadioButtonFor(x => x.Status, false, new { @id = "Status-X" })
+                    <label for="Status-X">停權</label>
+                </div>
+            </div>
+            <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>

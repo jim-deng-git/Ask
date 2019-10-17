@@ -1,0 +1,48 @@
+.card-imageText[data-style="10"] .activeWrap .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-imageText[data-style="10"] .card-img img {
+  width: 100%; }
+
+.card-imageText[data-style="10"] .card-img:focus .activeWrap, .card-imageText[data-style="10"] .card-img:hover .activeWrap {
+  opacity: 1;
+  bottom: 0; }
+
+.card-imageText[data-style="10"] .activeWrap {
+  opacity: 0;
+  bottom: -100%;
+  max-height: 105px;
+  background-color: #282828; }
+  .card-imageText[data-style="10"] .activeWrap .card-text {
+    padding: 15px 20px;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+    white-space: nowrap; }
+    @media only screen and (max-width: 800px) {
+      .card-imageText[data-style="10"] .activeWrap .card-text {
+        padding: 10px 17px; } }
+  .card-imageText[data-style="10"] .activeWrap .card-text-name {
+    font-size: 20px;
+    color: #ffffff;
+    font-weight: bold; }
+    .card-imageText[data-style="10"] .activeWrap .card-text-name a {
+      color: #ffffff; }
+      .card-imageText[data-style="10"] .activeWrap .card-text-name a:focus, .card-imageText[data-style="10"] .activeWrap .card-text-name a:active, .card-imageText[data-style="10"] .activeWrap .card-text-name a:hover {
+        color: #ffffff; }
+    .card-imageText[data-style="10"] .activeWrap .card-text-name ~ .card-text-info {
+      margin-top: 5px;
+      color: #fafafa; }
+  .card-imageText[data-style="10"] .activeWrap .card-text-info {
+    font-size: 16px;
+    color: #bdbdbd;
+    font-style: normal;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+       text-overflow: ellipsis;
+    white-space: nowrap; }
+    .card-imageText[data-style="10"] .activeWrap .card-text-info * {
+      font-style: normal; }

@@ -1,0 +1,203 @@
+﻿@model WorkV3.Models.FieldModel
+
+@{
+    var ans = ViewBag.Answer == null ? null : (WorkV3.Models.FieldAnswerModel)ViewBag.Answer;
+
+    var divClass = "";
+
+    switch (Model.Width)
+    {
+        case 1:
+            divClass = "col-4";
+            break;
+        case 2:
+            divClass = "col-2";
+            break;
+        case 3:
+            divClass = "col-1";
+            break;
+    }
+}
+
+<div class="@divClass">
+
+    @if (!string.IsNullOrWhiteSpace(Model.Title))
+    {
+        <div class="title">
+            @Model.Title
+
+            @if (Model.Requied)
+            {
+                <span class="required">*</span>
+            }
+        </div>
+    }
+
+    @switch (Model.TypeID)
+    {
+        case "text":
+            var answer = "";
+            if (ans != null && !string.IsNullOrWhiteSpace(ans.Answer))
+            {
+                answer = ans.Answer;
+            }
+
+            <div class="input-field inline full no-label">
+                <input type="text" id="@Model.ID" name="@Model.ID" class="@(Model.Requied ? "validate[required]" : "")" value="@answer">
+            </div>
+            break;
+
+        case "radio":
+            if (!string.IsNullOrWhiteSpace(Model.Options))
+            {
+                var options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<WorkV3.Models.FieldsOptionModel>>(Model.Options);
+
+                <div id="@Model.ID" class="radio-box full @(Model.OptionArray ? "inline" : "") @(Model.Requied ? "validate[funcCall[checkRadioBox]]" : "")">
+
+                    @foreach (var option in options)
+                    {
+                        var isChecked = false;
+
+                        if (ans != null && !string.IsNullOrWhiteSpace(ans.Answer))
+                        {
+                            if (ans.Answer == option.ID.ToString())
+                            {
+                                isChecked = true;
+                            }
+                        }
+
+                        <div>
+                            <input type="radio" class="with-gap" name="@Model.ID" id="@option.ID" value="@option.ID" @(isChecked ? "checked='checked'" : "")>
+                            <label for="@option.ID">@option.Label</label>
+                        </div>
+                    }
+
+                </div>
+            }
+            break;
+        case "checkbox":
+            if (!string.IsNullOrWhiteSpace(Model.Options))
+            {
+                var answers = new List<string>();
+                if (ans != null && !string.IsNullOrWhiteSpace(ans.Answer))
+                {
+                    answers = ans.Answer.Split(',').ToList();
+                }
+
+                var options = Newtonsoft.Json.JsonConvert.DeserializeObject<List<WorkV3.Models.FieldsOptionModel>>(Model.Options);
+
+                <div id="@Model.ID" class="radio-box full @(Model.OptionArray ? "inline" : "") @(Model.Requied ? "validate[funcCall[checkCheckBox]]" : "")">
+
+                    @foreach (var option in options)
+                    {
+                        <div>
+                            <input type="checkbox" class="with-gap" name="@Model.ID" id="@option.ID" value="@option.ID" @(answers.Any(x => x == option.ID.ToString()) ? "checked='checked'" : "")>
+                            <label for="@option.ID">@option.Label</label>
+                        </div>
+                    }
+                </div>
+            }
+            break;
+        case "address":
+            var levels1 = ViewBag.Levels1 == null ? null : (List<SelectListItem>)ViewBag.Levels1;
+            var levels2 = ViewBag.Levels2 == null ? null : (List<SelectListItem>)ViewBag.Levels2;
+            var levels3 = ViewBag.Levels3 == null ? null : (List<SelectListItem>)ViewBag.Levels3;
+            var levels4 = ViewBag.Levels4 == null ? null : (List<SelectListItem>)ViewBag.Levels4;
+
+            var addressAns = new WorkV3.Models.AddressAnswerModel();
+
+            if (ans != null && !string.IsNullOrWhiteSpace(ans.Answer))
+            {
+                addressAns = Newtonsoft.Json.JsonConvert.DeserializeObject<WorkV3.Models.AddressAnswerModel>(ans.Answer);
+            }
+
+            <script type="text/javascript">
+                $(function () {
+                var divSelect1 = $("div[data-id='@Model.ID'][data-level='1']");
+                var divSelect2 = $("div[data-id='@Model.ID'][data-level='2']");
+                var divSelect3 = $("div[data-id='@Model.ID'][data-level='3']");
+                var divSelect4 = $("div[data-id='@Model.ID'][data-level='4']");
+
+                var id = "@Model.ID";
+
+                if (divSelect1.exists()) {
+                    divSelect1.on("change", "select", function () {
+                        var selectedID = $(this).find("option:selected").val();
+                        var html = GetAddressSelect(id, 2, selectedID);
+                        if ($(html).find("option").length > 1) {
+                            divSelect2.show();
+                            divSelect2.html(html);
+                            divSelect2.find("select").material_select();
+                            var empty = GetAddressSelect(id, 3, 0);
+                            divSelect3.html(empty);
+                            divSelect3.find("select").material_select();
+                            empty = GetAddressSelect(id, 4, 0);
+                            divSelect4.html(empty);
+                            divSelect4.find("select").material_select();
+                        } else {
+                            divSelect2.hide();
+                            html = GetAddressSelect(id, 3, selectedID);
+                            divSelect3.html(html);
+                            divSelect3.find("select").material_select();
+                            var empty = GetAddressSelect(id, 4, 0);
+                            divSelect4.html(empty);
+                            divSelect4.find("select").material_select();
+                        }
+                    });
+                }
+
+                if (divSelect2.exists()) {
+                    divSelect2.on("change", "select", function () {
+                        var selectedID = $(this).find("option:selected").val();
+                        var html = GetAddressSelect(id, 3, selectedID);
+                        divSelect3.html(html);
+                        divSelect3.find("select").material_select();
+                        var empty = GetAddressSelect(id, 4, 0);
+                        divSelect4.html(empty);
+                        divSelect4.find("select").material_select();
+                    });
+                }
+
+                if (divSelect3.exists()) {
+                    divSelect3.on("change", "select", function () {
+                        var selectedID = $(this).find("option:selected").val();
+                        var html = GetAddressSelect(id, 4, selectedID);
+                        divSelect4.html(html);
+                        divSelect4.find("select").material_select();
+                    });
+                }
+            });
+            </script>
+
+            if (!Model.Range)
+            {
+                <div class="input-field inline m-R-8" data-id="@Model.ID" data-level="1">
+                    @Html.DropDownList(Model.ID.ToString(), levels1, "國家")
+                </div>
+            }
+
+            if (!Model.Range || (Model.Range && Model.RangeLevel == 1 && levels2.Count > 0))
+            {
+                <div class="input-field inline m-R-8" data-id="@Model.ID" data-level="2">
+                    @Html.DropDownList(Model.ID.ToString(), levels2, "省 / 州")
+                </div>
+            }
+
+            if (!Model.Range || (Model.Range && Model.RangeLevel == 1) || (Model.Range && Model.RangeLevel == 2 && levels3.Count > 0))
+            {
+                <div class="input-field inline m-R-8" data-id="@Model.ID" data-level="3">
+                    @Html.DropDownList(Model.ID.ToString(), levels3, "縣 / 市")
+                </div>
+            }
+
+            <div class="input-field inline m-R-8" data-id="@Model.ID" data-level="4">
+                @Html.DropDownList(Model.ID.ToString(), levels4, "行政區")
+            </div>
+
+            <div class="input-field inline no-label">
+                <input type="text" id="@Model.ID" name="@Model.ID" placeholder="請填入地址" class="@(Model.Requied ? "validate[required]" : "")" value="@addressAns.Address">
+            </div>
+
+            break;
+    }
+</div>

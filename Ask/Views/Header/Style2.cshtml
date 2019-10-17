@@ -1,0 +1,393 @@
+﻿@model List<MenusModels>
+@using WorkV3.ViewModels
+@using Newtonsoft.Json;
+@using WorkV3.Models.Repository;
+@{
+    SitesModels SiteItem = ViewBag.SitesInfo;
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    List<SiteLangMenuModel> SiteLang = ViewBag.SiteLang;
+    SitePage searchPage = ViewBag.SearchPage;
+    List<WorkV3.Areas.Backend.ViewModels.KeywordViewModel> keywords = ViewBag.Keywords;
+
+    var dataJson = Html.Raw(JsonConvert.SerializeObject(keywords));   // neil 20180331 新增關鍵字搜尋
+    bool IsEnabledMember = (bool)ViewBag.IsEnabledMember;
+
+
+    string RecruitsUploadUrl = ViewBag.RecruitsUploadUrl;
+    string memberUploadUrl = ViewBag.memberUploadUrl;
+
+    //RecruitsRepository recruitsRepository = new RecruitsRepository();
+}
+@helper CreateMenu(IEnumerable<MenusModels> allMenus, IEnumerable<MenusModels> currentMenus)
+{
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    if (currentMenus?.Count() > 0)
+    {
+        foreach (MenusModels item in currentMenus)
+        {
+            //string url = item.MenuCode == "SingleLink" ? item.LinkInfo : item.PageSN;
+            //string target = (item.MenuCode == "SingleLink" && item.RLClickType == 2) ? "_blank" : "_self";
+            string url = ""; string target = "";
+            if (item.MenuCode == "SingleLink")
+            {
+                if (item.RLClickType == 2)
+                {
+                    target = "_blank";
+                }
+                else
+                {
+                    target = "_self";
+                }
+                url = item.LinkInfo;
+            }
+            else if (item.MenuCode == "SingleFile")
+            {
+                if (item.RFClickType == 2)
+                {
+                    target = "_blank";
+                }
+                else
+                {
+                    target = "_self";
+                }
+                var file = WorkV3.Models.DataAccess.ResourceFilesDAO.GetFileInfo(item.Id).SingleOrDefault().FileInfo;
+                url = ViewBag.VMenuPath + file;
+            }
+            else
+            {
+                url = item.PageSN;
+            }
+            IEnumerable<MenusModels> subMenus = allMenus.Where(dr => dr.ParentID == item.Id);
+            if (!string.IsNullOrEmpty(item.DataTypeValue) && subMenus.Count() > 0)
+            {
+                if (item.DataTypeValue == "Top")
+                {
+                    if (item.MenuCode == "SingleLink")
+                    {
+                        target = "_self";
+                        url = item.LinkInfo;
+                    }
+                    else if (item.MenuCode == "SingleFile")
+                    {
+                        target = "_self";
+                        var file = WorkV3.Models.DataAccess.ResourceFilesDAO.GetFileInfo(item.Id).SingleOrDefault().FileInfo;
+                        url = ViewBag.VMenuPath + file;
+                    }
+                    else
+                    {
+                        url = item.PageSN;
+                    }
+                    //url = subMenus.First().MenuCode == "SingleLink" ? subMenus.First().LinkInfo : subMenus.First().PageSN;
+                    //target = "_self";
+                }
+            }
+            <li class="@(item.Id == pageCache.MenuID ? "current-menu" : string.Empty)">
+                <a href="@url" target="@target">@item.Title</a>
+                @if (subMenus?.Count() > 0)
+                {
+                    <ul class="sub-menu">
+                        @CreateMenu(allMenus, subMenus)
+                    </ul>
+                }
+            </li>
+        }
+    }
+}
+<link rel="stylesheet" href="~/css/Cards/Header/style2.css" type="text/css" />
+<link rel="stylesheet" href="~/css/vendor/colorbox/colorbox.css" />
+<link rel="stylesheet" href="~/css/vendor/sweetalert/sweetalert.css" />
+<div id="header" class="header card-header" data-style="2">
+    <div class="header-wrapper">
+        <h1 class="header-logo">
+            <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN="Index" })" title="@SiteItem.Title">
+                <!--電腦版 – 原色LOGO -->
+                <img class="normal" src="@ViewBag.VPath@SiteItem.Logo" title="@SiteItem.Title" alt="@SiteItem.Title" data-shrink="@ViewBag.VPath@SiteItem.Logoshrink" data-logo="@ViewBag.VPath@SiteItem.Logo" />
+                <!--電腦版 – 對比色LOGO-->
+                <img class="shrink" src="@ViewBag.VPath@SiteItem.Logoshrink" title="@SiteItem.Title" alt="@SiteItem.Title" />
+                <!--手機版的 LOGO-->
+                <img class="mobile" src="@ViewBag.VPath@SiteItem.LogoMobile" title="@SiteItem.Title" alt="@SiteItem.Title" />
+            </a>
+        </h1>
+        <div class="header-content">
+            <div class="top">
+                <div class="menu-toggle">
+                    <div class="menu-toggle-hamburger"></div>
+                </div>
+                @{ Member curUser = Member.Current;
+                    string memberID = " ";
+                    if (curUser != null)
+                    {
+                        memberID = curUser.ID.ToString();
+                    }
+                }
+
+                @if (curUser != null && IsEnabledMember)
+                {
+                    <!-- 購物車 > 0 時請拿掉 is-empty 的 class
+                    <div class="nav-cart">
+                        <a class="btn-cart transparent is-empty" href="javascript:" id="cartInfo">
+                            <i class="cc cc-cart-o cc-lg"></i>
+                            <span class="number font-xxs" id="cartInfoCount"></span>
+                        </a>
+                    </div>
+                    -->
+                    <!-- 訊息 > 0 時請拿掉 is-empty 的 class -->
+                    <div class="nav-dropdown member">
+                        <div class="dropdown-default-text" id="MemberLoginInfo">
+                            @{
+                                WorkV3.Models.MemberShipModels member = WorkV3.Models.DataAccess.MemberShipDAO.GetItem(curUser.ID);
+                                if (member != null && !string.IsNullOrEmpty(member.Photo))
+                                {
+                                    <span style="background-image: url('@((member.Photo.StartsWith("http") ? "" : ViewBag.VMemberPath) + member.Photo)')" id="imgMemberPhoto"></span>
+                                }
+                            }
+                            <span class="name">@curUser.Name</span>, 您好
+                        </div>
+                        <ul>
+                            @if (curUser.Type == MemberType.Web)
+                            {
+                                <li>
+                                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MyInfo" })">個人設定</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MySocialInfo" })">社群資料</a>
+                                </li>
+                            }
+                            <li>
+                                <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">登出</a>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    if (IsEnabledMember)
+                    {
+                        <div class="member">
+                            <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })"><i class="cc cc-user-o"></i></a>
+                        </div>
+                    }
+                }
+
+                @if (searchPage != null && SiteItem.IsSearchEnabled)
+                {
+                    <div class="search-box">
+                        <a class="search-btn" href="javascript:"><i class="cc cc-search"></i></a>
+                    </div>
+                }
+            </div>
+
+            <!-- menu -->
+            <div class="menu">
+
+                @* 語系 *@
+                @if (SiteLang.Count > 0)
+                {
+                    <ul class="lang">
+                        @for (int i = 0; i < SiteLang.Count; i++)
+                        {
+                            if (@SiteLang[i].Translate == false)
+                            {
+                                <li><a href="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                            }
+                            else
+                            {
+                                <li><a id="TrnTCSCLink" data-ahref="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                            }
+
+                        }
+                    </ul>
+                }
+
+                <div class="main">
+                    <!-- nav -->
+                    @{ List<MenusModels> firstAreaMenus = Model.Where(m => m.AreaID == 1).ToList(); }
+                    <ul class="nav-menu">
+                        @CreateMenu(firstAreaMenus, firstAreaMenus.Where(m => m.ParentID == 0))
+                    </ul>
+
+                    @{ List<MenusModels> mainMenus = Model.Where(dr => dr.AreaID == 2).ToList(); }
+                    <ul class="main-menu">
+                        @CreateMenu(mainMenus, mainMenus.Where(m => m.ParentID == 0))
+                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Shop" })">商城</a></li>
+                    </ul>
+                </div>
+
+                @{
+                    Html.RenderAction("Head", "Channels");
+                }
+            </div>
+
+            <!-- susan add nav 20190320 -->
+            <div class="nav" style="z-index: 10;">
+                <ul class="nav-menu">
+                    @CreateMenu(mainMenus, mainMenus.Where(m => m.ParentID == 0))
+                </ul>
+            </div>
+        </div>
+
+        @if (searchPage != null)
+        {
+            <!-- search -->
+            <div class="webSearch">
+                <div class="content">
+                    <input type="text" placeholder="請輸入關鍵字" id="txtSearch" oninput="getCurrentKeywordList()">
+                    <a class="btn-grey-lighten-1-o btn-large square transparent search-colse-btn" href="javascript:"><i class="cc cc-close"></i></a>
+                    <a id="btnSiteFullSearch" class="btn-grey-lighten-1-o btn-large square transparent" href="javascript:"><i class="cc cc-search"></i></a>
+                    <script type="text/javascript">
+
+
+                    let keywords = @dataJson;   @* neil 20180331 新增關鍵字搜尋 *@
+
+                    $(function () {
+                        getCurrentKeywordList();   @* neil 20180331 新增關鍵字搜尋 *@
+                        GetCart();
+
+                    $('#btnSiteFullSearch').click(function () {
+                        var inputElm = $(this).prevAll('input:first');
+                        var v = inputElm.val();
+                        if (!v) {
+                            swal({
+                                text: '請輸入關鍵字',
+                                type: 'warning',
+                                customClass: 'animated fadeIn',
+                                onOpen: function () {
+                                    $('body').removeClass('blur-body');
+                                },
+                                onClose: function () {
+                                    $('body').addClass('blur-body');
+                                }
+                            });
+                        } else {
+                            location.href = '@Url.Action("Index", "Home", new { SiteSN = searchPage.SiteSN, PageSN = searchPage.PageSN })?key=' + encodeURIComponent(v);
+                        }
+                    });
+
+                    $('#txtSearch').keydown(function (event) {
+                        if (event.keyCode == 13) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            $('#btnSiteFullSearch').click();
+                        }
+                    });
+                    });
+
+                    @* neil 20180331 新增關鍵字搜尋 start *@
+                    function getKeywordItemString(keyword){
+                        return `<li><a>${keyword}</a></li>`;
+                    }
+
+                    function getCurrentKeywordList(){
+                        let input = $('#txtSearch').val();
+                        let filteredKeywords = [];
+
+                        if(input === '')
+                            filteredKeywords = keywords;
+                        else
+                            filteredKeywords= keywords.filter(item => item.Text.includes(input))
+
+                        // 如果找不到相似關鍵字的話就不顯示
+                        if(filteredKeywords.length === 0)
+                        {
+                            return;
+                        }
+
+                        let list = '';
+
+                        filteredKeywords.forEach(item => {
+                            list += getKeywordItemString(item.Text);
+                        });
+
+                        let html = `
+                        <div class="searchresults">
+                            <ul id="custom-keywords">
+                                <div>快速連結</div>
+                                ${list}
+                            </ul>
+                        </div>
+                            `;
+
+                        $('.searchresults').remove();
+                        $('.webSearch > .content').after(html);
+
+                        $('#custom-keywords li a').on('click', function() {
+                            $('#txtSearch').val($(this).text());
+                            $('#btnSiteFullSearch').click();
+                        });
+                    }
+                    @* neil 20180331 新增關鍵字搜尋 end *@
+                    function GetCart()
+                    {
+                        $.get("@Url.Action("GetCartJson", "Cart", new { SiteID=ViewBag.SiteID})", function(data){
+                            var totalEshopProductCount = 0;
+                            if(data!= null)
+                            {
+                                for(var i=0;i<data.Stores.length;i++)
+                                {
+                                    totalEshopProductCount +=  data.Stores[i].EshopProducts.length;
+                                    //for(var j=0;j<data.Stores[i].EshopProducts.length;j++)
+                                    //{
+                                    //    totalEshopProductCount +=  data.Stores[i].EshopProducts[j].Count;
+                                    //}
+                                }
+                            }
+                            var cartInfoCss = $("#cartInfo").attr("class");
+                            if(totalEshopProductCount >0)
+                            {
+                                if(cartInfoCss.indexOf("is-empty") >= 0 )
+                                {
+                                    $("#cartInfo").attr("class", cartInfoCss.replace("is-empty", "").trim());
+                                }
+                                $("#cartInfoCount").html(totalEshopProductCount);
+                                $("#cartInfo").attr("href", "@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "BillingList" })");
+                            }
+                            else
+                            {
+                                if(cartInfoCss.indexOf("is-empty") < 0 )
+                                {
+                                    $("#cartInfo").attr("class", cartInfoCss+" is-empty");
+                                }
+                                $("#cartInfoCount").html("");
+                                $("#cartInfo").attr("href", "#");
+                            }
+                        });
+                    }
+                    </script>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!--自訂頁首內容-->
+@if (SiteItem.HeaderCustomized)
+{
+    <div>
+        @SiteItem.HeaderCont
+    </div>
+}
+<!--聊天室元件-->
+<script src="~/Script/jquery.signalR-2.4.1.js"></script>
+<script src="~/Signalr/hubs"></script>
+
+<script type="text/javascript" src="~/script/waypoints/jquery.waypoints.js"></script>
+<script type="text/javascript" src="~/script/header/style2/header.js"></script>
+<script type="text/javascript" src="~/script/colorbox/jquery.colorbox.js"></script>
+
+<script type="text/javascript">
+
+</script>

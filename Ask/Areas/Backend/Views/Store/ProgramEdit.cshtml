@@ -1,0 +1,76 @@
+﻿@model WorkV3.Models.StoreToPlanModel
+@{
+    ViewBag.Title = "方案編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    IEnumerable<WorkV3.Models.StorePlanModel> Plans = ViewBag.Plans;
+}
+
+<form method="post" action="@Url.Action("ProgramEdit", new { siteId = ViewBag.SiteID, storeId = ViewBag.StoreID})" id="editForm" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">方案編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">選擇方案</div>
+                        <div class="input-field inline full">
+                            <select name="PlanID" id="PlanID">
+                                @if (Plans != null && Plans.Count() > 0)
+                                {
+                                    foreach (var plan in Plans)
+                                    {
+                                        <option value="@plan.ID">@plan.PlanName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">方案期間</div>
+                        <div class="input-field inline">
+                            <input placeholder="開始日期" id="ContractDateStart" name="ContractDateStart" type="text" class="datepicker" value="@Model.ContractDateStart.ToString("yyyy.MM.dd")">
+                        </div>
+                        <div class="input-field inline">
+                            <input placeholder="結束日期" id="ContractDateEnd" name="ContractDateEnd" type="text" class="datepicker" value="@Model.ContractDateEnd.ToString("yyyy.MM.dd")">
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="control-bar">
+            <a class="btn-cancel" onclick="parent.$.colorbox.close();" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+@section FArea {
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+    $('#btnSave').click(function () {
+        var form = $('#editForm');
+        if (form.validationEngine('validate')) {
+            form.submit();
+        }
+    });
+
+    @if ((ViewBag.Exit as bool?) == true) {
+        <text>
+        if (parent.refreshList)
+            parent.refreshList();
+        parent.$.colorbox.close();
+        </text>
+    }
+    </script>
+}

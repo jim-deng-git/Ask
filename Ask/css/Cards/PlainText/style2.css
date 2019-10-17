@@ -1,0 +1,33 @@
+.card-plainText[data-style="2"] .title-main > div::before, .card-plainText[data-style="2"] .title-main > div::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  background-color: #000000;
+  top: 50%; }
+
+.card-plainText[data-style="2"] {
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  margin: 0 auto; }
+  @media only screen and (max-width: 420px) {
+    .card-plainText[data-style="2"] {
+      width: 90%; } }
+  .card-plainText[data-style="2"] .title-main {
+    font-size: 36px;
+    color: #222222; }
+    .card-plainText[data-style="2"] .title-main > div {
+      position: relative;
+      padding: 0 30px;
+      display: inline-block; }
+      .card-plainText[data-style="2"] .title-main > div::before {
+        left: -150px; }
+      .card-plainText[data-style="2"] .title-main > div::after {
+        right: -150px; }
+    .card-plainText[data-style="2"] .title-main ~ .title-sub {
+      margin-top: 5px; }
+  .card-plainText[data-style="2"] .title-sub {
+    font-size: 18px;
+    color: #999999; }

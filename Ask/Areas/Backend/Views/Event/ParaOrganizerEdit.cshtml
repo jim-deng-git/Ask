@@ -1,0 +1,212 @@
+﻿@model WorkV3.Models.EventOrganizerModels
+@{
+    ViewBag.Title = "主辦單位編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("ParaOrganizerEdit", siteQuery))" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">主辦單位編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">單位名稱</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">Logo/照片</div>
+                                <div class="input-field">
+                                    <input type="file" id="fPhoto" name="fPhoto" />
+                                    <input type="hidden" id="Photo" name="Photo" value='@Model.Photo' />
+                                    <input type="hidden" id="fPhotoBase64" name="fPhotoBase64" />
+                                    <input type="hidden" id="fPhotoBase64_Resize" name="fPhotoBase64_Resize" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">簡介</div>
+                                <div class="input-field">
+                                    <textarea id="BriefIntro" name="BriefIntro" class="materialize-textarea">@Model.BriefIntro</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">聯絡電話</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Phone" name="Phone" value="@Model.Phone" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">傳真</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Fax" name="Fax" value="@Model.Fax" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">Email</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Email" name="Email" value="@Model.Email" class="validate[funcCall[checkEmail]]" />
+                                    <div class="alert transparent m-T-none">
+                                        <i class="cc cc-attention"></i>
+                                        <div>有多筆Email時，請用分號 ; 隔開。</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1 m-T-8">
+                                <div class="title inline">地址</div>
+                                <div class="input-field inline full m-R-8">
+                                    <input type="hidden" id="Regions" name="Regions" value="@Model.Regions" />
+                                    <div class="col-1">
+                                        <div class="marker-group">                                            
+                                            <input type="text" id="Address" name="Address" value="@Model.Address" placeholder="地址" maxlength="200" />
+                                            <a id="btnGMap" class="btn-grey-darken-3-o btn-small" href="@Url.Action("GMap", "Common")"><i class="cc cc-map-marker"></i>定位</a>
+                                            <input type="hidden" id="Lat" name="Lat" value="@Model.Lat" />
+                                            <input type="hidden" id="Lng" name="Lng" value="@Model.Lng" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">網址</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Website" name="Website" placeholder="http://" value="@Model.Website" class="validate[funcCall[checkLink]]" />
+                                    <div class="alert transparent m-T-none">
+                                        <i class="cc cc-attention"></i>
+                                        <div>請以 http:// 或 https:// 開頭</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">服務時間</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="ServiceTime" name="ServiceTime" value="@Model.ServiceTime" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">詳細介紹</div>
+                                <div class="input-field img-text-height">
+                                    <textarea contenteditable="true" id="Intro" name="Intro">@(string.IsNullOrWhiteSpace(Model.Intro) ? "" : Model.Intro)</textarea>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var regionObj = Component.worldRegion('#Regions', '@Html.Raw(Url.Action("Regions", "Common"))');
+
+        Component.singleImageUpload('#fPhoto', '@(Href("~/"))', '@ViewBag.UploadUrl');
+        Component.editor('Intro');
+
+        $('#btnGMap').click(function (e) {
+            e.preventDefault();
+
+            var mainWin = Component.openLeft(this.href);
+            mainWin.getAddress = function () {
+                var regions = regionObj.getTextVal();
+                return (regions && regions.length > 0 ? regions.join('') : '') + $.trim($('#Address').val());
+            }
+
+            mainWin.getLatLng = function () {
+                var lat = $.trim($('#Lat').val());
+                var lng = $.trim($('#Lng').val());
+                if (lat && lng)
+                    return { lat: lat - 0, lng: lng - 0 };
+
+                return null;
+            }
+
+            mainWin.setLatLng = function (latLng, address) {
+                $('#Lat').val(latLng.lat);
+                $('#Lng').val(latLng.lng);
+
+                if (address)
+                    $('#Address').val(address);
+            }
+        });
+
+        function checkEmail(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var emails = v.split(';');
+                for (var i = 0, len = emails.length; i < len; ++i) {
+                    var email = $.trim(emails[i]);
+                    if (email && !/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(email))
+                        return '* Email 格式不正確';
+                }
+            }
+        }
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (v && !/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+
+            Component.closeLeft();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

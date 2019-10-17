@@ -1,0 +1,11 @@
+.card-imageTextList[data-style="25"] .card-imageText[data-style="16"] ~ .card-imageText[data-style="16"] {
+  margin-top: 50px; }
+
+.card-imageTextList[data-style="25"] > div:nth-of-type(2n) .card-box {
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: reverse;
+      -ms-flex-direction: row-reverse;
+          flex-direction: row-reverse; }
+
+.card-imageTextList[data-style="25"] .card-text {
+  text-align: center; }

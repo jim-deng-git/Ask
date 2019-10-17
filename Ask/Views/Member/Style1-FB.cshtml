@@ -1,0 +1,52 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{ 
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+    <div class="card-member loginPage loginArea" data-style="1">
+        <div class="login">
+            <div class="login-logo">社群會員登入</div>
+            <div class="login-box small">
+                <div class="left-box">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title">@ViewBag.Message</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="text-C m-B-3">
+                                    <div class="social-title"><span>登入方式</span></div>
+                                    <div>
+                                        <a class="btn-black-o circle btn-large trasperent" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Login" })" id="">網站會員</a>
+                                        <a class="btn-black-o circle btn-large trasperent" href="@ViewBag.FBUrl" id=""><i class="cc cc-facebook"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="btnBox">
+                                    <a class="btn-grey-o btn-large half" href="@Url.Action("../")">回首頁</a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>

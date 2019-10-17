@@ -1,0 +1,50 @@
+.card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text-name {
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap; }
+
+.card-imageTextList[data-style="16"] {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap; }
+  .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] {
+    width: 25%;
+    padding: 0 10px;
+    margin-bottom: 50px;
+    font-size: 24px; }
+    @media only screen and (max-width: 800px) {
+      .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] {
+        width: 33.3%; } }
+    @media only screen and (max-width: 580px) {
+      .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] {
+        width: 50%; } }
+    .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] img {
+      height: 0;
+      position: absolute;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      max-width: inherit;
+      left: -50%;
+      right: -50%;
+      top: 0;
+      bottom: 0;
+      margin: auto; }
+    .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-img {
+      cursor: pointer;
+      padding-bottom: 100%; }
+    .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text {
+      padding: 6px 5px; }
+      .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text a {
+        text-decoration: none; }
+    .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text-name a {
+      color: #000000;
+      font-size: 18px; }
+      .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text-name a:focus, .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text-name a:active, .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text-name a:hover {
+        color: #9e9e9e; }
+    .card-imageTextList[data-style="16"] .card-imageText[data-style="1"] .card-text-info {
+      text-align: right;
+      font-size: 20px; }

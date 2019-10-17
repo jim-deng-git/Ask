@@ -1,0 +1,203 @@
+﻿@model MenusModels
+@{
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    bool hasChildren = false;
+    if (ViewBag.HasChildren != null)
+    {
+        hasChildren = (bool)ViewBag.HasChildren;
+    }
+}
+
+@section HArea{
+@*@Styles.Render("~/Css/validate")*@
+@Scripts.Render("~/JS/validate")
+@BundleConfig.Component()
+    <script type="text/javascript">
+        function RelaodToMenuEdit()
+        {
+            var reloadUrl = parent.location.href;
+            if(reloadUrl!= null)
+            {
+                if(reloadUrl.indexOf("isMenuEdit=1")< 0)
+                {
+                    if(reloadUrl.indexOf("&") > 0)
+                    {
+                        reloadUrl +="&isMenuEdit=1";
+                    }
+                    else
+                    {
+                        reloadUrl +="?isMenuEdit=1";
+                    }
+                }
+            }
+            parent.location = reloadUrl;
+        }
+        $(function () {
+
+            $('#btnSave').click(function () {
+                checkForm();
+            });
+
+            function checkForm() {
+                var form = $('#SendForm');
+                if (form.validationEngine('validate')) {
+                    form.submit();
+                }
+            }
+
+            $(".rbtnmenuStatus").click(function () {
+                $("#ShowStatus").val($(this).data("id"));
+            });
+
+           $('.menu-del').on('click', function() {
+                @{
+                    string confirmMessage = "刪除後無法復原，是否真要刪除？";
+                    if (hasChildren)
+                    {
+                        confirmMessage = "是否將主階層下的所有子階層一併刪除？";
+                    }
+                }
+                parent.window.swal({
+                    // title: 'Are you sure?',
+
+                    text: '@confirmMessage',
+                    type: 'warning',
+                    showCancelButton: true,
+                    // confirmButtonColor: '#3085d6',
+                    // cancelButtonColor: '#d33',
+                    confirmButtonText: '是',
+                    cancelButtonText: '否',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                }).catch(swal.noop).then(function (isConfirm) {
+                    var delAll="0";
+                    @if (hasChildren)
+                    {
+                        <text>
+                        if(isConfirm)
+                        {
+                            delAll="1";
+                        }
+                        $.post('@Url.Action("Delete", "Menus")', { 'SiteID':'@Model.SiteID', 'id': '@Model.ID', 'DeleteAll':delAll }, function (data) {
+                            if(data == "success")
+                            {
+                                Component.alert("刪除成功", function(){
+                                    RelaodToMenuEdit();
+                                    CloseBox();
+                                    //UpdateSiderBar('@Model.SiteID', '@Model.AreaID', '@Model.ID', '@Model.Title', @Model.ShowStatus);
+                                });
+                            }
+                            else
+                            {
+                                Component.alert("刪除失敗");
+                            }
+                        });
+                    </text>
+                    }
+                    else
+                    {
+                        <text>
+                        if(isConfirm)
+                        {
+                            delAll="1";
+                            $.post('@Url.Action("Delete", "Menus")', { 'SiteID':'@Model.SiteID', 'id': '@Model.ID', 'DeleteAll':delAll }, function (data) {
+                                if(data == "success")
+                                {
+                                    Component.alert("刪除成功", function(){
+                                        RelaodToMenuEdit();
+                                        CloseBox();
+                                    });
+                                }
+                                else
+                                {
+                                    Component.alert("刪除失敗");
+                                }
+                            });
+                        }
+                        else
+                        {
+                            CloseBox();
+                        }
+                        </text>
+                    }
+                });
+            });
+        });
+
+    </script>
+
+@if (TempData["refreshData"] != null)
+{
+    <script type="text/javascript">
+
+        UpdateSiderBar(@Model.SiteID, @Model.AreaID, '@Model.ID', '@Model.Title', @Model.ShowStatus);
+
+        RelaodToMenuEdit();
+
+        CloseBox();
+    </script>
+}
+}
+
+<div class="groove groove-1">
+    <form id="SendForm" action="@Request.RawUrl" method="post" enctype="multipart/form-data">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title inline">選單名稱<span class="required">*</span></div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.Title, new { @class = "validate[required]" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">網址代碼<span class="required">*</span></div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.SN, new
+                   {
+                       @class = "validate[required]",
+                       @readonly = true
+                   })
+                    </div>
+                    <a class="tooltip" title="網址代碼.....http://cc-work.com/kidtech/XXXXX，限填英文與數字"><i class="cc cc-attention"></i></a>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">開放狀態<span class="required">*</span></div>
+                    <div class="radio-box inline">
+                        <div>
+                            <input class="with-item transparent rbtnmenuStatus" name="menuStatus" type="radio" data-id="1" id="menuStatus1" @Html.Raw(Model.ShowStatus == 1 ? "checked=\"checked\"" : string.Empty) />
+                            <i class="cc cc-eye"></i>
+                            <label for="menuStatus1">顯示</label>
+                        </div>
+                        <div>
+                            <input class="with-item transparent rbtnmenuStatus" name="menuStatus" type="radio" data-id="2" id="menuStatus2" @Html.Raw(Model.ShowStatus == 2 ? "checked=\"checked\"" : string.Empty)/>
+                            <i class="cc cc-eye-off"></i>
+                            <label for="menuStatus2">隱藏</label>
+                        </div>
+                        <div>
+                            <input class="with-item transparent rbtnmenuStatus" name="menuStatus" type="radio" data-id="3" id="menuStatus3" @Html.Raw(Model.ShowStatus == 3 ? "checked=\"checked\"" : string.Empty)/>
+                            <i class="cc cc-stop"></i>
+                            <label for="menuStatus3">禁用</label>
+                        </div>
+                        @Html.HiddenFor(m => m.ShowStatus)
+
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar flex">
+            @*<a class="btn btn-copy openCopyMenu" href="menuCopy.aspx"><i class="cc cc-photos-o"></i>複製</a>*@
+
+            @if (!Model.DisableDelete) //20190816 Nina 徵才選單不能刪除
+            {
+                <a class="btn btn-del menu-del" href="javascript:" id="btnDelete"><i class="cc cc-trash-o"></i>刪除</a>
+            }
+            <a class="btn btn-cancel" href="javascript:" onclick="CloseBox();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>

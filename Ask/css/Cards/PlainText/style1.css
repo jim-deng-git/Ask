@@ -1,0 +1,10 @@
+.card-plainText[data-style="1"] {
+  text-align: center; }
+  .card-plainText[data-style="1"] .title-main {
+    font-size: 22px;
+    color: #222222; }
+    .card-plainText[data-style="1"] .title-main ~ .title-sub {
+      margin-top: 5px; }
+  .card-plainText[data-style="1"] .title-sub {
+    font-size: 14px;
+    color: #999999; }

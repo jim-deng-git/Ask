@@ -1,0 +1,47 @@
+﻿@model WorkV3.Models.TemplateModels
+@{
+    ViewBag.Title = "存為範本";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";    
+}
+
+<div class="groove groove-1">
+    <ul id="ulForms" class="forms">
+        <li class="text-C">
+            @if (!string.IsNullOrWhiteSpace(Model.Thumb)) {
+            <div class="card shadow-none col-2 m-v-8">
+                <div class="card-box">
+                    <div class="card-img square">                        
+                        <img src="@Model.Thumb" />
+                    </div>
+                </div>
+            </div>
+            }
+            <input type="text" id="txtName" placeholder="請輸入範本名稱" value="@Model.Name" class="validate[required]" />
+        </li>
+    </ul>
+    <div class="control-bar flex">
+        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>
+
+@section FArea {
+    @BundleConfig.Validate()
+    <script type="text/javascript">
+        $('#btnCancel').click(function () {
+            $.get('@Html.Raw(Url.Action("TemplateDel", new { id = ViewBag.TemplateID }))', function () {                
+                parent.$.colorbox.close();
+            });
+        });
+
+        $('#btnSave').click(function () {
+            if ($('#ulForms').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                var name = encodeURIComponent($('#txtName').val());
+                $.get('@Html.Raw(Url.Action("TemplateNameSet", new { id = ViewBag.TemplateID }))?name=' + name, function () {
+                    parent.$.colorbox.close();
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,24 @@
+.card-breadcrumb[data-style="1"] ol, .card-breadcrumb[data-style="1"] li, .card-breadcrumb[data-style="1"] a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-breadcrumb[data-style="1"] {
+  font-size: 13px;
+  margin: 10px 0; }
+  .card-breadcrumb[data-style="1"] li {
+    display: inline-block;
+    line-height: 1; }
+    .card-breadcrumb[data-style="1"] li::after {
+      content: "/";
+      display: inline-block;
+      color: #9e9e9e;
+      margin: 0 8px 0 12px; }
+    .card-breadcrumb[data-style="1"] li.active::after {
+      content: "";
+      display: none; }
+  .card-breadcrumb[data-style="1"] a {
+    color: #9e9e9e; }
+    .card-breadcrumb[data-style="1"] a:hover {
+      color: #000000; }

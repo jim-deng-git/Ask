@@ -1,0 +1,65 @@
+﻿@model IEnumerable<WorkV3.Models.TemplateModels>
+@{
+    ViewBag.Title = "標示處理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";    
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">標示處理</div>
+        </div>
+        <ul id="ulForm" class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title inline">處理狀態<span class="required">*</span></div>
+                    <div id="divProcess" class="radio-box inline validate[funcCall[checkProcess]]" data-radioGroup="IsProcess">                        
+                        <div>
+                            <input type="radio" value="1" />
+                            <label>已處理</label>
+                        </div>
+                        <div>
+                            <input type="radio" value="0" />
+                            <label>尚未處理</label>
+                        </div>                        
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title">備註</div>
+                    <div class="input-field">
+                        <textarea id="txtRemark" class="materialize-textarea"></textarea>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:checkForm()"><i class="cc cc-gift"></i>儲存</a>
+        </div>
+    </div>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    <script type="text/javascript">
+        Component.radioList('#divProcess');
+
+        function checkProcess(field) {
+            if (field.find('input:checked').length == 0)
+                return '* 必選欄位';
+        }
+
+        function checkForm() {
+            if ($('#ulForm').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                $.post('@Url.Action("Process")', { ids: parent.getSelectIds(), isProcess: $('#divProcess').find(':checked').val() == '1', remark: $('#txtRemark').val() }, function () {
+                    parent.refreshList();
+                    parent.$.colorbox.close();
+                });
+            }
+        }
+    </script>
+}
+

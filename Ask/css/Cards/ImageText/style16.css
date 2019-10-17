@@ -1,0 +1,108 @@
+.card-imageText[data-style="16"] .card-text .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-imageText[data-style="16"] .card-box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-imageText[data-style="16"] .card-box {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
+  @media only screen and (max-width: 420px) {
+    .card-imageText[data-style="16"] .card-box {
+      display: block; } }
+
+.card-imageText[data-style="16"] .card-img {
+  cursor: pointer;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1; }
+  .card-imageText[data-style="16"] .card-img.original {
+    top: 0;
+    overflow: hidden;
+    height: 100%; }
+  .card-imageText[data-style="16"] .card-img a {
+    height: 100%; }
+  .card-imageText[data-style="16"] .card-img img {
+    width: 100%; }
+  .card-imageText[data-style="16"] .card-img .card-img-content {
+    background-color: transparent;
+    background-size: cover !important;
+    background-position: bottom center !important; }
+
+.card-imageText[data-style="16"] .card-text {
+  -webkit-box-flex: 1.2;
+      -ms-flex: 1.2;
+          flex: 1.2;
+  padding: 15px 25px 15px; }
+  .card-imageText[data-style="16"] .card-text .card-text-name {
+    font-size: 24px;
+    color: #000000;
+    font-weight: bold; }
+    .card-imageText[data-style="16"] .card-text .card-text-name a {
+      color: #000000; }
+      .card-imageText[data-style="16"] .card-text .card-text-name a:focus, .card-imageText[data-style="16"] .card-text .card-text-name a:active, .card-imageText[data-style="16"] .card-text .card-text-name a:hover {
+        color: #000000; }
+    .card-imageText[data-style="16"] .card-text .card-text-name ~ .card-text-info {
+      margin-top: 15px; }
+  .card-imageText[data-style="16"] .card-text .card-text-info {
+    font-size: 18px;
+    color: #212121; }
+
+.card-imageText[data-style="16"] .imgInfo {
+  padding: 15px 20px;
+  text-align: center;
+  width: 100%;
+  position: absolute;
+  top: 50%;
+  margin-top: -34px;
+  -webkit-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out; }
+  .card-imageText[data-style="16"] .imgInfo > span {
+    font-size: 24px;
+    color: #ffffff;
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    line-height: 47px;
+    border-radius: 100%;
+    border: 2px solid #ffffff;
+    background-color: rgba(0, 0, 0, 0.5); }
+    .card-imageText[data-style="16"] .imgInfo > span > i {
+      margin-left: 2px; }
+
+.card-imageText[data-style="16"] .videoCurrentBox {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0%;
+  left: 0%;
+  z-index: 3; }
+  .card-imageText[data-style="16"] .videoCurrentBox > a {
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    font-size: 40px;
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    color: #ffffff; }
+  .card-imageText[data-style="16"] .videoCurrentBox > iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0; }
+  .card-imageText[data-style="16"] .videoCurrentBox ~ img {
+    -webkit-filter: blur(15px);
+    filter: blur(15px); }
+
+.card-imageText[data-style="16"] .card-box:focus .imgInfo, .card-imageText[data-style="16"] .card-box:active .imgInfo, .card-imageText[data-style="16"] .card-box:hover .imgInfo {
+  opacity: 0.5; }

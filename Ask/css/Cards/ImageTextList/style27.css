@@ -1,0 +1,61 @@
+.card-imageTextList[data-style="27"] .swiper-slide {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box; }
+
+.card-imageTextList[data-style="27"] .swiper-button-prev, .card-imageTextList[data-style="27"] .swiper-button-next, .card-imageTextList[data-style="27"] .swiper-button-prev::after, .card-imageTextList[data-style="27"] .swiper-button-next::after {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out; }
+
+.card-imageTextList[data-style="27"] {
+  padding: 0 50px;
+  position: relative; }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="27"] {
+      padding: 0 20px; } }
+  .card-imageTextList[data-style="27"] .swiper-slide {
+    width: 16.66667%;
+    padding: 0 5px; }
+    @media only screen and (max-width: 1024px) {
+      .card-imageTextList[data-style="27"] .swiper-slide {
+        width: 25%; } }
+    @media only screen and (max-width: 800px) {
+      .card-imageTextList[data-style="27"] .swiper-slide {
+        width: 33.33333%; } }
+    @media only screen and (max-width: 420px) {
+      .card-imageTextList[data-style="27"] .swiper-slide {
+        width: 50%; } }
+  .card-imageTextList[data-style="27"] .swiper-button-prev, .card-imageTextList[data-style="27"] .swiper-button-next {
+    width: 40px;
+    height: 40px;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+    color: #000000;
+    text-align: center;
+    background: transparent; }
+    .card-imageTextList[data-style="27"] .swiper-button-prev:hover, .card-imageTextList[data-style="27"] .swiper-button-next:hover {
+      opacity: 1; }
+    .card-imageTextList[data-style="27"] .swiper-button-prev::after, .card-imageTextList[data-style="27"] .swiper-button-next::after {
+      font-family: "FontCCWork";
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 40px;
+      line-height: 50px;
+      top: 40%;
+      margin-top: -20px;
+      font-size: 30px; }
+  .card-imageTextList[data-style="27"] .swiper-button-prev::after {
+    content: "\ea06"; }
+  .card-imageTextList[data-style="27"] .swiper-button-next::after {
+    content: "\ea08"; }
+  .card-imageTextList[data-style="27"] .swiper-container:hover .swiper-button-prev, .card-imageTextList[data-style="27"] .swiper-container:hover .swiper-button-next {
+    opacity: 1; }
+  .card-imageTextList[data-style="27"] .swiper-pagination-bullets {
+    width: 100%;
+    margin-top: 20px;
+    position: relative; }
+    .card-imageTextList[data-style="27"] .swiper-pagination-bullets span {
+      margin: 0 5px; }

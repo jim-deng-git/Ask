@@ -1,0 +1,192 @@
+#cboxPrevious, #cboxPrevious::before, #cboxNext, #cboxNext::before, #cboxClose {
+  -webkit-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out; }
+
+#colorbox, #cboxOverlay, #cboxWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1010;
+  overflow: hidden; }
+
+#cboxLoadingOverlay, #cboxLoadingGraphic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; }
+
+#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  width: auto;
+  background: none;
+  font-family: "FontCCwork"; }
+
+#colorbox {
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
+  outline: 0;
+  -webkit-box-shadow: 0 4px 33px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 4px 33px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.04); }
+
+#cboxOverlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  opacity: 0.9;
+  filter: alpha(opacity=90); }
+
+#cboxWrapper {
+  max-width: none; }
+
+#cboxMiddleLeft {
+  clear: left; }
+
+#cboxBottomLeft {
+  clear: left; }
+
+#cboxContent {
+  position: relative;
+  margin-top: 0px;
+  background: #f7f7f7;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box; }
+  #cboxContent:hover #cboxClose {
+    opacity: 1; }
+
+#cboxLoadedContent {
+  overflow: auto;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box; }
+
+#cboxTitle {
+  margin: 0;
+  position: absolute;
+  top: -20px;
+  left: 0;
+  color: #ccc; }
+
+#cboxLoadingGraphic {
+  background: url(../../../images/colorbox/loading.gif) no-repeat center center; }
+
+#cboxPrevious {
+  cursor: pointer;
+  position: absolute;
+  top: 0%;
+  left: 0px;
+  width: 100px;
+  height: 100%;
+  color: transparent;
+  font-size: 50px;
+  line-height: 0;
+  text-align: left; }
+  #cboxPrevious:active {
+    outline: 0; }
+  #cboxPrevious:hover::before {
+    color: #000000; }
+  #cboxPrevious::before {
+    content: "\ea06";
+    display: block;
+    color: #9e9e9e; }
+
+#cboxNext {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  color: transparent;
+  font-size: 50px;
+  line-height: 0;
+  text-align: right; }
+  #cboxNext:active {
+    outline: 0; }
+  #cboxNext:hover::before {
+    color: #000000; }
+  #cboxNext::before {
+    content: "\ea08";
+    display: block;
+    color: #9e9e9e; }
+
+#cboxClose {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: block;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  color: transparent;
+  background-color: rgba(0, 0, 0, 0.3);
+  opacity: 0; }
+  @media only screen and (max-width: 800px) {
+    #cboxClose {
+      opacity: 1; } }
+  #cboxClose::before, #cboxClose::after {
+    display: block;
+    width: 80%;
+    height: 2px;
+    position: absolute;
+    background: #ffffff;
+    left: 0;
+    top: 48%;
+    content: "";
+    overflow: visible;
+    visibility: visible;
+    -webkit-transition-duration: 0.3s, 0.3s;
+         -o-transition-duration: 0.3s, 0.3s;
+            transition-duration: 0.3s, 0.3s; }
+  #cboxClose::before {
+    -webkit-transform: translate(12%, 0) rotate(45deg);
+        -ms-transform: translate(12%, 0) rotate(45deg);
+            transform: translate(12%, 0) rotate(45deg); }
+  #cboxClose::after {
+    -webkit-transform: translate(12%, 0) rotate(-45deg);
+        -ms-transform: translate(12%, 0) rotate(-45deg);
+            transform: translate(12%, 0) rotate(-45deg); }
+  #cboxClose:active {
+    outline: 0; }
+  #cboxClose:hover {
+    background-position: bottom center; }
+
+#cboxSlideshow {
+  cursor: pointer;
+  position: absolute;
+  top: -20px;
+  right: 90px;
+  color: #ffffff; }
+  #cboxSlideshow:active {
+    outline: 0; }
+
+.cboxPhoto {
+  float: left;
+  margin: auto;
+  border: 0;
+  display: block;
+  max-width: none; }
+
+.cboxIframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: #ffffff; }
+
+#cboxError {
+  padding: 50px;
+  border: 1px solid #ccc; }
+
+#cboxCurrent {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  color: #ccc; }

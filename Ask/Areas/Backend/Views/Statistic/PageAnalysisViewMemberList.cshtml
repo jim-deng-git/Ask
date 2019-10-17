@@ -1,0 +1,117 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model AnalysisPageStatLogViewModel
+@{
+    Pagination pagination = ViewBag.Pagination;
+    string OrderByColumn = "0", OrderByDesc = "0";
+    AnalysisOrderByViewModel OrderBy = Model.OrderBy;
+    if (OrderBy.SortDesc == SortDesc.Desc)
+    {
+        OrderByDesc = "0";
+    }
+    OrderByColumn = ((int)OrderBy.SortColumn).ToString();
+    string OrderByDescUrl = Url.Action("PageAnalysisDetails", new { type="member", OrderColumn = OrderByColumn, OrderSort = (int)SortDesc.Desc, PageID = Model.PageID, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+    string OrderByAscUrl = Url.Action("PageAnalysisDetails", new { type = "member", OrderColumn = OrderByColumn, OrderSort = (int)SortDesc.Asc, PageID = Model.PageID, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, RangeType = Model.RangeType });
+
+}
+<div class="card shadow-none m-T-12">
+    <table class="fixTable">
+        <thead>
+            <tr>
+                <th>序</th>
+                <th>來源網址</th>
+                <th>目標網址</th>
+                <th>創建者</th>
+                <th>進入時間
+                    @if (OrderBy.SortDesc == SortDesc.Desc)
+                    {
+                        <a href="@OrderByAscUrl"><i class="cc cc-chevron-down"></i></a>
+                    }
+                    else
+                    {
+                        <a href="@OrderByDescUrl"><i class="cc cc-chevron-up"></i></a>
+                    }
+                </th>
+                <th>停留秒數</th>
+                <th class="short">Session ID</th>
+                <th>裝置 ID</th>
+                <th>會員姓名 / 帳號</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+@if (Model.SessionList != null)
+{
+    for (int i = 0, len = Model.SessionList.Count(); i < len; ++i)
+    {
+        AnalysisPageViewSessionViewModel item = Model.SessionList.ElementAt(i);
+
+                <tr>
+                    <td class="sort">@pagination.GetItemIndex(i)</td>
+                    <td class="text-L">
+
+                        <div class="hover-show">
+                            @if (!string.IsNullOrEmpty(item.RefererUrl))
+                            {
+                                string refAnalysisUrl = Url.Action("PageAnalysisDetails", "Analysis", new { PageID = item.RefererPageNo, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate });
+                                <a class="btn-grey-darken-4-o transparent p-none hide" href="@item.RefererUrl" target="_blank"><i class="cc cc-laptop"></i></a>
+                                    <a href="@refAnalysisUrl">
+                                        @(string.IsNullOrEmpty(item.RefererTitle) ? item.RefererUrl : item.RefererTitle)
+                                    </a>
+                            }
+                        </div>
+                    </td>
+                    <td class="text-L">
+
+                        @{
+                            string pageUrl = item.Url;
+                            string pageAnalysisUrl = Url.Action("PageAnalysisDetails", "Analysis", new { PageID = item.No, SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate });
+                        }
+                        <a class="btn-grey-darken-4-o transparent p-none hide" href="@pageUrl" target="_blank">
+                            <i class="cc cc-laptop"></i>
+                        </a>
+                        <a href="@pageAnalysisUrl">
+                            @item.Title
+                        </a>
+                    </td>
+
+                    <td>@item.PageCreator</td>
+                    <td class="time">@item.LogDate</td>
+                    <td>@item.StaySeconds</td>
+                    <td><a href="@Url.Action("SessionAnalysisDetails", "Analysis", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, SessionID = item.SessionID })">@item.SessionID</a></td>
+                    <td>
+                        @{
+                            string machineName = WorkV3.Areas.Backend.ViewModels.AnalysisPageLogViewModel.GetMachineNumber(item.UserAgent);
+                            <a href="@Url.Action("MachineAnalysisDetails", "Analysis", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, Machine = machineName })">@machineName</a>
+                        }
+                    </td>
+
+
+                    <td class="text-L">
+                        <div class="hover-show">
+                            @if (!string.IsNullOrWhiteSpace(item.MemberInfo))
+                            {
+                                <a href="@Url.Action("MemberAnalysisDetails", "Analysis", new { SearchStartDate = Model.SearchStartDate, SearchEndDate = Model.SearchEndDate, MemberID = item.MemberID })">@item.MemberInfo</a>
+
+                                <a class="btn-grey-darken-4-o transparent p-none hide" href="@Url.Action("Edit", "Member", new { MenuID = 1000, siteid = 1, backMenu = 32, ID=item.MemberID })" target="_blank">
+                                    @if (item.MemberPhoto != null && !string.IsNullOrEmpty(item.MemberPhoto))
+                                    {
+                                        <img src="@((item.MemberPhoto.StartsWith("http") ? "" : ViewBag.VMemberPath) + item.MemberPhoto)" id="imgMemberPhoto" style="width:24px;height:24px" />
+                                    }
+                                    else
+                                    {
+                                        <i class="cc cc-user-o font-hg m-R-none"></i>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    </td>
+                    <td>@item.IP</td>
+                </tr>
+                                }
+                            }
+        </tbody>
+    </table>
+    <div class="pagination text-C">
+        @Html.Action("Pager", "Common", pagination)
+    </div>
+</div>

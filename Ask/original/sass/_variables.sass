@@ -1,0 +1,231 @@
+// Table of Contents
+//
+// Frames: Zone Wrapper Groove
+// Colors
+// Options
+// Spacing
+// Radius
+// Fonts
+// Components
+// Tables
+// Buttons
+// Forms
+// Dropdowns
+// Z-index master list
+// Navs
+// Navbar
+// Pagination
+// Jumbotron
+// Form states and alerts
+// Cards
+// Tooltips
+// Popovers
+// Badges
+// Modals
+// Alerts
+// Progress bars
+// List group
+// Image thumbnails
+// Figures
+// Breadcrumbs
+// Carousel
+// Close
+// Code
+
+//
+// Frames: Zone Wrapper Groove
+//
+$zones: (base: 1180px, wide: 1600px, list: 820px, full: 100%)
+$groove-number: 10
+$col-number: 10
+$groove-margin-Main: 2rem !default
+$groove-margin-Sub: $groove-margin-Main / 2 !default
+
+//
+// Colors
+$materialize-red: ("base": #e51c23, "lighten-5": #fdeaeb, "lighten-4": #f8c1c3, "lighten-3": #f3989b, "lighten-2": #ee6e73, "lighten-1": #ea454b, "darken-1": #d0181e, "darken-2": #b9151b, "darken-3": #a21318, "darken-4": #8b1014)
+$red: ("base": #F44336, "lighten-5": #FFEBEE, "lighten-4": #FFCDD2, "lighten-3": #EF9A9A, "lighten-2": #E57373, "lighten-1": #EF5350, "darken-1": #E53935, "darken-2": #D32F2F, "darken-3": #C62828, "darken-4": #B71C1C, "accent-1": #FF8A80, "accent-2": #FF5252, "accent-3": #FF1744, "accent-4": #D50000)
+$pink: ("base": #e91e63, "lighten-5": #fce4ec, "lighten-4": #f8bbd0, "lighten-3": #f48fb1, "lighten-2": #f06292, "lighten-1": #ec407a, "darken-1": #d81b60, "darken-2": #c2185b, "darken-3": #ad1457, "darken-4": #880e4f, "accent-1": #ff80ab, "accent-2": #ff4081, "accent-3": #f50057, "accent-4": #c51162)
+$purple: ("base": #9c27b0, "lighten-5": #f3e5f5, "lighten-4": #e1bee7, "lighten-3": #ce93d8, "lighten-2": #ba68c8, "lighten-1": #ab47bc, "darken-1": #8e24aa, "darken-2": #7b1fa2, "darken-3": #6a1b9a, "darken-4": #4a148c, "accent-1": #ea80fc, "accent-2": #e040fb, "accent-3": #d500f9, "accent-4": #aa00ff)
+$deep-purple: ("base": #673ab7, "lighten-5": #ede7f6, "lighten-4": #d1c4e9, "lighten-3": #b39ddb, "lighten-2": #9575cd, "lighten-1": #7e57c2, "darken-1": #5e35b1, "darken-2": #512da8, "darken-3": #4527a0, "darken-4": #311b92, "accent-1": #b388ff, "accent-2": #7c4dff, "accent-3": #651fff, "accent-4": #6200ea)
+$indigo: ("base": #3f51b5, "lighten-5": #e8eaf6, "lighten-4": #c5cae9, "lighten-3": #9fa8da, "lighten-2": #7986cb, "lighten-1": #5c6bc0, "darken-1": #3949ab, "darken-2": #303f9f, "darken-3": #283593, "darken-4": #1a237e, "accent-1": #8c9eff, "accent-2": #536dfe, "accent-3": #3d5afe, "accent-4": #304ffe)
+$blue: ("base": #2196F3, "lighten-5": #E3F2FD, "lighten-4": #BBDEFB, "lighten-3": #90CAF9, "lighten-2": #64B5F6, "lighten-1": #42A5F5, "darken-1": #1E88E5, "darken-2": #1976D2, "darken-3": #1565C0, "darken-4": #0D47A1, "accent-1": #82B1FF, "accent-2": #448AFF, "accent-3": #2979FF, "accent-4": #2962FF)
+$light-blue: ("base": #03a9f4, "lighten-5": #e1f5fe, "lighten-4": #b3e5fc, "lighten-3": #81d4fa, "lighten-2": #4fc3f7, "lighten-1": #29b6f6, "darken-1": #039be5, "darken-2": #0288d1, "darken-3": #0277bd, "darken-4": #01579b, "accent-1": #80d8ff, "accent-2": #40c4ff, "accent-3": #00b0ff, "accent-4": #0091ea)
+$cyan: ("base": #00bcd4, "lighten-5": #e0f7fa, "lighten-4": #b2ebf2, "lighten-3": #80deea, "lighten-2": #4dd0e1, "lighten-1": #26c6da, "darken-1": #00acc1, "darken-2": #0097a7, "darken-3": #00838f, "darken-4": #006064, "accent-1": #84ffff, "accent-2": #18ffff, "accent-3": #00e5ff, "accent-4": #00b8d4)
+$teal: ("base": #009688, "lighten-5": #e0f2f1, "lighten-4": #b2dfdb, "lighten-3": #80cbc4, "lighten-2": #4db6ac, "lighten-1": #26a69a, "darken-1": #00897b, "darken-2": #00796b, "darken-3": #00695c, "darken-4": #004d40, "accent-1": #a7ffeb, "accent-2": #64ffda, "accent-3": #1de9b6, "accent-4": #00bfa5)
+$green: ("base": #4CAF50, "lighten-5": #E8F5E9, "lighten-4": #C8E6C9, "lighten-3": #A5D6A7, "lighten-2": #81C784, "lighten-1": #66BB6A, "darken-1": #43A047, "darken-2": #388E3C, "darken-3": #2E7D32, "darken-4": #1B5E20, "accent-1": #B9F6CA, "accent-2": #69F0AE, "accent-3": #00E676, "accent-4": #00C853)
+$light-green: ("base": #8bc34a, "lighten-5": #f1f8e9, "lighten-4": #dcedc8, "lighten-3": #c5e1a5, "lighten-2": #aed581, "lighten-1": #9ccc65, "darken-1": #7cb342, "darken-2": #689f38, "darken-3": #558b2f, "darken-4": #33691e, "accent-1": #ccff90, "accent-2": #b2ff59, "accent-3": #76ff03, "accent-4": #64dd17)
+$lime: ("base": #cddc39, "lighten-5": #f9fbe7, "lighten-4": #f0f4c3, "lighten-3": #e6ee9c, "lighten-2": #dce775, "lighten-1": #d4e157, "darken-1": #c0ca33, "darken-2": #afb42b, "darken-3": #9e9d24, "darken-4": #827717, "accent-1": #f4ff81, "accent-2": #eeff41, "accent-3": #c6ff00, "accent-4": #aeea00)
+$yellow: ("base": #ffeb3b, "lighten-5": #fffde7, "lighten-4": #fff9c4, "lighten-3": #fff59d, "lighten-2": #fff176, "lighten-1": #ffee58, "darken-1": #fdd835, "darken-2": #fbc02d, "darken-3": #f9a825, "darken-4": #f57f17, "accent-1": #ffff8d, "accent-2": #ffff00, "accent-3": #ffea00, "accent-4": #ffd600)
+$amber: ("base": #ffc107, "lighten-5": #fff8e1, "lighten-4": #ffecb3, "lighten-3": #ffe082, "lighten-2": #ffd54f, "lighten-1": #ffca28, "darken-1": #ffb300, "darken-2": #ffa000, "darken-3": #ff8f00, "darken-4": #ff6f00, "accent-1": #ffe57f, "accent-2": #ffd740, "accent-3": #ffc400, "accent-4": #ffab00)
+$orange: ("base": #ff9800, "lighten-5": #fff3e0, "lighten-4": #ffe0b2, "lighten-3": #ffcc80, "lighten-2": #ffb74d, "lighten-1": #ffa726, "darken-1": #fb8c00, "darken-2": #f57c00, "darken-3": #ef6c00, "darken-4": #e65100, "accent-1": #ffd180, "accent-2": #ffab40, "accent-3": #ff9100, "accent-4": #ff6d00)
+$deep-orange: ("base": #ff5722, "lighten-5": #fbe9e7, "lighten-4": #ffccbc, "lighten-3": #ffab91, "lighten-2": #ff8a65, "lighten-1": #ff7043, "darken-1": #f4511e, "darken-2": #e64a19, "darken-3": #d84315, "darken-4": #bf360c, "accent-1": #ff9e80, "accent-2": #ff6e40, "accent-3": #ff3d00, "accent-4": #dd2c00)
+$brown: ("base": #795548, "lighten-5": #efebe9, "lighten-4": #d7ccc8, "lighten-3": #bcaaa4, "lighten-2": #a1887f, "lighten-1": #8d6e63, "darken-1": #6d4c41, "darken-2": #5d4037, "darken-3": #4e342e, "darken-4": #3e2723)
+$blue-grey: ("base": #607d8b, "lighten-5": #eceff1, "lighten-4": #cfd8dc, "lighten-3": #b0bec5, "lighten-2": #90a4ae, "lighten-1": #78909c, "darken-1": #546e7a, "darken-2": #455a64, "darken-3": #37474f, "darken-4": #263238)
+$grey: ("base": #9e9e9e, "lighten-5": #fafafa, "lighten-4": #f5f5f5, "lighten-3": #eeeeee, "lighten-2": #e0e0e0, "lighten-1": #bdbdbd, "darken-1": #757575, "darken-2": #616161, "darken-3": #424242, "darken-4": #212121)
+$gold: ("base": #ac7224)
+$shades: ("black": #000000, "white": #FFFFFF, "transparent": transparent)
+$social: ("accupass": #0088d2, "pinkoi": #E95E8B, "youku": #ec0001, "tudou": #ed592b, "baidu": #2529d8, "blogger": #f57d00, "vimeo": #1ab7ea, "youtube": #ff0000, "linkedin": #0077b5, "facebook": #3b5998, "line": #00c300, "twitter": #1da1f2, "pinterest": #bd081c, "google-plus": #dd4b39, "plurk": #de411d, "qqchat": #000000, "sina-weibo": #f50000, "renren": #217dc6, "instagram": #c13584, "wechat": #51c332)
+$ccwork: ("channel": #00c2e2, "event": #00c300, "mart": #ed6e1c, "corp": #bd081c)
+$colors: ("materialize-red": $materialize-red, "red": $red, "pink": $pink, "purple": $purple, "deep-purple": $deep-purple, "indigo": $indigo, "blue": $blue, "light-blue": $light-blue, "cyan": $cyan, "teal": $teal, "green": $green, "light-green": $light-green, "lime": $lime, "yellow": $yellow, "amber": $amber, "orange": $orange, "deep-orange": $deep-orange, "brown": $brown, "blue-grey": $blue-grey, "grey": $grey, "gold": $gold, "shades": $shades, "social": $social, "ccwork": $ccwork)
+
+$black: #000000 !default
+$white: #ffffff !default
+$alpha: transparent !default
+$gray: #9e9e9e !default
+
+$title-main-color: #222222 !default
+$title-sub-color: #3e3e3e !default
+$title-sub-color-lighten: #999999 !default
+$content-base-color: #555555 !default
+
+$secondary-color: map-get($grey, darken-3) !default
+$success-color: map-get($green, base) !default
+$error-color: map-get($red, base) !default
+
+$input-background: $white !default
+$input-disabled-color: rgba($black, 0.26) !default
+$input-disabled-solid-color: map-get($grey, lighten-1) !default
+$input-border-color: map-get($grey, base) !default
+$input-error-color: $error-color !default
+$input-success-color: $success-color !default
+$input-focus-color: $secondary-color !default
+$placeholder-text-color: $input-border-color !default
+$search-box-color: #dddddd !default
+
+$select-background: rgba($white, 0.9) !default
+
+$off-black: rgba($black, 0.87) !default
+$dropdown-bg-color: $white !default
+$dropdown-hover-bg-color: map-get($grey, lighten-3) !default
+$dropdown-color: $secondary-color !default
+
+$radio-empty-color: #5a5a5a !default
+$radio-fill-color: $secondary-color !default
+
+$button-background-focus: lighten($secondary-color, 4%) !default
+
+//
+// Options
+//
+// Quickly modify global styling by enabling or disabling optional features.
+$enable-rounded: true !default
+$enable-shadows: false !default
+$enable-gradients: false !default
+$enable-transitions: true !default
+$enable-hover-media-query: false !default
+$enable-grid-classes: true !default
+$enable-print-styles: true !default
+
+//
+// Spacing
+//
+// margin & padding
+$spacer: 1rem !default
+$spacers: (none: 0, auto: auto, ii: initial, ih: inherit, 1: $spacer * 0.25, 2: $spacer * 0.5, 3: $spacer * 0.75, 4: $spacer, 5: $spacer * 1.25, 6: $spacer * 1.5, 7: $spacer * 1.75, 8: $spacer * 2, 9: $spacer * 2.25, 10: $spacer * 2.5, 11: $spacer * 2.75, 12: $spacer * 3) !default
+$spacerNames: (m: margin, p: padding)
+
+//
+// vertical-align
+//
+$align-v: (base: baseline, sub: sub, super: super, top: top, t-top: text-top, middle: middle, bottom: bottom, t-bottom: text-bottom, ih: inherit, ii: initial, un: unset) !default
+
+//
+// size
+//
+$sizes: (20: 20%, 25: 25%, 30: 30%, 33: 33.33333%, 40: 40%, 50: 50%, 56.25: 56.25%, 60: 60%, 66: 66%, 70: 70%, 75: 75%, 80: 80%, 90: 90%, 95: 95%, 100: 100%) !default
+
+//
+// Radius
+//
+$border-radius-base: 0 !default
+$border-radius-sm: 0.3rem !default
+$border-radius: 0.5rem !default
+$border-radius-mm: 1rem !default
+$border-radius-lg: 1.25rem !default
+$border-radius-hg: 1.5rem !default
+
+//
+// Fonts
+//
+$font-px: 16px !default
+$font: 1.6rem !default
+$fonts: (base: $font, ss: $font * 0.9375, sm: $font * 0.875, xs: $font * 0.8125, xxs: $font * 0.75, mm: $font * 1.125, lg: $font * 1.25, hg: $font * 1.5, ms: $font * 2) !default
+$fonts-px: (base: $font-px, ss: $font * 0.9375, sm: $font-px * 0.875, xs: $font-px * 0.8125, xxs: $font-px * 0.75, mm: $font * 1.125, lg: $font-px * 1.25, hg: $font-px * 1.5, ms: $font-px * 2) !default
+
+//
+// font icons
+//
+$cc-font-path: "../fonts" !default
+$cc-font-size-base: 14px !default
+$cc-line-height-base: 1 !default
+
+$cc-css-prefix: cc !default
+$cc-version: "4.7.0" !default
+$cc-border-color: #eee !default
+$cc-inverse: #fff !default
+$cc-li-width: 30em / 14 !default
+
+$cc-icons: (playlist-add: e93b, hierarchy: e936, job: e937, minus: e938, muscle: e939, pay: e93a, news: e935, pixnet: e934, coin-dollar: e933, coins: e932, logout: e930, logout-line: e931, wifi-lock: e92b, wifi: e92c, link-horizontal: e92a, qrcode: e929, pinkoi: e924, gallery: e925, channel: e926, shop: e927, reading: e928, blogger-square: e922, blogger: e923, baidu: e920, linkedin: e921, image-format-right: e91e, image-format-left: e91f, android: e91c, mobile: e91d, share-o: e92d, share: e91b, star-full: e918, star-half: e919, star-empty: e91a, star-circle: e92e, sort-default: e912, sort-up: e915, sort-down: e916, lock: e917, unlock: e913, unlock-alt: e914, favorite-thin: e92f, favorite-o: e910, favorite: e911, line-chart: e90c, pie-chart: e90d, area-chart: e90e, bar-chart: e90f, line-text: e9bf, facebook: e9c0, pinterest: e9c1, google-plus: e9c2, instagram: e9c3, twitter: e9c5, vimeo: e9c7, youtube: e9c8, sina-weibo: e900, qqchat: e9c6, renren: e901, plurk: e9c4, wechat: e957, dots-horizontal: e9c9, moon: e9ca, weather-sunny: e9cb, reload: e9cc, globe-o: e9cd, globe: e9ce, spoon-knife: e9cf, restaurant: e9d0, food-fork-drink: e9d1, food-variant: e9d2, coffee: e9d3, glass-flute: e9d4, glass-tulip: e9d5, music-note: e9d6, music: e9d7, book-open-page-variant: e9d8, book: e9d9, lnr-bookmark: e903, gift: e9da, loading: e9e9, circle-o: e9db, circle: e9dc, square-o: e9dd, square: e9de, print: e9df, film: e9e0, clipboard-outline: e9e1, content-cut: e9e2, image-filter-none: e9e3, content-copy: e9e4, sort: e9e5, tudou: e9e6, drag: e9e7, code-tags: e9e8, eye: e9ea, eye-off: e9eb, home-o: e9ec, check: e9ed, close: e9ee, plus: e9ef, edit-o: e9f0, edit: e9f1, file-o: e9f2, newspaper-o: e9f3, newspaper: e9f4, tutorial-o: e9f5, cards-o: e9f6, store-sign: e9f7, tablesign-o: e9f8, cart-o: e9f9, flag: e9fa, tag: e9fb, cursor-o: e9fc, ticket: e9fd, map-marker: e9fe, map-location: e9ff, map-info: ea00, map-o: ea01, time-traffic: ea02, folder-lock: ea03, clock: ea04, chevron-up: ea05, chevron-left: ea06, chevron-down: ea07, chevron-right: ea08, lnr-chevron-up: e904, lnr-chevron-left: e905, lnr-chevron-down: e906, lnr-chevron-right: e907, arrow-up: ea09, arrow-down: ea0a, arrow-left: ea0b, arrow-right: ea0c, link: ea0d, arrow-forward: e902, folder: ea0e, move-folder: ea0f, photos-o: ea10, image: ea11, image-slide: ea12, image-grid: ea13, image-flex-top: ea14, image-flex-bottom: ea15, image-top: ea16, image-center: ea17, image-bottom: ea18, image-float-left: ea19, format-float-left: ea1a, format-float-center: ea1b, format-float-right: ea1c, format-wrap-inline: ea1d, template: ea1e, grid-list: ea1f, list: ea20, format-list-checks: ea21, checklist: ea22, playlist-play: ea23, file-edit: ea24, trash-o: ea25, cloud-upload-o: ea26, cloud-download-o: ea27, upload-o: ea28, download: ea29, link-variant: ea2a, attach-file: e908, laptop: ea2b, desktop-message: ea2c, cellphone-link: ea2d, business-users: ea2e, account-alert: ea2f, user-o: ea30, dancing-o: ea31, user-circle-o: ea32, target-user: ea33, calendar-o: ea34, calendar-today: ea35, videos: ea36, video: ea37, play: ea38, stop2: e909, pause: e90a, search: ea39, search-text: ea3a, phone: ea3b, phone-in-talk: e93c, camera-o: ea3c, voice-o: ea3d, voice: ea3e, comment-o: ea3f, email: ea40, email-open-outline: ea41, paper-plane: e90b, stop: ea42, question: ea43, info: ea44, attention: ea45, trapezoid: ea46, hexagon: ea47, sliders-v: ea48, settings: ea49, frame-1: e97c)
+
+//
+// line-height
+//
+$line-height: 1.5 !default
+$line-heights: (ii: initial, ih: inherit, base: $line-height * 1, md: $line-height * 1.25, lg: $line-height * 1.5, hg: $line-height * 1.75, ms: $line-height * 2) !default
+
+//
+// Components
+//
+// bg
+//
+
+//
+// Forms
+//
+// Text Inputs + Textarea
+$input-height: 30px !default
+$input-font-size: 1.6rem !default
+$input-margin-bottom: 25px
+$input-margin: 0 !default
+$input-padding: 0 1px !default
+$input-transition: all 0.3s !default
+$label-font-size: 1.3rem !default
+$input-disabled-border: 1px dotted $input-disabled-color !default
+$input-border: 1px solid $input-border-color !default
+$input-invalid-border: 1px solid $input-error-color !default
+
+//
+// Select
+$select-border: 1px solid #f2f2f2 !default
+$select-padding: 5px !default
+$select-radius: 1px !default
+$select-disabled-color: rgba(0, 0, 0, 0.3) !default
+$select-padding: 5px !default
+$select-focus: 1px solid lighten($secondary-color, 47%) !default
+
+//
+// Dropdown
+$dropdown-item-height: 50px !default
+
+//
+// Radio Buttons
+$radio-border: 1px solid $radio-fill-color !default
+
+//
+// typography
+//
+// body
+$body-lightBox-bg-color: #f7f7f7 !default
+
+// Header Styles
+$h1-fontsize: 4.2rem !default
+$h2-fontsize: 3.56rem !default
+$h3-fontsize: 2.92rem !default
+$h4-fontsize: 2.28rem !default
+$h5-fontsize: 1.64rem !default
+$h6-fontsize: 1rem !default
+
+$arrow-left: map-get($cc-icons, chevron-left)
+$arrow-right: map-get($cc-icons, chevron-right)
+$dots: map-get($cc-icons, dots-horizontal)

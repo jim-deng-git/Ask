@@ -1,0 +1,101 @@
+﻿@model WorkV3.Areas.Backend.Models.ArticlePosterModels
+@{
+    ViewBag.Title = "撰文者/人物";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("PosterEdit", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID }))" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">撰文者/人物</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">姓名</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">照片</div>
+                                <div class="input-field">
+                                    <input type="file" id="fPhoto" name="fPhoto" />
+                                    <input type="hidden" id="Photo" name="Photo" value='@Model.Photo' />
+                                    <input type="hidden" id="fPhotoBase64" name="fPhotoBase64" />
+                                    <input type="hidden" id="fPhotoBase64_Resize" name="fPhotoBase64_Resize" />
+                                </div>
+                            </div>
+                        </li>
+                        @*客製 YuMing 20190722 隱藏 人物介紹 人物資歷*@
+                        <li>
+                            <div class="col-1">
+                                <div class="title">人物介紹</div>
+                                <div class="input-field img-text-height">
+                                    <textarea contenteditable="true" id="Intro" name="Intro">@(string.IsNullOrWhiteSpace(Model.Intro) ? "人物介紹" : Model.Intro)</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">人物資歷</div>
+                                <div class="input-field img-text-height">
+                                    <textarea contenteditable="true" id="Resume" name="Resume">@(string.IsNullOrWhiteSpace(Model.Resume) ? "人物資歷" : Model.Resume)</textarea>                                    
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.singleImageUpload('#fPhoto', '@(Href("~/"))', '@ViewBag.UploadUrl');
+
+        //客製 YuMing 20190722 隱藏 人物介紹 人物資歷
+        Component.editor('Intro');
+        Component.editor('Resume');
+        
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

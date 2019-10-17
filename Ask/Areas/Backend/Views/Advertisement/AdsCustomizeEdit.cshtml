@@ -1,0 +1,910 @@
+﻿@model AdsCustomizeModel
+@{
+    ViewBag.Title = "自訂廣告管理編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    long Advertisement_ID = ViewBag.Advertisement_ID;
+    string uploadUrl = ViewBag.UploadUrl;
+    var siteQuery = new { siteId = siteId, menuId = menuId, Advertisement_ID = Advertisement_ID, AdsCustomize_ID = Model.ID };
+    AdvertisementModel AdvertisementItem = WorkV3.Areas.Backend.Models.DataAccess.AdvertisementDAO.GetAdvertisementItem(Advertisement_ID);
+
+    bool isSetBg = false;
+    List<AdsCustomizeAccountSet> adsCustomizeAccountSet = new List<AdsCustomizeAccountSet>();
+    foreach (var item in Model.AdsCustomizeAccountSet)
+    {
+        if (item.IssueStart <= DateTime.Now && item.IssueEnd >= DateTime.Now)
+        {
+            item.SpecialRow = AdsCustomizeAccountSet.SpecialRowType.InDuration;
+            isSetBg = true;
+        }
+        adsCustomizeAccountSet.Add(item);
+    }
+
+    if (!isSetBg)
+    {
+        if (adsCustomizeAccountSet.Count() > 1)
+        {
+            adsCustomizeAccountSet.OrderByDescending(m => m.CreateTime).First().SpecialRow = AdsCustomizeAccountSet.SpecialRowType.Latest;
+        }
+    }
+
+    adsCustomizeAccountSet = adsCustomizeAccountSet.OrderByDescending(m => m.IssueStart).ToList();
+}
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <link href="/css/card.css" rel="stylesheet" />
+    <script type="text/javascript">
+
+        function numberWithComma(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function getDateDiff(date1, date2) {
+            return Math.abs(Math.round((date1 - date2) / (1000 * 60 * 60 * 24)));
+        }
+
+        $(function () {
+
+            @if(!(Model.ClickEvent == ClickEvent.None || string.IsNullOrWhiteSpace(Model.ClickEvent)))
+            {
+            <text>
+            $("#li_add_clickEvent").hide();
+            </text>
+            }
+
+            @if(AdvertisementItem.IsUseForComputer)
+            {
+            <text>
+            Component.singleImageUpload('#fPCPicture', '@(Href("~/"))', '@uploadUrl');
+            </text>
+            }
+            @if(AdvertisementItem.IsUseForPhone)
+            {
+            <text>
+            Component.singleImageUpload('#fMobilePicture', '@(Href("~/"))', '@uploadUrl');
+            </text>
+            }
+
+            $(".fixTable").stickyTableHeaders();
+
+            var listObj = Component.dataList('listTable');
+
+            listObj.deleted = function (delIds) {
+                Component.confirm('確定刪除所選定費用設定？', function (isOk) {
+                    if (!isOk)
+                        return;
+
+                    var url = '@Url.Action("AccountDel", "Advertisement")';
+                    $.post(url, { 'ids': delIds }, function () {
+                        location.replace('@Html.Raw(Url.Action("AdsCustomizeEdit", siteQuery))');
+                    });
+                });
+            }
+
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    $('#listTable').find('span.info').html('');
+                }
+            }
+
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                }
+            }
+
+            $('#listTable').on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+
+
+            $("#PhonePicFollowPC").on('change', function () {
+                if ($(this).prop("checked")) {
+                    console.log("true");
+                    $(".phoneUpload").hide();
+                } else {
+                    console.log("false");
+                    $(".phoneUpload").show();
+                }
+
+            });
+
+            @if(Model.PhonePicFollowPC)
+            {
+                <text>
+            $(".phoneUpload").hide();
+            </text>
+            }
+            else
+            {
+                <text>
+            $(".phoneUpload").show();
+            </text>
+            }
+        });
+
+        var adsCustomizeEditIsSubmit = false;
+        $('#btnSave').click(function () {
+            if (!adsCustomizeEditIsSubmit) {
+                adsCustomizeEditIsSubmit = true;
+            } else {
+                return;
+            }
+
+            if (Component.multiImageUpload.uploading) {
+                Component.alert('檔案上傳中，請稍候再儲存。');
+            } else {
+                var adv_id = $('#tbAdvertisers tr td').children("input[name='advertisers-id']").val();
+                $('#Advertisers_ID').val(adv_id);
+
+                var form = $('#editForm');
+                if (form.validationEngine('validate')) {
+                    form.submit();
+                }
+            }
+        });
+
+        $('#btnCancel').click(function () {
+            history.go(-1);
+        });
+
+        function setAdvertisers(items) {
+            var html = '';
+            if (items && items.length) {
+                var item = items[0];
+                var LadyAndGenernal = '';
+                if (item.Gender == 'F') {
+                    LadyAndGenernal = '女士';
+                } else if (item.Gender == 'M') {
+                    LadyAndGenernal = '先生';
+                }
+                html += '<tr><td class="text-L">';
+                html += item.CompanyName + '<br/>';
+                html += '<a onclick="deladvertiser();" href="javascript:" class="tooltip tooltipstered float-R"><i class="cc cc-close"></i></a>';
+                html += '<span class="font-grey font-xxs">' + item.ContactPerson + ' ' + LadyAndGenernal + '  ' + item.JobTitle + '  ' + item.ContactPhone + '</span>';
+                html += '<input type="hidden" name="advertisers-id" value="' + item.ID + '" />';
+                html += '</td></tr>';
+
+                $("#Advertisers_ID").val(item.ID);
+                saveAdvertisers(item.ID);
+                $('#add-advertiser').prop('src', '@Url.Action("AddAdvertisers", new { siteId = siteId })');
+            }
+
+            html = $(html).hide();
+            var outerElm = $('#tbAdvertisers');
+            outerElm.prepend(html);
+            html.fadeIn();
+            if (items && items.length) {
+                $("#AddAdvertisersBtn").hide();
+            }
+        }
+
+        function saveAdvertisers(advertisersId) {
+            //加入廣告主
+            //新增當中主檔尚未寫入DB時,此function功能無效
+            var url = '@Url.Action("saveAdvertisers",new { adsCustomizeId=Model.ID })';
+            $.post(url, { 'advertisersId': advertisersId });
+        }
+
+        function deladvertiser() {
+            var url = '@Url.Action("DelAdvertiserByAdvertisement", "Advertisement", new { AdsCustomize_ID = Model.ID })';
+            $.post(url, '', function () {
+                $("#tbAdvertisers").empty();
+                $("#AddAdvertisersBtn").show();
+            });
+        }
+
+        function li_video_del() {
+            Component.confirm('確認刪除影片?', function (isOk) {
+                if(!isOk)
+                    return;
+
+                var url = '@Url.Action("DelVideoByAdsCustom", "Advertisement", new { AdsCustomize_ID = Model.ID })';
+                $.post(url, '', function () {
+                    //location.replace(location.href);
+                    refresh_custom_detail();
+                });
+            });
+        }
+        function li_links_del() {
+            Component.confirm('確認刪除連結?', function (isOk) {
+                if(!isOk)
+                    return;
+
+                var url = '@Url.Action("DelLinksByAdsCustom", "Advertisement", new { AdsCustomize_ID = Model.ID })';
+                $.post(url, '', function () {
+                    //location.replace(location.href);
+                    refresh_custom_detail();
+                });
+            });
+        }
+        function refresh_custom_detail() {
+        @if (ViewBag.IsEdit)
+        {
+            <text>
+            location.replace(location.href);
+            </text>
+        }
+        else
+        {
+            <text>
+            //location.replace('@Html.Raw(Url.Action("AdsCustomizeEdit", new { ID = Model.ID, siteId = siteId, menuId = menuId, Advertisement_ID = Advertisement_ID }))');
+            $.ajax({
+                url: '@Url.Action("GetLnkInfo")',
+                data: {
+                    adsCustomizeId: '@Model.ID',
+                },
+                method: 'GET',
+                success(response) {
+                    var responseJson = JSON.parse(response)
+                    var result = {};
+                    responseJson[0].forEach(function (item) {
+                        result[item.Key] = item.Value;
+                    });
+
+                    if (!result.Url && !result.VideoType && !result.VideoLink) {
+                        $('#li_add_clickEvent').show();
+                        $('#li_links').hide();
+                        $('#li_video').hide();
+                        return;
+                    }
+
+
+                    var template = '';
+
+                    if (result.Url) {
+                        template = `
+                        <div class="col-2">
+                            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                                <div class="fileuploader-items link">
+                                    <ul class="fileuploader-items-list">
+                                        <li class="fileuploader-item">
+                                            <div class="columns">
+                                                <div class="column-title">
+                                                    <div class="title-name"><a href="${result.Url}" target="_blank">${result.Url}</a></div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <div class="actions-holder">
+                                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openCenterEdit-m" title="編輯" href="@Url.Action("LinkEdit",new { AdsCustomize_ID=Model.ID })"><i class="cc cc-edit-o"></i></a>
+                                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip" title="刪除" href="javascript:" onclick="li_links_del();"><i class="cc cc-close"></i></a>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>`;
+
+                        $('#li_links').html(template);
+                        $('#li_add_clickEvent').hide();
+                        $('#li_links').show();
+                        $('#ClickEvent').val('@ClickEvent.Link');
+                        $('#li_video').hide();
+                    } else if (result.VideoType !== '@VideoType.Custom') {
+                        var videoUrl = '';
+                        if(result.VideoType === '@VideoType.Youtube')
+                            videoUrl = `https://www.youtube.com/embed/${result.VideoLink}`;
+                        if(result.VideoType === '@VideoType.Vimeo')
+                            videoUrl = `https://player.vimeo.com/video/${result.VideoLink}?app_id=122963`;
+
+                        template = `
+                        <li id="li_video">
+                            <div class="col-2">
+                                <div class="fileuploader fileuploader-theme-thumbnails normal">
+                                    <div class="fileuploader-items video">
+                                        <ul class="fileuploader-items-list">
+                                            <li>
+                                                <div class="preview">
+                                                    <iframe width="560" height="315" src="${videoUrl}" id="" frameborder="0" allowfullscreen></iframe>
+                                                </div>
+                                            </li>
+                                            <div class="actions-holder">
+                                                <a class="btn-white-o square transparent fileuploader-action-text tooltip openCenterEdit-m" title="編輯" href="@Url.Action("VideoEdit", new { siteId = siteId, menuId = menuId, AdsCustomize_ID = Model.ID })"><i class="cc cc-edit-o"></i></a>
+                                                <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip" title="刪除" onclick="li_video_del();" href="javascript:"><i class="cc cc-close"></i></a>
+                                            </div>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>`;
+
+                        $('#li_video').html(template);
+                        $('#li_add_clickEvent').hide();
+                        $('#li_links').hide();
+                        $('#li_video').show();
+                        $('#ClickEvent').val('@ClickEvent.Video');
+                    }
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetAdsCustomizeAccountSetInfo")',
+                data: {
+                    adsCustomizeId: '@Model.ID',
+                },
+                method: 'GET',
+                success: function (response) {
+                    var responseJson = JSON.parse(response);
+
+                    var html = '';
+                    responseJson.forEach(function (item) {
+                        item.IssueStart = new Date(parseInt(item.IssueStart.replace('/Date(', '').replace(')/', '')));
+                        item.IssueEnd = new Date(parseInt(item.IssueEnd.replace('/Date(', '').replace(')/', '')));
+                        item.CreateTime = new Date(parseInt(item.CreateTime.toString().replace('/Date(', '').replace(')/', '')));
+
+                        var issueStartStr = `${item.IssueStart.getFullYear()}/${item.IssueStart.getMonth()+1}/${item.IssueStart.getDate()} ${item.IssueEnd.getHours()}:${item.IssueEnd.getMinutes()}`;
+                        var issueEndStr = `${item.IssueEnd.getFullYear()}/${item.IssueEnd.getMonth()+1}/${item.IssueEnd.getDate()} ${item.IssueEnd.getHours()}:${item.IssueEnd.getMinutes()}`;
+                        var issueStartDateStr = `${item.IssueStart.getFullYear()}/${item.IssueStart.getMonth()+1}/${item.IssueStart.getDate()}`;
+                        var issueEndDateStr = `${item.IssueEnd.getFullYear()}/${item.IssueEnd.getMonth()+1}/${item.IssueEnd.getDate()}`;
+
+                        var issueDate = '';
+                        if (item.IssueStart.getFullYear() === item.IssueEnd.getFullYear() &&
+                            item.IssueStart.getMonth() === item.IssueEnd.getMonth() &&
+                            item.IssueStart.getDate() === item.IssueEnd.getDate()) {
+                            issueDate = `${item.IssueStart.getFullYear()}/${item.IssueStart.getMonth()+1}/${item.IssueStart.getDate()}<br />${item.IssueStart.getHours()}:${item.IssueStart.getMinutes()} ~ ${item.IssueEnd.getHours()}:${item.IssueEnd.getMinutes()}`;
+                        } else {
+                            issueDate = `${issueStartStr} ~ ${issueEndStr}`;
+                        }
+
+                        var periodCurrency = '', clickCurrency = '', browseCurrency = '';
+                        var monthPrice = '';
+                        var dayPrice = '';
+                        var price = '';
+                        var clickPrice = '';
+                        var browsePrice = '';
+                        if (item.IssueSetType !== '@IssueSetType.Click') {
+                            if (item.CostOfPeriodCurrency.toLowerCase() === 'ntd') {
+                                periodCurrency = 'NT$'
+                            } else if (item.CostOfPeriodCurrency.toLowerCase() === 'usd') {
+                                periodCurrency = 'US$'
+                            }
+
+                            if (item.CostOfPeriod) {
+                                price = `${periodCurrency} ${numberWithComma(item.CostOfPeriod)}`;
+                            }
+
+                            if (item.GetCosePerMonth !== 0 && getDateDiff(item.IssueStart, item.issueEnd) >= 30)
+                                monthPrice = `
+                                    ${periodCurrency} ${numberWithComma(item.GetCostPerMonth)} / 月
+                                    <br />`;
+
+                            if (item.GetCostPerDays !== 0 && getDateDiff(item.IssueStart, item.issueEnd) > 1)
+                                dayPrice = `
+                                    ${periodCurrency} ${numberWithComma(item.GetCostPerDays)} / 日
+                                    <br />`;
+                        } else {
+                            if (item.BillingByClickCurrency.toLowerCase() === 'ntd') {
+                                clickCurrency = 'NT$'
+                            } else if (item.BillingByClickCurrency.toLowerCase() === 'usd') {
+                                clickCurrency = 'US$'
+                            }
+
+                            if (item.BillingByBrowseCurrency.toLowerCase() === 'ntd') {
+                                browseCurrency = 'NT$'
+                            } else if (item.BillingByBrowseCurrency.toLowerCase() === 'usd') {
+                                browseCurrency = 'US$'
+                            }
+
+                            var billingByClick = item.BillingByClick ? item.BillingByClick : 0;
+                            var clicks = item.QueryClicks ? item.QueryClicks : 0;
+
+                            clickPrice = `${clickCurrency} ${numberWithComma(billingByClick * clicks)}`;
+
+                            var billingByBrowse = item.BillingByBrowse ? item.BillingByBrowse : 0;
+                            var browses = item.QueryVisits ? item.QueryVisits : 0;
+
+                            clickPrice = `${clickCurrency} ${numberWithComma(billingByClick * clicks)}`;
+                            browsePrice = `${browseCurrency} ${numberWithComma(billingByBrowse * browses)}`;
+                        }
+
+
+                        html += `
+                        <tr data-id="${item.ID}">
+                            <td class="text-L">
+                                <p class="font-grey font-sm">
+                                    ${issueDate}
+                                </p>
+                            </td>
+                            <td class="text-L">
+                                <p class="font-grey font-sm">
+                                    ${item.IssueSetTypeName}
+                                </p>
+                            </td>
+                            <td class ="text-L">
+                                ${price}
+                                <p class ="font-grey font-sm">
+                                    ${monthPrice}
+                                    ${dayPrice}
+                                </p>
+                            </td>
+                            <td>
+                                <a class ="font-black" href="@Url.Action("Detail", "AdvertisementStatistics", new { type = DetailType.Click, previousPage = HttpContext.Current.Request.Url.AbsoluteUri, AdsCustomId = Model.ID })&startDate=${issueStartDateStr}&endDate=${issueEndDateStr}">
+                                    ${item.QueryClicks? numberWithComma(item.QueryClicks): '0'}
+                                </a>
+                                <p class="font-grey font-sm">
+                                    ${clickPrice}
+                                </p>
+                            </td>
+                            <td>
+                                <a class="font-black" href="@Url.Action("Detail", "AdvertisementStatistics", new { type = DetailType.Browsing, previousPage = HttpContext.Current.Request.Url.AbsoluteUri, AdsCustomId = Model.ID })&startDate=${issueStartDateStr}&endDate=${issueEndDateStr}">
+                                    ${item.QueryVisits? item.QueryVisits: 0}
+                                </a>
+                                <p class="font-grey font-sm">
+                                    ${browsePrice}
+                                </p>
+                            </td>
+                            <td class="icon edit">
+                                <a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("AdsCustomizeAccountSetEdit",new { AdsCustomize_ID= Model.ID })&id=${item.ID}">
+                                    <i class="cc cc-edit-o"></i>
+                                </a>
+                            </td>
+                        </tr>`;
+                    });
+
+                    $('#listTable tbody').html(html);
+                },
+            });
+        </text>
+        }
+        }
+        @if ((ViewBag.Exit as bool?) == true)
+        {
+        <text>
+        Component.alert('廣告區已儲存', function () {
+            location.href = '@Html.Raw(Url.Action("AdsCustomizeIndex",new {siteId = siteId, menuId = menuId, Advertisement_ID = Advertisement_ID }))';
+        });
+        </text>
+        }
+
+        function refreshAdvertiser() {
+            $('#add-advertiser').prop('src', '@Url.Action("AddAdvertisers", new { siteId=siteId })');
+        }
+    </script>
+
+}
+
+<div class="groove groove-1 m-B-12">
+    <form id="editForm" action="" method="post" enctype="multipart/form-data">
+        <h1 class="title-admin-page">
+            <a class="btn-grey-darken-4-o transparent goBack" href="@Html.Raw(Url.Action("AdsCustomizeIndex",new {siteId = siteId, menuId = menuId, Advertisement_ID = Advertisement_ID }))">
+                <i class="cc cc-arrow-left"></i>
+            </a>自訂廣告編輯
+        </h1>
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title inline">廣告說明 <span class="required">*</span></div>
+                    <div class="input-field inline full">
+                        @Html.TextBoxFor(m => m.Description, new { @Class = "validate[required]" })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="flexUpload">
+                    @if (AdvertisementItem.IsUseForComputer)
+                    {
+                        <div class="flex-16">
+                            <div class="title">電腦版<span class="required">*</span></div>
+                            <div class="input-field">
+                                <input type="file" id="fPCPicture" name="fPCPicture" />
+                                <input type="hidden" id="PCPicture" name="PCPicture" value='@Model.PCPicture' />
+                                <input type="hidden" id="fPCPictureBase64" name="fPCPictureBase64" />
+                                <input type="hidden" id="fPCPictureBase64_Resize" name="fPCPictureBase64_Resize" />
+                            </div>
+                            <div class="alert transparent">
+                                <i class="cc cc-attention"></i>
+                                <div>建議尺寸@(AdvertisementItem.ComputerWidth)px X @(AdvertisementItem.ComputerHeight)px</div>
+                            </div>
+                        </div>
+                    }
+                    @if (AdvertisementItem.IsUseForPhone)
+                    {
+                        <div class="flex-9">
+                            <div class="title">
+                                手機版
+                                @if (AdvertisementItem.IsUseForComputer)
+                                {
+                                <div class="float-R text-L">
+                                    @Html.CheckBoxFor(m => m.PhonePicFollowPC)
+                                    <label for="PhonePicFollowPC" class="line-height-ii" style="height:auto;">手機版同電腦版圖片</label>
+                                </div>
+                                }
+                            </div>
+                            <div class="input-field vertical phoneUpload">
+                                <input type="file" id="fMobilePicture" name="fMobilePicture" />
+                                <input type="hidden" id="MobilePicture" name="MobilePicture" value='@Model.MobilePicture' />
+                                <input type="hidden" id="fMobilePictureBase64" name="fMobilePictureBase64" />
+                                <input type="hidden" id="fMobilePictureBase64_Resize" name="fMobilePictureBase64_Resize" />
+                            </div>
+                            <div class="alert transparent phoneUpload">
+                                <i class="cc cc-attention"></i>
+                                <div>建議尺寸@(AdvertisementItem.PhoneHeight)px X @(AdvertisementItem.PhoneWidth)px</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </li>
+            <li id="li_add_clickEvent">
+                <div class="col-1">
+                    <div class="title">點擊事件</div>
+                    <div class="tool-btn horizontal click-to-toggle">
+                        <a class="btn-with-item empty square">
+                            <i class="cc cc-plus"></i>
+                        </a>
+                        <ul>
+                            <li>
+                                <a class="btn-with-item square openCenterEdit-m" href="@Url.Action("LinkEdit", new { AdsCustomize_ID = Model.ID })"><i class="cc cc-link-variant"></i>連結</a>
+                            </li>
+                            <li>
+                                <a class="btn-with-item square openCenterEdit-m" href="@Url.Action("VideoEdit", new { siteId = siteId, menuId = menuId, AdsCustomize_ID = Model.ID })"><i class="cc cc-video"></i>開啟影片</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            @if(Model.ClickEvent == ClickEvent.None)
+            {
+                <li id="li_links"></li>
+                <li id="li_video"></li>
+            }
+            @if (Model.ClickEvent == ClickEvent.Link)
+            {
+                var item = Model.GetLinkData;
+                <text>
+                    <!-- 選擇搭配連結 -->
+                    <li id="li_links">
+                        <div class="col-2">
+                            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                                <div class="fileuploader-items link">
+                                    <ul class="fileuploader-items-list">
+                                        <li class="fileuploader-item">
+                                            <div class="columns">
+                                                <div class="column-title">
+                                                    <div class="title-name"><a href="@item.Url" target="_blank">@item.Url</a></div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <div class="actions-holder">
+                                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openCenterEdit-m" title="編輯" href="@Url.Action("LinkEdit",new { AdsCustomize_ID=Model.ID })"><i class="cc cc-edit-o"></i></a>
+                                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip" title="刪除" href="javascript:" onclick="li_links_del();"><i class="cc cc-close"></i></a>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </text>
+            }
+            @if (Model.ClickEvent == ClickEvent.Video)
+            {
+                var item = Model.GetVideoData;
+                string video_url = "";
+                if (item.Type != WorkV3.Areas.Backend.Models.VideoType.Custom)
+                {
+                    if (item.Type == WorkV3.Areas.Backend.Models.VideoType.Youtube)
+                    {
+                        video_url = "https://www.youtube.com/embed/" + item.Link;
+                    }
+                    else if (item.Type == WorkV3.Areas.Backend.Models.VideoType.Vimeo)
+                    {
+                        video_url = string.Format("https://player.vimeo.com/video/{0}?app_id=122963", item.Link);
+                    }
+                    <text>
+                        <!-- 選擇搭配影片 -->
+                        <li id="li_video">
+                            <div class="col-2">
+                                <div class="fileuploader fileuploader-theme-thumbnails normal">
+                                    <div class="fileuploader-items video">
+                                        <ul class="fileuploader-items-list">
+                                            <li>
+                                                <div class="preview">
+                                                    <iframe width="560" height="315" src="@video_url" id="" frameborder="0" allowfullscreen></iframe>
+                                                </div>
+                                            </li>
+                                            <div class="actions-holder">
+                                                <a class="btn-white-o square transparent fileuploader-action-text tooltip openCenterEdit-m" title="編輯" href="@Url.Action("VideoEdit", new { siteId = siteId, menuId = menuId, AdsCustomize_ID = Model.ID })"><i class="cc cc-edit-o"></i></a>
+                                                <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip" title="刪除" onclick="li_video_del();" href="javascript:"><i class="cc cc-close"></i></a>
+                                            </div>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </text>
+                }
+                else
+                {
+                    video_url = $"{uploadUrl}/{item.Link}";
+
+                    <li id="li_video">
+                        <div class="col-2">
+                            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                                <div class="fileuploader-items video">
+                                    <ul class="fileuploader-items-list">
+                                        <li>
+                                            <div class="preview">
+                                                <video width="100%" controls controlsList="nodownload">
+                                                    <source src="@video_url" type="video/mp4">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            </div>
+                                            <!-- 如果選擇 自行上傳影片 -->
+                                            <!-- <div id="video-mp4"></div>-->
+                                        </li>
+                                        <div class="actions-holder">
+                                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openCenterEdit-m" title="編輯" href="@Url.Action("VideoEdit", new { siteId = siteId, menuId = menuId, AdsCustomize_ID = Model.ID })"><i class="cc cc-edit-o"></i></a>
+                                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip" title="刪除" onclick="li_video_del();" href="javascript:"><i class="cc cc-close"></i></a>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                }
+            }
+        </ul>
+        <div class="col-4 p-4 border-T">
+            <table class="fixTable">
+                <caption>
+                    廣告主
+                    <div class="float-R">
+                        @*有一筆廣告主時就把新增隱藏起來*@
+                        @if (Model.Advertisers_ID != null)
+                        {
+                            <text>
+                                <script type="text/javascript">
+                                    $(function () {
+                                        $("#AddAdvertisersBtn").hide();
+                                    });
+                                </script>
+                            </text>
+                        }
+                        <a id="AddAdvertisersBtn" class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choicePoster" title="新增廣告主"><i class="cc cc-plus"></i></a>
+                        <ul id="choicePoster" class="dropdown-content customContent large closeOnClick">
+                            <li>
+                                <iframe id="add-advertiser" class="dropdownIframe" src="@Url.Action("AddAdvertisers",new { siteId=siteId })" frameborder="0"></iframe>
+                            </li>
+                        </ul>
+                    </div>
+                </caption>
+                <tbody id="tbAdvertisers" class="border-T">
+                    @if (Model.Advertisers_ID != null)
+                    {
+                        var AdvertiserData = Model.QueryAndGetAdvertiser;
+                        <tr>
+                            <td class="text-L">
+                                @{
+                                    object[] args = new object[]
+                                    {
+                                                AdvertiserData.ContactPerson,
+                                                AdvertiserData.LadyAndGenernal,
+                                                AdvertiserData.JobTitle??string.Empty,
+                                                AdvertiserData.ContactPhone
+                                    };
+                                }
+                                @(AdvertiserData.CompanyName)
+                                <a onclick="deladvertiser();" href="javascript:" class="tooltip tooltipstered float-R">
+                                    <i class="cc cc-close"></i>
+                                </a>
+                                <br>
+                                <span class="font-grey font-xxs">@string.Format("{0} {1}  {2}  {3}", args)</span>
+                            </td>
+                        </tr>
+                                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-4-partner p-4 border-T border-L m-B-12">
+            <table id="listTable" class="fixTable">
+                <caption>
+                    刊登時間和費用設定
+                    <span class="info"></span>
+                    <div class="float-R">
+                        <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Url.Action("AdsCustomizeAccountSetEdit",new { AdsCustomize_ID= Model.ID})" title="新增"><i class="cc cc-plus"></i></a>
+                        <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+
+                        <span data-for="del" style="display:none;">
+                            <a class="btn-grey-o no href="javascript:"><i class="cc cc-close"></i>取消</a>
+                            <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        </span>
+
+                        @*<a class="btn-grey-o" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                            <!-- 刪除的確定 -->
+                            <a class="btn-grey-darken-4-o data-del" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            <!-- 刪除的確定END -->*@
+                    </div>
+                </caption>
+                <thead>
+                    <tr>
+                        <th>刊登期間</th>
+                        <th>計價方式</th>
+                        <th>
+                            刊登廣告總額
+                            <br>
+                            <span class="font-grey">每月/日金額</span>
+                        </th>
+                        <th>
+                            點擊量
+                            <br>
+                            <span class="font-grey">點擊廣告總額</span>
+                        </th>
+                        <th>
+                            瀏覽人次
+                            <br>
+                            <span class="font-grey">瀏覽廣告總額</span>
+                        </th>
+                        <th>編輯</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < adsCustomizeAccountSet.Count(); i++)
+                    {
+                        var item = adsCustomizeAccountSet.ElementAt(i);
+
+                        string inDurationBgColor = "bg-blue-lighten-5";
+                        string latestBgColor = "bg-green-lighten-5";
+
+                        string colorClass = string.Empty;
+
+                        if (item.SpecialRow == AdsCustomizeAccountSet.SpecialRowType.InDuration)
+                        {
+                            colorClass = $" class={inDurationBgColor}";
+                        }
+                        else if (item.SpecialRow == AdsCustomizeAccountSet.SpecialRowType.Latest)
+                        {
+                            colorClass = $" class={latestBgColor}";
+                        }
+
+                        string IssueStartStr = item.IssueStart.HasValue ? item.IssueStart.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+                        string IssueEndStr = item.IssueEnd.HasValue ? item.IssueEnd.ToString("yyyy/MM/dd HH:mm") : string.Empty;
+
+                        string IssueDate = "";
+                        if (item.IssueStart.ToString("yyyy/MM/dd") == item.IssueEnd.ToString("yyyy/MM/dd"))
+                        {
+                            IssueDate = $@"{item.IssueStart.ToString("yyyy/MM/dd")}<br />{item.IssueStart.ToString("HH:mm")} ~ {item.IssueEnd.ToString("HH:mm")}";
+                        }
+                        else
+                        {
+                            IssueDate = $"{IssueStartStr} ~ {IssueEndStr}";
+                        }
+
+                        @*<tr data-id="@item.ID" @colorClass>*@
+                        <tr data-id="@item.ID">
+                            <td class="text-L">
+                                <p class="font-grey font-sm">
+                                    @Html.Raw(IssueDate)
+                                </p>
+                            </td>
+                            <td class="text-L">
+                                <p class="font-grey font-sm">
+                                    @Html.Raw(item.IssueSetTypeName)
+
+                                </p>
+                            </td>
+                            <td class="text-L">
+                                @if (item.IssueSetType != IssueSetType.Click)
+                                {
+                                    string periodCurrency = string.Empty;
+                                    //item.CostOfPeriodCurrency
+                                    if ((item.CostOfPeriodCurrency ?? "").ToLower() == "ntd")
+                                    {
+                                        periodCurrency = "NT$";
+                                    }
+                                    else if ((item.CostOfPeriodCurrency ?? "").ToLower() == "usd")
+                                    {
+                                        periodCurrency = "US$";
+                                    }
+                                    string price = string.Empty;
+                                    if (item.CostOfPeriod.HasValue)
+                                    {
+                                        long cost = Convert.ToInt64(item.CostOfPeriod);
+                                        if (cost > 0)
+                                        {
+                                            price = string.Format($"{periodCurrency} {{0}}", cost.ToString("#,0"));
+                                        }
+                                    }
+                                    if (!string.IsNullOrWhiteSpace(price))
+                                    {
+                                        <text>
+                                            @price
+                                            <p class="font-grey font-sm">
+                                                @if (item.GetCostPerMonth != 0 && !item.IsDurationBelowOneMonth())
+                                                {
+                                                    <text>
+                                                        @periodCurrency @item.GetCostPerMonth.ToString("#,0") /月
+                                                        <br>
+                                                    </text>
+                                                }
+                                                @if (item.GetCostPerDays != 0 && !item.IsDurationBelowOneDay())
+                                                {
+                                                    <text>
+                                                        @periodCurrency @item.GetCostPerDays.ToString("#,0") /日
+                                                        <br>
+                                                    </text>
+                                                }
+                                            </p>
+                                        </text>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <a class="font-black" href="@Url.Action("Detail", "AdvertisementStatistics", new { startDate = item.IssueStart.ToString("yyyy/MM/dd"), endDate = item.IssueEnd.ToString("yyyy/MM/dd"), type = DetailType.Click, previousPage = HttpContext.Current.Request.Url.AbsoluteUri, AdsCustomId = Model.ID })">
+                                    @(item.QueryClicks.HasValue ? Convert.ToInt64(item.QueryClicks).ToString("#,0") : "0" )
+                                </a>
+                                <p class="font-grey font-sm">
+                                    @if (item.IssueSetType.ToLower() == "click")
+                                    {
+                                        string currency = string.Empty;
+                                        if (item.BillingByClickCurrency.ToLower() == "ntd")
+                                        {
+                                            currency = "NT$";
+                                        }
+                                        else if (item.BillingByClickCurrency.ToLower() == "usd")
+                                        {
+                                            currency = "US$";
+                                        }
+                                        long billingByClick = Convert.ToInt64(item.BillingByClick ?? 0);
+                                        long clicks = Convert.ToInt64(item.QueryClicks ?? 0);
+
+                                        @($"{currency}{(clicks * billingByClick).ToString("#,0")}")
+                                    }
+                                </p>
+                            </td>
+                            <td>
+                                <a class="font-black" href="@Url.Action("Detail", "AdvertisementStatistics", new { startDate = item.IssueStart.ToString("yyyy/MM/dd"), endDate = item.IssueEnd.ToString("yyyy/MM/dd"), type = DetailType.Browsing, previousPage = HttpContext.Current.Request.Url.AbsoluteUri, AdsCustomId = Model.ID })">
+                                    @(item.QueryVisits.HasValue ? Convert.ToInt64(item.QueryVisits).ToString("#,0") : "0" )
+                                </a>
+                                <p class="font-grey font-sm">
+                                    @if (item.IssueSetType.ToLower() == "click")
+                                    {
+                                        string currency = string.Empty;
+                                        if (item.BillingByBrowseCurrency.ToLower() == "ntd")
+                                        {
+                                            currency = "NT$";
+                                        }
+                                        else if (item.BillingByBrowseCurrency.ToLower() == "usd")
+                                        {
+                                            currency = "US$";
+                                        }
+                                        int billingByBrowse = item.BillingByBrowse ?? 0;
+                                        long browses = Convert.ToInt64(item.QueryVisits ?? 0);
+
+                                        @($"{currency}{(browses * billingByBrowse).ToString("#,0")}")
+                                    }
+                                </p>
+                            </td>
+                            <td class="icon edit">
+                                <a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("AdsCustomizeAccountSetEdit",new { AdsCustomize_ID= Model.ID,id=item.ID })">
+                                    <i class="cc cc-edit-o"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(m => m.IsIssue, new { @Id = "published" })
+                    <label for="published">刊登</label>
+                </div>
+            </div>
+            <a id="btnCancel" class="btn-cancel" href="@Url.Action("AdsCustomizeIndex",new {siteId = siteId, menuId = menuId, Advertisement_ID = Advertisement_ID })"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            @Html.HiddenFor(m => m.ID)
+            @Html.HiddenFor(m => m.Sort)
+            @Html.HiddenFor(m => m.SiteID, new { @Value = siteId })
+            @Html.HiddenFor(m => m.MenuID, new { @Value = menuId })
+            @Html.HiddenFor(m => m.ClickEvent)
+            @Html.HiddenFor(m => m.Advertisers_ID)
+            @*@Html.Hidden("AdvertiserId", AdvertiserData.ID == 0 ? string.Empty : AdvertiserData.ID.ToString())*@
+        </div>
+    </form>
+</div>

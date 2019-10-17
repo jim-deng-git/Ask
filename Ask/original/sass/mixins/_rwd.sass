@@ -1,0 +1,51 @@
+=breakpoint($point)
+    @if $point == zone-wide
+        @media only screen and (max-width: 1599px)
+            @content
+
+    @if $point == desktop
+        @media only screen and (min-width: 1500px)
+            @content
+
+    @if $point == pad-up
+        @media only screen and (min-width: 1025px)
+            @content
+
+    @if $point == zone-nb
+        @media only screen and (max-width: 1440px)
+            @content
+
+    @if $point == fixedSide
+        @media only screen and (max-width: 1400px)
+            @content
+
+    @if $point == zone-nb-small
+        @media only screen and (max-width: 1280px)
+            @content
+
+    @if $point == zone-base
+        @media only screen and (max-width: 1179px)
+            @content
+
+    @if $point == pad-landscape
+        @media only screen and (max-width: 1024px)
+            @content
+
+    @if $point == ipad-pro-portrait
+        @media only screen and (min-device-width : 1024px) and (max-device-width : 1024px) and (min-device-height : 1366px) and (max-device-height : 1366px) and (min-width: 1024px) and (max-width: 1024px)
+            @content
+
+    @if $point == ipad-pro-landscape
+        @media only screen and (min-device-width : 1024px) and (max-device-width : 1024px) and (min-device-height : 1366px) and (max-device-height : 1366px) and (min-width: 1366px) and (max-width: 1366px)
+            @content
+
+    @if $point == pad-portrait
+        @media only screen and (max-width: 800px)
+            @content
+    @else if $point == mobile-landscape
+        @media only screen and (max-width: 580px)
+            @content
+
+    @else if $point == mobile
+        @media only screen and (max-width: 420px)
+            @content

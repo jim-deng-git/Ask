@@ -1,0 +1,345 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@using System.Web.Script.Serialization;
+@model List<AdsStatisticsDetailViewModel>
+@{
+    ViewBag.Title = "廣告點擊量";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    AdsDetailStatisticsSearchModel search     = ViewBag.Search;
+    DateTime startDate                  = ViewBag.StartDate;
+    DateTime endDate                    = ViewBag.EndDate;
+    Pagination pagination               = ViewBag.Pagination;
+
+    if (search.StartDate != DateTime.MinValue && search.EndDate != DateTime.MinValue)
+    {
+        startDate = search.StartDate;
+        endDate = search.EndDate;
+    }
+
+    string orderClass = !search.IsAsc? "cc-chevron-up" : "cc-chevron-down";
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    <script type="text/javascript" src="Script/base/admin-slideTabs.js"></script>
+    <link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" type="text/css" />
+}
+@section Script {
+    @BundleConfig.Component()
+    @BundleConfig.HighCharts()
+    <script type="text/javascript">
+        $.ajaxSettings.traditional = true; @* 此設定主要功能：讓 chgchart 傳遞參數 advertisers 時可以傳遞陣列 *@
+        var lines = [];
+        var dateArray = [];
+        var advertisers = [];
+
+        $(function () {
+            $('input[name="advertisers[]"]').each(function () {
+                advertisers.push($(this).val());
+            });
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            getLinesThenDrawChart();
+        });
+
+        function setAdvertisersAndSubmit(passedAdvertisers) {
+            setAdvertisers(passedAdvertisers);
+            submitForm();
+        }
+
+        function submitForm() {
+            $('form#pass-param').submit();
+        }
+
+        function setAdvertisers(passedAdvertisers) {
+            advertisers = passedAdvertisers;
+
+            var advertiserData = '';
+            advertisers.forEach(function (item) {
+                advertiserData += `<input type="hidden" value="${item}" name="advertisers[]" />`;
+            });
+            $('form#pass-param div').html(advertiserData);
+        }
+
+        function getLinesThenDrawChart() {
+            return $.ajax({
+                url: '@Url.Action("GetPlotLines", "AdvertisementStatistics")',
+                data: {
+                    startDate: $('.startAnalyticsDate').val(),
+                    endDate: $('.endAnalyticsDate').val()
+                },
+                method: 'GET',
+                success: function (response) {
+                    dateArray = getDates(new Date($('.startAnalyticsDate').val()), new Date($('.endAnalyticsDate').val()));
+                    data = JSON.parse(response);
+                    var retValue = [];
+
+                    data.forEach(function (item) {
+                        item.LabelDate = new Date(parseInt(item.LabelDate.replace("/Date(", "").replace(")/", ""), 10));
+                        var retItem = {};
+                        retItem.color = item.LabelColor,
+                        retItem.width = 2,
+                        retItem.value = dateArray.findIndex(i => new Date(i).valueOf() == item.LabelDate.valueOf()),
+                        retItem.label = {
+                            text: item.Title,
+                            verticalAlign: 'top',
+                            textAlign: 'center',
+                            rotation: 0,
+                            y: -20,
+                        }
+                        retValue.push(retItem);
+                    });
+
+                    lines = retValue;
+                    chgchart();
+                },
+            });
+        }
+
+        const numberWithCommas = function (x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function chgchart() {
+            $.ajax({
+                url: '@Url.Action("GetChart")',
+                data: {
+                    startTime: $('.startAnalyticsDate').val(),
+                    endTime: $('.endAnalyticsDate').val(),
+                    advertisers: advertisers,
+                },
+                method: 'GET',
+                success: function (response) {
+                    var statistics = JSON.parse(response);
+                    var clickData = [];
+                    var browseData = [];
+                    var clickCount = 0;
+                    var browseCount = 0;
+
+                    for (var i = 0; i < dateArray.length; i++) {
+                        var item = statistics.find(x => new Date(x.dt).valueOf() == new Date(dateArray[i]).valueOf());
+
+                        if (!item) {
+                            clickData.push(0);
+                            browseData.push(0);
+                        } else {
+                            clickData.push(item.ClickCount);
+                            browseData.push(item.BrowseCount);
+                            clickCount += item.ClickCount;
+                            browseCount += item.BrowseCount;
+                        }
+                    }
+
+                    $('#click-count').text(numberWithCommas(clickCount));
+                    $('#browse-count').text(numberWithCommas(browseCount));
+
+                    $('.chart-line').highcharts({
+                        chart: {
+                            height: 500,
+                            /*style: {
+                                padding: '30px 0 20px'
+                            },*/
+                            type: 'line',
+                            spacingTop: 50
+                        },
+                        title: {
+                            text: null,
+                        },
+                        subtitle: {
+                            text: null,
+                        },
+                        /*legend: {
+                            enabled: false
+                        },*/
+                        xAxis: {
+                            title: {
+                                text: '日期',
+                                margin: 20
+                            },
+                            categories: dateArray,
+                            tickmarkPlacement: 'on',
+                            labels: {
+                                style: {
+                                    fontSize: '18px'
+                                },
+                            },
+                            plotLines: lines,
+                        },
+                        yAxis: {
+                            min: 0,
+                            //max: 1200,
+                            tickInterval: 200,
+                            title: {
+                                text: '人數',
+                                rotation: 0,
+                                align: 'high',
+                                offset: 0,
+                                y: -20,
+                                x: -15
+                            },
+                            //ceiling: 1200,
+                            //categories: ['0', '200', '400', '600', '800', '1000', '1200'],
+                            labels: {
+                                style: {
+                                    fontSize: '18px'
+                                }
+                            },
+                            maxPadding: 0.05
+                        },
+                        series: [{
+                            name: '廣告點擊量',
+                            data: clickData,
+                            marker: {
+                                enabled: false
+                            },
+                            // lineWidth:5,
+                            color: '#cccccc',
+                            zIndex: 2
+                        },
+                        {
+                            name: '廣告瀏覽量',
+                            data: browseData,
+                            marker: {
+                                enabled: false
+                            },
+                            color: '#008000'
+                        }
+                        ]
+                    });
+                },
+            });
+        }
+
+        function getDates(startDate, endDate) {
+            var dates = [],
+                currentDate = startDate,
+                addDays = function (days) {
+                    var date = new Date(this.valueOf());
+                    date.setDate(date.getDate() + days);
+                    return date;
+                };
+            while (currentDate <= endDate) {
+                dates.push(formatDate(currentDate));
+                currentDate = addDays.call(currentDate, 1);
+            }
+            return dates;
+        };
+
+        function formatDate(date) {
+            return date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate();
+        }
+
+        function setChartDate(startDate, endDate) {
+            $('input.startAnalyticsDate').val(startDate);
+            $('input.endAnalyticsDate').val(endDate);
+            $("#spDateRange").html($('input.startAnalyticsDate').val() + " - " + $('input.endAnalyticsDate').val())
+        }
+
+        function setChartDateAndSubmit(startDate, endDate) {
+            setChartDate(startDate, endDate);
+            submitForm();
+        }
+
+        function setOrder() {
+            var currentIsAsc = $('input[name="isAsc"]').val();
+            var isAsc = currentIsAsc != 'false' ? 0 : 1;
+
+            $('input[name="isAsc"]').val(isAsc ? 'true' : 'false');
+        }
+
+        function setOrderAndSubmit() {
+            setOrder();
+            submitForm();
+        }
+    </script>
+}
+<div class="groove groove-1">
+    <h1 class="title-admin-page">@(ViewBag.AdsCustomizeDescription)點擊量</h1>
+    <div class="analytics-control-bar">
+        <div class="selectDateRange">
+            <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title=""><span id="spDateRange">@startDate.ToString("yyyy/MM/dd") - @endDate.ToString("yyyy/MM/dd")</span> <i class="cc cc-chevron-down"></i></a>
+            <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                <li>
+                    <iframe class="dropdownIframe" src="@Url.Action("DateSelector", new { area = "Backend", startDate = startDate, endDate = endDate })" frameborder="0"></iframe>
+                </li>
+            </ul>
+            <form method="post" id="pass-param">
+                <input type="hidden" value="@(search.IsAsc? "true": "false")" name="isAsc" />
+                <input type="hidden" value="@startDate.ToString("yyyy/MM/dd")" class="startAnalyticsDate" name="startDate" />
+                <input type="hidden" value="@endDate.ToString("yyyy/MM/dd")" class="endAnalyticsDate" name="endDate" />
+                <input type="hidden" value="@search.AdsCustomId" name="AdsCustomId" />
+            </form>
+        </div>
+        <div class="selectCreator">
+            <a href="@Url.Action("CustomLabelLine")" class="btn-grey-o openEdit-m"><i class="cc cc-edit"></i>自訂標線</a>
+            <a class="btn-grey-o" href="@Url.Action("ExportDetail")" target="_blank" title=""><i class="cc cc-playlist-play"></i>匯出統計</a>
+            @*<a class="btn-grey-o dropdown-button" href="javascript:" title="" data-activates="dropdown2"><i class="cc cc-playlist-play"></i>匯出統計</a>
+            <ul id="dropdown2" class="dropdown-content btnStyle">
+                <li><a class="btn-grey-darken-4-o transparent" href="javascript:"><i class="cc cc-file-o"></i>日報表</a></li>
+                <li><a class="btn-grey-darken-4-o transparent" href="javascript:"><i class="cc cc-file-o"></i>週報表</a></li>
+                <li><a class="btn-grey-darken-4-o transparent" href="javascript:"><i class="cc cc-file-o"></i>月報表</a></li>
+            </ul>*@
+        </div>
+    </div>
+    <div class="charts">
+        <div class="chart-line highcharts"></div>
+    </div>
+    <div class="chartContent">
+        <span>廣告點擊量</span>
+        <a href="#" style="color: #cccccc;"><span id="click-count">0</span></a>
+        <span>廣告瀏覽量</span>
+        <a href="#" style="color: #008000;"><span id="browse-count">0</span></a>
+    </div>
+    <div class="card shadow-none m-T-12">
+        <table class="fixTable">
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>點擊廣告時間<a href="javascript:" onclick="setOrderAndSubmit()"><i class="cc @orderClass"></i><!-- <i class="cc cc-chevron-up"></i> --></a></th>
+                    <th>廣告出現位置</th>
+                    <th>Session ID</th>
+                    <th>裝置 ID</th>
+                    <th>會員姓名/帳號</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (AdsStatisticsDetailViewModel item in Model)
+                {
+                    <tr>
+                        <td class="sort">1</td>
+                        <td class="time">@item.RecordTime.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>@item.PageTitle</td>
+                        <td class=""><a href="#">@item.SessionID</a></td>
+                        <td><a href="#">@item.DeviceID</a></td>
+                        <td class="text-L">
+                            <div class="hover-show">
+                                <a class="openCenterEdit-m" href="#">@item.MemberName<br />@item.MemberEmail</a>
+                                <a class="openCenterEdit-m btn-grey-darken-4-o transparent p-none hide" href="#"><i class="cc cc-user-o font-hg m-R-none"></i></a>
+                            </div>
+                        </td>
+                        <td>@item.IP</td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+        <div class="alert transparent">
+            <i class="cc cc-attention"></i>
+            <div>
+                費用估算 = 每日費用 x 分析期間日數，其中，每日費用 = 刊登費用 ／刊登期間日數，意即將刊登費用平攤至每日中。CP值 = 點擊量 / 費用估算。
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,1626 @@
+﻿@model WorkV3.Models.MemberShipModels
+@{ 
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+}
+@{
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+    long siteID = ViewBag.SiteID;
+    long menuID = ViewBag.MenuID;
+    long pageID = ViewBag.PageID;
+    WorkV3.Areas.Backend.Models.AgreeStatementSetModels AgreeSetting = (WorkV3.Areas.Backend.Models.AgreeStatementSetModels)ViewBag.AgreeSetting;
+    var ListIdentityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.IdentityCategories;
+    var ListFavorityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.FavorityCategories;
+    var ListCareerCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.CareerCategories;
+    var ListMarriageCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.MarriageCategories;
+    var ListEducationCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.EducationCategories;
+    var ListChildrenStatusCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.ChildrenStatusCategories;
+    var ListMilitaryServiceCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.MilitaryServiceCategories;
+    //var EpaperTypeList = (List<WorkV3.Areas.Backend.Models.EpaperTypeModel>)ViewBag.EpaperTypeList;
+    //WorkV3.Areas.Backend.Models.EpaperSettingModel epaperSettingModel = (WorkV3.Areas.Backend.Models.EpaperSettingModel)ViewBag.EpaperSettingModel;
+    WorkV3.Areas.Backend.Models.MemberShipRegSetModels regSetModel = (WorkV3.Areas.Backend.Models.MemberShipRegSetModels)ViewBag.MemberSetModel;
+    string rootUrl = Href("~/");
+    string adddressOptionType = "Global";
+    string PermanentAdddressOptionType = "Global";
+
+    string uploadUrl = ViewBag.UploadVPath;
+
+    bool CareerIsNeedVal = false, BankIsNeedVal = false, EducationIsNeedVal = false;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+<form id="editForm" action="@Url.Action("Index", "Home", new { SiteSN = siteSn, PageSN = pageSn, SiteID=siteID })" method="post" enctype="multipart/form-data">
+    <div class="card-member loginPage register" data-style="1">
+        <div class="login">
+            <div class="login-logo">會員註冊</div>
+            <div class="login-box">
+                <div class="left-box">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-2">
+                                <div class="title">帳號<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <input type="text" id="Account" name="Account" value="@Model.Account" class="validate[required]" maxlength="100" placeholder="" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-2">
+                                <div class="title">密碼<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <input type="password" id="Password" name="Password" value="@Model.Password" class="validate[required]" maxlength="20" placeholder="" />
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="title">確認密碼<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <input type="password" id="Password2" name="Password2" value="@Model.Password" class="validate[required,equals[Password]]" maxlength="20" placeholder="" />
+                                </div>
+                            </div>
+                        </li>
+                        <li class="continuous-column">
+                            @if (regSetModel != null && regSetModel.RegColumnSets != null)
+                            {
+                                for (int i = 0; i < regSetModel.RegColumnSets.Count; i++)
+                                {
+                                    WorkV3.Areas.Backend.Models.MemberShipRegColumnSetModels colModel = regSetModel.RegColumnSets[i];
+                                    if (colModel.ColumnName == "Photo" || colModel.ColumnName == "SerialNumber" || colModel.ColumnName == "Point")
+                                    {
+                                        continue;
+                                    }
+                                    if (colModel.IsOpen)
+                                    {
+                                        if (colModel.ColumnName == "Sex")
+                                        {
+                                            <div class="col-4">@* cc add col-2 20180826 *@
+                                                <div class="title">
+                                                    性別
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="radio-box inline full" data-radioGroup="Sex">
+                                                    <div>
+                                                        <input class="with-gap" type="radio" value="男">
+                                                        <label>男</label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="with-gap" type="radio" value="女">
+                                                        <label>女</label>
+                                                    </div>
+                                                    <input type="hidden" id="Sex" name="Sex" value="@(string.IsNullOrWhiteSpace(Model.Sex) ? "男" : Model.Sex)" />
+                                                </div>
+                                            </div>@* cc add col-2 20180826 END *@
+                                        }
+                                        else if (colModel.ColumnName == "ENName")
+                                        {
+                                            <div class="col-3">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="ENName" name="ENName" value="@Model.ENName" class="@(!colModel.IsNeedValue?"":"validate[required]")" maxlength="50"/>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Birthday")
+                                        {
+                                            <div class="col-4">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="Birthday" name="Birthday" value="@Model.Birthday.ToString(dateTimeFmt)" class="datepickerBirth @(!colModel.IsNeedValue?"":"validate[required]")" maxlength="20" placeholder="" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if(colModel.ColumnName == "IDCard")
+                                        {
+                                            <div class="col-4">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="IDCardNum" name="IDCardNum" value="" class="@(!colModel.IsNeedValue?"":"validate[required] validate[funcCall[checkTwIDCard]]")" maxlength="20" placeholder="" />
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="radio-box inline full">
+                                                    <div>
+                                                        <input type="checkbox" name="IsPassportNo" id="IsPassportNo" value="true"/>
+                                                        <label for="IsPassportNo">護照號碼</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="IDCard" name="IDCard" value=""/>
+                                        }
+                                        else if (colModel.ColumnName == "BloodType")
+                                        {
+                                            <div class="col-6">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field inline small m-L-none">
+                                                    <select name="BloodType">
+                                                        <option value="" disabled selected></option>
+                                                        <option value="O">O</option>
+                                                        <option value="A">A</option>
+                                                        <option value="B">B</option>
+                                                        <option value="AB">AB</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Height")
+                                        {
+                                            <div class="col-6">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field inline small m-L-none">
+                                                    <input id="Height" name="Height" type="text" value="@Model.Height" class="@(!colModel.IsNeedValue?"":"validate[required]")">
+                                                    <span>cm</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Weight")
+                                        {
+                                            <div class="col-6">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field inline small m-L-none">
+                                                    <input id="Weight" name="Weight" type="text" value="@Model.Weight" class="@(!colModel.IsNeedValue?"":"validate[required]")">
+                                                    <span>kg</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Vision")
+                                        {
+                                            <div class="col-4">
+                                                <div class="title">裸視(左眼)
+                                                @if (colModel.IsNeedValue){
+                                                    <span class="required">*</span>
+                                                }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="NakedEyeL" value="" class="@(!colModel.IsNeedValue?"":"validate[required]")">
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="title">裸視(右眼)
+                                                @if (colModel.IsNeedValue){
+                                                    <span class="required">*</span>
+                                                }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="NakedEyeR" value="" class="@(!colModel.IsNeedValue?"":"validate[required]")">
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="title">近視度數(左眼)
+                                                @if (colModel.IsNeedValue){
+                                                    <span class="required">*</span>
+                                                }
+                                                </div>
+                                                <div class="input-field inline small m-L-none">
+                                                    <input type="text" id="NegativeDioptersL" value="" class="@(!colModel.IsNeedValue?"":"validate[required]")">
+                                                    <span>度</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="radio-box inline full">
+                                                    <input type="checkbox" id="eyeL" />
+                                                    <label for="eyeL">無近視</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="title">近視度數(右眼)
+                                                @if (colModel.IsNeedValue){
+                                                    <span class="required">*</span>
+                                                }
+                                                </div>
+                                                <div class="input-field inline small m-L-none">
+                                                    <input type="text" id="NegativeDioptersR" value="" class="@(!colModel.IsNeedValue?"":"validate[required]")">
+                                                    <span>度</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="radio-box inline full">
+                                                    <input type="checkbox" id="eyeR" />
+                                                    <label for="eyeR">無近視</label>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="Vision" name="Vision" value="">
+                                        }
+                                        else if (colModel.ColumnName == "FacebookURL")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="FacebookURL" name="FacebookURL" value="@Model.FacebookURL" class="@(!colModel.IsNeedValue?"":"validate[required]")" maxlength="200" />
+                                                </div>
+                                            </div>
+                                        }
+                                        //else if (colModel.ColumnName == "OrderEpaper")  //Joe 20190923無電子報功能-註解
+                                        //{
+                                        //    if (epaperSettingModel.EpaperOpenToMember)
+                                        //    {
+                                        //        string selectTypeID = "";
+                                        //        foreach (WorkV3.Areas.Backend.Models.EpaperTypeModel epaperTypeModel in EpaperTypeList)
+                                        //        {
+                                        //            if (!epaperTypeModel.Status)
+                                        //            {
+                                        //                continue;
+                                        //            }
+                                        //            bool IsSelectType = false;
+                                        //            if (Model.OrderEpaperTypeList != null && Model.OrderEpaperTypeList.Count() > 0)
+                                        //            {
+                                        //                var orderTypeList = Model.OrderEpaperTypeList.Where(p => p != null && p.EpaperType_ID == epaperTypeModel.ID);
+                                        //                if (orderTypeList != null && orderTypeList.Count() > 0)
+                                        //                {
+                                        //                    IsSelectType = true;
+                                        //                    selectTypeID += epaperTypeModel.ID.ToString() + ";";
+                                        //                }
+                                        //            }
+
+                                        //            <div class="col-1">@* cc change class to col-1 20180502 *@
+                                        //                <div class="title">
+                                        //                    繼續訂閱「@epaperTypeModel.Name 電子報」
+                                        //                </div>
+                                        //                <div class="radio-box inline">@* cc add tag class="radio-box inline" 20180826 *@
+                                        //                    <div>
+                                        //                        <input class="with-gap" type="radio" value="True" name="OrderEpaperType.@epaperTypeModel.ID" id="OrderEpaperType_@(epaperTypeModel.ID)_True" @(Model != null ? (IsSelectType ? "checked" : "") : "") />
+                                        //                        <label for="OrderEpaperType_@(epaperTypeModel.ID)_True">訂閱中</label>
+                                                            @*</div>
+                                                            <div>
+                                                                <input class="with-gap" type="radio" value="False" name="OrderEpaperType.@epaperTypeModel.ID" id="OrderEpaper_@(epaperTypeModel.ID)_False" @(Model != null ? (IsSelectType ? "" : "checked") : "") />
+                                                                <label for="OrderEpaper_@(epaperTypeModel.ID)_False">取消訂閱</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-value inline">
+                                                            <a class="m-R-4 font-xs" href="@Url.RouteUrl("Default",new { action= "CleanIndex", controller= "Home", SiteSN= ViewBag.SiteSN , PageSN = "EpaperContent", showCurrent=true, TypeID=epaperTypeModel.ID})" target="_blank">最新電子報</a>
+                                                            <a class="font-xs" href="@Url.Action("Index","Home",new { PageSN="Epaper"})#@epaperTypeModel.ID" target="_blank">過往電子報</a>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                selectTypeID = selectTypeID.Trim(';');
+                                                <input type="hidden" id="OrderEpaperTypeList" name="OrderEpaperTypeList" value="@selectTypeID" />
+                                            }
+                                        }*@
+                                        else if (colModel.ColumnName == "Email")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @{
+                                                        bool IsEmailRequire = false;
+                                                    }
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        IsEmailRequire = true;
+                                                        <text>
+                                                        <span class="required">*</span>
+                                                    </text>
+                                                    }
+                                                </div>
+                                                <div class="input-field ">
+                                                    <input type="text" id="Email" name="Email" value="@Model.Email" class="@(!IsEmailRequire ? "validate[custom[email]]" : "validate[required,custom[email]]")" maxlength="120" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "EmergencyEmail")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @{
+                                                        bool IsEmergencyEmailRequire = false;
+                                                    }
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        IsEmergencyEmailRequire = true;
+                                                        <text>
+                                                            <span class="required">*</span>
+                                                        </text>
+                                                    }
+                                                </div>
+                                                <div class="input-field ">
+                                                    <input type="text" id="EmergencyEmail" name="EmergencyEmail" value="@Model.EmergencyEmail" class="@(!IsEmergencyEmailRequire ? "validate[custom[email]]" : "validate[required,custom[email]]")" maxlength="120" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Address")
+                                        {
+                                            <div class="col-1" id="AddresColumns">@* cc change class to col-1 20180502*@
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @{
+                                                        bool IsAddressRequire = false;
+                                                    }
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        IsAddressRequire = true;
+                                                        <text>
+                                                            <span class="required">*</span>
+                                                        </text>
+                                                    }
+                                                </div>
+                                                @if (colModel.OtherOptionList != null)
+                                                {
+                                                    var optionModel = colModel.OtherOptionList.Where(p => p.Selected);
+                                                    if (optionModel != null)
+                                                    {
+                                                        adddressOptionType = optionModel.First().Value;
+                                                        <text>
+                                                            <div id="div_Address"></div>
+                                                        </text>
+                                                    }
+                                                }
+                                                <input type="hidden" id="Regions" name="Regions" value=""/>
+                                                <div class="col-1">
+                                                    <div class="input-field">
+                                                        <input placeholder="" id="Address" type="text" name="Address" value="@Model.Address" />
+                                                    </div>
+                                                </div>
+                                            </div>@* cc change div結尾 20180502*@
+                                        }
+                                        else if (colModel.ColumnName == "PermanentAddress")
+                                        {
+                                            <div class="col-1" id="PermanentAddresColumns">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @{
+                                                        bool IsAddressRequire = false;
+                                                    }
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        IsAddressRequire = true;
+                                                        <text>
+                                                            <span class="required">*</span>
+                                                        </text>
+                                                    }
+                                                </div>
+                                                <div class="constant">
+                                                    @if (colModel.OtherOptionList != null)
+                                                    {
+                                                        var optionModel = colModel.OtherOptionList.Where(p => p.Selected);
+                                                        if (optionModel != null)
+                                                        {
+                                                            PermanentAdddressOptionType = optionModel.First().Value;
+                                                            <text>
+                                                                <div id="div_PermanentAddress"></div>
+                                                            </text>
+                                                        }
+                                                    }
+                                                    <input type="hidden" id="PermanentRegions" name="PermanentRegions" value="" />
+                                                    <div class="col-1 multiple">
+                                                        <div class="constent">
+                                                            <div class="input-field longer">
+                                                                <input placeholder="" id="PermanentAddress" name="PermanentAddress" type="text" value="@Model.PermanentAddress" />
+                                                            </div>
+                                                            <div class="radio-box inline">
+                                                                <div>
+                                                                    <input type="checkbox" id="sameAddress" name="sameAddress" value="true" />
+                                                                    <label for="sameAddress">同通訊地址</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Career")
+                                        {
+                                            <div class="col-2 multiple">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                        CareerIsNeedVal = true;
+                                                    }
+                                                </div>
+                                                <div class="constant">
+                                                    <div class="input-field">
+                                                        <select id="Career" name="Career">
+                                                            <option value="" disabled selected>請選擇職業</option>
+                                                            @if (ListCareerCategories != null)
+                                                            {
+                                                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListCareerCategories)
+                                                                {
+                                                                    if (cate.ShowStatus)
+                                                                    {
+                                                                        <option value="@cate.ID">@cate.Title</option>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="radio-box inline">
+                                                        <div>
+                                                            <input type="checkbox" id="Unemployed" name="Unemployed" value="true"/>
+                                                            <label for="Unemployed">待業中</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Company")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="Company" name="Company" value="@Model.Company" class="@(!colModel.IsNeedValue?"":"validate[required]")" maxlength="200" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Marriage")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="radio-box inline full">
+                                                    @if (ListMarriageCategories != null)
+                                                    {
+                                                        foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListMarriageCategories)
+                                                        {
+                                                            if (cate.ShowStatus)
+                                                            {
+                                                                <div>
+                                                                    @{
+                                                                        string isChecked = "";
+                                                                        if (!string.IsNullOrEmpty(Model.Marriage))
+                                                                        {
+                                                                            if (Model.Marriage == cate.ID.ToString())
+                                                                            {
+                                                                                isChecked = "checked";
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    <input class="with-gap @(!colModel.IsNeedValue?"":"validate[required]")" name="Marriage" type="radio" value="@cate.ID" id="Marriage_@cate.ID" @isChecked>
+                                                                    <label for="Marriage_@cate.ID">@cate.Title</label>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        else if(colModel.ColumnName == "ChildrenStatus")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="radio-box inline full">
+                                                    @if (ListChildrenStatusCategories != null)
+                                                    {
+                                                        foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListChildrenStatusCategories)
+                                                        {
+                                                            if (cate.ShowStatus)
+                                                            {
+                                                                <div>
+                                                                    @{
+                                                                        string isChecked = "";
+                                                                        if (!string.IsNullOrEmpty(Model.ChildrenStatus))
+                                                                        {
+                                                                            if (Model.ChildrenStatus == cate.ID.ToString())
+                                                                            {
+                                                                                isChecked = "checked";
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    <input class="with-gap @(!colModel.IsNeedValue?"":"validate[required]")" name="ChildrenStatus" type="radio" value="@cate.ID" id="ChildrenStatus_@cate.ID" @isChecked>
+                                                                    <label for="ChildrenStatus_@cate.ID">@cate.Title</label>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        else if(colModel.ColumnName == "MilitaryService")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="radio-box inline full">
+                                                    @if (ListMilitaryServiceCategories != null)
+                                                    {
+                                                        foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListMilitaryServiceCategories)
+                                                        {
+                                                            if (cate.ShowStatus)
+                                                            {
+                                                                <div>
+                                                                    @{
+                                                                        string isChecked = "";
+                                                                        if (!string.IsNullOrEmpty(Model.MilitaryService))
+                                                                        {
+                                                                            if (Model.MilitaryService == cate.ID.ToString())
+                                                                            {
+                                                                                isChecked = "checked";
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    <input class="with-gap @(!colModel.IsNeedValue?"":"validate[required]")" name="MilitaryService" type="radio" value="@cate.ID" id="MilitaryService_@cate.ID" @isChecked>
+                                                                    <label for="MilitaryService_@cate.ID">@cate.Title</label>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    }
+                                                    <div id="RetiredDate" style="display: none;">
+                                                        <span>退伍於民國</span>
+                                                        <div class="input-field inline small m-L-none">
+                                                            <input name="MilitaryService_Y" type="text" value="@Model.MilitaryService_Y">
+                                                        </div>
+                                                        <span>年</span>
+                                                        <div class="input-field inline small m-L-none">
+                                                            <input name="MilitaryService_M" type="text" value="@Model.MilitaryService_M">
+                                                        </div>
+                                                        <span>月</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Education")
+                                        {
+                                            <div class="col-4">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                        EducationIsNeedVal = true;
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <select id="Education" name="Education">
+                                                        <option value="" disabled selected>請選擇學歷</option>
+                                                            @if (ListEducationCategories != null)
+                                                            {
+                                                                foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListEducationCategories)
+                                                                {
+                                                                    if (cate.ShowStatus)
+                                                                    {
+                                                                        <option value="@cate.ID">@cate.Title</option>
+                                                                    }
+                                                                }
+                                                            }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "SchoolAndDepartment")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="SchoolAndDepartment" name="SchoolAndDepartment" value="@Model.SchoolAndDepartment" class="@(!colModel.IsNeedValue ? "" : "validate[required]" )" maxlength="200" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "ClubExp")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="ClubExp" name="ClubExp" value="@Model.ClubExp" class="@(!colModel.IsNeedValue ? " " : "validate[required]" )" maxlength="200" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "WorkExp")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="WorkExp" name="WorkExp" value="@Model.WorkExp" class="@(!colModel.IsNeedValue ? "" : "validate[required]" )" maxlength="200" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "AvailableTime")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    <input type="text" id="AvailableTime" name="AvailableTime" value="@Model.AvailableTime" class="@(!colModel.IsNeedValue ? "" : "validate[required]" )" maxlength="200" />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "BankAccount")
+                                        {
+                                            var Bank = WorkV3.Areas.Backend.Models.DataAccess.BankDAO.GetBanks().Where(p => p.ParentID == null);
+                                            <div class="col-1 multiple">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                        BankIsNeedVal = true;
+                                                    }
+                                                </div>
+                                                <div class="constant">
+                                                    <div class="input-field">
+                                                        <select id="BankNum">
+                                                            <option value="" disabled selected>請選擇銀行</option>
+                                                            @foreach (var item in Bank)
+                                                            {
+                                                                <option value="@item.ID">@item.Name</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="input-field longer">
+                                                        <input type="text" id="Bank_Account" value="@Model.BankAccount" class="@(!colModel.IsNeedValue ? "" : "validate[required]" )" maxlength="200" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="BankAccount" name="BankAccount" value="">
+                                        }
+                                        else if (colModel.ColumnName == "BankBook")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">銀行存摺(正面照片)</div>
+                                                <div class="input-field">
+                                                    <input type="file" id="fBankBook" name="fBankBook" />
+                                                    <input type="hidden" id="BankBook" name="BankBook" value='@(string.IsNullOrWhiteSpace(Model.BankBook) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.BankBook }))' />
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "IDcardPhoto")
+                                        {
+                                            <div class="col-1">
+                                                <div class="colConfig">
+                                                    <div class="col-2">
+                                                        <div class="title">身分證(正面照片)</div>
+                                                        <div class="input-field">
+                                                            <input type="file" id="fIDcardPhoto_Front" name="fIDcardPhoto_Front" />
+                                                            <input type="hidden" id="IDcardPhoto_Front" name="IDcardPhoto_Front" value='@(string.IsNullOrWhiteSpace(Model.IDcardPhoto) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.IDcardPhoto }))' />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <div class="title">身分證(背面照片)</div>
+                                                        <div class="input-field">
+                                                            <input type="file" id="fIDcardPhoto_Back" name="fIDcardPhoto_Back" />
+                                                            <input type="hidden" id="IDcardPhoto_Back" name="IDcardPhoto_Back" value='@(string.IsNullOrWhiteSpace(Model.IDcardPhoto) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.IDcardPhoto }))' />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "DailyPhoto")
+                                        {
+                                            <div class="col-2">
+                                                <div class="title">生活照</div>
+                                                <div id="divDailyPhotoUpload" class="input-field">
+                                                    <input type="file" id="DailyPhotoUpload" name="DailyPhotoUpload" data-field="imgs" />
+                                                </div>
+                                                <div class="alert transparent">
+                                                    <i class="cc cc-attention"></i>
+                                                    <div>
+                                                        可上傳多張生活照，請至少上傳三張可明顯辨識面容的照片。
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="DailyPhoto" name="DailyPhoto" value=""/>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Identity")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">@colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="radio-box inline full">
+                                                    @if (ListIdentityCategories != null)
+                                                    {
+                                                        foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListIdentityCategories)
+                                                        {
+                                                            if (cate.ShowStatus)
+                                                            {
+                                                                <div>
+                                                                    @{
+                                                                        string isChecked = "";
+                                                                        if (Model.IdenityTypeList != null && Model.IdenityTypeList.Count > 0)
+                                                                        {
+                                                                            var selectItem = Model.IdenityTypeList.Where(c => c.ID == cate.ID);
+                                                                            if (selectItem != null && selectItem.Count() > 0)
+                                                                            {
+                                                                                isChecked = "checked";
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    <input class="@(!colModel.IsNeedValue?"":"validate[required]")" name="IdentityList" type="checkbox" value="@cate.ID" id="identity_@cate.ID" @isChecked>
+                                                                    <label for="identity_@cate.ID">@cate.Title</label>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        else if (colModel.ColumnName == "Favority")
+                                        {
+                                            <div class="col-1">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        <span class="required">*</span>
+                                                    }
+                                                </div>
+                                                <div class="radio-box inline full">
+                                                    @if (ListFavorityCategories != null)
+                                                    {
+                                                        foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListFavorityCategories)
+                                                        {
+                                                            if (cate.ShowStatus)
+                                                            {
+                                                                <div>
+                                                                    @{
+                                                                        string isChecked = "";
+                                                                        if (Model.FavorityList != null && Model.FavorityList.Count > 0)
+                                                                        {
+                                                                            var selectItem = Model.FavorityList.Where(c => c.ID == cate.ID);
+                                                                            if (selectItem != null && selectItem.Count() > 0)
+                                                                            {
+                                                                                isChecked = "checked";
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    @*Ben remove img 1070307 taisounds custcom
+                                                                    <input class="with-item" name="FavorityList" type="checkbox" value="@cate.ID" id="favority_@cate.ID" @isChecked>
+                                                                    <img src="@(ViewBag.UploadVPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(cate.Icon).Img)" alt="">*@
+                                                                    <input class="@(!colModel.IsNeedValue?"":"validate[required]")" name="FavorityList" type="checkbox" value="@cate.ID" id="favority_@cate.ID" @isChecked >
+                                                                    <label for="favority_@cate.ID">@cate.Title</label>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                                <div class="alert transparent">
+                                                    <i class="cc cc-attention"></i>
+                                                    <div>
+                                                        正確地選擇喜好，有助於網站提供適合你的資訊
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="col-4">
+                                                <div class="title">
+                                                    @colModel.ColumnTitle
+                                                    @{
+                                                        bool IsRequire = false;
+                                                    }
+                                                    @if (colModel.IsNeedValue)
+                                                    {
+                                                        IsRequire = true;
+                                                        <text>
+                                                            <span class="required">*</span>
+                                                        </text>
+                                                    }
+                                                </div>
+                                                <div class="input-field">
+                                                    @{
+                                                        string generalInputValue = "";
+                                                        if (colModel != null && Model!= null)
+                                                        {
+                                                            var model_prop = Model.GetType().GetProperty(colModel.ColumnName);
+                                                            if (model_prop != null)
+                                                            {
+                                                                var propModelValue = model_prop.GetValue(Model, null);
+                                                                if (propModelValue != null)
+                                                                {
+                                                                    generalInputValue = model_prop.GetValue(Model, null).ToString();
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    <input type="text" id="@colModel.ColumnName" name="@colModel.ColumnName" value="@generalInputValue" class="@(!IsRequire?"":"validate[required]")" maxlength="100" placeholder="" />
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            }
+                        </li>
+                        @*<li>
+                            <div class="col-4">
+                                <div class="title">姓名<span class="required">*</span></div>
+                                <div class="input-field ">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" maxlength="40" />
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="radio-box inline" data-radioGroup="Sex">
+                                    <div>
+                                        <input class="with-gap" type="radio" value="男">
+                                        <label>男</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap" type="radio" value="女">
+                                        <label>女</label>
+                                    </div>
+                                    <input type="hidden" id="Sex" name="Sex" value="@(string.IsNullOrWhiteSpace(Model.Sex) ? "男" : Model.Sex)" />
+                                </div>
+                            </div>
+                        </li>
+                        <li style="display: none;">
+                            <div class="col-4">
+                                <div class="title">身分證字號</div>
+                                <div class="input-field ">
+                                    <input type="text" id="IDCard" name="IDCard" value="@Model.IDCard" maxlength="30" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-4">
+                                <div class="title">出生年月日</div>
+                                <div class="input-field ">
+                                    <input type="text" id="Birthday" name="Birthday" value="@Model.Birthday.ToString(dateTimeFmt)" class="datepickerBirth" maxlength="20" placeholder="" />
+                                </div>
+                            </div>
+                        </li>
+                        <li style="display: none;">
+                            <div class="col-4">
+                                <div class="title">電話</div>
+                                <div class="input-field ">
+                                    <input type="text" id="Phone" name="Phone" value="@Model.Phone" maxlength="30" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-4">
+                                <div class="title">手機</div>
+                                <div class="input-field ">
+                                    <input type="tel" id="Mobile" name="Mobile" class="mobile" value="@Model.Mobile" maxlength="13" />
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <div class="title">Email<span class="required">*</span></div>
+                                <div class="input-field ">
+                                    <input type="text" id="Email" name="Email" value="@Model.Email" class="validate[required,custom[email]]" maxlength="120" />
+                                    <!-- <div class="alert transparent ">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            提示文字。
+                                        </div>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </li>*@
+                        @if (pageCache.SiteSN.IndexOf("huashan") < 0)
+                        {
+                            <li>
+                                <div class="col-1">
+                                    <div class="title">推薦人邀請碼</div>
+                                    <div class="input-field inline short">
+                                        <input type="text" id="PushRecommandCode" name="PushRecommandCode" value="@Model.PushRecommandCode" maxlength="10" placeholder="" />
+                                    </div>
+                                    <span class="alert transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            推薦人邀請碼僅能填寫一次。<br />
+                                            輸入推薦人邀請碼，本站將不定期舉辦活動，可能獲得小禮物。
+                                        </div>
+                                    </span>
+                                </div>
+                            </li>
+                        }
+                        <!-- <li>
+                            <div class="col-1">
+                                <div class="title">地址</div>
+                                <div class="col-4">
+                                    <div class="input-field">
+                                        <select>
+                                            <option value="" selected>國家</option>
+                                            <option value="1">Option 1</option>
+                                            <option value="2">Option 2</option>
+                                            <option value="3">Option 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-field">
+                                        <select>
+                                            <option value="" selected>省 / 州</option>
+                                            <option value="1">Option 1</option>
+                                            <option value="2">Option 2</option>
+                                            <option value="3">Option 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-field">
+                                        <select>
+                                            <option value="" selected>縣 / 市</option>
+                                            <option value="1">Option 1</option>
+                                            <option value="2">Option 2</option>
+                                            <option value="3">Option 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-field">
+                                        <select>
+                                            <option value="" selected>行政區</option>
+                                            <option value="1">Option 1</option>
+                                            <option value="2">Option 2</option>
+                                            <option value="3">Option 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <div class="input-field">
+                                        <input placeholder="請填入地址" id="" type="text">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-2">
+                                <div class="title">婚姻狀況</div>
+                                <div class="radio-box inline full">
+                                    <div>
+                                        <input class="with-gap" name="layMode" type="radio" id="exMode1">
+                                        <label for="exMode1">未婚</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap" name="layMode" type="radio" id="exMode2">
+                                        <label for="exMode2">已婚</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap" name="layMode" type="radio" id="exMode3">
+                                        <label for="exMode3">離婚</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-gap" name="layMode" type="radio" id="exMode4" >
+                                        <label for="exMode4">喪偶</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-4">
+                                <div class="title">學歷</div>
+                                <div class="input-field">
+                                    <select>
+                                        <option value="" selected>請選擇</option>
+                                        <option value="1">Option 1</option>
+                                        <option value="2">Option 2</option>
+                                        <option value="3">Option 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="title">職業</div>
+                                <div class="input-field">
+                                    <select>
+                                        <option value="" selected>請選擇</option>
+                                        <option value="1">Option 1</option>
+                                        <option value="2">Option 2</option>
+                                        <option value="3">Option 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="title">公司名稱</div>
+                                <div class="input-field full ">
+                                    <input placeholder="" id="" type="text">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-4">
+                                <div class="title">緊急連絡人姓名</div>
+                                <div class="input-field inline full ">
+                                    <input placeholder="" id="" type="text" value="">
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="title">緊急聯絡人手機</div>
+                                <div class="input-field inline full ">
+                                    <input placeholder="" id="" type="text" value="">
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="title">緊急聯絡人電話</div>
+                                <div class="input-field inline full ">
+                                    <input placeholder="" id="" type="text" value="">
+                                </div>
+                            </div>
+                        </li> -->
+                        @if (AgreeSetting != null && AgreeSetting.IsNeedAgree)
+                        {
+                            <li>
+                                <div class="col-1">
+                                    <div class="radio-box inline m-T-none">
+                                        <div>
+                                            @Html.CheckBox("AgreeDesc", Model.AgreeDesc, new { @class = "validate[required]" })
+                                            <label for="AgreeDesc">
+                                                我已完整閱讀並同意
+                                            </label>
+                                            <a class="underline font-xs openDesc" href="@Url.Action("AgreeDesc", "Member")">會員條款</a>
+                                            @*<a class="underline font-xs openDesc" href="terms">服務條款</a>
+                                                <span class="font-xs">與</span>
+                                                <a class="underline font-xs openPrivacy" href="privacy">隱私權政策</a>*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        @if (regSetModel.IsNeedVerifyCode)
+                        {
+                            <li class="">
+                                <div class="col-2 relative">
+                                    @Html.Captcha("captcha")
+                                </div>
+                            </li>
+                        }
+                        <li>
+                            <div class="btnBox">
+                                <a class="btn-grey-o btn-large half" href="@Url.Action("Index", "Home", new { SiteSN = siteSn, PageSN = "Login" })">返回</a>
+                                <a id="btnSave" class="btn-custom btn-large half" href="javascript:">註冊</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div><input type="hidden" id="SiteID" name="SiteID" value="@ViewBag.SiteID" />
+</form>
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>
+<script type="text/javascript" src="~/script/colorbox/jquery.colorbox.js"></script>
+<script type="text/javascript" src="~/script/jquery-ui/jquery.mask.min.js"></script>
+<script src="~/Script/workV3/check.js"></script>
+@BundleConfig.Validate()
+@BundleConfig.Component()
+@BundleConfig.FileUploader()
+<script type="text/javascript">
+    $(function () {
+        Component.radioList('div[data-radioGroup]');
+        Component.singleImageUpload('#fBankBook', '@(Href("~/"))', '@uploadUrl', true);
+        Component.singleImageUpload('#fIDcardPhoto_Front', '@(Href("~/"))', '@uploadUrl', true);
+        Component.singleImageUpload('#fIDcardPhoto_Back', '@(Href("~/"))', '@uploadUrl', true);
+
+        Component.multiImageUpload('#DailyPhotoUpload', '@(Href("~/"))', '@Url.Action("FileUpload","Common")' + '?siteId=' + '@ViewBag.SiteID' + '&menuId=' + '@ViewBag.MenuID', '@ViewBag.UploadUrl', '', '@ViewBag.SiteID', '@ViewBag.MenuID');
+
+        var fix = [];
+        @if (adddressOptionType != "Global")
+        {
+            <text>
+        fix = [1];
+        </text>
+        }
+        var regionObj = Component.worldRegion('#Regions', '@Html.Raw(Url.Action("Regions", "Common"))', { fix: fix });
+
+        var fix_P = [];
+        @if (PermanentAdddressOptionType != "Global")
+        {
+            <text>
+        fix_P = [1];
+        </text>
+        }
+        var regionObj = Component.worldRegion('#PermanentRegions', '@Html.Raw(Url.Action("Regions", "Common"))', { fix: fix_P });
+
+        $('.mobile').mask("####-###-###", { reverse: true });
+
+        @Html.Raw(ViewBag.Script)
+
+        $("input").each(function () {
+            if ($(this).prop("class") != null && $(this).prop("class").indexOf("validate") >= 0) {
+                $(this).focusout(function () {
+                    var isClear = true;
+                    if ($(this).val() == "") {
+                        Component.showElementError('#' + $(this).attr("id"), '* 必填欄位');
+                        isClear = false;
+                    }
+                    if (isClear) {
+                        HideMessage($(this).attr("id"));
+                    }
+                });
+
+            }
+        });
+        $("#Account").change(function () {
+            CheckAccount();
+        });
+        $("#Account").focusout(function () {
+            CheckAccount();
+        });
+        $("#Password").change(function () {
+            CheckPWD();
+        });
+        $("#Password").focusout(function () {
+            CheckPWD();
+        });
+        $("#Password2").change(function () {
+            CheckPWD2();
+        });
+        $("#Password2").focusout(function () {
+            CheckPWD2();
+        });
+        $("#Name").change(function () {
+            CheckName();
+        });
+        $("#Name").focusout(function () {
+            CheckName();
+        });
+        $("#Email").change(function () {
+            CheckEmail();
+        });
+        $("#Email").focusout(function () {
+            CheckEmail();
+        });
+        $("#PushRecommandCode").change(function () {
+            CheckPushRecommandCode();
+        });
+        $("#PushRecommandCode").focusout(function () {
+            CheckPushRecommandCode();
+        });
+        $("#captcha").change(function () {
+            CheckCaptcha();
+        });
+        $("#captcha").focusout(function () {
+            CheckCaptcha();
+        });
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+
+            @{
+                if(CareerIsNeedVal)
+                {
+                    <text>
+                        if ($('#Career').length != 0)
+                        {
+                            if ($('#Career').val() == null)
+                            {
+                                Component.showElementError('#Career', '* 必須選擇職業');
+                            }
+                        }
+                    </text>
+                }
+
+                if(BankIsNeedVal)
+                {
+                    <text>
+                        if ($('#BankNum').length != 0)
+                        {
+                            if ($('#BankNum').val() == null)
+                            {
+                                Component.showElementError('#BankNum', '* 必須選擇銀行');
+                            }
+                        }
+                    </text>
+                }
+
+                if(EducationIsNeedVal)
+                {
+                    <text>
+                        if ($('#Education').length != 0)
+                        {
+                            if ($('#Education').val() == null)
+                            {
+                                Component.showElementError('#Education', '* 必須選擇學歷');
+                            }
+                        }
+                    </text>
+                }
+            }
+
+            console.log($('#Regions').val());
+
+            if ($('#NakedEyeL').length != 0) {
+                if ($('#NakedEyeL').val().length != 0)
+                    $('#Vision').val($('#NakedEyeL').val() + ',' + $('#NakedEyeR').val() + ',' + $('#NegativeDioptersL').val() + ',' + $('#eyeL').prop('checked') + ',' + $('#NegativeDioptersR').val() + ',' + $('#eyeR').prop('checked'));
+            }
+            if ($('#Bank_Account').length != 0) {
+                if ($('#Bank_Account').val().length != 0)
+                    $('#BankAccount').val($('#BankNum').val() + ',' + $('#Bank_Account').val());
+            }
+            if ($('#IDCardNum').length != 0) {  //Joe 20190923問題單 #2補上身分證值
+                if ($('#IDCardNum').val().length != 0) {
+                    $('#IDCard').val($('#IDCardNum').val());
+                }
+            }
+            var imgName = [];
+            var imgObj = $('.fileuploader-items').find('input[name="MutiPicInfo"]');
+
+            if (imgObj.length != 0) {
+                console.log(imgObj.length);
+                for (var i = 0; i < imgObj.length; i++) {
+                    var objJsonArray = JSON.parse(imgObj.eq(i).val());
+                    imgName[i] = objJsonArray.Img;
+                }
+                $('#DailyPhoto').val(imgName.join(','));
+            }
+
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+
+                $.get('@Url.Action("CheckAccount", "Member", new { siteId = ViewBag.SiteID })&account=' + encodeURIComponent($('#Account').val()), function (rs) {
+                    rs -= 0;
+                    if (rs) {
+                        $.get('@Url.Action("CheckEmail", "Member", new { siteId = ViewBag.SiteID })&email=' + encodeURIComponent($('#Email').val()), function (rs) {
+                            rs -= 0;
+                            if (rs) {
+                                if ($('#PushRecommandCode').val() == "") {
+                                    swal({
+                                        text: '尚未填寫推薦人，註冊後可於會員資料中填入。', //title 改 text carrie 20180119
+                                        customClass: 'animated fadeIn',
+                                        showCancelButton: true,
+                                        type: 'warning',
+                                        confirmButtonText: '確定',
+                                        cancelButtonText: '返回',
+                                    }).then(function (isConfirm) {
+                                        form.submit();
+                                    }).then(function (isCancel) {
+
+                                    });
+                                }
+                                else {
+                                    form.submit();
+                                }
+                            } else {
+                                Component.showElementError('#Email', '* Email已存在');
+                            }
+                        });
+                    } else {
+                        Component.showElementError('#Account', '* 帳號已存在');
+                    }
+                });
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true)
+        {
+            if(ViewBag.VerifyType == WorkV3.Areas.Backend.Models.MemberShipVerifyType.Mobile)
+            {
+                <text>
+                    location.href = '@Url.Action("Index", "Home", new { PageSN = "MobileVerify", SiteSN = ViewBag.SiteSN, MemberID = Model.ID })';
+                </text>
+            }
+            else
+            {
+                <text>
+                    //Component.alert('請您已成功註冊為我們的會員，謝謝！', function () {
+                    Component.alert('請至您的信箱收取驗證信，驗證完成後即可成為會員，謝謝!', function () {
+                        location.href = '@Url.Action("Index", "Home", new { SiteSN = siteSn, PageSN = "Login" })';
+                    });
+                </text>
+            }
+        }
+        //$("input[name^=OrderEpaperType]").bind("click", function () {
+
+        //    var selectList = [];
+        //    if ($("#OrderEpaperTypeList").val() != "") {
+        //        selectList = $("#OrderEpaperTypeList").val().split(';');
+        //    }
+        //    var selectID = $(this).attr("name").replace("OrderEpaperType.", "");
+        //    if ($(this).val() == "True") {
+        //        if (selectList.indexOf(selectID) < 0)
+        //            selectList.push(selectID);
+        //    }
+        //    else {
+        //        var index = selectList.indexOf(selectID);
+        //        if (index > -1) {
+        //            selectList.splice(index, 1);
+        //        }
+        //    }
+        //    $("#OrderEpaperTypeList").val(selectList.join(";"));
+        //});
+        $(".openDesc").colorbox({
+            width: "980",
+            height: "600",
+            maxWidth: "90%",
+            maxHeight: "90%",
+            iframe: true,
+            fadeOut: 100,
+            closeButton: true,
+            onComplete: function () {
+                $('.cboxIframe').on('load', function () {
+                    var $iframe = $(this),
+                        $contents = $iframe.contents();
+                    $contents.find('body').addClass('lightboxContent');
+                });
+            }
+        });
+        $(".openDesc").click(function () {
+            HideMessage();
+        });
+        $(".openPrivacy").colorbox({
+            width: "980",
+            height: "600",
+            maxWidth: "90%",
+            maxHeight: "90%",
+            iframe: true,
+            fadeOut: 100,
+            closeButton: true,
+            onComplete: function () {
+                $('.cboxIframe').on('load', function () {
+                    var $iframe = $(this),
+                        $contents = $iframe.contents();
+                    $contents.find('body').addClass('lightboxContent');
+                });
+            }
+        });
+        $(".openPrivacy").click(function () {
+            HideMessage();
+        });
+
+    });
+    function CheckAccount() {
+        var isClear = true;
+        if ($('#Account').val() == "") {
+            Component.showElementError('#Account', '* 必填欄位');
+            isClear = false;
+        }
+        else {
+            $.get('@Url.Action("CheckAccount", "Member", new { siteId = ViewBag.SiteID })&account=' + encodeURIComponent($('#Account').val()), function (rs) {
+                rs -= 0;
+                if (!rs) {
+                    Component.showElementError('#Account', '* 帳號已存在');
+                    isClear = false;
+                }
+            });
+        }
+        if (isClear) {
+            HideMessage("Account");
+        }
+    }
+    function CheckEmail() {
+        var isClear = true;
+        if ($('#Email').val() == "") {
+            Component.showElementError('#Email', '* 必填欄位');
+            isClear = false;
+        }
+        else {
+            $.get('@Url.Action("CheckEmail", "Member", new { siteId = ViewBag.SiteID })&email=' + encodeURIComponent($('#Email').val()), function (rs) {
+                rs -= 0;
+                if (!rs) {
+                    Component.showElementError('#Email', '* Email已存在');
+                    isClear = false;
+                }
+            });
+        }
+        if (isClear) {
+            HideMessage("Email");
+        }
+    }
+    function CheckPushRecommandCode() {
+        var isClear = true;
+        if ($('#PushRecommandCode').val() == "") {
+
+        }
+        else {
+            var url = '@Url.Action("CheckPushRecommandCode", "Member")';
+            $.get(url + '?PushRecommandCode=' + encodeURIComponent($('#PushRecommandCode').val()), function (rs) {
+                rs -= 0;
+                if (!rs) {
+                    Component.showElementError('#PushRecommandCode', '* 推薦人代碼不存在');
+                    isClear = false;
+                }
+            });
+        }
+        if (isClear) {
+            HideMessage("PushRecommandCode");
+        }
+    }
+    function CheckPWD() {
+        var isClear = true;
+        if ($('#Password').val() == "") {
+            Component.showElementError('#Password', '* 必填欄位');
+            isClear = false;
+        }
+        else {
+            if ($('#Password2').val() != "") {
+                if ($('#Password').val() != $('#Password2').val()) {
+                    Component.showElementError('#Password', '* 二次密碼輸入不相符');
+                    isClear = false;
+                }
+            }
+        }
+        if (isClear) {
+            HideMessage("Password");
+        }
+    }
+    function CheckPWD2() {
+        var isClear = true;
+        if ($('#Password2').val() == "") {
+            Component.showElementError('#Password2', '* 必填欄位');
+            isClear = false;
+        }
+        else {
+            if ($('#Password').val() != "") {
+                if ($('#Password').val() != $('#Password2').val()) {
+                    Component.showElementError('#Password', '* 二次密碼輸入不相符');
+                    isClear = false;
+                }
+            }
+        }
+        if (isClear) {
+            HideMessage("Password2");
+        }
+    }
+    function CheckName() {
+        var isClear = true;
+        if ($('#Name').val() == "") {
+            Component.showElementError('#Name', '* 必填欄位');
+            isClear = false;
+        }
+        if (isClear) {
+            HideMessage("Name");
+        }
+    }
+    function CheckCaptcha() {
+        var isClear = true;
+        if ($('#captcha').val() == "") {
+            Component.showElementError('#captcha', '* 必填欄位');
+            isClear = false;
+        }
+        if (isClear) {
+            HideMessage("captcha");
+        }
+    }    
+
+    function HideMessage(FieldName) {
+        $('.' + FieldName + 'formError').fadeOut('normal', function () { $(this).remove(); });
+    }
+
+    $('#sameAddress').on('change', function () {
+        if($('#sameAddress').prop('checked'))
+        {
+            $('#PermanentAddress').val($('#Address').val());
+
+            var regions = [];
+            $('#Regions').prevAll('div.region').each(function () {
+                var v = $(this).find('select').val();
+                if (v)
+                    regions.unshift(v - 0);
+            });
+
+            for (var i = 1; i <= 4; i++)
+            {
+                $('#PermanentAddresColumns').find('div[data-level="' + i + '"]').remove();
+            }
+
+            Component.worldRegion('#PermanentRegions', '@Html.Raw(Url.Action("Regions", "Common"))', { fix : regions });
+            var PermanentAdddressOptionType = '@PermanentAdddressOptionType';
+
+            setTimeout(function () {
+                for (var i = 1; i <= 4; i++) {
+                    if (PermanentAdddressOptionType != 'Global' && i == 1)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        $('#PermanentAddresColumns').find('div[data-level="' + i + '"]').attr('style', '');
+                    }
+                }
+            }, 100);
+        }
+    });
+
+    $('input[name="MilitaryService"]').on('change', function () {
+        if ($('#MilitaryService_505').prop('checked')) {
+            $('#RetiredDate').attr('style', '');
+        }
+        else {
+            $('#RetiredDate').attr('style', 'display: none;');
+        }
+    });
+
+    $('#Unemployed').on('change', function () {
+        if ($('#Unemployed').prop('checked')) {
+            $('#Career').attr('disabled', true);
+        }
+        else {
+            $('#Career').attr('disabled', false);
+        }
+
+        $('#Career').material_select();
+    });
+    //如勾選了無近視，近視度數（左）欄位將不可編輯
+    $('#eyeL').on('change', function () {
+        if ($('#eyeL').prop('checked')) {
+            $('#NegativeDioptersL').attr('readonly','true');
+        }
+        else {
+            $('#NegativeDioptersL').removeAttr('readonly');
+        }       
+    });
+    //如勾選了無近視，近視度數（右）欄位將不可編輯
+    $('#eyeR').on('change', function () {
+        if ($('#eyeR').prop('checked')) {
+            $('#NegativeDioptersR').attr('readonly', 'true');
+        }
+        else {
+            $('#NegativeDioptersR').removeAttr('readonly');
+        }
+    });
+    
+</script>

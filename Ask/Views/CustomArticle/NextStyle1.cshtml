@@ -1,0 +1,60 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;    
+}
+
+@functions {
+    public void GetItemUrl(ArticleModels item, SitePage page, out string url, out string target) {
+        target = "_self";
+        url = string.Empty;
+        if (item.Type == "page") {
+            url = Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN });
+        } else if (item.Type == "link") {
+            url = item.Link;
+            if (item.IsOpenNew) {
+                target = "_blank";
+            }
+        } else if (item.Type == "archive") {
+            target = "_blank";
+            if (!string.IsNullOrWhiteSpace(item.Archive)) {
+                ResourceFilesModels file = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.Archive);
+                url = page.GetUploadUrl() + Server.UrlPathEncode(file.FileInfo);
+            }
+        }
+    }
+}
+
+@foreach (ArticleModels item in Model) {
+    List<ArticleTypesModels> types = itemTypes.GetValue(item.ID);
+    SitePage page = itemPages[item.CardNo];
+    string img = item.GetFirstImg();
+    ResourceVideosModels video = item.GetFirstVideo();
+
+    string url, target;
+    GetItemUrl(item, page, out url, out target);
+    <li class="item-static">
+        <a href="@(url)" target="@target">
+            @* 改結構 carrie 20171211 *@
+            @if (!string.IsNullOrWhiteSpace(img)) {
+                <div class="card-img">
+                    <img src="@(page.GetUploadUrl() + Server.UrlPathEncode(img))" />
+                    @if (video != null) {
+                        <span><i class="cc cc-play"></i></span>
+                    }
+                </div>
+            }
+            @* 改結構 carrie 20171211 END *@
+
+            @if (types?.Count() > 0) {
+                <div class="article-list-type">
+                    @foreach (ArticleTypesModels type in types) {
+                        <span data-color="@type.Color">@type.Name</span>
+                    }
+                </div>
+            }
+            <div class="article-list-title">@item.Title</div>
+            <div class="article-list-desc">@item.Summary.TrimTags().Truncate(140)</div>
+        </a>
+    </li>
+}

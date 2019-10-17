@@ -1,0 +1,133 @@
+﻿@model IEnumerable<WorkV3.Models.MainVisionModel>
+
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    int SN = 1;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+    string uploadUrl = ViewBag.UploadVPath;
+}
+
+@section HArea{
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            var listObj = Component.dataList('listTable');
+            listObj.sorted = function (sortItems) {
+                $.post("Sort", { "CardNo": "@ViewBag.CardNo", "items": sortItems }, function () {
+                    location.replace(location.href);
+                });
+            }
+            listObj.deleted = function (delIds) {
+                $.post("Delete", { 'ids': delIds }, function () {
+                    location.replace(location.href);
+                });
+            }
+            listObj.statusChange = function (id) {
+                $.get("ToggleIssue/" + id);
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    $('#listTable').find('span.info').html('');
+                }
+            }
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                }
+            }
+
+            $('#listTable').on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <table id="listTable" class="fixTable">
+            <caption>
+                <a class="btn-grey-darken-4-o transparent goBack" href="@Url.Action("List", "Intro", siteQuery)"><i class="cc cc-arrow-left"></i></a>
+                主視覺列表
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info openCenter" href="@Url.Action("Edit", new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, cardNo = ViewBag.CardNo })" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>標題</th>
+                    <th>電腦版</th>
+                    <th>手機版</th>
+                    <th>圖標</th>
+                    <th>點擊數</th>
+                    <th>刊登</th>                    
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.ID">
+                        <td class="sort">@(SN++)</td>
+                        <td>@item.Title</td>                        
+                        <td class="desktopImg">
+                            @if (item.Type == "Image") {
+                                if (!string.IsNullOrWhiteSpace(item.Img)) {
+                            <img src="@(uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Img).Img)" alt="">
+                                }
+                            } else {
+                            <iframe width="300" src="https://www.youtube.com/embed/@item.VideoID" id="" frameborder="0" allowfullscreen></iframe>
+                            }
+                        </td>
+                        <td class="mobileImg">
+                            @if (item.Type == "Image" && !string.IsNullOrWhiteSpace(item.ImgM)) {
+                            <img src="@(uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.ImgM).Img)" alt="">
+                            }
+                        </td>
+                        <td class="icon">
+                            @if(!string.IsNullOrWhiteSpace(item.Icon)) {
+                                <img src="@(ViewBag.UploadVPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Icon).Img)" />
+                            }
+                        </td>
+                        <td>@item.Clicks</td>
+                        <td class="icon">
+                            <a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:">
+                                <i class="@(item.IsIssue ? "cc cc-eye" : "cc cc-eye-off font-red" )"></i>
+                            </a><br />
+                            <span class="font-black">@Html.DisplayFor(Model => item.Second)秒</span>
+                        </td>                        
+                        <td class="icon edit">
+                            <a class="btn-grey-darken-4-o transparent square openCenter" href="@Url.Action("Edit", "MainVision", new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, cardNo = ViewBag.CardNo, id = item.ID })">
+                                <i class="cc cc-edit-o"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

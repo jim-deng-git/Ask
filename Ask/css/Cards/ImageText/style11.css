@@ -1,0 +1,88 @@
+.card-imageText[data-style="11"] .card-text .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+@media only screen and (max-width: 420px) {
+  .card-imageText[data-style="11"] {
+    width: 70%;
+    margin: 0 auto; } }
+
+.card-imageText[data-style="11"] .card-img:hover > a {
+  -webkit-transform: rotate(0deg) translate(0, 20%);
+      -ms-transform: rotate(0deg) translate(0, 20%);
+          transform: rotate(0deg) translate(0, 20%); }
+  .card-imageText[data-style="11"] .card-img:hover > a > * {
+    -webkit-transform: rotate(0deg) translate(-20%, -20%);
+        -ms-transform: rotate(0deg) translate(-20%, -20%);
+            transform: rotate(0deg) translate(-20%, -20%); }
+
+.card-imageText[data-style="11"] .card-img:hover .card-img-content {
+  height: 170%;
+  width: 170%; }
+
+.card-imageText[data-style="11"] .card-img img {
+  height: 150%;
+  width: 150%; }
+
+.card-imageText[data-style="11"] .card-img:hover .activeWrap {
+  opacity: 0;
+  bottom: -100%; }
+
+.card-imageText[data-style="11"] .card-img .card-img-content {
+  height: 150%;
+  width: 150%;
+  background-color: transparent;
+  opacity: 1; }
+
+.card-imageText[data-style="11"] .card-img > a {
+  width: 70%;
+  height: 0;
+  padding-bottom: 70%;
+  display: block;
+  overflow: hidden;
+  border-radius: 15px;
+  -webkit-transform: rotate(45deg) translate(15%, 15%);
+      -ms-transform: rotate(45deg) translate(15%, 15%);
+          transform: rotate(45deg) translate(15%, 15%);
+  margin: 0 auto;
+  position: relative; }
+  .card-imageText[data-style="11"] .card-img > a > * {
+    -webkit-transform-origin: center;
+        -ms-transform-origin: center;
+            transform-origin: center;
+    -webkit-transform: rotate(-45deg) translateY(-25%);
+        -ms-transform: rotate(-45deg) translateY(-25%);
+            transform: rotate(-45deg) translateY(-25%); }
+
+.card-imageText[data-style="11"] .card-text {
+  margin-top: 30%;
+  padding: 15px 0;
+  text-align: center; }
+  .card-imageText[data-style="11"] .card-text .card-text-name {
+    padding: 0 20px;
+    font-size: 22px;
+    color: #000; }
+    .card-imageText[data-style="11"] .card-text .card-text-name a {
+      font-size: 22px;
+      color: #000; }
+    .card-imageText[data-style="11"] .card-text .card-text-name ~ .card-text-info {
+      margin-top: 5px; }
+  .card-imageText[data-style="11"] .card-text .card-text-info {
+    font-size: 16px;
+    color: #606060;
+    line-height: 1.8; }
+
+.card-imageText[data-style="11"] .activeWrap {
+  opacity: 1;
+  bottom: 0; }
+
+.card-imageText[data-style="11"] .card-text-kind {
+  font-size: 24px;
+  color: #000000; }
+
+.card-imageText[data-style="11"] .pagination {
+  margin-top: 20px; }
+  .card-imageText[data-style="11"] .pagination .btn-black-o {
+    padding: 3px 50px; }
