@@ -1,0 +1,274 @@
+﻿@model WorkV3.Models.ClickVideoModel
+@{
+    ViewBag.Title = "VideoEdit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+}
+
+@using (Html.BeginForm("VideoEdit", "Click", siteQuery, FormMethod.Post, new { enctype = "multipart/form-data", id = "VideoEditForm" })) {
+    <div class="groove groove-1">
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">上傳影片</div>
+            </div>
+        </div>
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">影片種類</div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input class="with-item transparent" name="Type" type="radio" id="video-youtube" value="youtube" />
+                                        <i class="cc cc-youtube"></i>
+                                        <label for="video-youtube">Youtube</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-item transparent" name="Type" type="radio" id="video-vimeo" value="vimeo" />
+                                        <i class="cc cc-vimeo"></i>
+                                        <label for="video-vimeo">Vimeo</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-item transparent" name="Type" type="radio" id="video-tudou" value="tudou" />
+                                        <i class="cc cc-tudou"></i>
+                                        <label for="video-tudou">土豆網</label>
+                                    </div>
+                                    <div>
+                                        <input class="with-item transparent" name="Type" type="radio" id="video-custom" value="custom" />
+                                        <i class="cc cc-upload-o"></i>
+                                        <label for="video-custom">自行上傳</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li id="video-website-box">
+                            <div class="col-1">
+                                <div class="title inline">影片網址</div>
+                                <div class="input-field inline full">
+                                    <input placeholder="請填入YouTube影片網址" id="video-website" name="Link" type="text" class="validate[required]" />
+                                </div>
+                                <a class="tooltip" title="YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE"><i class="cc cc-attention"></i></a>
+                                <div id="divPreview" class="preview"></div>
+                            </div>
+                        </li>
+                        <li id="video-upload-box">
+                            <div class="col-1">
+                                <div class="input-field">
+                                    <input type="file" id="videoUpload" name="videoUpload" data-field="customVideo" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">播放方式</div>
+                                <div class="radio-box inline full" data-radioGroup="PlayMode">
+                                    @{                                        
+                                        string[] playModes = { "燈箱播放", "直接嵌入", "另開視窗" };
+                                        foreach (string mode in playModes) {
+                                        <div>
+                                            <input type="radio" class="with-gap" value="@mode" />
+                                            <label>@mode</label>
+                                        </div>
+                                        }
+                                    }
+                                    <input type="hidden" id="PlayMode" name="PlayMode" />
+                                </div>
+                                <div id="video-play-box" class="radio-box inline full">
+                                    <div>
+                                        @Html.CheckBoxFor(x => x.IsAuto)
+                                        <label for="IsAuto">自動播放</label>
+                                    </div>
+                                    <div id="video-repeat">
+                                        @Html.CheckBoxFor(x => x.IsRepeat)
+                                        <label for="IsRepeat">自動重播</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-bar flex">
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+}
+
+@section FArea {
+    @BundleConfig.SlidePips()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    @BundleConfig.JWPlayer()
+
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+
+    <script type="text/javascript">
+        function getScreenshotHtml(url, index) {
+            return '<div>' +
+                '   <input class="with-item video-img" name="videoImg" type="radio" id="videoImg_' + index + '" value="' + url + '" />' +
+                '   <img src="' + url + '" />' +
+                '   <label for="videoImg_' + index + '"></label>' +
+                '</div>';
+        }
+
+        function onYouTubeIframeAPIReady() {
+            $('#video-website').change(function () { // ndGUClIX9ZE
+                var type = $(document.getElementsByName('Type')).filter(':checked').val();
+                if (type == 'youtube') {
+                    var v = $.trim(this.value);
+                    if (!v) {
+                        $('#divPreview').html('');
+                        return;
+                    }
+
+                    $('#divPreview').html('<div id="divYoutube"></div>');
+                    var youtube = new YT.Player('divYoutube', {
+                        height: '315',
+                        width: '560',
+                        videoId: v,
+                    });
+                }
+            });
+        }
+
+        function tudouHandler() {
+            $('#video-website').change(function () {
+                var type = $(document.getElementsByName('Type')).filter(':checked').val();
+                if (type == 'tudou') {
+                    var v = $.trim(this.value);
+                    if (!v) {
+                        $('#divPreview').html('');
+                        return;
+                    }
+
+                    $('#divPreview').html('<iframe width="560" height="315" src="http://www.tudou.com/programs/view/html5embed.action?code=' + v + '" frameborder="0" allowfullscreen></iframe>');
+                }
+            });
+        }
+
+        function vimeoHandler() {
+            $('#video-website').change(function () {
+                var type = $(document.getElementsByName('Type')).filter(':checked').val();
+                if (type == 'vimeo') {
+                    var v = $.trim(this.value);
+                    if (!v) {
+                        $('#divPreview').html('');
+                        return;
+                    }
+
+                    $('#divPreview').html('<iframe width="560" height="315" src="http://player.vimeo.com/video/' + v + '" frameborder="0" allowfullscreen></iframe>');
+                }
+            });
+        }
+
+        function initType() {
+            $(document.getElementsByName('Type')).click(function () {
+                if (this.value == 'custom') {
+                    $('#video-website-box').slideUp();
+                    $('#video-upload-box').slideDown();
+                } else {
+                    var inputElm = $('#video-website');
+                    inputElm.attr('placeholder', '請填入' + $(this).nextAll('label').html() + '影片ID');
+                    inputElm.trigger('change');
+
+                    var tooltip = '';
+                    if (this.value == 'youtube')
+                        tooltip = 'YouTube影片網址範例：https://www.youtube.com/watch?v=ndGUClIX9ZE，輸入ndGUClIX9ZE';
+                    else if (this.value == 'tudou')
+                        tooltip = '土豆網影片網址範例：http://www.tudou.com/programs/view/html5embed.action?code=kbPzDzCIeBE，輸入kbPzDzCIeBE';
+                    else if (this.value == 'vimeo')
+                        tooltip = 'Vimeo影片網址範例：https://player.vimeo.com/video/15205149，輸入15205149';
+                    inputElm.parent().next().tooltipster('content', tooltip);
+
+                    $('#video-website-box').slideDown();
+                    $('#video-upload-box').slideUp();
+                }
+
+                if (this.value == 'tudou') {
+                    $('#video-repeat').slideUp();
+                } else {
+                    $('#video-repeat').slideDown();
+                }
+            });
+
+            setTimeout(function () {
+                $(document.getElementsByName('Type')).filter(':checked').triggerHandler('click');
+            }, 100);
+        }
+
+        function Callbacks() {
+            @if (ViewBag.Exit as bool? == true)
+            {
+                <text>
+                var dataStr = '@Html.Raw(ViewBag.Data)';
+                if (dataStr != "") {
+                    parent.setClick(2, $.parseJSON(dataStr));
+                } else {
+                    parent.setClick(0, "{}");
+                }
+                Component.closeRight();
+                </text>
+            }
+        }
+
+        $(function () {
+            initType();
+            tudouHandler();
+            vimeoHandler();
+
+            var type = parent.getClickType();
+            var data = {};
+            if (type == 2) {
+                data = parent.getClickEvent();
+                $('#PlayMode').val(data.PlayMode);        
+                $("#IsAuto").prop("checked", data.IsAuto);
+                $("#IsRepeat").prop("checked", data.IsRepeat);
+            } else {
+                // 預設設定
+                $("#video-youtube").prop("checked", true);
+                $('#PlayMode').val('直接嵌入');                
+                $("#IsAuto").prop("checked", true);
+                $("#IsRepeat").prop("checked", true);
+            }
+
+            var video = "";
+            if (data.Type == "youtube") {
+                $("#video-youtube").prop("checked", true);
+                $("#video-website").val(data.Link);
+            } else if (data.Type == "vimeo") {
+                $("#video-vimeo").prop("checked", true);
+                $("#video-website").val(data.Link);
+            } else if (data.Type == "tudou") {
+                $("#video-tudou").prop("checked", true);
+                $("#video-website").val(data.Link);
+            } else if (data.Type == "custom") {
+                $("#video-custom").prop("checked", true);
+                video = data.Link;
+            }
+
+            Component.singleVideoUpload('#videoUpload', '@Html.Raw(Url.Action("FileUpload", "Click", siteQuery))', '@ViewBag.UploadVPath', video);
+            Component.radioList('[data-radioGroup]');
+
+            $('#btnSave').click(function () {
+                if (Component.singleVideoUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    var form = $('#VideoEditForm');
+                    if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                        form.submit();
+                    }
+                }
+            });
+
+            Callbacks();
+        });
+    </script>
+}

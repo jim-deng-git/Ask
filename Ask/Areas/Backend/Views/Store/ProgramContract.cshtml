@@ -1,0 +1,205 @@
+﻿@model WorkV3.Areas.Backend.ViewModels.StoreProgramContractViewModel
+@{
+    ViewBag.Title = "合約編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    IEnumerable<WorkV3.Models.StoreToPlanBusinessModels> businessModels = ViewBag.Business;
+}
+
+<form method="post" action="@Url.Action("ProgramContract", new { siteId = ViewBag.SiteID})" id="editForm" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <div class="card shadow-none">
+            <div class="lightbox-top-bar">
+                <div class="lightbox-top-bar-title">合約編輯</div>
+            </div>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">選擇方案</div>
+                        <div class="input-field inline">@Model.PlanName</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">合約語系</div>
+                        <div class="radio-box inline full" data-radioGroup="ContractLang">
+                            <div>
+                                <input class="with-gap" type="radio" id="ContractLang1" value="1" checked>
+                                <label for="ContractLang1">中文合約</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" type="radio" id="ContractLang2" value="2">
+                                <label for="ContractLang2">英文合約</label>
+                            </div>
+                            <input type="hidden" name="ContractLang" id="ContractLang" value="@Model.storeToPlan.ContractLang" />
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">合約標題</div>
+                        <div class="input-field inline full">
+                            <input type="text" id="ContractTitle" name="ContractTitle" value="@Model.storeToPlan.ContractTitle">
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">甲方(商城)</div>
+                        <div class="input-field inline full" id="divEshop">@(Model.storeToPlan.ContractLang == 1 ? Model.EShopTitle : Model.EShopTitleEn)</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">乙方(商店)</div>
+                        <div class="input-field inline full" id="divStore">@(Model.storeToPlan.ContractLang == 1 ? Model.StoreName : Model.StoreNameEn)</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">合約期間</div>
+                        <div class="input-field inline full">@Model.storeToPlan.ContractDateStart.ToString("yyyy/MM/dd")-@Model.storeToPlan.ContractDateEnd.ToString("yyyy/MM/dd")</div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">合約內容</div>
+                       <div class="input-field inline full">
+                           <div class="input-field img-text-height">
+                               <textarea contenteditable="true" id="ContractIntro" name="ContractIntro">@Model.storeToPlan.ContractIntro</textarea>
+                           </div>
+                       </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">經辦業務</div>
+                        <div id="divBusiness" class="chips has-content inline full">
+                            @if(businessModels != null && businessModels.Count() > 0)
+                            {
+                                foreach(var business in businessModels)
+                                {
+                                    <div class="chip" data-id="@business.ID">
+                                        @business.Name <span class="font-grey">@business.Email</span>
+                                        <a href="javascript:;" class="tooltip" title="刪除">
+                                            <i class="cc cc-close"></i>
+                                        </a>
+                                    </div>
+                                }
+                            }
+                            <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choiceBusiness" title="選擇經辦人員"><i class="cc cc-plus"></i></a>
+                            <ul id="choiceBusiness" class="dropdown-content customContent large closeOnClick">
+                                <li>
+                                    <iframe class="dropdownIframe" src="@Url.Action("BusinessSelect","Store")" frameborder="0"></iframe>
+                                </li>
+                            </ul>
+                            <input type="hidden" id="Business" name="Business" />
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="control-bar">
+            @*<a href="javascript:;" class="float-L btn-tiny btn-grey-darken-3-o">
+                <i class="cc cc-print"></i>下載/查看合約
+            </a>*@
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+@section FArea {
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+<script type="text/javascript">
+        $(function () {
+            Component.radioList('[data-radioGroup]');
+            var editor = Component.editor('ContractIntro');
+
+            $("input[type=radio]").click(function () {
+                var lang = $(this).val();
+                if (lang == 1) {
+                    $("#divEshop").html('@Model.EShopTitle');
+                    $("#divStore").html('@Model.StoreName');
+
+                } else {
+                    $("#divEshop").html('@Model.EShopTitleEn');
+                    $("#divStore").html('@Model.StoreNameEn');
+                }
+                var postData = new FormData();
+                postData.append("lang", lang);
+                postData.append("parentId", '@Model.storeToPlan.PlanID');
+                $.ajax({
+                    url: "@Url.Action("GetContractByLang")",
+                    data: postData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        $("#ContractTitle").val(data.Title);
+                        $("#ContractIntro").html(data.Content);
+                    }
+                });
+                console.log($(this).val());
+            });
+
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate')) {
+                    var business = [];
+                    $('#divBusiness').children('div[data-id]').each(function () {
+                        business.push($(this).attr('data-id'));
+                    });
+                    $('#Business').val(JSON.stringify(business));
+                    form.submit();
+                }
+            });
+
+        });
+        function setBusiness(business) {
+            business = business || [];
+
+            var divBusinessElm = $('#divBusiness');
+            divBusinessElm.children('div.chip').each(function () {
+                var id = $(this).attr('data-id');
+                var index = 0, len = business.length;
+                for (; index < len; ++index) {
+                    if (business[index].ID == id)
+                        break;
+                }
+                if (index < len)
+                    business.splice(index, 1);
+                else
+                    $(this).fadeOut(function () {
+                        $(this).remove();
+                    });
+            });
+
+            var html = '';
+            for (var i = 0, len = business.length; i < len; ++i) {
+                var item = business[i];
+                html += '<div class="chip" data-id="' + item.Id + '">';
+                html += item.Name + " <span class=\"font-grey\">"+ item.Email +"</span>";
+                html += '<a href="javascript:;" class="tooltip" title="刪除"><i class="cc cc-close"></i></a></div>';
+            }
+
+            var lastItem = divBusinessElm.children('div.chip:last');
+            if (lastItem.length)
+                lastItem.after(html);
+            else
+                divBusinessElm.prepend(html);
+        }
+
+    @if ((ViewBag.Exit as bool?) == true) {
+        <text>
+        if (parent.refreshList)
+            parent.refreshList();
+        parent.$.colorbox.close();
+        </text>
+    }
+</script>
+}

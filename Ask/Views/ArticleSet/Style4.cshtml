@@ -1,0 +1,231 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleSet/style4.css" rel="stylesheet" />
+
+<div id="card_@setting.CardNo" class="card-common card-articleSet" data-style="4">
+    <div class="filters-bar">
+        <ol id="filter-bar">
+            <li data-filter="all" class="active"><span>全部</span></li>
+            @{
+                List<string> AllTypesName = new List<string>();
+                List<string> AllTypesID = new List<string>();
+            }
+            @foreach (var t in itemTypes)//取得所有文章的類別
+            {
+                AllTypesName.Add(t.Value.First().Name);
+
+                var menuInfo = WorkV3.Models.DataAccess.MenusDAO.GetInfo(t.Value.First().MenuID);
+
+                AllTypesID.Add(menuInfo.SN + "_" + t.Value.First().ID);
+            }
+
+            @{  //過濾重複類別
+                HashSet<string> typesName = new HashSet<string>(AllTypesName);
+                HashSet<string> typesID = new HashSet<string>(AllTypesID);
+
+                string[] TypesName = typesName.ToArray();
+                string[] TypesID = typesID.ToArray();
+            }
+
+            @for (int i = 0; i < TypesName.Count(); i++)
+            {
+                <li data-filter="@TypesName[i]" id="@TypesID[i]">
+                    <span>@TypesName[i]</span>
+                </li>
+            }
+        </ol>
+    </div>
+    <div class="article-list">
+        <ul id="article-ul">
+            @foreach (ArticleModels item in Model)
+            {
+                List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                string filterClass = (articleTypes?.Count > 0 ? "all, " + string.Join(", ", articleTypes.Select(t => t.Name)) : "all");
+                SitePage page = itemPages[item.CardNo];
+                string img = item.GetFirstImg(setting);
+                if (!string.IsNullOrEmpty(img))
+                {
+                    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(page.SiteID, page.MenuID);
+                    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, img)))
+                    {
+                        img = string.Format("R_{0}", img);
+                    }
+                }
+                string target = "_self";
+                string url = string.Empty;
+                if (item.Type == "page")
+                {
+                    url = Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN });
+                }
+                else if (item.Type == "link")
+                {
+                    url = item.Link;
+                    if (item.IsOpenNew)
+                    {
+                        target = "_blank";
+                    }
+                }
+                else if (item.Type == "archive")
+                {
+                    target = "_blank";
+                    if (!string.IsNullOrWhiteSpace(item.Archive))
+                    {
+                        ResourceFilesModels file = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.Archive);
+                        url = page.GetUploadUrl() + file.FileInfo;
+                    }
+                }
+                <li class="item-static" data-filter-class="@filterClass">
+                    <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))" target="@target">
+                        <div class="card shadow-none">
+                            <div class="card-box">
+                                @if (!string.IsNullOrWhiteSpace(item.VideoImg))
+                                {
+                                    ResourceFilesModels imgModel = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.VideoImg);
+                                    url = page.GetUploadUrl() + imgModel.FileInfo;
+                                    if (item.VideoImgIsCustom)
+                                    {
+                                        <div class="card-img golden" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')">
+                                            <div class="card-img-content" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')"></div>
+                                            <span><i class="cc cc-play"></i></span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="card-img golden" style="background-image:url('@(item.VideoImg)')">
+                                            <div class="card-img-content" style="background-image:url('@(item.VideoImg)')"></div>
+                                            <span><i class="cc cc-play"></i></span>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    if (!string.IsNullOrWhiteSpace(img))
+                                    {
+                                        <div class="card-img golden" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')">
+                                            <div class="card-img-content" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')"></div>
+                                        </div>
+                                    }
+                                }
+                                <div class="card-text">
+                                    @if (articleTypes?.Count() > 0)
+                                    {
+                                        foreach (ArticleTypesModels type in articleTypes)
+                                        {
+                                            <div class="article-list-type" data-type="@type.Name">
+                                                <span data-color="@type.Color">@type.Name</span>
+                                            </div>
+                                        }
+                                    }
+                                    <div class="card-text-name">@item.Title</div>
+                                    <div class="card-text-info">@item.Summary.TrimTags().Truncate(25)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            }
+        </ul>
+        @*@if (setting.PagingMode == "點擊看更多")
+        {
+            <div class="viewmore text-C" style="display: none;">
+                <a href="#" class="btn-more btn-grey-darken-2 btn-custom">MORE</a>
+            </div>
+        }*@
+        <div class="viewmore text-C" style="display: none;">
+            <a href="javascript:" class="btn-more btn-grey-darken-2 btn-custom">MORE</a>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="~/script/imagesloaded/imagesloaded.js"></script>
+<script type="text/javascript" src="~/script/isotope/isotope.pkgd.js"></script>
+<script type="text/javascript">
+    (function($) {
+
+        var $grid = $('#article-ul');
+        var InitialFilterValue = $('#filter-bar > li.active').attr('data-filter');
+        $grid.imagesLoaded(function(){
+            $grid.isotope({
+                itemSelector: '.item-static',
+                percentPosition: true,
+                layoutMode: 'fitRows',
+                filter: filterList(InitialFilterValue)
+            });
+        });
+
+        function filterList(value) {
+            var value = $("#article-ul").find("li[data-filter-class*=" + value + "]");
+            return value;
+        }
+        $('#filter-bar > li').on('click', function() {
+            var filterValue = $( this ).attr('data-filter');
+            $grid.isotope({
+                filter: filterList(filterValue)
+            });            
+        });
+        $('#filter-bar > li').each( function() {
+            var $this = $(this);
+            $this.on( 'click', function() {
+                $('#filter-bar').find('.active').removeClass('active');
+                $(this).addClass('active');
+
+                if ($(this).attr('data-filter') == 'all')
+                {
+                    $('div.viewmore').attr('style', 'display: none;');
+                }
+                else {
+                    $('div.viewmore').attr('style', '');
+
+                    var url = $(this).attr('id');
+
+                    $('a.btn-more').attr('href', url.replace('_', '?type='));
+                }
+            });
+        });
+    })(jQuery);
+
+    //$('a.btn-more').on('click', function () {
+    //    $('#filter-bar li').prevAll().each(function () {
+    //        if($(this).hasClass('active'))
+    //        {
+    //            $('a.btn-more').attr('href', $(this).attr('id'));
+    //        }
+    //    });
+    //});
+</script>
+
+@*@if (setting.PagingMode == "點擊看更多")
+{
+    <script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(setting.CardNo)');
+        var pageIndex = 1;
+        var processing = false;
+        outerElm.find('a.btn-more').click(function () {
+            if (processing)
+                return;
+
+            processing = true;
+            var btn = $(this);
+            $.get('@Html.Raw(Url.Action("Next", "ArticleSet", new { siteId = ViewBag.SiteID, cardNo = setting.CardNo, style = 3 }))&pageIndex=' + (++pageIndex), function (html) {
+                if (!$.trim(html)) {
+                    btn.parent().fadeOut(function () {
+                        $(this).remove();
+                    });
+                }
+
+                swiper.appendSlide(html);
+
+                processing = false;
+            });
+        });
+    })();
+    </script>
+}*@

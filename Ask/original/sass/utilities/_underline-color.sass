@@ -1,0 +1,10 @@
+@each $color_name, $color in $colors
+    @each $color_type, $color_value in $color
+        @if $color_type == "base"
+            +underline-emphasis-variant(".underline-#{$color_name}", $color_value)
+        @else if $color_name != "shades"
+            +underline-emphasis-variant(".underline-#{$color_name}-#{$color_type}", $color_value)
+
+// Shade classes
+@each $color, $color_value in $shades
+    +underline-emphasis-variant(".underline-#{$color}", $color_value)

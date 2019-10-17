@@ -1,0 +1,119 @@
+.card-imageText[data-style="19"] .card a {
+  position: relative;
+  height: 0;
+  display: block;
+  padding-bottom: 150%;
+  overflow: hidden; }
+
+.card-imageText[data-style="19"] .card .card-text {
+  text-align: left;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #0c0c2b;
+  will-change: transform;
+  -webkit-transition: .4s transform ease-out;
+  -o-transition: .4s transform ease-out;
+  transition: .4s transform ease-out;
+  -webkit-transition-delay: .1s;
+       -o-transition-delay: .1s;
+          transition-delay: .1s;
+  -webkit-transform: translateY(80%);
+      -ms-transform: translateY(80%);
+          transform: translateY(80%); }
+  .card-imageText[data-style="19"] .card .card-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    will-change: opacity;
+    -webkit-transition: .4s opacity ease-out;
+    -o-transition: .4s opacity ease-out;
+    transition: .4s opacity ease-out;
+    -webkit-transition-delay: .1s;
+         -o-transition-delay: .1s;
+            transition-delay: .1s;
+    background: -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(18%, #0c0c2b));
+    background: -webkit-linear-gradient(top, transparent 0%, #0c0c2b 18%);
+    background: -o-linear-gradient(top, transparent 0%, #0c0c2b 18%);
+    background: linear-gradient(to bottom, transparent 0%, #0c0c2b 18%); }
+  .card-imageText[data-style="19"] .card .card-text .card-text-name {
+    margin-top: -30px;
+    font-size: 26px;
+    line-height: 1.2;
+    color: #33FFCC; }
+    .card-imageText[data-style="19"] .card .card-text .card-text-name + .card-text-info {
+      margin-top: 10px; }
+  .card-imageText[data-style="19"] .card .card-text .card-text-info {
+    color: #fff;
+    will-change: margin-top;
+    -webkit-transition: .4s margin-top ease-out;
+    -o-transition: .4s margin-top ease-out;
+    transition: .4s margin-top ease-out;
+    -webkit-transition-delay: .1s;
+         -o-transition-delay: .1s;
+            transition-delay: .1s; }
+
+.card-imageText[data-style="19"] .card .card-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%; }
+
+.card-imageText[data-style="19"] .card .card-img {
+  height: 100%;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+  -webkit-transition: .4s transform ease-out;
+  -o-transition: .4s transform ease-out;
+  transition: .4s transform ease-out;
+  -webkit-transition-delay: .1s;
+       -o-transition-delay: .1s;
+          transition-delay: .1s;
+  -webkit-transform: translateY(0);
+      -ms-transform: translateY(0);
+          transform: translateY(0); }
+
+.card-imageText[data-style="19"] .card .card-imgColor {
+  opacity: 0.4;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(20, 20, 65, 0.42)), to(#141441));
+  background: -webkit-linear-gradient(top, rgba(20, 20, 65, 0.42) 0%, #141441 100%);
+  background: -o-linear-gradient(top, rgba(20, 20, 65, 0.42) 0%, #141441 100%);
+  background: linear-gradient(to bottom, rgba(20, 20, 65, 0.42) 0%, #141441 100%);
+  will-change: opacity;
+  -webkit-transition: .4s opacity ease-out;
+  -o-transition: .4s opacity ease-out;
+  transition: .4s opacity ease-out;
+  -webkit-transition-delay: .1s;
+       -o-transition-delay: .1s;
+          transition-delay: .1s; }
+
+.card-imageText[data-style="19"] .card:hover .card-text {
+  -webkit-transform: translateY(20%);
+      -ms-transform: translateY(20%);
+          transform: translateY(20%); }
+  .card-imageText[data-style="19"] .card:hover .card-text::before {
+    opacity: 0; }
+  .card-imageText[data-style="19"] .card:hover .card-text .card-text-name + .card-text-info {
+    margin-top: 20px; }
+
+.card-imageText[data-style="19"] .card:hover .card-imgColor {
+  opacity: 1; }
+
+.card-imageText[data-style="19"] .card:hover .card-img {
+  -webkit-transform: translateY(-80px);
+      -ms-transform: translateY(-80px);
+          transform: translateY(-80px); }

@@ -1,0 +1,132 @@
+﻿@model WorkV3.Models.FormItem
+
+@{    
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    bool isEvent = ViewBag.IsEvent;
+    string title = isEvent ? "報名者" : "填表名單";
+    ViewBag.Title = title + "編輯";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId, isEvent = isEvent };
+
+    string uploadUrl = ViewBag.UploadUrl;
+    string rootUrl = Href("~/");
+}
+
+@section FArea {    
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.FileUploader()
+    @BundleConfig.TooltipSter()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    @BundleConfig.JWPlayer()
+    <script type="text/javascript" src="~/Script/workV3/customForm.js"></script>
+    <script type="text/javascript" src="~/Script/workV3/check.js"></script>
+    <script type="text/javascript">
+        Component.radioList('#divCheckStatus');
+
+        var outerElm = $('#liCustomField');
+        Form.initField(outerElm, '@rootUrl', '@Html.Raw(Url.Action("FileUpload", "Form", new { siteId = siteId, menuId = menuId, area = string.Empty }))', '@uploadUrl', '@Html.Raw(Url.Action("Regions", "Common", new { area = string.Empty }))');
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                Form.checkRepeat(outerElm, '@Model.FormID', '@Model.ID', '@Url.Action("GetItemCount", "Form", new { area = string.Empty })', function () {
+                    form.submit();
+                });
+            }
+        });
+
+            
+        @if (ViewBag.Exit as bool? == true) {
+        <text>
+        Component.alert('@(title)已儲存', function () {
+            parent.refreshList();
+            Component.closeCenter();
+        });
+        </text>
+        }
+    </script>
+}
+
+<div class="groove groove-1" style="min-height:1000px;">
+    <form id="editForm" method="post" action="@Url.Action("FormItemEdit", siteQuery)" enctype="multipart/form-data">
+        <input type="hidden" name="ID" value="@Model.ID" />
+        <input type="hidden" name="FormID" value="@Model.FormID" />
+        <input type="hidden" name="IsBack" value="@Model.IsBack.ToString()" />
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected"><i class="cc cc-playlist-play"></i>@title</div>                
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline no-label">@(isEvent ? "報名狀態" : "處理狀態")</div>
+                                <div id="divCheckStatus" class="radio-box inline" data-radioGroup="CheckStatus">
+                                    @if (isEvent) {
+                                        FormCheckStatus[] checkStatusList = (FormCheckStatus[])Enum.GetValues(typeof(FormCheckStatus));
+                                        foreach(FormCheckStatus status in checkStatusList) {
+                                            if(status == FormCheckStatus.後台取消) {
+                                    <div>
+                                        <input type="radio" value="@((int)status)" />
+                                        <label>取消報名</label>
+                                    </div>
+                                            } else if (status != FormCheckStatus.前台取消) {
+                                    <div>
+                                        <input type="radio" value="@((int)status)" />
+                                        <label>@status</label>
+                                    </div>
+                                            }
+                                        }
+                                    } else {
+                                    <div>
+                                        <input type="radio" value="@((int)FormCheckStatus.待審核)" />
+                                        <label>尚未處理</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" value="@((int)FormCheckStatus.正取)" />
+                                        <label>已處理</label>
+                                    </div>
+                                    }
+                                    <input type="hidden" id="CheckStatus" name="CheckStatus" value="@Model.CheckStatus" />
+                                </div>
+                            </div>
+                            <div class="col-1">
+                                <div class="title no-label">備註</div>
+                                <div class="input-field inline full no-label">
+                                    <textarea id="Remark" name="Remark" class="materialize-textarea lineHeight-middle">@Model.Remark</textarea>
+                                </div>
+                            </div>
+                            <div class="sub-title"><span>@(isEvent ? "報名者信息" : "填表內容")</span></div>
+                        </li>                        
+                        <li id="liCustomField" style="margin-top:20px;">
+                            @{
+                                IEnumerable<WorkV3.Models.FieldModel> fields = WorkV3.Models.FieldDAO.GetItems(Model.FormID).Where(f => f.Enable);
+                                List<WorkV3.Models.FieldValue> values = Model.GetValues().ToList();
+                            }
+                            @if (fields?.Count() > 0) {
+                                foreach (WorkV3.Models.FieldModel field in fields) {
+                                    field.Value = values.FirstOrDefault(v => v.FieldID == field.ID);
+                                    Html.RenderPartial("~/Views/Form/FieldViewStyle1.cshtml", field);
+                                }
+                            }
+                        </li>
+                    </ul>                    
+                </div>                
+            </div>
+        </div>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>  
+    </form>
+</div>
+

@@ -1,0 +1,63 @@
+﻿@model IEnumerable<string>
+@{
+    ViewBag.Title = "SEO關鍵字快選";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="title">關鍵字搜尋</div>
+            <div class="input-field">
+                <input id="txtKey" type="text" placeholder="請輸入關鍵字" />
+            </div>
+        </li>
+        <li>
+            <div id="divList" class="radio-box inline m-T-none">
+                @foreach (string word in Model) {
+                <div>
+                    <input class="with-chip transparent" type="checkbox" id="@word" />
+                    <label for="@word">@word</label>
+                </div>
+                }                
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar">
+        <a class="btn-cancel" href="javascript:parent.document.body.click();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSelect" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>選入</a>
+    </div>
+</div>
+
+@section FArea {
+    <script type="text/javascript">
+        var listOuterElm = $('#divList');
+        
+        $('#txtKey').change(function () {
+            var val = $.trim(this.value);
+            listOuterElm.find('input').each(function () {
+                if (!$(this).prop('checked')) {
+                    if (this.id.indexOf(val) == -1)
+                        $(this).parent().fadeOut();
+                    else
+                        $(this).parent().fadeIn();
+                }
+            });
+        });
+
+        $('#btnSelect').click(function () {
+            var selectedWords = [];
+            listOuterElm.find('input').each(function () {
+                if (this.checked) {
+                    selectedWords.push(this.id);
+                }
+            });
+
+            parent.setKeywords(selectedWords);
+            setTimeout(function () { parent.document.body.click(); }, 100);
+        });        
+    </script>
+}
+
+

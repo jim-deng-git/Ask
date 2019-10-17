@@ -1,0 +1,127 @@
+footer
+  background-color: #0c0c0c
+  padding: 50px 0 50px
+  color: #9d9d9d
+  position: relative
+  z-index: 3
+  font-size: 14px
+  +breakpoint(pad-portrait)
+    padding: 20px 0 20px
+  .wrapper
+    +breakpoint(pad-portrait)
+      padding: 0
+  .card-imageTextList
+    text-align: left
+  .col
+    padding: 0 30px
+    +breakpoint(pad-portrait)
+      padding: 0 15px
+      // &:nth-child(1)
+      //   display: none
+  .col + .col
+    border-left: 1px solid #9d9d9d
+    padding: 0 0 0 60px
+    text-align: center
+    +breakpoint(pad-portrait)
+      border: none
+      padding: 0 30px
+  .col + .col + .col
+    text-align: center
+    +breakpoint(pad-portrait)
+      border-left: 1px solid #9d9d9d
+    +breakpoint(mobile)
+      border: none
+      margin-top: 50px
+  .footerLogo
+    text-align: left
+    // +breakpoint(pad-portrait)
+    //   text-align: center
+  .footer-infoList
+    .infoBox
+      margin-top: 30px
+      +breakpoint(pad-portrait)
+        margin-top: 20px
+      ul
+        font-size: 0
+        text-align: left
+        li
+          display: inline-block
+          width: 33.33333%
+          padding: 2px 15px 2px 0
+          a
+            display: block
+            font-size: 14px
+            color: #9d9d9d 
+            padding: 0 5px 2px 5px
+            // border-bottom: 1px solid #1b1919
+  .footer-title
+    font-weight: bold
+    font-size: 20px
+    text-align: center
+    padding-top: 10px
+    padding-bottom: 20px
+    position: relative
+    +breakpoint(mobile)
+      margin-top: 20px
+    &::after
+      content: ''
+      width: 30px
+      height: 1px
+      background-color: #9d9d9d
+      position: absolute
+      top: 0
+      left: 50%
+      transform: translateX(-50%)
+    ~ .footer-title
+      margin-top: 24px
+  .link-list
+    text-align: center   
+    font-size: 34px
+    a
+      padding: 0 3px
+      i
+        color: #9d9d9d !important
+      .icon-cc-rss
+        font-size: 24px
+        display: inline-block
+        transform: translateY(-3px)
+  .copright,.text-en,.text-cn
+    font-weight: 400
+    padding: 5px 0 5px 60px
+    text-align: left
+    +breakpoint(mobile)
+      font-size: 14px
+      padding: 5px 20px
+  .URL-icon,.URL-info
+    display: inline-block
+    vertical-align: middle
+    // margin-bottom: 20px
+    a
+      display: table
+  .URL-icon
+    font-size: 25px
+    padding: 0 5px
+    line-height: 24px
+  .URL-info
+    text-align: left
+    font-size: 15px
+    a:link
+      color: #ffffff
+  .fb-page
+    margin-top: 20px
+  
+  .card-imageTextList[data-style="6"]
+    text-align: center
+    ul
+      li
+        display: inline-block
+        + li
+          a
+            border-left: #9d9d9d 1px solid
+        a
+          color: #9d9d9d 
+          padding: 0 10px
+          line-height: 1
+          +breakpoint(mobile)
+            font-size: 12px
+            padding: 0 5px

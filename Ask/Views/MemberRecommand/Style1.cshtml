@@ -1,0 +1,77 @@
+﻿@model IEnumerable<WorkV3.ViewModels.MemberCollectionViewModel>
+
+@{
+    string uploadUrl = ViewBag.UploadVPath;
+    string rootUrl = Href("~/");
+    Member curUser = Member.Current;
+}
+
+@if (curUser != null)
+{
+
+    @BundleConfig.Swiper()
+    @*<link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />*@
+    <link href="~/css/Cards/MemberRecommand/style1.css" rel="stylesheet" />
+
+    <div class="card-plainText" data-style="2">
+        <div class="title-main"><div>推薦</div></div>
+        <div class="title-sub">
+            <p>日常喜好的各種主題，太報推薦給你…</p>
+        </div>
+    </div>
+
+    if (Model?.Count() > 0)
+    {
+        <div id="card_@(curUser.ID)" class="card-MemberRecommand" data-style="1">
+            <div id="swiper_@curUser.ID" class="swiper-container">
+                <div class="swiper-wrapper">
+                    @foreach (WorkV3.ViewModels.MemberCollectionViewModel item in Model)
+                    {
+                        <div class="swiper-slide">
+                            <div class="card shadow-none">
+                                <div class="card-box">
+                                    <a href="@Html.Raw(item.LinkUrl)">
+                                        @if (!string.IsNullOrWhiteSpace(item.ImgSrc))
+                                        {
+                                            <div class="card-img wide" style="background-image:url('@(item.ImgSrc)')">
+                                                <div class="card-img-content flex" style="background-image:url(@(item.ImgSrc))"></div>
+                                            </div>
+                                        }
+                                        <div class="card-text">
+                                            <div class="card-text-name">@item.Title</div>
+                                            <div class="card-text-info">@item.Summary.TrimTags().Truncate(48)</div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+    }
+
+    @*<script type="text/javascript" src="~/script/swiper/swiper.jquery.js"></script>*@
+    <script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(curUser.ID)');
+        var swiper = new Swiper('#swiper_@curUser.ID', {
+            // pagination: '.swiper-pagination',
+            slidesPerView: 'auto',
+            centeredSlides: false,
+            paginationClickable: true,
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev',
+            spaceBetween: 0,
+            initialSlide: 3,
+            // slidesPerView: 3,
+            loop: true,
+            speed: 800
+        });
+
+    })();
+    </script>
+
+}

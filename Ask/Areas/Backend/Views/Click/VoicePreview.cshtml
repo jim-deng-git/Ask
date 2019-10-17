@@ -1,0 +1,44 @@
+﻿@model WorkV3.Models.ClickVoiceModel
+@{
+    Layout = null;
+    string VoiceName = string.IsNullOrWhiteSpace(Model.ShowName) ? Model.Path : Model.ShowName;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+}
+
+<li>
+    <div class="col-2">
+        <div class="fileuploader fileuploader-theme-thumbnails normal">
+            <div class="fileuploader-items voice">
+                <ul class="fileuploader-items-list">
+                    <li class="fileuploader-item">
+                        <div class="columns">
+                            <div class="column-title">
+                                <div class="title-name" title="@VoiceName">@VoiceName</div>
+                                <div id="VoiceDiv"></div>
+                            </div>
+                        </div>
+                    </li>
+                    <div class="actions-holder">
+                        <a class="btn-white-o square transparent fileuploader-action-text tooltip click" title="編輯" href="@Url.Action("VoiceEdit", "Click", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                        <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip delclick" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</li>
+
+@BundleConfig.JWPlayer()
+
+<script type="text/javascript">
+    $(function () {
+        jwplayer("VoiceDiv").setup({
+            file: '@(ViewBag.UploadVPath + Model.Path)',
+            width: 240,
+            height: 30,
+            skin: {
+                active: "#2e2e2e"
+            }
+        });
+    });
+</script>

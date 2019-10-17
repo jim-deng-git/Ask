@@ -1,0 +1,471 @@
+﻿@model WorkV3.Models.SeekModel
+@{
+    ViewBag.Title = "徴件概況";
+
+    bool isIframe = Request.QueryString["iframe"] == "1";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    SitePage sitePage = ViewBag.SitePage;
+
+    string listUrl = Url.Action("List", new { siteId = siteId, index = Request.QueryString["page"] });
+    string youtubeImgUrl = Request.Url.Scheme + "://img.youtube.com/vi/";
+
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+    string dateFmt = ViewBag.DateFmt;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Scripts.Render("~/JS/colorbox")
+    @Styles.Render("~/Css/Card")
+    <link href="~/css/card.css" rel="stylesheet" />
+    <link href="~/css/Cards/Seek/list-style1.css" rel="stylesheet" />
+    <link href="~/css/vendor/chart/pie-chart.css" rel="stylesheet" />
+    <link href="~/css/vendor/highcharts/highcharts.css" rel="stylesheet" type="text/css" />
+}
+
+@section FArea {
+    @BundleConfig.Colorbox()
+    @BundleConfig.Component()
+    @BundleConfig.JWPlayer()
+    @BundleConfig.HighCharts()
+    <script type="text/javascript" src="~/script/clipboard/clipboard.min.js"></script>
+    <script type="text/javascript">
+        //wei 20180802集點複製過來
+        function chgqr(s, name) {
+
+            $("#QR_box").find("img")[0].src = "http://chart.apis.google.com/chart?cht=qr&chl=" + encodeURIComponent(s) + "&chs=132x132";
+            top["burl"] = "http://chart.apis.google.com/chart?cht=qr&chl=" + encodeURIComponent(s) + "&chs=132x132";
+            top["bname"] = name;
+
+
+        }
+
+
+        function qrclick() {
+            // console.dir(e);"http://chart.apis.google.com/chart?cht=qr&chl=" + encodeURIComponent(s) + "&chs=132x132"
+            fetch(top["burl"]).then(res => res.blob().then(blob => {
+                var a = document.createElement('a');
+                var url = window.URL.createObjectURL(blob);
+                var filename = top["bname"] + '.png';
+                a.href = url;
+                a.download = filename;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                $("#QR_box").find("a").on("click", null);
+            }))
+
+        }
+
+        function createChart(startDate, endDate) {
+            var chart = $('#chart').data('chart');
+            if (chart) {
+                chart.destroy();
+                $('#chart').removeData('chart');
+            }
+
+            $.getJSON('@Url.Action("GetInfoChartData", new { id = Model.ID })?start=' + encodeURIComponent(startDate) + '&end=' + encodeURIComponent(endDate), function (data) {
+                if (!data || !$.isArray(data) || data.length != 3)
+                    return;
+
+                var markerEnable = data[0].length == 1;
+
+                var curChart = new Highcharts.Chart({
+                    chart: {
+                        renderTo: 'chart',
+                        height: 500,
+                        type: 'line',
+                        spacingTop: 50
+                    },
+                    title: {
+                        text: null
+                    },
+                    xAxis: {
+                        title: {
+                            text: '日期',
+                            margin: 20
+                        },
+                        categories: data[0],
+                        tickmarkPlacement: 'on',
+                        labels: {
+                            style: {
+                                fontSize: '18px'
+                            }
+                        }
+                    },
+                    yAxis: {
+                        min: 0,
+                        allowDecimals: false,
+                        title: {
+                            text: '人數/次數',
+                            rotation: 0,
+                            align: 'high',
+                            offset: 0,
+                            y: -20,
+                            x: -15
+                        }
+                    },
+                    series: [
+                        {
+                            name: '參與人數',
+                            data: data[1],
+                            marker: {
+                                enabled: markerEnable
+                            },
+                            color: '#2196F3'
+                        },
+                        {
+                            name: '投稿次數',
+                            data: data[2],
+                            marker: {
+                                enabled: markerEnable
+                            },
+                            color: '#43A047'
+                        }
+                    ]
+                });
+                $('#chart').data('chart', curChart);
+
+                var personCount = 0, seekItemCount = 0;
+                for (var i = 0, len = data[1].length; i < len; ++i) {
+                    personCount += data[1][i];
+                    seekItemCount += data[2][i];
+                }
+                $('#personCount').html(personCount); // 投稿人數
+                $('#seekItemCount').html(seekItemCount); // 投稿次數
+            });
+        }
+
+        $('#chartDate').each(function () {
+            var dateRange = $(this).attr('data-dateRange').split(',');
+            createChart(dateRange[0], dateRange[1]);
+        });
+
+        function setSelectedDateRange(startDate, endDate) {
+            startDate = Component.parseDate(startDate);
+            endDate = Component.parseDate(endDate);
+
+            function dateToString(date, year) {
+                var curYear = date.getFullYear();
+                var str = curYear == year ? '' : curYear + '/';
+
+                var v = date.getMonth() + 1;
+                str += (v < 10 ? '0' + v.toString() : v.toString()) + '/';
+
+                v = date.getDate();
+                str += v < 10 ? '0' + v.toString() : v.toString();
+
+                return str;
+            }
+
+            $('#spanChartDate').html(dateToString(startDate) + " - " + dateToString(endDate, startDate.getFullYear()));
+            createChart(dateToString(startDate), dateToString(endDate));
+            $('body').click();
+        }
+
+        $('div.video-mp4').each(function () {
+            var id = this.id;
+            jwplayer(id).setup({
+                width: "100%",
+                height: "100%",
+                type: "mp4",
+                file: $(this).attr('data-video'),
+                autostart: true,
+                skin: {
+                    name: "default",//選擇主題
+                    active: "#2e2e2e",//選擇主色
+                    inactive: "#ffffff",
+                    background: "rgba(255,255,255,0)"//選擇背景
+                },
+                showdownload: false,
+                aspectratio: "16:9"//影片比例
+            });
+        });
+
+        $('.openDialog').colorbox({
+            width: 350,
+            height: 350,
+            transition: false,
+            maxWidth: "85%",
+            maxHeight: "85%",
+            opacity: 0,
+            iframe: true,
+            fadeOut: 100
+        });
+        $('.openLogin_m').colorbox({
+            //width: "450",
+            //height: "260",
+            //edit size fay 20180410
+            width: "340",
+            height: "320",
+            maxWidth: "95%",
+            maxHeight: "95%",
+            //iframe: true,
+            inline: true,
+        });
+
+        new Clipboard('.copy-btn', {
+            target: function () {
+                return document.querySelector('#copy-site');
+            }
+        });
+
+        $("#published").click(function () {
+            if ($(this).data('uninit'))
+                $.get('@Html.Raw(Url.Action("ToggleIssue", new { siteId = siteId, id = Model.ID }))');
+
+            $(this).data('uninit', true);
+            if (this.checked) {
+                $("#img-qrCode").show(400);
+                $("#img-mobile").hide(100);
+                $("#published-box").slideDown();
+            } else {
+                $("#img-mobile").show(400);
+                $("#img-qrCode").hide(100);
+                $("#published-box").slideUp();
+            }
+        }).triggerHandler('click');
+
+        $("#hide").click(function () {
+            $("#dateEdit").show();
+            $("#dateShow").hide();
+        });
+        $("#show").click(function () {
+            $("#dateShow").show();
+            $("#dateEdit").hide();
+        });
+
+        $('#btnSave').click(function () {
+            var url = '@Url.Action("SetIssueDate", new { siteId = siteId, id = Model.ID })&start=' + encodeURIComponent($.trim($('#issueStart').val())) + '&end=' + encodeURIComponent($.trim($('#issueEnd').val()));
+            $.get(url, function () {
+                location.replace(location.href);
+            });
+        });
+
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function (e) {
+            e.stopPropagation();
+        });
+
+    </script>
+}
+
+<div class="groove groove-1">
+    <h1 class="title-admin-page">
+        @if (!isIframe)
+        {
+            <a href="@listUrl" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>
+        }
+        徵件參與概況
+    </h1>
+    <div class="inline full m-B-10">
+        <div class="article-center">
+            @{ IEnumerable<WorkV3.Models.SeekTypeModels> types = Model.GetTypes(); }
+            @if (types?.Count() > 0)
+            {
+                <div class="chips m-none">
+                    @foreach (WorkV3.Models.SeekTypeModels item in types)
+                    {
+                        <div class="chip" data-color="@item.Color"><span class="chip-name">@item.Name</span></div>
+                    }
+                </div>
+            }
+            <h4 class="m-B-5">@Model.Title</h4>
+            <div class="inline full">
+                @if (Model.Match != "no")
+                {
+                    <div class="col-2 p-R-5">
+                        @if (Model.Match == "video" && !string.IsNullOrWhiteSpace(Model.Video))
+                        {
+                            if (Model.VideoType == "custom")
+                            {
+                                <div id="divCustomVideo_@(Model.ID)" data-video="@(uploadUrl + Model.Video)" class="video-mp4"></div>
+                            }
+                            else
+                            {
+                                string videoUrl = string.Empty;
+                                if (Model.VideoType == "youtube")
+                                {
+                                    videoUrl = $"https://www.youtube.com/embed/{ Model.Video }?rel=0&showinfo=0&autoplay=1";
+                                }
+                                else if (Model.VideoType == "vimeo")
+                                {
+                                    videoUrl = $"http://player.vimeo.com/video/{ Model.Video }?title=0&autoplay=1";
+                                }
+                                if (videoUrl != string.Empty)
+                                {
+                                    <iframe src="@videoUrl" frameborder="0" allowfullscreen></iframe>
+                                }
+                            }
+                        }
+                        else if (Model.Match == "image" && !string.IsNullOrWhiteSpace(Model.Image))
+                        {
+                            <img src="@(uploadUrl + Model.Image)" alt="" />
+                        }
+                    </div>
+                }
+                <div class="col-2">@Html.Raw(Model.Description)</div>
+            </div>
+        </div>
+    </div>
+    <div class="inline full m-B-12">
+        <h3 class="font-grey p-v-3 border-B">1 – 創建階段</h3>
+        <div class="col-5 m-T-10 p-L-5">
+            <div class="photoframe">
+                <span></span><span></span><span></span><span></span>
+                <div id="img-mobile"><img src="~/images/temp/mobile_code.jpg" alt=""></div>
+                @{
+                    string webPage = Url.FullActionUrl("Index", "Home", new { siteSn = sitePage.SiteSN, pageSn = sitePage.PageSN, area = string.Empty });
+                    string qrCode = "http://chart.apis.google.com/chart?cht=qr&chl=" + Server.UrlEncode(webPage) + "&chs=170x170";
+                }
+                <div id="img-qrCode" style="display: none"><img src="@Html.Raw(qrCode)" alt="" /></div>
+            </div>
+        </div>
+        <div class="col-4-partner m-L-10">
+            <ul class="forms">
+                @if (Model.OpenStart.HasValue && Model.OpenEnd.HasValue)
+                {
+                    <li class="m-B-8">
+                        <div class="title">徵件期間</div>
+                        <div class="inline">
+                            @(Model.OpenStart.ToString(dateFmt))(@weeks[(int)Model.OpenStart.Value.DayOfWeek])@Model.OpenStart.ToString("HH:mm") ~
+                            @(Model.OpenEnd.ToString(dateFmt))(@weeks[(int)Model.OpenEnd.Value.DayOfWeek])@Model.OpenEnd.ToString("HH:mm")
+                        </div>
+                    </li>
+                }
+                <li class="m-B-8">
+                    <div class="title">刊登設定</div>
+                    <div class="inline">
+                        <div class="float-L">
+                            <input type="checkbox" id="published" @(Model.IsIssue ? "checked" : string.Empty) />
+                            <label for="published">刊登</label>
+                        </div>
+                        <div class="hover-show float-L">
+                            <span id="dateShow" class="p-h-2">
+                                @if (Model.IssueStart.HasValue)
+                                {
+                                    @:@(Model.IssueStart.ToString(dateFmt))(@weeks[(int)Model.IssueStart.Value.DayOfWeek])@Model.IssueStart.ToString("HH:mm")
+                                }
+                                @if (Model.IssueStart.HasValue && Model.IssueEnd.HasValue)
+                                {
+                                    @:~
+                                }
+                                @if (Model.IssueEnd.HasValue)
+                                {
+                                    @:@(Model.IssueEnd.ToString(dateFmt))(@weeks[(int)Model.IssueEnd.Value.DayOfWeek])@Model.IssueEnd.ToString("HH:mm")
+                                }
+                            </span>
+                            <!-- inline to d-inline-block fay 20180329 -->
+                            <a id="hide" class="btn-grey-darken-4-o transparent p-none hide d-inline-block"><i class="cc cc-edit cc-lg"></i></a>
+                        </div>
+                        <div id="dateEdit" class="p-L-2 inline" style="display: none">
+                            <div class="input-field inline m-none">
+                                <input type="text" id="issueStart" value="@Model.IssueStart.ToString(dateFmt + " HH:mm")" class="input-cal datetimepicker m-none" placeholder="開始時間" />
+                            </div>
+                            -
+                            <div class="input-field inline m-none">
+                                <input type="text" id="issueEnd" value="@Model.IssueEnd.ToString(dateFmt + " HH:mm")" class="input-cal datetimepicker m-none" placeholder="結束時間" />
+                            </div>
+                            <a id="btnSave" class="btn-grey-darken-4-o transparent p-none"><i class="cc cc-check cc-lg"></i></a>
+                            <a id="show" class="btn-grey-darken-4-o transparent p-none"><i class="cc cc-close cc-lg"></i></a>
+                        </div>
+                    </div>
+                </li>
+                <li class="m-B-8" id="published-box" style="display:none;">
+                    <div class="title">投稿網址</div>
+                    <div class="inline">
+                        <span id="copy-site">@Html.Raw(webPage)</span>
+                        <a class="tooltip-info copy-btn" href="javascript:" title="複製網址"><i class="cc cc-content-copy cc-lg"></i></a>
+                        <a onclick='chgqr("@Html.Raw(webPage)","@Model.Title")' class="openLogin_m inline" href="#QR_box"><img class="qr-sm" src="~/images/temp/qrCode.jpg" alt=""></a>@*//wei 20180802*@
+                        @*<img class="qr-sm" src="http://demo.kidtech.com.tw/demo/CCWorkV3/images/temp/qrCode.jpg" alt="" />*@@*//wei 20180802*@
+
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="inline full">
+        <h3 class="font-grey p-v-3 border-B">2 – 參與階段</h3>
+        <div class="col-4">
+            <!--Pie Chart -->
+            <div class="progress-pie-chart">
+                <div class="ppc-percents">
+                    <div class="pcc-percents-wrapper">
+                        <a href="@Url.Action("SeekItemList", new { id = Model.ID, siteId = siteId })" style="text-decoration:none;"><span>@(ViewBag.PersonCount)人投稿</span></a>
+                    </div>
+                </div>
+            </div><!--End Pie Chart -->
+        </div>
+        <div class="col-4-partner">
+            <div class="analytics-control-bar m-T-10">
+                <div class="selectDateRange">
+                    @{
+                        //DateTime today = DateTime.Today;
+                        //DateTime start = Model.OpenStart ?? today.AddDays(-13);
+                        //DateTime end = Model.OpenEnd ?? today;
+                        //if(Model.OpenStart.HasValue && !Model.OpenEnd.HasValue) {
+                        //    end = start.AddDays(13);
+                        //} else if(!Model.OpenStart.HasValue && Model.OpenEnd.HasValue) {
+                        //    start = end.AddDays(-13);
+                        //}
+                        // Min 20180509 客戶要求直接帶最近兩周
+                        DateTime end = DateTime.Today;
+                        DateTime start = end.AddDays(-13);
+                        string dateFullStr = start.ToString("yyyy/MM/dd") + "," + end.ToString("yyyy/MM/dd");
+                        string dateStr = start.ToString("yyyy/MM/dd") + " - " + (end.Year == start.Year ? end.ToString("MM/dd") : end.ToString("yyyy/MM/dd"));
+                    }
+                    <a id="chartDate" class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title="" data-dateRange="@dateFullStr"><span id="spanChartDate">@dateStr</span> <i class="cc cc-chevron-down"></i></a>
+                    <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                        <li>
+                            <iframe class="dropdownIframe" src="@Url.Action("SelectRangeDate", "Common")" frameborder="0"></iframe>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="charts">
+                <div id="chart" class="chart-line highcharts"></div>
+            </div>
+            <div class="chartContent">
+                <span>投稿人數</span>
+                <a id="personCount" style="color: #2196F3;"></a>
+                <span>投稿次數</span>
+                <a id="seekItemCount" style="color: #43A047;"></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style='display:none'>
+    <div id='QR_box'>
+        <div class="zone zone-full">
+            <div class="wrapper">
+                <div class="groove groove-1">
+                    <div class="card shadow-none">
+                        <div class="lightbox-top-bar">
+                            <div class="lightbox-top-bar-title">集點網址</div>
+                        </div>
+                        <ul class="forms text-C m-B-none">
+                            <li>
+                                <div class="col-1">
+                                    <img src="" alt="">
+                                </div>
+                            </li>
+                            <li>
+                                <div class="col-1">
+                                    <a burl="" onclick="qrclick(this)"><div class="btn-grey-o m-5"><i class="cc cc-arrow-down"></i>下載QRcode圖檔</div></a>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

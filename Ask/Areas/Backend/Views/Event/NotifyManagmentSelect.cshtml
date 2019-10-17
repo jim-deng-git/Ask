@@ -1,0 +1,104 @@
+﻿@model IEnumerable<MemberModels>
+@{
+    ViewBag.Title = "管理員";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var notifyManagements = ViewBag.notifyManagements as List<WorkV3.Models.EventNotifyManagementModel>;
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="title">選擇管理員<span class="required">*</span></div>
+            <div class="input-field">
+                <input id="txtKey" type="text" placeholder="關鍵字搜尋" />
+            </div>
+        </li>
+        <li>
+            <div class="radio-box" id="divList">
+
+                @foreach (var item in Model)
+                {
+                    <div data-item='@Newtonsoft.Json.JsonConvert.SerializeObject(item, ViewBag.Int64Converter)'>
+                        <input class="with-chip" type="checkbox" id="@item.Id" @(notifyManagements.Any(x => x.ID == item.Id) ? "checked=\"checked\"" : string.Empty) />
+                        <label for="@item.Id">@item.MemName</label>
+                    </div>
+                }
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar">
+        <div style="display: none;">
+            <div id="addTag" class="float-box">
+                <div class="title">請輸入Email</div>
+                <input id="txtNewItem" type="text" placeholder="輸入完畢請按下Enter" />
+            </div>
+        </div>
+        <a class="btn-grey-o set-left openInlineEdit" href="#addTag">
+            <i class="cc cc-plus"></i>直接輸入Email
+        </a>
+        <a class="btn-cancel" href="javascript:parent.document.body.click();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSelect" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>選入</a>
+    </div>
+</div>
+
+@section FArea {
+    <script type="text/javascript">
+        var listOuterElm = $('#divList');
+
+        $('#txtKey').change(function () {
+            var val = $.trim(this.value);
+            listOuterElm.children().each(function () {
+                if (!$(this).find('input').prop('checked')) {
+                    var item = $.parseJSON($(this).attr('data-item'));
+                    if (item.MemName.indexOf(val) == -1)
+                        $(this).fadeOut();
+                    else
+                        $(this).fadeIn();
+                }
+            });
+        });
+
+        $('#btnSelect').click(function () {
+            var selectedItems = [];
+            listOuterElm.children().each(function () {
+                if ($(this).find('input').prop('checked')) {
+                    var datItem = $.parseJSON($(this).attr('data-item'));
+                    var type = "m";
+                    if (datItem.Type) {
+                        type = datItem.Type;
+                    }
+                    var item = { ID: datItem.Id, Name: datItem.MemName, Type: type, Email: datItem.Email };
+                    selectedItems.push(item);
+                }
+            });
+
+            parent.SetNotifyManagementContainer(selectedItems);
+            setTimeout(function () { parent.document.body.click(); }, 100);
+        });
+
+        $('#txtNewItem').keypress(function (e) {
+            if (e.keyCode == '13') {
+                var email = $.trim(this.value);
+                if (!email) {
+                    parent.Component.alert('請輸入Email');
+                    return;
+                }
+
+                var item = { Id: Date.now(), Name: "", Type: "e", Email: email };
+
+                var html =
+                    "<div data-item='" + JSON.stringify(item) + "'>" +
+                    '   <input class="with-chip" type="checkbox" id="' + item.ID + '" />' +
+                    '   <label for="' + item.ID + '"> ' + item.Email + '</label>' +
+                    '</div>';
+                listOuterElm.append(html);
+
+                $.colorbox.close();
+            }
+        });
+    </script>
+}
+
+

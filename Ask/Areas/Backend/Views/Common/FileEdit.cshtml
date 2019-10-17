@@ -1,0 +1,68 @@
+﻿@{
+    ViewBag.Title = "搭配檔案";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo };
+}
+
+<form id="fileEditForm" method="post" action="@Html.Raw(Url.Action("FileEdit", siteQuery))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">上傳檔案</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    <input type="file" id="fileUpload" name="fileUpload" data-field="files" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar flex">            
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+@section FArea {      
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        (function () {
+            Component.multiFileUpload('#fileUpload', '@(Href("~/"))', '@Html.Raw(Url.Action("FileUpload", siteQuery))', '@ViewBag.UploadUrl',  @Html.Raw(ViewBag.Files), true, true);
+
+            $('#btnSave').click(function () {
+                if (Component.multiFileUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    var form = $('#fileEditForm');
+                    if (form.validationEngine('validate')) {
+                        form.submit();
+                    }
+                }
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                if (parent.refreshResourceItems)
+                    parent.refreshResourceItems();
+                parent.$.colorbox.close();
+                </text>
+            }
+        })();
+    </script>
+}

@@ -1,0 +1,128 @@
+﻿
+@{
+    long ID = ViewBag.ID;
+    IEnumerable<ProjectTypesModel> reimburseTypes = ViewBag.ReimburseTypes;
+    IEnumerable<EstimatesModel> projectEstimates = ViewBag.ProjectEstimates; //專案的預支表(尚未加入判斷是否已通過)
+}
+
+<li class="paragraph bg-border open">
+    <div class="item-box">
+        <div class="float-R m-L-5">
+            <a class="btn-grey-o square transparent tooltip" href="javascript:" title="編輯" onclick="paragraphOpen(this)"><i class="cc cc-edit"></i></a>
+            <a class="btn-grey-o square transparent tooltip" data-sort="up" href="javascript:" title="向上"><i class="cc cc-arrow-up"></i></a>
+            <a class="btn-grey-o square transparent tooltip" data-sort="down" href="javascript:" title="向下"><i class="cc cc-arrow-down"></i></a>
+            <a class="btn-del square transparent paragraph-del tooltip delParagraph" href="javascript:" title="刪除段落"><i class="cc cc-trash-o"></i></a>
+        </div>
+        <div class="item-listBox">
+            <input type="hidden" data-field="ID" value="@ID" />
+            @*<div class="d-inline-block">1-1</div>*@
+            <div class="d-inline-block">
+                <div class="item-title font-color paragraphTypeID" data-color=""></div>
+            </div>
+            <div class="d-inline-block paragraphDescription">
+            </div>
+            <div class="item-allPrice float-R">$ <span class="font-hg paragraphTaxIncluded"></span></div>
+        </div>  
+        <div class="item-infoBox">
+            <div class="col-1 inline-box-solve m-B-5">
+                <div class="title inline">類別</div>
+                <div class="input-field inline full">
+                    <select data-field="TypeID" >
+                        <option value="">請選擇</option>
+                        @if(reimburseTypes != null && reimburseTypes.Count() > 0)
+                        {
+                            foreach(var type in reimburseTypes)
+                            {
+                                <option value="@type.ID">@type.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="alert transparent">
+                    <i class="cc cc-attention"></i>
+                    <div class="paragraphTypeDesc">
+                    </div>
+                </div>
+            </div>
+            <div class="col-1 inline-box-solve m-B-5">
+                <div class="title inline">對應預支表</div>
+                <div class="input-field inline full">
+                    <select data-field="EstimateID" >
+                        <option value="">請選擇</option>
+                        @if(projectEstimates != null && projectEstimates.Count() > 0)
+                         {
+                             foreach(var estimates in projectEstimates)
+                             {
+                                 <option value="@estimates.ID">@estimates.ApplyMonth.ToString("yyyy.MM") $@estimates.Total.ToString("N0")</option>
+                             }
+                         }
+                    </select>
+                </div>
+            </div>
+            <div class="col-1 inline-box-solve m-B-5">
+                <div class="title inline">項目說明</div>
+                <div class="input-field inline full">
+                    <textarea contenteditable="true" data-field="Description"></textarea>
+                </div>
+            </div>
+            <div class="col-1 inline-box-solve m-B-5">
+                <div class="title inline">備註(支付說明)</div>
+                <div class="input-field inline full">
+                    <textarea contenteditable="true" data-field="Note"></textarea>
+                </div>
+            </div>
+            <div class="col-1 text-R">
+                <div class="row-ms inline-box-solve">
+                    <div class="col-ms-2">
+                        <span>銷售額 $</span>
+                        <div class="input-field inline middle">
+                            <input type="text" data-field="TaxExcluded" value="">
+                        </div>
+                    </div>
+                    <div class="col-ms-4">
+                        <span>稅金 $</span>
+                        <div class="input-field inline middle">
+                            <div class="d-inline-block font-hg paragraphTax"></div>
+                            <input type="hidden" data-field="Tax" value="" class="paragraphTax">
+                        </div>
+                    </div>
+                    <div class="col-ms-4">
+                        <span>含稅總計 $</span>
+                        <div class="d-inline-block font-hg paragraphTaxIncluded"></div>
+                        <input type="hidden" data-field="TaxIncluded" class="paragraphTaxIncluded">
+                    </div>
+                </div>
+            </div>
+            <div class="col-1 text-R">
+                <div class="row-ms inline-box-solve">
+                    <div class="col-ms-2">
+                        <span>單據類型 $</span>
+                        <div class="input-field inline short">
+                            <select name="" id="">
+                                <option value="">發票</option>
+                                <option value="">option2</option>
+                                <option value="">option3</option>
+                                <option value="">option4</option>
+                            </select>
+                        </div>
+                        <div class="input-field inline middle">
+                            <input type="text" data-field="DocumentNumber">
+                        </div>
+                    </div>
+                    <div class="col-ms-4">
+                        <span>現金支付 $</span>
+                        <div class="input-field inline middle">
+                            <input type="text" data-field="CashPay" >
+                        </div>
+                    </div>
+                    <div class="col-ms-4">
+                        <span>公司支付 $</span>
+                        <div class="input-field inline middle">
+                            <input type="text" data-field="CompanyPay" >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</li>

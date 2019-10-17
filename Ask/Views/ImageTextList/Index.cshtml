@@ -1,0 +1,580 @@
+﻿@model CardsModels
+
+@if (Model.StylesID == 5 || Model.StylesID == 9 || Model.StylesID == 11 || Model.StylesID == 12 || Model.StylesID == 13 || Model.StylesID == 26 || Model.StylesID == 29 || Model.StylesID == 35) {
+    @BundleConfig.Swiper()
+}
+<link href="~/css/Cards/ImageTextList/style@(Model.StylesID).css" rel="stylesheet" />
+
+<div id="@Model.No" class="card-imageTextList wow fadeInUp" data-style="@Model.StylesID">
+    @{
+        if (Model.StylesID == 4 || Model.StylesID == 8) {
+            if (Model.StylesID == 8) {
+                Model.StylesID = 2;
+            }
+            <div class="flexslider">
+                <ul class="slides">
+                    @Html.Action("Index", "ImageText", new { model = Model })
+                </ul>
+            </div>
+        } else if(Model.StylesID == 5 || Model.StylesID == 9 || Model.StylesID == 11 || Model.StylesID == 12 || Model.StylesID == 13 || Model.StylesID == 18 || Model.StylesID == 19 || Model.StylesID == 24 || Model.StylesID == 26 || Model.StylesID == 28 || Model.StylesID == 29 || Model.StylesID == 35) {
+            string viewName = "Style7.cshtml";
+            string centeredSlides = "true";
+            if (Model.StylesID == 5 || Model.StylesID == 18) {
+                viewName = "Style2.cshtml";
+                centeredSlides = "false";
+            } else if(Model.StylesID == 11) {
+                viewName = "Style5.cshtml";
+                centeredSlides = "false";
+            } else if(Model.StylesID == 12 || Model.StylesID == 13 || Model.StylesID == 19) {
+                viewName = "Style8.cshtml";
+                centeredSlides = "false";
+            } else if(Model.StylesID == 24) {
+                viewName = "Style15.cshtml";
+                centeredSlides = "false";
+            }else if(Model.StylesID == 26) {
+                viewName = "Style11.cshtml";
+                centeredSlides = "false";
+            }
+            else if(Model.StylesID == 28) {
+                viewName = "Style18.cshtml";
+                centeredSlides = "true";
+            }
+            else if(Model.StylesID == 29) {
+                viewName = "Style17.cshtml";
+            }
+            else if(Model.StylesID == 35) {
+                viewName = "Style22.cshtml";
+            }
+            <div id="swiper_@Model.No" class="swiper-container">
+                <div class="swiper-wrapper">
+                    @{ List<ImageTextModel> imgTexts = ImageTextDAO.Get(Model.No, true); }
+                    @foreach (ImageTextModel item in imgTexts) {
+                        List<ImageTextModel> datas = new List<ImageTextModel>();
+                        datas.Add(item);
+                    <div class="swiper-slide">
+                        @Html.Partial("~/Views/ImageText/" + viewName, datas)
+                    </div>
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+            
+            @* TaiSounds Custom Carrie Add 20180131 *@
+            if (Model.StylesID == 12) {
+                <div class="pagination text-C stories d-none">
+                    <a class="btn-black-o btn-more btn-custom-o" href="stories">More</a>
+                </div>
+                <div class="pagination text-C mother d-none">
+                    <a class="btn-black-o btn-more btn-custom-o" href="events">More</a>
+                </div>
+            }
+            @* TaiSounds Custom Carrie Add 20180131 *@
+
+            if (Model.StylesID == 9 || Model.StylesID == 11 || Model.StylesID == 12 || Model.StylesID == 26 || Model.StylesID == 28) {
+                <script type="text/javascript">
+                    (function () {  
+                        $(document).ready(function(){ 
+                            var swiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 'auto',
+                                centeredSlides: @centeredSlides,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                spaceBetween: 0,
+                                initialSlide: $('#swiper_@Model.No').find('.swiper-slide').length > 3 ? 0 : 1,
+                                slideToClickedSlide: true,
+                                loop: $('#swiper_@Model.No').find('.swiper-slide').length > 3 ? true : false,
+                                speed: 800,
+                                onSlideNextStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                }
+                            });  
+                            var swiperBtn = $('#swiper_@Model.No .swiper-button-next,#swiper_@Model.No .swiper-button-prev');
+                            var windowW = $(window).width();
+                            if( windowW > 420){
+                                $('#swiper_@Model.No').find('.swiper-slide').length > 3 ? swiperBtn.show() : swiperBtn.hide();
+                            }else{
+                                swiperBtn.show()
+                            }
+                            
+                        });                
+                    })();
+                </script>
+                if (Model.StylesID == 9) {
+                    <script type="text/javascript">
+                        $(window).on('load', function(){
+                            var outerElm = $('#@Model.No');
+                            outerElm.each(function () {
+                                var $Height = $(this).find('.swiper-container').outerHeight();
+                                $(this).find('.swiper-container').css('height', $Height);
+                            });
+                        }).trigger('resize'); 
+                    </script>
+                }else if (Model.StylesID == 28) {
+                    <script type="text/javascript">
+                        var windowW = $(window).width();
+                        var addHeight = 0
+                        if( windowW > 420){
+                            addHeight = 50
+                        }else{
+                            addHeight = 0
+                        }
+                        $(window).on('load', function(){
+                            var outerElm = $('#@Model.No');
+                            outerElm.each(function () {
+                                var $Height = $(this).find('.swiper-container').outerHeight();
+                                $(this).find('.swiper-container').css('height', $Height + addHeight);
+                            });
+                        }).trigger('resize'); 
+                    </script>
+                }
+            } else if(Model.StylesID == 13 || Model.StylesID == 19) {
+                <script type="text/javascript">
+                    (function () {   
+                        $(document).ready(function(){                  
+                            var mySwiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 'auto',
+                                centeredSlides: @centeredSlides,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                spaceBetween: 0,                            
+                                loop: $('#swiper_@Model.No').find('.swiper-slide').length > 4 ? true : false,
+                                speed: 800,
+                                autoHeight: true,
+                                onSlideNextStart : function(mySwiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(mySwiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                }
+                            }); 
+                        });             
+                    })();
+                </script>
+            } else if(Model.StylesID == 5) {
+                <script type="text/javascript">
+                    (function () { 
+                        $(document).ready(function(){                        
+                            var mySwiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 4,
+                                centeredSlides: @centeredSlides,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                spaceBetween: 20,
+                                slideToClickedSlide: true,         
+                                loop: $('#swiper_@Model.No').find('.swiper-slide').length > 4 ? true : false,
+                                speed: 800,
+                                breakpoints: {
+                                    580: {
+                                        slidesPerView: 2,
+                                        spaceBetween: 10,
+                                    },
+                                },
+                                onSlideNextStart : function(mySwiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(mySwiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                // onProgress: function(e){
+                                //     if(e.isBeginning){
+                                //         $('#swiper_@Model.No .swiper-button-prev').hide();
+                                //     } else if(e.isEnd){
+                                //         $('#swiper_@Model.No .swiper-button-next').hide();
+                                //     } else {
+                                //         $('#swiper_@Model.No .swiper-button-prev').show();
+                                //         $('#swiper_@Model.No .swiper-button-next').show();
+                                //     }
+                                // }
+                            });    
+                        });         
+                    })();
+                </script>
+            } else if(Model.StylesID == 18) {
+                <script type="text/javascript">
+                    (function () {        
+                        $(document).ready(function(){              
+                            var mySwiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 3,
+                                centeredSlides: @centeredSlides,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                spaceBetween: 15,
+                                slideToClickedSlide: true,         
+                                loop: false,
+                                speed: 800,
+                                breakpoints: {
+                                    580: {
+                                        slidesPerView: 1
+                                    },
+                                },
+                                onSlideNextStart : function(mySwiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(mySwiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                }
+                            });    
+                        });        
+                    })();
+                </script>
+            } else if(Model.StylesID == 24) {
+                <script type="text/javascript">
+                    (function () {     
+                        $(document).ready(function(){                          
+                            var swiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 'auto',
+                                centeredSlides: false,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                spaceBetween: 0,
+                                slideToClickedSlide: true,
+                                loop: $('#swiper_@Model.No').find('.swiper-slide').length > 3 ? true : false,
+                                speed: 800,
+                                autoHeight: true,
+                                onSlideNextStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                }
+                            });   
+                        });         
+                    })();
+                </script>
+            } else if(Model.StylesID == 27) {
+                <script type="text/javascript">
+                    (function () {     
+                        $(document).ready(function(){                          
+                            var swiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 'auto',
+                                centeredSlides: false,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                spaceBetween: 0,
+                                slideToClickedSlide: true,
+                                loop: $('#swiper_@Model.No').find('.swiper-slide').length > 3 ? true : false,
+                                speed: 800,
+                                autoHeight: true,
+                                onSlideNextStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                }
+                            });   
+                        });         
+                    })();
+                </script>
+            }else if(Model.StylesID == 29) {
+                <script type="text/javascript">
+                    (function () {     
+                        $(document).ready(function(){                          
+                            var swiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 'auto',
+                                centeredSlides: false,
+                                paginationClickable: true,
+                                nextButton: '#swiper_@Model.No .swiper-button-next',
+                                prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                //spaceBetween: 40,
+                                slidesPerView: 7,
+                                slideToClickedSlide: true,
+                                loop: $('#swiper_@Model.No').find('.swiper-slide').length > 7 ? true : false,
+                                speed: 800,
+                                breakpoints: { 
+                                    580: { 
+                                        slidesPerView: 2,
+                                        centeredSlides: true,
+                                        loop: false,
+                                        initialSlide: 1
+                                    },
+                                    640: {
+                                        slidesPerView: 3,
+                                    },
+                                    1179: {
+                                        slidesPerView: 5,
+                                    }
+                                },
+                                onSlideNextStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onSlidePrevStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBox').length) {
+                                        $('.videoCurrentBox').remove();
+                                        $('.header').removeClass('playVideo');
+                                        $(this).parents('.flexsliderV').removeClass('playVideo');
+                                    }
+                                },
+                                onInit: function(swiper){
+                                    setTimeout(function(){
+                                        var SwiperH = $("#swiper_@Model.No .swiper-wrapper").height();
+                                        $('#swiper_@Model.No .swiper-slide').css('height',SwiperH);
+                                    },500)
+                                }
+                            });   
+                            
+                        });         
+                    })();
+                </script>
+            }else if(Model.StylesID == 35) {
+                <script type="text/javascript">
+                    (function () {     
+                        $(document).ready(function(){   
+
+                            // var SwiperChangeSize = function(){
+                            //     var swiperName = $('#swiper_@Model.No');
+                            //     var next1 = swiperName.find('.swiper-slide-next').next('.swiper-slide'),
+                            //         next2 = swiperName.find('.swiper-slide-next').next('.swiper-slide').next('.swiper-slide'),
+                            //         prev1 = swiperName.find('.swiper-slide-prev').prev('.swiper-slide'),
+                            //         prev2 = swiperName.find('.swiper-slide-prev').prev('.swiper-slide').prev('.swiper-slide');
+                                // swiperName.find('.swiper-slide-next').css({
+                                //     'opacity' : '1'
+                                // }).children('.card-imageText').css({
+                                //     'transform': 'translate(10%,80%)'
+                                // });
+                                // next1.css({
+                                //     'opacity' : '1'
+                                // }).children('.card-imageText').css({
+                                //     'transform': 'translate(-10%,50%)'
+                                // });
+                                // next2.css({
+                                //     'opacity' : '1'
+                                // }).children('.card-imageText').css({
+                                //     'transform': 'translate(-40%,20%)'
+                                // });
+                                // next2.next('.swiper-slide').css({
+                                //     'opacity' : '0'
+                                // });
+
+                                // swiperName.find('.swiper-slide-prev').css({
+                                //     'opacity' : '1'
+                                // }).children('.card-imageText').css({
+                                //     'transform': 'translate(-40%,80%)'
+                                // });
+                                // prev1.css({
+                                //     'opacity' : '1'
+                                // }).children('.card-imageText').css({
+                                //     'transform': 'translate(-20%,50%)'
+                                // });
+                                // prev2.css({
+                                //     'opacity' : '1'
+                                // }).children('.card-imageText').css({
+                                //     'transform': 'translate(1%,20%)'
+                                // });
+                                // prev2.prev('.swiper-slide').css({
+                                //     'opacity' : '0'
+                                // });
+                            // }
+
+                            var swiper = new Swiper('#swiper_@Model.No', {
+                                slidesPerView: 'auto',
+                                centeredSlides: true,
+                                paginationClickable: true,
+                                spaceBetween: 0,
+                                slideToClickedSlide: false,
+                                mousewheelControl: false,
+                                // nextButton: '#swiper_@Model.No .swiper-button-next',
+                                // prevButton: '#swiper_@Model.No .swiper-button-prev',
+                                loop: true,
+                                speed: 2000,
+                                autoplay: true,
+                                simulateTouch: false,
+                                freeMode: true,
+                                // onInit: function(swiper){
+                                //     SwiperChangeSize()
+                                // },
+                                // onSlideChangeStart: function(swiper){
+                                //     SwiperChangeSize()
+                                // },
+                                // onSlideChangeEnd: function(swiper){
+                                //     SwiperChangeSize()
+                                // },
+                                // onBeforeResize: function(swiper){
+                                //     SwiperChangeSize()
+                                // },
+                                onSlideNextStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBoxShow').length) {
+                                        $('.videoCurrentBoxShow').remove();
+                                    }
+                                },
+                                onSlidePrevStart : function(swiper) {
+                                    if ($('#swiper_@Model.No').find('.videoCurrentBoxShow').length) {
+                                        $('.videoCurrentBoxShow').remove();
+                                    }
+                                }
+                            });   
+                            
+                        });         
+                    })();
+                </script>
+            }
+        }else if (Model.StylesID == 27) {
+            string viewName = "Style17.cshtml";
+            string centeredSlides = "false";
+            <div id="swiper_@Model.No" class="swiper-container">
+                <div class="swiper-wrapper">
+                    @{ List<ImageTextModel> imgTexts = ImageTextDAO.Get(Model.No, true); }
+                    @foreach (ImageTextModel item in imgTexts) {
+                        List<ImageTextModel> datas = new List<ImageTextModel>();
+                        datas.Add(item);
+                    <div class="swiper-slide">
+                        @Html.Partial("~/Views/ImageText/" + viewName, datas)
+                    </div>
+                    }
+                </div>
+            </div>
+            <div class="swiper-button-next swiper_@Model.No" ></div>
+            <div class="swiper-button-prev swiper_@Model.No"></div>
+            <div class="swiper-pagination swiper_@Model.No"></div>
+            <script type="text/javascript">
+                (function () {  
+                    $(document).ready(function(){
+                        var swiper = new Swiper('#swiper_@Model.No', {
+                            pagination: '.swiper-pagination.swiper_@Model.No',
+                            slidesPerView: 'auto',
+                            centeredSlides: @centeredSlides,
+                            paginationClickable: true,
+                            nextButton: '.swiper-button-next.swiper_@Model.No',
+                            prevButton: '.swiper-button-prev.swiper_@Model.No',
+                            spaceBetween: 0,
+                            initialSlide: 0,
+                            autoplay : 1000,
+                            loop: $('#swiper_@Model.No').find('.swiper-slide').length > 6 ? true : false,
+                            speed: 800,
+                        });   
+                    })                  
+                })();
+            </script>
+        } else if(Model.StylesID == 10) {
+            <div class="grid">
+                @{ 
+                    List<ImageTextModel> imgTexts = ImageTextDAO.Get(Model.No, true);
+                    List<ImageTextModel> first = new List<ImageTextModel>();                    
+                    if (imgTexts.Count > 0) {
+                        first.Add(imgTexts[0]);
+                        imgTexts.RemoveAt(0);
+                    }                   
+                }
+                @if(first.Count > 0) {
+                    <div class="main">
+                        @Html.Partial("~/Views/ImageText/Style7.cshtml", first)
+                    </div>
+                }
+                @if(imgTexts.Count > 0) {
+                    <div class="right">
+                        @Html.Partial("~/Views/ImageText/Style2.cshtml", imgTexts)
+                    </div>
+                }
+            </div>
+            <script type="text/javascript">
+                (function () {
+                    var outerElm = $('#@Model.No');
+                    outerElm.each(function () {
+                        var gridH = $(this).find('.main .card-imageText').outerHeight();
+                        var gridR = $(this).find('.right');
+
+                        gridR.css({
+                            'max-height': gridH
+                        });
+                    }).trigger('resize');
+                })();
+            </script>
+        } else if(Model.StylesID == 15) {
+            <div class="card-Masonry">
+                <div class="flex-container">
+                    @{ List<ImageTextModel> imgTexts = ImageTextDAO.Get(Model.No, true); }
+                    @Html.Partial("~/Views/ImageText/Style9.cshtml", imgTexts)
+                </div>
+            </div>
+        } else if(Model.StylesID == 17 || Model.StylesID == 22) {
+            <div class="card-Masonry">
+                <div class="flex-container">
+                    @{ List<ImageTextModel> imgTexts = ImageTextDAO.Get(Model.No, true); }
+                    @Html.Partial("~/Views/ImageText/Style2.cshtml", imgTexts)
+                </div>
+            </div>
+        } else if(Model.StylesID == 21) {
+            <div class="card-Masonry">
+                <div class="flex-container">
+                    @{ List<ImageTextModel> imgTexts = ImageTextDAO.Get(Model.No, true); }
+                    @Html.Partial("~/Views/ImageText/Style14.cshtml", imgTexts)
+                </div>
+            </div>
+        } else {
+            if (Model.StylesID == 6 || Model.StylesID == 14) {
+                Model.StylesID = 2;
+            }
+            else if (Model.StylesID == 7) {
+                Model.StylesID = 5;
+            } else if (Model.StylesID == 16) {
+                Model.StylesID = 8;
+            } else if (Model.StylesID == 25) {
+                Model.StylesID = 16;
+            }else if (Model.StylesID == 30) {
+                Model.StylesID = 19;
+            }
+            Html.RenderAction("Index", "ImageText", new { model = Model });
+        }
+    }
+</div>

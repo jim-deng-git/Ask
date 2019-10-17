@@ -1,0 +1,73 @@
+﻿@model WorkV3.Models.ClickVideoModel
+@{
+    Layout = null;
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+}
+
+<li>
+    <div class="col-2">
+        <div class="fileuploader fileuploader-theme-thumbnails normal">
+            <div class="fileuploader-items video">
+                <ul class="fileuploader-items-list">
+                    <li>
+                        @if (Model.Type == "custom")
+                        {
+                            if (!string.IsNullOrWhiteSpace(Model.Link))
+                            {
+                                <div id="VideoDiv"></div>
+                                <script type="text/javascript">
+                                    $(function () {
+                                        jwplayer("VideoDiv").setup({
+                                            width: "100%",
+                                            height: "100%",
+                                            type: "mp4",
+                                            file: '@(ViewBag.UploadVPath + Model.Link)',
+                                            skin: {
+                                                name: "default",//選擇主題
+                                                active: "#2e2e2e",//選擇主色
+                                                inactive: "#ffffff",
+                                                background: "rgba(255,255,255,0)"//選擇背景
+                                            },
+                                            showdownload: false,
+                                            aspectratio: "16:9",//影片比例
+                                            autostart: false //自動播放
+                                        });
+                                    });
+                                </script>
+                            }
+                        }
+                        else
+                        {
+                            string link = string.Empty;
+                            if (Model.Type == "youtube")
+                            {
+                                link = "https://www.youtube.com/embed/" + Model.Link;
+                            }
+                            else if (Model.Type == "tudou")
+                            {
+                                link = "http://www.tudou.com/programs/view/html5embed.action?code=" + Model.Link;
+                            }
+                            else if (Model.Type == "vimeo")
+                            {
+                                link = "http://player.vimeo.com/video/" + Model.Link;
+                            }
+                            if (link != string.Empty)
+                            {
+                                <div class="preview">
+                                    <iframe width="560" height="315" src="@link" frameborder="0" allowfullscreen></iframe>
+                                </div>
+                            }
+                        }
+                    </li>
+                    <div class="actions-holder">
+                        <a class="btn-white-o square transparent fileuploader-action-text tooltip click" title="編輯" href="@Url.Action("VideoEdit", "Click", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                        <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip delclick" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</li>
+
+@BundleConfig.JWPlayer()

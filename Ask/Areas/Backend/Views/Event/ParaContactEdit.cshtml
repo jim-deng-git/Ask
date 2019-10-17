@@ -1,0 +1,116 @@
+﻿@model WorkV3.Models.EventContactModels
+@{
+    ViewBag.Title = "聯絡人編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("ParaContactEdit", siteQuery))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">聯絡人編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">聯絡人</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">服務專線</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Phone" name="Phone" value="@Model.Phone" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">手機</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Mobile" name="Mobile" value="@Model.Mobile" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">Email</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Email" name="Email" value="@Model.Email" class="validate[funcCall[checkEmail]]" />
+                                    <div class="alert transparent m-T-none">
+                                        <i class="cc cc-attention"></i>
+                                        <div>有多筆Email時，請用分號 ; 隔開。</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>                       
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">服務時間</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="ServiceTime" name="ServiceTime" value="@Model.ServiceTime" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        function checkEmail(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var emails = v.split(';');
+                for (var i = 0, len = emails.length; i < len; ++i) {
+                    var email = $.trim(emails[i]);
+                    if (email && !/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(email))
+                        return '* Email 格式不正確';
+                }
+            }
+        }
+        
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

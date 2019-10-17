@@ -1,0 +1,75 @@
+﻿@{
+    ViewBag.Title = "LinkEdit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div id="LinkEditForm" class="groove groove-1">
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">設定連結</div>
+        </div>
+    </div>
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">連結<span class="required">*</span></div>
+                            <div id="outsideLink-box" class="input-field inline full">
+                                <input type="text" id="Link" class="m-B-none validate[funcCall[checkLink]]" placeholder="http://">
+                            </div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input type="checkbox" id="IsOpenNew" />
+                                    <label for="IsOpenNew">另開</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="control-bar flex">
+        <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        var type = parent.getClickType();
+        if (type == 5) {
+            var data = parent.getClickEvent();
+            $('#Link').val(data.Link);
+            if (data.IsOpenNew)
+                $('#IsOpenNew').prop('checked', true);
+        }
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (!v)
+                return '* 必填欄位';
+
+            if (!/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+
+        $('#btnSave').click(function () {
+            if ($('#LinkEditForm').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                var data = {};
+                data.Link = $.trim($('#Link').val());
+                data.IsOpenNew = $('#IsOpenNew').prop('checked');
+                data.LinkType = 'outLink';
+
+                parent.setClick(5, data);
+                Component.closeRight();
+            }
+        });
+    </script>
+}

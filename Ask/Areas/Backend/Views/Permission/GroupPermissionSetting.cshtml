@@ -1,0 +1,166 @@
+﻿
+@{
+    ViewBag.Title = "GroupPermissionSetting";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string strSetting = (string)ViewBag.Setting;
+    IEnumerable<WorkV3.Areas.Backend.ViewModels.GroupPermissionViewModel> rootMenu = ViewBag.RootMenu;
+    GroupModels group = ViewBag.Group;
+    string desc = group.GroupType == 1 ? "本群組隱藏哪些單元？" : "本群組可見哪些單元？";
+    long siteId = ViewBag.SiteID;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            $('#btnSave').click(function () {
+
+                var itemc = $('input[type="checkbox"]:checked').filter(function () { return $(this).data('category') == 'menu'; });
+                var permissions = [];
+
+                itemc.each(function (item) {
+                    permissions.push({
+                        MenuType: 1,
+                        MenuID: $(this).val().toString(),
+                        GroupID: '@group.Id',
+                        SiteID: $(this).data('site'),
+                        PermissionType: @group.GroupType,
+                    });
+                });
+
+                $.post({
+                    url: '@Url.Action("GroupPermissionSetting")',
+                    data: {
+                        permissions: permissions,
+                        groupId: '@group.Id',
+                        siteId:@siteId,
+                    },
+                    success: function(){
+                        Component.alert('開放單元已儲存', function () {
+                            Component.closeRight();
+                            Component.closeLeft();
+                            Component.closeCenter();
+                        });
+                    },
+                });
+            });
+
+            GetData();
+        });
+
+        function GetData() {
+            $.ajax({
+                type: "post",
+                url: '@Url.Action("GetPermissionGroup")?id=@group.Id',
+                contentType: false,
+                processData: false,
+                success: function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        $("#" + result[i].PermissionName).prop("checked", "checked");
+                    }
+                },
+                error: function (error) {
+
+                }
+            });
+        }
+    </script>
+    <style>
+        ul {
+            list-style-type: none;
+        }
+    </style>
+
+    <link rel="stylesheet" href="~/css/Cards/Cooperation/style1.css"/>
+}
+
+
+@section FArea {
+}
+
+@Html.Hidden("hdSetting", strSetting)
+<div class="groove groove-1">
+    <h1 class="title-admin-page">開放單元設定</h1>
+    <div class="col-6 border-T">
+        <ul class="forms relative">
+            <li>
+                <div class="title">@desc</div>
+
+                <ol class="dd-list checkStyle">
+                    <li>
+                        <input type="checkbox" id="all" />
+                        <label for="all">所有網站</label>
+                        <ol class="dd-list show">
+                            @foreach (WorkV3.Areas.Backend.ViewModels.GroupPermissionViewModel siteList in rootMenu)
+                            {
+                                WorkV3.Models.SitesModels site = WorkV3.Models.DataAccess.SitesDAO.GetInfo(siteList.SiteID);
+                                BackendMenuModel curMenu = new BackendMenuModel();
+                                <li class="dd-item">
+                                    <div class="dd-handle">
+                                        <input type="checkbox" value="@siteList.SiteID" id="site-@siteList.SiteID" />
+                                        <label for="site-@siteList.SiteID">@site.SN</label>
+                                        @if (siteList.menus.Count() > 0)
+                                        {
+                                            <ul class="dd-list dd-list-second checkStyle forms relative">
+                                                @foreach (BackendMenuModel menu in siteList.menus)
+                                                {
+                                                    @RenderSelfWithChildren(menu, group.Id, siteId)
+                                                }
+                                            </ul>
+                                        }
+                                    </div>
+                                </li>
+                                }
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ul>
+    </div>
+</div>
+<div class="control-bar">
+    <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+</div>
+
+@helper RenderSelfWithChildren(BackendMenuModel menu, long groupId = -1, long siteId = -1)
+{
+        string check = "";
+
+        if (groupId != -1 && siteId != -1)
+        {
+            GroupModels group = GroupDAO.GetItem(groupId, siteId);
+            IEnumerable<GroupPermissionModels> permissions = group.GetPermissions(siteId);
+            bool hasPermission = WorkV3.Common.Utility.HavePermission(groupId, siteId, menu.Type, menu.ID);
+            bool isCheck = group.GroupType == 1 ? !hasPermission : hasPermission; // 黑名單模式(GroupType == 1)時，沒權限的會勾選；白名單模式同理
+            check = isCheck ? "checked" : "";
+        }
+
+        //遞迴 render 出子選單
+        string childrenList = "";
+        foreach (BackendMenuModel childMenu in menu.Children)
+        {
+            childrenList += RenderSelfWithChildren(childMenu, groupId, siteId);
+        }
+
+        WorkV3.Models.SitesModels site = WorkV3.Models.DataAccess.SitesDAO.GetInfo(menu.SiteID);
+        childrenList = childrenList == string.Empty ? "" : String.Format(@"<ul class=""dd-list show dd-list-second checkStyle forms relative"">{0}</ul>", childrenList);
+
+                            <li class="dd-item">
+                                <div class="dd-handle toggleBox openCustom-nav d-inline-block p-L-25 col-2">
+                                    <input type="checkbox" value="@menu.ID" id="menu-@menu.ID" data-category="menu" data-type="1" data-site="@menu.SiteID" data-Class="@menu.MenuClass" @check />
+                                    <label for="menu-@menu.ID"> @menu.Title </label>
+                                    @Html.Raw(childrenList)
+                                </div>
+                            </li>
+}

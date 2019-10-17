@@ -1,0 +1,13 @@
+.card-imageTextList[data-style="2"] > div {
+  float: left;
+  width: 19.04%;
+  margin-right: 1.2%; }
+  .card-imageTextList[data-style="2"] > div:last-of-type {
+    margin-right: 0; }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="2"] > div {
+      width: 100%;
+      margin-right: 0%;
+      margin-bottom: 1.2%; }
+      .card-imageTextList[data-style="2"] > div:last-of-type {
+        margin-bottom: 0; } }

@@ -1,0 +1,75 @@
+﻿
+@{
+    ViewBag.Title = "編輯圖說";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title inline">圖說</div>
+                <div class="input-field inline full">
+                    <input id="Spec" type="text">
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="input-field img-text-height">
+                    <textarea contenteditable="true" id="SpecDetail">
+                        請填入段落內文
+                    </textarea>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">連結</div>
+                <div id="outsideLink-box" class="input-field inline full">
+                    <input class="m-B-none" id="Link" type="text" placeholder="http://">
+                </div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input type="checkbox" id="IsOpenNew" />
+                        <label for="IsOpenNew">另開</label>
+                    </div>                    
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar flex">
+        <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var editor = Component.editor('SpecDetail');
+
+        var imgItem = parent.getImageItem();
+
+        $('#Spec').val(imgItem.Spec);
+        editor.setData(imgItem.SpecDetail);
+        $('#Link').val(imgItem.Link);
+        if (imgItem.IsOpenNew)
+            $('#IsOpenNew').prop('checked', true);
+
+        $('#btnSave').click(function () {
+            imgItem.Spec = $.trim($('#Spec').val());
+
+            imgItem.SpecDetail = editor.getData();            
+            if (imgItem.SpecDetail.replace(/(<[^>]*>|\s)/g, '') == '請填入段落內文')
+                imgItem.SpecDetail = '';
+
+            imgItem.Link = $.trim($('#Link').val());
+            imgItem.IsOpenNew = $('#IsOpenNew').prop('checked');
+            
+            parent.setImageItem(imgItem);
+            Component.closeLeft();
+        });
+    </script>
+}
+

@@ -1,0 +1,80 @@
+﻿@{
+    ViewBag.Title = "段落 - 單張圖片上傳";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    ResourceImagesModels ImgModel = ViewBag.ImgModel == null ? new ResourceImagesModels() : (ResourceImagesModels)ViewBag.ImgModel ;
+    long sourceNo = ViewBag.sourceNo;
+    string UploadUrl = ViewBag.UploadUrl;
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+}
+@section FArea {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+<script type="text/javascript">
+    $(function () {
+        Component.singleImageUpload('#fPicture', '@(Href("~/"))', '@UploadUrl', true);
+
+        $(".saveimg").change(function () {
+            saveImg();
+        });
+
+        $("#Link").keypress(function (e) {
+            if (e.keyCode == '13') {
+                e.preventDefault();
+            }
+        });
+
+        @if(string.IsNullOrWhiteSpace(ViewBag.ImgModelJson as string))
+        {
+            <text>
+            $("#outsideLink-box").hide();
+            $("#linkBlankCbx").hide();
+            </text>
+        }
+        else
+        {
+            <text>
+            $("#divMsg").hide();
+            </text>
+        }
+
+    });
+    function saveImg() {
+        setTimeout(function () {
+            var form = $("#uploadImg");
+            form.submit();
+        }, 10);
+    }
+</script>
+}
+<form id="uploadImg" method="post" action="@Url.Action("SingleImageUpload")" enctype="multipart/form-data">
+    <div class="col-1">
+        <div class="title">段落圖上傳</div>
+        <div class="input-field">
+            <input type="file" id="fPicture" name="fPicture" class="saveimg" />
+            <input type="hidden" id="Picture" name="Picture" value="@ViewBag.ImgModelJson" />
+        </div>
+        <div id="divMsg" class="input-field">
+            段落圖上傳以後可進行設定連結
+        </div>
+        <div id="outsideLink-box" class="input-field inline full">
+            <div class="title">連結</div>
+            <div class="input-field">
+                <input class="m-B-none saveimg" id="Link" name="Link" type="text" placeholder="http://" value="@(!string.IsNullOrWhiteSpace(ImgModel.Link) ? ImgModel.Link : "")">
+            </div>
+        </div>
+        <br/>
+        @*20180524隱藏另存按鈕、並且預設為開*@
+        @*<div id="linkBlankCbx" class="radio-box inline full">
+            <div>
+                <input type="checkbox" id="IsOpenNew" name="IsOpenNew" class="saveimg" @((ImgModel.IsOpenNew is bool?) == true ? "checked=checked" : "")>
+                <label for="IsOpenNew">另開</label>
+            </div>
+        </div>*@
+    </div>
+    <input type="hidden" name="IsOpenNew" value="on">
+    <input type="hidden" name="siteId" value="@siteId">
+    <input type="hidden" name="menuId" value="@menuId">
+    <input type="hidden" name="sourceNo" value="@sourceNo">
+</form>

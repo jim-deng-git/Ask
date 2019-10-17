@@ -1,0 +1,32 @@
+﻿
+@{
+    ViewBag.Title = "AddCompany";
+    IEnumerable<CompanyModel> companys = ViewBag.Companys;
+}
+
+<li class="paragraph m-none p-none p-v-5 liparagraph">
+    <div class="item-box">
+        <div class="item-listBox">
+            <div class="input-field inline m-T-none">
+                <select data-field="CompanyID">
+                    <option value="0">請選擇</option>
+                    @if (companys != null && companys.Count() > 0)
+                    {
+                        foreach (var com in companys.Where(m => m.ParentID == null))
+                        {
+                            <option value="@com.ID">@com.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="item-allPrice float-R">
+                <div class="input-field inline m-T-none">
+                    <select data-field="DepartmentID">
+                        <option>請選擇</option>
+                    </select>
+                </div>
+                <a class="btn-del square transparent paragraph-del tooltip delParagraph" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+            </div>
+        </div>
+    </div>
+</li>

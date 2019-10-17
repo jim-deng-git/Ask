@@ -1,0 +1,243 @@
+﻿@model WorkV3.Models.EventPlaceModels
+@{
+    ViewBag.Title = "地點編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+}
+<script>
+    function UpdatePosition(lat_orginal, lng_orginal) {
+        //接收從Gmap移動Maker後的座標
+        var lat = lat_orginal.toString();
+        var lng = lng_orginal.toString();
+
+        if (lat.length > 10) {
+            lat = lat.substring(0, 10);
+        }
+        if (lng.length > 10) {
+            lng = lng.substring(0, 10);
+        }
+
+        $("#Lat").val(lat);
+        $("#Lng").val(lng);
+
+        GenAddress();
+    }
+    function GenGmapByAddress() {
+        //透過地址產生Google Map
+        var address = $("#Address").val();
+        $("#GmapArea")[0].src = "@Url.Action("GenGmapByAddress")?Address=" + address + "&GenMap=true";
+    }
+
+    function GenGmapByLatLng() {
+        //透過經緯度產生Google Map
+        var Lat = $("#Lat").val();
+        var Lng = $("#Lng").val();
+        $("#GmapArea")[0].src = "@Url.Action("GenGmapByLatLng")?Lat=" + Lat + "&Lng=" + Lng + "&GenMap=true";
+    }
+
+    function GenAddress() {
+        //透過座標產生地址
+        var Lat = $("#Lat").val();
+        var Lng = $("#Lng").val();
+
+        $.ajax({
+            url: '@Url.Action("QueryAddress")' + "?Lat=" + Lat + "&Lng=" + Lng,
+            async:false, //非同步要關掉
+            type: 'post',
+            success: function (data) {
+                if (data.Address_Result != "") {
+                    $("#Address").val(data.Address_Result);
+                }
+                if (data.Regions != "") {
+                    SelectRegions(data.Regions);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
+    }
+    //設定地區下拉選單
+    function SelectRegions(data) {
+        if (data == "") {
+            return;
+        }
+        var country = "";
+        var lv1 = "";
+        var lv3 = "";
+        //alert(data);
+        var array = data.split(',');
+        if (array.length > 0) {
+            country = array[0];
+        }
+        if (array.length > 1) {
+            lv1 = array[1];
+        }
+        if (array.length > 2) {
+            lv3 = array[2];
+        }
+
+        $("div[data-level='1'] > div > ul").find('span:contains("' + country + '")')[0].click();
+        setTimeout(function () {
+            $("div[data-level='3'] > div > ul").find('span:contains("' + lv1 + '")')[0].click();
+        }, 100)
+        setTimeout(function () {
+            $("div[data-level='4'] > div > ul").find('span:contains("' + lv3 + '")')[0].click();
+        }, 200)
+
+    }
+</script>
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("ParaPlaceEdit", siteQuery))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">地點編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">地點名稱</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" maxlength="100" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">服務電話</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Phone" name="Phone" value="@Model.Phone" maxlength="20" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">地址</div>
+                                <div class="input-field inline full m-R-8 m-T-none">
+                                    <input type="hidden" id="Regions" name="Regions" value="@Model.Regions" />
+                                    <div class="col-1">
+                                        <div class="marker-group">
+                                            <input type="text" id="Address" name="Address" value="@Model.Address" placeholder="地址" maxlength="200" />
+                                            <a class="btn-grey-darken-3-o btn-small" onclick="GenGmapByAddress();"><i class="cc cc-map-marker"></i>定位</a>
+                                            <!-- <a id="btnGMap" class="btn-grey-darken-3-o btn-small" href="@Url.Action("GMap", "Common")"><i class="cc cc-map-marker"></i>定位</a> -->
+                                            <input type="hidden" id="Lat" name="Lat" value="@Model.Lat" />
+                                            <input type="hidden" id="Lng" name="Lng" value="@Model.Lng" />
+                                        </div>
+                                    </div>
+                                    @*<div class="col-1">
+                                        <div class="marker-group">
+                                            <input type="text" id="Lat" name="Lat" onchange="GenAddress();" value="@Model.Lat" placeholder="緯度" maxlength="20" />&nbsp;
+                                            <input type="text" id="Lng" name="Lng" onchange="GenAddress();"  value="@Model.Lng" placeholder="經度" maxlength="20" />
+                                            <a class="btn-grey-darken-3-o btn-small" onclick="GenGmapByLatLng();"><i class="cc cc-map-marker"></i>定位</a>
+                                        </div>
+                                    </div>*@
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                @*<div class="title inline">地圖</div> Carrie 20180216 *@
+                                <div class="input-field m-T-none">
+                                    <div class="mapFrame">
+                                        <iframe id="GmapArea" src='@Url.Action("GenGmapByAddress")' scrolling="no" frameBorder="0"></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">網址</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Website" name="Website" placeholder="http://" value="@Model.Website" class="validate[funcCall[checkLink]]" />
+                                    <div class="alert transparent m-T-none">
+                                        <i class="cc cc-attention"></i>
+                                        <div>請以 http:// 或 https:// 開頭</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">服務時間</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="ServiceTime" name="ServiceTime" value="@Model.ServiceTime" />
+                                </div>
+                            </div>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        // carrie 20180105 var regionObj = Component.worldRegion('#Regions', '@Html.Raw(Url.Action("Regions", "Common"))');
+
+        //$('#btnGMap').click(function (e) {
+        //    e.preventDefault();
+        //    var mainWin = Component.openLeft(this.href);
+        //    mainWin.getAddress = function () {
+        //        var regions = regionObj.getTextVal();
+        //        return (regions && regions.length > 0 ? regions.join('') : '') + $.trim($('#Address').val());
+        //    }
+        //    mainWin.getLatLng = function () {
+        //        var lat = $.trim($('#Lat').val());
+        //        var lng = $.trim($('#Lng').val());
+        //        if (lat && lng)
+        //            return { lat: lat - 0, lng: lng - 0 };
+        //        return null;
+        //    }
+        //    mainWin.setLatLng = function (latLng, address) {
+        //        $('#Lat').val(latLng.lat);
+        //        $('#Lng').val(latLng.lng);
+        //        if (address)
+        //            $('#Address').val(address);
+        //    }
+        //});
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (v && !/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

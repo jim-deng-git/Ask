@@ -1,0 +1,173 @@
+﻿@using WorkV3.Areas.Backend.ViewModels.CustomCompany
+@model CustomCompanyListViewModel
+@{
+    ViewBag.Title = "客戶資料登記表";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    var tableButtons = new List<BackSiteListButton>();
+
+    var addButton = BackSiteListButton.CommonListTableLinkButton(Url.Action("Add", new { siteId = Model.SiteID }));
+    addButton.Classes = "btn-grey-darken-4-o square tooltip-info openCenterEdit-m tooltipstered";
+
+    var importButton = BackSiteListButton.CommonListTableLinkButton(Url.Action("Import"));
+    importButton.Classes = "btn-grey-darken-4-o square tooltip-info openCenterEdit-m tooltipstered";
+    importButton.IconClasses = "cc cc-list";
+    importButton.Title = "匯入名單";
+
+    var exportButton = BackSiteListButton.CommonDropDownListButton("export", "匯出名單");
+    exportButton.AddDropDownListButton(new BackSiteListButton("詳細清單", Url.Action("Export"), "btn-grey-darken-4-o transparent", "cc cc-file-o", "_blank"));
+    exportButton.AddDropDownListButton(new BackSiteListButton("詳細清單(隱藏個資)", Url.Action("Export", new { privacy = true }), "btn-grey-darken-4-o transparent", "cc cc-file-o", "_blank"));
+
+    tableButtons.Add(BackSiteListButton.CommonListTableSortButton());
+    tableButtons.Add(importButton);
+    tableButtons.Add(exportButton);
+    tableButtons.Add(addButton);
+    tableButtons.Add(BackSiteListButton.CommonListTableDelButton());
+    tableButtons.Add(BackSiteListButton.CommonListTableSearchButton());
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="SearchBox" class="search-box pushup">
+            <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">關鍵字</div>
+                        <div class="input-field inline full">
+                            <input id="" type="text" placeholder="請輸入公司名稱、統一編號、付款週期、地址、業務等關鍵字">
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-2">
+                        <div class="title inline">關帳時間</div>
+                        <div class="input-field inline full">
+                            <div class="input-field inline middle">
+                                <input type='text' class="input-cal datepicker">
+                            </div>
+                            <span style="vertical-align: bottom;">-</span>
+                            <div class="input-field inline middle">
+                                <input type='text' class="input-cal datepicker">
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="float-R"><a class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+        </div>
+        <table class="fixTable" id="listTable">
+            <caption>
+                <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;"><i class="cc cc-arrow-left"></i></a>客戶資料登記表
+                <span class="info"></span>
+                <div class="float-R">
+                    @Presenter.ListTableFunctionButtons(tableButtons)
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>公司名稱</th>
+                    <th>統一編號</th>
+                    <th>關帳時間</th>
+                    <th>付款週期</th>
+                    <th>地址</th>
+                    <th>業務</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 0; }
+                @foreach (var item in Model.Companies)
+                {
+                    string closeAccountDate = "";
+                <tr data-id="@item.ID">
+                    <td class="sort">@Model.Pagination.GetItemIndex(idx)</td>
+                    <td class="text-L">@item.Name</td>
+                    <td class="text-L">@item.TaxIdNumber</td>
+                    <td><div>@(item.AccountCloseDateStart?.ToString("yyyy/MM/dd"))</div>@((item.AccountCloseDateEnd != null && item.AccountCloseDateStart != null)? "~": "")<div>@(item.AccountCloseDateEnd?.ToString("yyyy/MM/dd"))</div></td>
+                    <td class="">@item.PayingPeriod</td>
+                    <td class="">@item.Address</td>
+                    <td class="">
+                    </td>
+                    <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openCenterEdit-m" href="@Url.Action("Edit", new { id = item.ID })"><i class="cc cc-edit-o"></i></a></td>
+                </tr>
+                    idx++;
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", Model.Pagination)
+        </div>
+    </div>
+</div>
+
+@section Script{
+
+<link href="~/css/card.css" rel="stylesheet" />
+<script src="~/script/StickyTableHeaders/jquery.stickytableheaders.js"></script>
+@BundleConfig.Component()
+<script type="text/javascript">
+    $(function () {
+        $(".fixTable").stickyTableHeaders();
+
+        var outerElm = $('#listTable');
+
+        var listObj = Component.dataList('listTable');
+
+        listObj.sorted = function (sortItems) {
+            $.post('Sort', { 'items': sortItems }, function () {
+                location.reload();
+            });
+        }
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    $.post('Delete', { 'ids': delIds }, function () {
+                            location.reload();
+                    });
+                }
+            }, 'warning');
+        }
+        listObj.statusChange = function (id) {
+            $.get('EventToggleIssue/' + id + '?siteId=@Model.SiteID&menuId=@Model.MenuID');
+        }
+        listObj.canceled = function (action) {
+            if (action == "del" || $('a[data-action="' + action + '"]').attr('data-select') == 'true') {
+                $.getJSON(cancelSelectedUrl, { menuId: "@Model.MenuID", actionType: action }, function (data) {
+                    $('#listTable').find('span.info').html('');
+                });
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+
+        outerElm.on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            outerElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+    });
+    $(window).on('load', function () {
+        if ($('#SearchBox').length) {
+            var $SearchBoxH = $('#SearchBox').outerHeight();
+            if ($('#SearchBox').hasClass('pushup')) {
+                $('#closeSerach').on('click', function () {
+                    $('#SearchBox').removeClass('pushup');
+                });
+            }
+            $('#openSearch').on('click', function () {
+                $('#SearchBox').toggleClass('pushup');
+            });
+        }
+    });
+
+    function refresh() {
+        location.reload();
+    }
+</script>
+
+}

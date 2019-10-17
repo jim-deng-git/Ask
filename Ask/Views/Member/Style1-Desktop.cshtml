@@ -1,0 +1,161 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+    long siteID = ViewBag.SiteID;
+    long menuID = ViewBag.MenuID;
+    string uploadUrl = ViewBag.UploadVPath;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<div class="mainPage card-member desktop" data-style="1">
+
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+
+    <div class="filters-bar">
+        <div class="bs-js-navbar-scrollspy">
+            <ul class="nav navbar-nav">       
+                <li><a href="#list-item-keep">我的收藏<span>(@Model.CollectionList.Count())</span></a></li>
+                @*<li><a href="#list-item-history">瀏覽記錄<span></span></a></li>*@
+            </ul>
+        </div>
+    </div>
+
+    <div class="article-wrap">     
+          
+        <!-- 收藏 -->
+        <div id="list-item-keep" class="article-list">
+            <div class="article-title">收藏<span>@Model.CollectionList.Count()</span></div>
+            <ul>
+                @{ bool HasCollection = false; }
+                @if (Model.CollectionList != null)
+                {
+                    var collectionTopList = Model.CollectionList.Take(6);
+                    foreach (WorkV3.ViewModels.MemberCollectionViewModel item in collectionTopList)
+                    {
+                        <li>
+                            <a href="@Html.Raw(item.LinkUrl)">
+                                <div class="article-img" style="background-image: url('@item.ImgSrc');"></div>
+                                <div class="article-list-title">@item.Title</div>
+                                <div class="article-list-info">@item.Summary</div>
+                            </a>
+                        </li>
+                        HasCollection = true;
+                    }
+                }
+                @if (!HasCollection)
+                {
+                    <text>
+                        <li class="none-favorite">
+                            您目前沒有任何收藏，前往「<a href="@Html.Raw(Url.Action("Index", "Home"))">首頁</a>」看看吧！
+                        </li>
+                    </text>
+                }
+            </ul>
+            @if (Model.CollectionList.Count() > 6)
+            {
+                <div class="memberinfo-button-wrap">
+                    <a href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN ="CollectionList"})" class="btn-grey-darken-4-o">全部收藏紀錄</a>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>
+<script src="~/script/stickyKit/sticky-kit.js"></script>
+<script src="~/script/scrollspy/scrollspy.js"></script>
+<script>
+    jQuery(function ($) {
+
+
+        $('body').scrollspy({ target: '.filters-bar', offset: filtersbar_top() });
+
+        $('.filters-bar a').each(function () {
+
+            var _this = $(this);
+
+            _this.on('click', function () {
+                event.preventDefault();
+                var _spacing = 32,
+                    _right_position = $('#header').outerHeight() + _spacing;
+                $($(this).attr('href'))[0].scrollIntoView();
+                scrollBy(0, -_right_position);
+            });
+        });
+        $('.filter-activity a').click(function () {
+            // alert($(this).data('target'));
+            var _filter_target = $(this).data('target');
+            $(this).addClass('active').siblings().removeClass('active');
+
+            var _content = $(this).parents('.filter-activity').siblings('.activity-content');
+
+            _content.find('li').stop().hide().addClass('hide_this');
+            _content.find('.' + _filter_target).stop().show().removeClass('hide_this');
+            //console.log($(this));
+            if ($(this).attr("data-target") == "eligible") {
+                $("#divPushList").hide();
+            }
+            else {
+                $("#divPushList").show();
+            }
+        });
+        
+        });
+
+        $(".filters-bar").stick_in_parent({
+            offset_top: 100
+        });
+        $("#aLinkPush1").bind("click", function () {
+            $("#btnEligible").trigger("click");
+        });
+        $("#aLinkPush2").bind("click", function () {
+            $("#btnEligible").trigger("click");
+        });
+        /**重新計算Top**/
+        function filtersbar_top() {
+            var _spacing = 60,
+                filtersbar_top = $('.article-wrap').offset().top + _spacing;
+            return filtersbar_top;
+        }
+        $(".openEdit-m").on('click', function (e) {
+            e.preventDefault();
+            window.parent.$.colorbox({
+                href: $(this).attr('href'),
+                width: function () {
+                    var NW = "600";
+                    if ($.isNumeric($(this).data("width"))) {
+                        NW = $(this).data("width");
+                    }
+                    //console.log("NW:" + NW);
+                    return NW;
+                },
+                height: "95%",
+                right: "20",
+                iframe: true,
+                transition: false,
+                speed: 0,
+                fadeOut: 100,
+                onClosed: function () {
+                    var formBox = window.parent.$("#leftEditBox");
+
+                    if (formBox.length) {
+                        if (formBox.hasClass('active')) {
+                            formBox.fadeOut(300).removeClass('active');
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>

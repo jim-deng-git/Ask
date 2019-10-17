@@ -1,0 +1,215 @@
+﻿@model WorkV3.Models.SiteLangMenuModel
+@{
+    ViewBag.Title = "網站語系設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    List<WorkV3.Models.SitesModels> siteList = new List<WorkV3.Models.SitesModels>();
+    if (ViewBag.Sites != null)
+    {
+        siteList = (List<WorkV3.Models.SitesModels>)ViewBag.Sites;
+    }
+    string uploadUrl = ViewBag.UploadUrl;
+}
+@BundleConfig.Component()
+@BundleConfig.Validate()
+<script src="~/script/workV3/check.js" type="text/javascript"></script>
+
+<form id="editForm" method="post" action="@Url.Action("EditLang")" style="width:100%">
+
+    <div class="zone zone-base p-T-8">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <!-- swiper1 -->
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">@ViewBag.Title</div>
+                    </div>
+                </div>
+                <!-- swiper2 -->
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">選擇語系<a id="errLangCode"></a></div>
+                                        <div class="input-field inline">
+                                            <select class="icons" id="LangCode" name="LangCode">
+                                                <option value="" selected>請選擇語系</option>
+                                                <option value="en-us" data-icon="../../images/temp/flag_US.png" class="float-L" @(Model!= null?(Model.LangCode == "en-us"?"selected":""):"")>英文</option>
+                                                <option value="zh-hant" data-icon="../../images/temp/flag_TW.png" class="float-L" @(Model!= null?(Model.LangCode == "zh-hant" ? "selected":""):"")>中文(台灣)</option>
+                                                <option value="zh-cn" data-icon="../../images/temp/flag_CN.png" class="float-L" @(Model!= null?(Model.LangCode == "zh-cn" ? "selected":""):"")>中文(中國)</option>
+                                                <option value="ja-jp" data-icon="../../images/temp/flag_JP.png" class="float-L" @(Model!= null?(Model.LangCode == "ja-jp" ? "selected":""):"")>日文</option>
+                                                <option value="ko-kr" data-icon="../../images/temp/flag_KR.png" class="float-L" @(Model!= null?(Model.LangCode == "ko-kr" ? "selected":""):"")>韓文</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">顯示名稱</div>
+                                        <div class="input-field inline">
+                                            <input type="text" id="Title" name="Title" value="@(Model!= null ?Model.Title:"")" class="validate[required]" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">語系設定<span class="required">*</span></div>
+                                        <div class="radio-box inline full">
+                                            <div>
+                                                <input class="with-gap" name="LinkType" type="radio" id="LinkType1" checked="checked" value="@WorkV3.Models.LangLinkType.Main">
+                                                <label for="LinkType1">本站主語系</label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LinkType" type="radio" id="LinkType2" value="@WorkV3.Models.LangLinkType.WebSites">
+                                                <label for="LinkType2">本平台其他網站</label>
+                                            </div>
+                                            <br>
+                                            <div>
+                                                <input class="with-gap" name="LinkType" type="radio" id="LinkType3" value="@WorkV3.Models.LangLinkType.OutLink">
+                                                <label for="LinkType3">外部連結</label>
+                                            </div>
+                                            <div>
+                                                <input class="with-gap" name="LinkType" type="radio" id="LinkType4" value="@WorkV3.Models.LangLinkType.CnTw">
+                                                <label for="LinkType4">與主語系繁簡中文切換</label>
+                                            </div>
+                                        </div>
+
+                                        <div id="LinkType2-Box">
+                                            <div class="title inline">本平台其他網站<span class="required">*</span></div>
+                                            <div class="input-field inline full">
+                                                <select class="icons" id="SelectSiteID" name="SelectSiteID">
+                                                    <option value="" disabled selected>請選擇網站</option>
+                                                    @foreach (var siteItem in siteList)
+                                                    {
+                                                        string domainUrl = "", iconUrl ="" ;
+                                                        if (siteItem != null)
+                                                        {
+                                                            if (!string.IsNullOrEmpty(siteItem.Domin))
+                                                            {
+                                                                List<WorkV3.Areas.Backend.ViewModels.SiteDomain> objects = Newtonsoft.Json.JsonConvert.DeserializeObject<List<WorkV3.Areas.Backend.ViewModels.SiteDomain>> (siteItem.Domin);
+                                                                if (objects != null && objects.Count > 0)
+                                                                {
+                                                                    domainUrl = objects.ElementAt(0).Domain;
+                                                                }
+                                                            }
+                                                            if (!string.IsNullOrEmpty(siteItem.Logo))
+                                                            {
+                                                                iconUrl = uploadUrl + siteItem.Logo;
+                                                            }
+                                                        }
+                                                        <option value="@siteItem.Id" data-icon="@iconUrl" class="float-L">@siteItem.Title @domainUrl</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div id="LinkType3-Box">
+                                            <div class="title inline">外部連結<span class="required">*</span></div>
+                                            <div class="input-field inline full">
+                                                <input placeholder="http://" id="Url" type="text" name="Url" value="@(Model!= null?Model.Url:"")">
+                                            </div>
+                                            <div class="radio-box inline full">
+                                                <div>
+                                                    <input type="checkbox" id="IsOpenNew" name="IsOpenNew" value="True" @(Model != null ? ((Model.IsOpenNew.HasValue && Model.IsOpenNew.Value) ? "checked" : "") : "") />
+                                                    <label for="IsOpenNew">另開連結</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="radio-box inline">
+                            <div>
+                                <input type="checkbox" name="IsShow" id="IsShow" @(Model != null ? (Model.IsShow ? "checked" : "") : "") value="True" />
+                                <label for="IsShow">刊登</label>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+                    <input type="hidden" id="ID" name="ID" value="@(Model != null ? Model.ID: 0)" />
+                    <input type="hidden" id="SiteID" name="SiteID" value="@ViewBag.SiteID" />
+                </div>
+            </div>
+        </div>
+        </div>
+</form>
+    <script type="text/javascript">
+        $(function () {
+            @if (ViewBag.Exit != null && (bool)ViewBag.Exit)
+            {
+                <text>
+
+            Component.alert('儲存成功。', function () {
+                window.top.mainWebContent.refreshList();
+                Component.closeRight();
+                parent.$.colorbox.close();
+            });
+            </text>
+            }
+            else
+            {
+                if (ViewBag.Message != null)
+                {
+
+                <text>
+
+                Component.alert('@ViewBag.Message ');
+                </text>
+                }
+            }
+
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate', { promptPosition: 'topRight' })) {
+                    if ($("#LangCode").val() == "") {
+                        Component.showElementError('#errLangCode', '* 請選擇');
+                        return;
+                    }
+                    if ($("input[name=LinkType]:checked").val() == "OutLink")
+                    {
+                        if ($("#Url").val() == "")
+                        {
+                            Component.showElementError('#Url', '* 請輸入外部連結網址');
+                            return;
+                        }
+                    }
+                    form.submit();
+                }
+            });
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                parent.$.colorbox.close();
+            });
+            $("input[name='LinkType']").each(function () {
+                var $this = $(this);
+
+                $this.on('change', function () {
+                    if (this.checked) {
+                        if ($this.attr('id') === 'LinkType2') {
+                            $('#LinkType2-Box').slideDown();
+                        } else {
+                            $('#LinkType2-Box').slideUp();
+                        }
+
+                        if ($this.attr('id') === 'LinkType3') {
+                            $('#LinkType3-Box').slideDown();
+                        } else {
+                            $('#LinkType3-Box').slideUp();
+                        }
+                    }
+                }).change();
+
+            });
+
+        });
+    </script>

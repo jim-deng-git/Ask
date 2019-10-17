@@ -1,0 +1,42 @@
+﻿@model IEnumerable<WorkV3.Models.TemplateModels>
+@{
+    ViewBag.Title = "新增文章";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    string editUrl = Url.Action("Edit", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID });
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title">你要新增哪個項目呢？</div>
+                <div id="btnGroup" class="btnGroup">
+                    <a class="btn-with-item bg-grey-lighten-2 square" href="@editUrl&type=page"><i class="cc cc-file-o cc-rotate-270"></i>從空白頁開始</a>                    
+                    @if (Model?.Count() > 0) {
+                        foreach (WorkV3.Models.TemplateModels item in Model) {
+                    <a class="btn-with-item img square" href="@editUrl&templateId=@item.ID">
+                            @if (!string.IsNullOrWhiteSpace(item.Thumb)) {
+                        <img src="@(uploadUrl + item.Thumb)" />
+                            }<span>@item.Name</span>
+                    </a>
+                        }
+                    }                    
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $('#btnGroup').find('a').click(function (e) {
+            e.preventDefault();
+            parent.$.colorbox.close();
+            Component.openCenter(this.href);
+        });
+    </script>
+}
+

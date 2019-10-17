@@ -1,0 +1,366 @@
+﻿@model List<MenusModels>
+@using Newtonsoft.Json;
+@{
+    SitesModels SiteItem = ViewBag.SitesInfo;
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    List<SiteLangMenuModel> SiteLang = ViewBag.SiteLang;
+    SitePage searchPage = ViewBag.SearchPage;
+    List<WorkV3.Areas.Backend.ViewModels.KeywordViewModel> keywords = ViewBag.Keywords;
+
+    var dataJson = Html.Raw(JsonConvert.SerializeObject(keywords));   // neil 20180331 新增關鍵字搜尋
+    bool IsEnabledMember = (bool)ViewBag.IsEnabledMember;
+}
+@helper CreateMenu(IEnumerable<MenusModels> allMenus, IEnumerable<MenusModels> currentMenus)
+{
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    if (currentMenus?.Count() > 0)
+    {
+        foreach (var item in currentMenus)
+        {
+            //string url = item.MenuCode == "SingleLink" ? item.LinkInfo : item.PageSN;
+            //string target = (item.MenuCode == "SingleLink" && item.RLClickType == 2) ? "_blank" : "_self";
+            string url = "";
+            string target = "";
+            if (item.MenuCode == "SingleLink")
+            {
+                if (item.RLClickType == 2)
+                {
+                    target = "_blank";
+                }
+                else
+                {
+                    target = "_self";
+                }
+                url = item.LinkInfo;
+            }
+            else if (item.MenuCode == "SingleFile")
+            {
+                if (item.RFClickType == 2)
+                {
+                    target = "_blank";
+                }
+                else
+                {
+                    target = "_self";
+                }
+                var file = WorkV3.Models.DataAccess.ResourceFilesDAO.GetFileInfo(item.Id).SingleOrDefault().FileInfo;
+                url = ViewBag.VMenuPath + file;
+            }
+            else
+            {
+                url = item.PageSN;
+            }
+            IEnumerable<MenusModels> subMenus = allMenus.Where(dr => dr.ParentID == item.Id);
+            <li class="@(item.Id == pageCache.MenuID ? "current-menu" : string.Empty)">
+                <a href="@url" target="@target">@item.Title</a>
+                @if (subMenus?.Count() > 0)
+                {
+                    <ul class="sub-menu">
+                        @CreateMenu(allMenus, subMenus)
+                    </ul>
+                }
+            </li>
+        }
+    }
+}
+
+@* CSS換位置 carrie 20171006 *@
+<link rel="stylesheet" href="~/css/Cards/Header/style4.css" type="text/css" />
+<div id="header" class="header card-header" data-style="4">
+    <div class="header-wrapper">
+        <h1 class="header-logo">
+            <a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN="Index" })" title="@SiteItem.Title">
+                <!--電腦版 – 原色LOGO -->
+                <img class="normal" src="@ViewBag.VPath@SiteItem.Logo" title="@SiteItem.Title" alt="@SiteItem.Title" data-shrink="@ViewBag.VPath@SiteItem.Logoshrink" data-logo="@ViewBag.VPath@SiteItem.Logo" />
+                <!--電腦版 – 對比色LOGO-->
+                <img class="shrink" src="@ViewBag.VPath@SiteItem.Logoshrink" title="@SiteItem.Title" alt="@SiteItem.Title" />
+                <!--手機版的 LOGO-->
+                <img class="mobile" src="@ViewBag.VPath@SiteItem.LogoMobile" title="@SiteItem.Title" alt="@SiteItem.Title" />
+            </a>
+        </h1>
+        <div class="header-content">
+            @if (searchPage != null)
+            {
+                <div class="mobile-search-box">
+                    <a class="search-btn" href="javascript:"><i class="cc cc-search"></i></a>
+                </div>
+            }
+            <div class="menu-toggle">
+                <div class="menu-toggle-hamburger"></div>
+            </div>
+            <!-- nav -->
+            <div class="nav">
+                @{ List<MenusModels> firstAreaMenus = Model.Where(m => m.AreaID == 1).ToList(); }
+                <ul class="nav-menu">
+                    @CreateMenu(firstAreaMenus, firstAreaMenus.Where(m => m.ParentID == 0))
+                </ul>
+                @*@if (SiteItem != null) {
+                        List<SitesModels.socialSettingCont> social = ViewBag.social;
+                        if (social.Count > 0) {
+                    <ul class="nav-social">
+                        @for (int i = 0; i < social.Count; i++) {
+                            <li><a href="@social[i].URL" target="_blank"><i class="cc @social[i].icon"></i></a></li>
+                        }
+                    </ul>
+                        }
+                    }*@
+                @{
+                    Html.RenderAction("Head", "Channels");
+                }
+                @if (searchPage != null && SiteItem.IsSearchEnabled)
+                {
+                    <div class="search-box">
+                        <a class="search-btn" href="javascript:"><i class="cc cc-search"></i></a>
+                    </div>
+                }
+
+                @if (SiteLang.Count > 0)
+                {
+                    <div class="nav-dropdown lang">
+                        <div class="dropdown-default-text"><i class="cc cc-globe"></i>Language</div>
+                        <ul>
+                            @for (int i = 0; i < SiteLang.Count; i++)
+                            {
+                                if (@SiteLang[i].Translate == false)
+                                {
+                                    <li><a href="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                                }
+                                else
+                                {
+                                    <li><a id="TrnTCSCLink" data-ahref="@SiteLang[i].Url" @Html.Raw(SiteLang[i].IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@SiteLang[i].Title</a></li>
+                                }
+
+                            }
+                        </ul>
+                    </div>
+                }
+                @{ Member curUser = Member.Current; }
+                @if (curUser != null && IsEnabledMember)
+                {
+                    <div class="nav-dropdown member">
+                        <div class="dropdown-default-text inline p-L-4" id="MemberLoginInfo">
+
+                            @{
+                                WorkV3.Models.MemberShipModels member = WorkV3.Models.DataAccess.MemberShipDAO.GetItem(curUser.ID);
+                                if (member != null && !string.IsNullOrEmpty(member.Photo))
+                                {
+                                    <img src="@((member.Photo.StartsWith("http")?"":ViewBag.VMemberPath) + member.Photo)" id="imgMemberPhoto" />
+                                }
+                            }
+                            @curUser.Name, 您好
+                        </div>
+                        <ul>
+                            @if (curUser.Type == MemberType.Web)
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                @* 太報客製 隱藏選單 carrie 20180307
+                                    <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                     <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MyInfo" })">資料維護</a></li>*@
+                            }
+                            else
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                @* 太報客製 隱藏選單 carrie 20180307
+                                    <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                    <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MySocialInfo" })">社群資料</a></li>*@
+                            }
+                            <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">登出</a></li>
+                        </ul>
+                    </div>
+                }
+            </div>
+            <!-- menu -->
+            <div class="menu">
+                @{ List<MenusModels> mainMenus = Model.Where(dr => dr.AreaID == 2).ToList(); }
+                <ul class="main-menu">
+                    @CreateMenu(mainMenus, mainMenus.Where(m => m.ParentID == 0))
+                    @*<li><a href="@Url.RouteUrl("FrontSitePage", new { SiteSN = SiteItem.SN, PageSN = "ShopList" })">商城</a></li>*@
+                    @if (curUser == null && IsEnabledMember)
+                    {
+                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">會員</a></li>
+                    }
+                    else
+                    {
+
+                    }
+                </ul>
+            </div>
+            <div class="mobile-menu">
+                @if (curUser != null && IsEnabledMember)
+                {
+                    <div class="nav top p-B-4">
+                        <div class="nav-dropdown member">
+                            <div class="dropdown-default-text inline">
+                                @if (curUser.Type == MemberType.Web)
+                                {
+                                    @*<img src="~/images/temp/cube3.jpg" /> carrie 20171228 *@
+                                }
+                                else
+                                {
+                                    @*<img src="~/images/temp/cube3.jpg" /> carrie 20171228 *@
+                                }
+                                @curUser.Name, 您好
+                            </div>
+                            <ul>
+                                @*<li><a href="~/Taisounds/Member.aspx">會員主頁</a></li>*@
+                                @if (curUser.Type == MemberType.Web)
+                                {
+                                    <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                    @* 太報客製 隱藏選單 carrie 20180307
+                                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MyInfo" })">資料維護</a></li>*@
+                                }
+                                else
+                                {
+                                    <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Desktop" })">會員主頁</a></li>
+                                    @* 太報客製 隱藏選單 carrie 20180307
+                                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "CollectionList" })">你的收藏</a></li>
+                                        <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "MySocialInfo" })">社群資料</a></li>*@
+                                }
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">登出</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+                <div class="menu-main">
+                    <div class="main top">
+                        @*@if (SiteItem != null) {
+                                List<SitesModels.socialSettingCont> social = ViewBag.social;
+                                if (social.Count > 0) {
+                            <ul class="nav-social">
+                                    @for (int i = 0; i < social.Count; i++) {
+                                <li><a href="@social[i].URL" target="_blank"><i class="cc @social[i].icon"></i></a></li>
+                                    }
+                            </ul>
+                                }
+                            }*@
+
+                        @{
+                            Html.RenderAction("Head", "Channels");
+                        }
+                    </div>
+                    <div class="nav">
+                        <ul class="nav-menu">
+                            @CreateMenu(firstAreaMenus, firstAreaMenus.Where(m => m.ParentID == 0))
+                        </ul>
+                    </div>
+                    <div class="menu">
+                        <ul class="main-menu">
+                            @CreateMenu(mainMenus, mainMenus.Where(m => m.ParentID == 0))
+                            @if (curUser == null && IsEnabledMember)
+                            {
+                                <li><a href="@Url.Action("Index", "Home", new { SiteSN = SiteItem.SN, PageSN = "Login" })">會員</a></li>
+                            }
+                            else
+                            {
+
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (searchPage != null)
+        {
+            <!-- search -->
+            <div class="webSearch">
+                <div class="content">
+                    <input type="text" placeholder="請輸入關鍵字" id="txtSearch" oninput="getCurrentKeywordList()">
+                    <a class="btn-grey-lighten-1-o btn-large square transparent search-colse-btn" href="javascript:"><i class="cc cc-close"></i></a>
+                    <a id="btnSiteFullSearch" class="btn-grey-lighten-1-o btn-large square transparent" href="javascript:"><i class="cc cc-search"></i></a>
+                    <script type="text/javascript">
+
+
+                    let keywords = @dataJson;   @* neil 20180331 新增關鍵字搜尋 *@
+
+                    $(function () {
+                        getCurrentKeywordList();   @* neil 20180331 新增關鍵字搜尋 *@
+
+                    $('#btnSiteFullSearch').click(function () {
+                        var inputElm = $(this).prevAll('input:first');
+                        var v = inputElm.val();
+                        if (!v) {
+                            swal({
+                                text: '請輸入關鍵字',
+                                type: 'warning',
+                                customClass: 'animated fadeIn',
+                                onOpen: function () {
+                                    $('body').removeClass('blur-body');
+                                },
+                                onClose: function () {
+                                    $('body').addClass('blur-body');
+                                }
+                            });
+                        } else {
+                            location.href = '@Url.Action("Index", "Home", new { SiteSN = searchPage.SiteSN, PageSN = searchPage.PageSN })?key=' + encodeURIComponent(v);
+                        }
+                    });
+
+                    $('#txtSearch').keydown(function (event) {
+                        if (event.keyCode == 13) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            $('#btnSiteFullSearch').click();
+                        }
+                    });
+                    });
+
+                    @* neil 20180331 新增關鍵字搜尋 start *@
+                    function getKeywordItemString(keyword){
+                        return `<li><a>${keyword}</a></li>`;
+                    }
+
+                    function getCurrentKeywordList(){
+                        let input = $('#txtSearch').val();
+                        let filteredKeywords = [];
+
+                        if(input === '')
+                            filteredKeywords = keywords;
+                        else
+                            filteredKeywords= keywords.filter(item => item.Text.includes(input))
+
+                        // 如果找不到相似關鍵字的話就不顯示
+                        if(filteredKeywords.length === 0)
+                        {
+                            return;
+                        }
+
+                        let list = '';
+
+                        filteredKeywords.forEach(item => {
+                            list += getKeywordItemString(item.Text);
+                        });
+
+                        let html = `
+                        <div class="searchresults">
+                            <ul id="custom-keywords">
+                                <div>快速連結</div>
+                                ${list}
+                            </ul>
+                        </div>
+                            `;
+
+                        $('.searchresults').remove();
+                        $('.webSearch > .content').after(html);
+
+                        $('#custom-keywords li a').on('click', function() {
+                            $('#txtSearch').val($(this).text());
+                            $('#btnSiteFullSearch').click();
+                        });
+                    }
+                    @* neil 20180331 新增關鍵字搜尋 end *@
+                    </script>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!--自訂頁首內容-->
+@if (SiteItem.HeaderCustomized)
+{
+    <div>
+        @SiteItem.HeaderCont
+    </div>
+}
+<script type="text/javascript" src="~/script/waypoints/jquery.waypoints.js"></script>
+<script type="text/javascript" src="~/script/header/style4/header.js"></script>

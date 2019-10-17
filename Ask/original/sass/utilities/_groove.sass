@@ -1,0 +1,133 @@
+
+%groove-pad-portrait
+	+breakpoint(pad-portrait)
+		flex: 0 0 50% !important
+		width: size(50) !important
+
+%groove1-pad-portrait
+	+breakpoint(pad-portrait)
+		flex: none !important
+
+%groove-mobile
+	+breakpoint(mobile)
+		flex: none !important
+		width: size(100) !important
+
+.groove
+	@extend %border-box
+	min-width: 0 // [susan] 20181105 解決在 Firefox 使用 flex 時，子層的 overflow 失效問題
+	// overflow: hidden
+	// text-overflow: ellipsis
+	// white-space: nowrap
+	// flex: 1
+	// +breakpoint(mobile)
+	//     flex: none !important
+	//     width: size(100)
+
+.groove-cut
+	width: size(100)
+	flex-wrap: wrap
+	+d-flex
+
+	+breakpoint(mobile)
+		+d-block
+
+@for $i from 1 through $groove-number
+	@if $i > 1
+		.groove-#{$i}
+			flex: $i
+			@extend %groove-pad-portrait
+			@extend %groove-mobile
+
+	@else
+		.groove-1
+			flex: 1
+			width: size(100)
+			@extend %groove1-pad-portrait
+			@extend %groove-mobile
+
+// .groove-1
+//     width: size(100)
+
+//     +breakpoint(pad-portrait)
+//         flex: 0 0 100%
+//         width: size(100)
+
+	// overflow: hidden
+
+[zonelayout="h-AD-s1"]
+    > .wrapper
+    	.groove
+    		overflow: hidden
+
+    	.groove-3
+    		.groove-1
+    			width: auto
+
+// .groove
+// 	&[data-cardtype="ImageTextList"], &[data-cardtype="ArticleSet"], &[data-cardtype="EventSet"]
+// 		overflow: hidden
+
+[zonelayout="h-AD-s4"]
+	>.wrapper
+		.groove-1
+			.groove-1
+				width: calc(100% - 1rem) 		// 100% - [ml="sub"]
+
+				+breakpoint(pad-portrait)
+					width: 100%
+
+
+// .groove
+// 	&[data-cardtype="ImageTextList"], &[data-cardtype="ArticleSet"], &[data-cardtype="EventSet"]
+// 		overflow: hidden
+
+//main margin
+[mT='main']
+	margin-top: $groove-margin-Main
+
+	+breakpoint(mobile)
+		margin-top: 0
+
+[mR='main']
+	margin-right: $groove-margin-Main
+
+	+breakpoint(mobile)
+		margin-right: 0
+
+[mB='main']
+	margin-bottom: $groove-margin-Main
+
+	+breakpoint(mobile)
+		margin-bottom: 0
+
+[mL='main']
+	margin-left: $groove-margin-Main
+
+	+breakpoint(mobile)
+		margin-left: 0
+
+// sub margin
+[mT='sub']
+	margin-top: $groove-margin-Sub
+
+	+breakpoint(mobile)
+		margin-top: 0
+
+[mR='sub']
+	margin-right: $groove-margin-Sub
+
+	+breakpoint(mobile)
+		margin-right: 0
+
+[mB='sub']
+	margin-bottom: $groove-margin-Sub
+
+	+breakpoint(mobile)
+		margin-bottom: 0
+
+[mL='sub']
+	margin-left: $groove-margin-Sub
+
+	+breakpoint(mobile)
+		margin-left: 0

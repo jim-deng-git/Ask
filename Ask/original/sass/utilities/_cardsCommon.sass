@@ -1,0 +1,842 @@
+$width-left: 140px
+$width-right: 300px
+$right-margin: 60px
+
+=set-type-color($color)
+    background-color: transparent
+
+    a
+        color: $color
+
+    &::after
+        content: ""
+        display: block
+        width: 100%
+        margin: 3px auto 0
+        height: 2px
+        background-color: $color
+
+.card-common
+    margin: 2rem 0
+
+    .card-text-info
+        color: #444444
+        font-size: 16px
+
+    .article-left
+        width: $width-left
+        float: left
+        position: relative
+        z-index: 3
+
+        @extend %transition-btn
+
+        +breakpoint(mobile)
+            width: size(100)
+
+        // &.is_stuck
+        //     margin-top: 150px
+
+        // flex: none
+
+        .card-poster
+            font-size: 14px
+
+            .posted
+                a
+                    display: inline-block
+                    color: #787878
+                    @extend %reset
+
+                ~ .posted
+                    margin-top: 10px
+
+    .article-main
+        //no left and right side
+        // flex: 1
+        width: 100%
+        margin: 0 auto
+
+        @extend %transition-btn
+
+        &.hasLeft
+            .article-center
+                width: calc(100% - (#{$width-left} + #{$right-margin}))
+
+                +breakpoint(mobile)
+                    width: size(100)
+
+            &.hasRight
+                .article-center
+                    width: calc(100% - (#{$width-left} + #{$width-right} + #{$right-margin}))
+
+                    +breakpoint(mobile)
+                        width: size(100)
+
+        &.hasRight
+            .article-center
+                width: calc(100% - (#{$width-right} + #{$right-margin}))
+
+                +breakpoint(mobile)
+                    width: size(100)
+
+        .article-main-contnet
+            padding-top: 10px
+            clear: both
+
+            &::before
+                content: ''
+                display: block
+                width: 100%
+                height: 4px
+                margin: 10px 0 0
+                // margin: 10px 0 30px
+                // border-width: 1px 0
+                // border-style: solid
+                // border-color: color('grey','lighten-3')
+
+        .card-text
+            padding: 0px
+
+            &.format
+                width: calc(55% - 20px)
+                +breakpoint(mobile)
+                    width: 100%
+
+            ~ .card-img
+                margin-top: 25px
+
+            ~ .card-file, ~ .card-link
+                margin-top: 20px
+
+        .card-text-name
+            font-size: 22px
+            font-size: 2.2rem
+            letter-spacing: 1px
+            color: $title-main-color
+
+            ~ .card-text-info
+                margin-top: 16px
+
+            ~ .card-img
+                margin-top: 16px
+
+        .card-img
+            padding-bottom: 0
+            overflow: visible
+            height: auto
+
+            img, a:not(.imgLink)
+                position: relative
+                height: auto
+                display: inline-block
+                width: size(100)
+
+            > a
+                height: size(100)
+
+            .imgLink
+                margin-top: -5px
+                // width: auto
+
+            .imgInfo
+                // 20190122 yulin 圖說連結
+                a:not(.imgLink)
+                    display: inline-block
+                    width: inherit
+
+            // > a, > a > img
+            //  width: auto
+            //  max-width: inherit
+
+            .card-text-name
+                font-size: 15px
+
+                > a
+                    padding-bottom: 0
+
+                    @extend %reset
+
+                    color: $content-base-color
+                    background-color: transparent
+
+                    +hover-focus-active
+                        color: $title-sub-color
+
+            +hover-focus-active
+                color: $title-sub-color
+
+            ~ .card-text
+                padding: 20px 0px 0px
+
+            .flex-control-paging
+                li
+                    a
+                        height: 11px
+
+            .flex-direction-nav
+                position: absolute
+                top: 50%
+                left: 0
+                margin-top: -20px
+                width: 100%
+
+                +breakpoint(mobile)
+                    position: static
+                    top: auto
+                    margin-top: 0
+
+                a
+                    position: absolute
+                    width: 40px
+                    height: 40px
+
+            &.text-R
+                margin-left: auto
+                margin-right: 0
+                float: right
+
+                ~ .card-text
+                    float: right
+                    width: size(100)
+
+                .flexslider
+                    margin-left: auto
+                    margin-right: 0
+                    float: right
+
+                    .slides
+                        img
+                            margin: 0 0 0 auto
+
+            &.text-C
+                margin-left: auto
+                margin-right: auto
+
+                .flexslider
+                    margin: 0 auto
+
+                    .slides
+                        img
+                            margin: 0 auto
+
+            &.float-L, &.float-R
+                width: 45%
+
+                +breakpoint(mobile)
+                    width: 100%
+
+                ~ .card-text
+                    padding-top: 16px
+
+                .flexslider
+                    width: 100%
+
+            &.float-L
+                margin-right: 20px
+
+                +breakpoint(mobile)
+                    margin-right: 0
+
+                ~ .card-text
+                    ul
+                        margin-left: calc(45% + 40px)
+
+                        +breakpoint(mobile)
+                            margin-left: 20px
+
+            &.float-R
+                margin-left: 20px
+
+                +breakpoint(mobile)
+                    margin-left: 0
+
+                &.text-R
+                    ~ .card-text
+                        float: none
+
+        .card, .card-box, .card-img
+            position: static
+
+            &.video
+                position: relative
+
+                .card-box, .card-img
+                    position: relative
+
+                &.imgWidth-small
+                    .card-img
+                        width: 60%
+
+                        +breakpoint(mobile)
+                            width: 100%
+
+        .card
+            margin-bottom: 50px
+
+            // 圖片原尺寸
+            &:not([class*='imgWidth-'])
+
+                .flexslider
+                    a, .imgInfo a
+                        width: initial
+
+                    .flex-direction-nav
+                        a
+                            width: 40px
+
+                    .slides
+                        img
+                            width: initial
+                            width: auto
+                            // height: 100%
+
+                .card-img
+                    &.text-C
+                        .imgInfo
+                            margin: 5px auto
+
+                        .flexslider
+                            left: 50%
+
+                            +breakpoint(mobile)
+                                left: 0
+                                margin-left: 0 !important
+                                margin-right: 0 !important
+                                width: 100% !important
+
+                        .flex-direction-nav
+                            right: 0
+                            margin: -20px auto
+
+                    &.text-R
+                        .imgInfo
+                            margin-right: 0
+                            margin-left: auto
+
+                        .flex-direction-nav
+                            left: auto
+                            right: 0
+
+            &.imgWidth-large
+                .flexslider
+                    width: size(100)
+                    margin-left: -$width-left
+                    right: -$width-left
+
+                .card-img
+                    &.text-R
+                        .flexslider
+                            right: 0
+
+                        .flex-direction-nav
+                            left: auto
+                            right: 0
+
+                    &.text-C
+                        .flexslider
+                            right: -20px
+
+                        .flex-direction-nav
+                            right: 0
+                            margin: -20px auto
+
+                        .videoIframe
+                            left: -$width-left
+
+                    img
+                        width: size(100)
+
+            &.imgWidth-middle
+                .flexslider
+                    width: size(100)
+
+            &.imgWidth-small
+                .flexslider
+                    width: 60%
+
+                    +breakpoint(mobile)
+                        width: 100%
+
+                .card-img
+                    &.float-L, &.float-R
+                        .flexslider
+                            width: 100%
+
+            // 名言
+            &.imgSaying
+                border: 2px solid #d2d2d2
+                border-width: 2px 0
+                padding: 48px 0 50px
+
+                .card-img
+                    ~ .card-text
+                        padding-top: 30px
+
+                .card-text
+                    text-align: center
+
+                .card-text-name
+                    font-size: 20px
+
+                    ~ .card-text-info
+                        margin-top: 30px
+
+                .card-text-info
+                    font-size: 16px
+                    color: #4a4a4a
+                    font-weight: 300
+
+                .flex-direction-nav
+                    width: 100% !important
+                    margin-top: 0
+
+                &.imgWidth-small
+                    .flexslider
+                        width: 250px
+                        margin: 0 auto
+
+                        +breakpoint(mobile)
+                            width: 100%
+
+                        .slides
+
+                            > li
+                                text-align: center
+
+                            a:not(.imgLink), img
+                                width: initial
+                                width: auto
+
+            // 經歷
+            &.imgExperience
+
+                border: 2px solid #d2d2d2
+                border-width: 2px 0
+                padding: 48px 35px 50px
+
+                .card-text
+                    width: calc(70% - 20px)
+                    +breakpoint(mobile)
+                        width: 100%
+
+                .card-img
+                    &.float-L, &.float-R
+                        width: 30%
+
+                        +breakpoint(mobile)
+                            width: 100%
+
+                        ~ .card-text
+                            padding-top: 0
+
+                .flex-direction-nav
+                    width: 100% !important
+                    margin-top: 0
+
+
+    .article-center
+        float: left
+        position: relative
+        z-index: 2
+        width: size(100)
+
+    .article-right
+        // margin-top: 0
+        margin-left: $right-margin
+        width: $width-right
+        float: right
+
+        @extend %transition-btn
+
+        // flex: none
+
+        // &.is_stuck
+        //     margin-top: 100px
+
+        @extend %transition-btn
+
+        .card
+            ~ .card
+                margin: 0 0 35px
+
+    .article-right, .article-left
+        +breakpoint(mobile)
+            width: size(100)
+            margin-left: 0
+
+        .card
+            box-shadow: none
+            position: relative
+            z-index: 2
+
+        .card-datetime
+            .card-date
+                font-size: 24px
+                letter-spacing: -1px
+                line-height: 1
+
+                .year
+                    line-height: 1
+                    font-size: 15px
+                    color: color("grey", "base")
+                    margin-bottom: 3px
+
+                > span:not(.week)
+                    margin: 0 5px
+
+                > .week
+                    font-size: 12px
+                    letter-spacing: 0px
+                    margin-left: 3px
+                    line-height: 1
+                    vertical-align: middle
+                    color: color("grey", "base")
+
+            .card-time
+                font-size: 16px
+                margin-left: 1px
+                letter-spacing: 0px
+                margin-top: 2px
+
+            & > div:not(.card-time), &:not(.multiple) > div
+                display: inline-block
+
+                .card-time
+                    margin-left: 5px
+                    vertical-align: bottom
+
+    .article-title
+        width: size(100)
+        font-size: 34px
+        color: $title-main-color
+        letter-spacing: 1px
+        // margin-bottom: 20px
+        text-align: center
+
+        &.page
+            text-align: left
+            float: left
+
+            ~ .article-sub-title
+                float: left
+                width: 100%
+                margin-top: 5px
+    
+    // 副標題
+    .article-sub-title
+        font-size: 28px
+        color: $title-sub-color
+
+    // 系列標題
+    .article-set-title
+        font-size: 16px
+
+        > span
+            display: inline-block
+
+            +set-type-color(color("grey", "base"))
+
+            &[data-color]
+                +set-type-color(color("grey", "base"))
+
+            &[data-color='red']
+                +set-type-color(color("red", "accent-3"))
+
+            &[data-color='orange']
+                +set-type-color(color("orange", "darken-3"))
+
+            &[data-color='yellow']
+                +set-type-color(color("yellow", "darken-1"))
+
+            &[data-color='green']
+                +set-type-color(color("green", "darken-1"))
+
+            &[data-color='light-green']
+                +set-type-color(color("light-green", "base"))
+
+            &[data-color='blue']
+                +set-type-color(color("blue", "base"))
+
+            &[data-color='teal']
+                +set-type-color(color("teal", "base"))
+
+            &[data-color='deep-purple']
+                +set-type-color(color("deep-purple", "base"))
+
+            &[data-color='gold']
+                +set-type-color(color("gold", "base"))
+
+            &[data-color='light-grey']
+                +set-type-color(color("grey", "lighten-1"))
+
+            &[data-color='grey']
+                +set-type-color(color("grey", "darken-2"))
+
+            &[data-color='black']
+                +set-type-color(color("shades", "black"))
+
+            ~ span
+                    margin-left: 10px
+
+        a
+            color: $title-sub-color
+            @extend %reset
+
+        ~ .article-title
+            margin-top: 8px
+
+    .card, .card-box, .copyright, .comment, .recommend
+        float: left
+        width: size(100)
+
+    // 類別圖片
+    .type-img
+        display: inline-block
+        width: 24px
+        height: 24px
+        vertical-align: middle
+        margin-right: 5px
+        border-radius: 50px
+        overflow: hidden
+        background-repeat: no-repeat
+        background-size: cover
+        background-position: center center
+
+    ul.download
+        font-size: 15px
+
+        @extend %reset
+
+        > li
+            @extend %reset
+
+            > a
+                text-decoration: none
+
+            i
+                vertical-align: text-bottom
+                margin-right: 5px
+                font-size: 18px
+
+    .copyright
+        font-size: 13px
+        margin-top: 60px
+        padding: 30px 0px
+        border-top: 1px solid color("grey", "lighten-2")
+        text-align: center
+
+    //comment and recommend
+    .comment-title, .recommend-title
+        color: #000000
+        padding-bottom: 2px
+        margin-bottom: 17px
+        border-bottom: 1px solid #dddddd
+
+    .comment
+        ul
+            list-style: none
+            margin: 0
+            padding: 0
+
+        li
+            list-style: none
+            margin: 0 0 30px
+            padding: 0
+            border-bottom: 1px solid #eeeeee
+            padding-bottom: 25px
+
+        .userImg
+            width: 40px
+            height: 40px
+            border-radius: 100%
+            overflow: hidden
+            float: left
+            background-color: #dddddd
+            line-height: 40px
+
+            > i
+                font-size: 40px
+
+            > img
+                width: 100%
+                height: 100%
+                display: block
+
+        .time
+            color: #787878
+            font-size: 12px
+            float: right
+            padding-top: 12px
+
+        .userName
+            color: #454545
+            font-size: 13px
+            margin-left: 50px
+            padding-top: 12px
+
+            // float: left
+
+        .content
+            // color: #000000
+            // float: left
+            // width: 100%
+            margin-top: 5px
+            margin-left: 50px
+
+        //fay 20180309
+        .good
+            margin-left: 50px
+            margin-top: 5px
+            font-size: 14px
+            line-height: 14px
+            vertical-align: middle
+
+            > i
+                font-size: 16px
+
+            span
+                margin-left: 2px
+
+        // add fay 20180312
+        .childreply
+            position: relative
+            top: 4px
+
+        .commentBtn, .replyCommentBtn
+            display: block
+            color: #999999
+            text-align: center
+            width: 64px
+            height: 64px
+            background-color: #f7f7f7
+            border-radius: 100%
+            overflow: hidden
+
+            //padding: 10px hide fay 20180312
+            border: 1px solid #dedede
+            margin: 20px auto 10px
+            cursor: pointer
+
+            @extend %transition-btn
+
+            > i
+                font-size: 20px
+                padding: 5px
+
+            > span
+                font-size: 13px
+                display: block
+
+            &:hover
+                color: #ffffff
+                background-color: #454545
+                border: 1px solid #666666
+
+        .reply-comment
+            margin-left: 4rem
+
+            li
+                border-bottom: none
+
+        .comment-edit
+            padding: 0px 20px 20px
+            background-color: #f7f7f7
+            margin-bottom: 30px
+            border-bottom: none
+
+            .comment-content
+                margin-left: 0
+
+            .userName
+                margin-left: 0px
+                padding-top: 0px
+
+            .content
+                margin-top: 0px
+                margin-left: 0px
+
+        textarea.materialize-textarea
+            //height: 100px
+            height: 10px
+
+    .recommend
+        margin-top: 30px
+
+        .card-img-box
+            a
+                padding-bottom: 56.25%
+                overflow: hidden
+
+                img
+                    position: absolute
+                    top: 50%
+                    width: auto
+                    min-width: 100%
+                    min-height: 100%
+                    max-width: inherit
+                    left: 50%
+                    margin: 0
+                    transform: translate(-50%, -50%) scale(1)
+                    transition-duration: 1s
+                
+                .card-img-content
+                    opacity: 1
+                    background-color: transparent
+                    transition-duration: 1s
+
+                &:hover
+
+                    img
+                        transform: translate(-50%, -50%) scale(1.05)
+
+                    .card-img-content
+                        transform: scale(1.05)
+
+            .card-text-name
+                @extend %transition-btn
+
+            +hover-focus-active
+                .card-text-name
+                    color: $title-sub-color
+
+                    a
+                        color: $title-sub-color
+
+    .visible_item
+        display: none
+
+    #showMore
+        margin-bottom: 40px
+
+    .hasVideo
+        position: relative
+
+        &::after
+            content: unquote('"\\ea38"')
+            font-size: 32px
+            color: $white
+            display: inline-block
+            width: 38px
+            height: 40px
+            text-align: center
+            line-height: 41px
+            border-radius: 100%
+            border: 2px solid $white
+            background-color: rgba($black, 0.5)
+            position: absolute
+            font-family: "FontCCwork"
+            padding-left: 2px
+            left: 50%
+            top: 50%
+            margin-top: -20px
+            margin-left: -19px
+            opacity: 0.8
+
+            @extend %transition-btn
+
+    .instagram-media
+        position: relative !important
+
+        +breakpoint(mobile)
+            max-width: 100% !important

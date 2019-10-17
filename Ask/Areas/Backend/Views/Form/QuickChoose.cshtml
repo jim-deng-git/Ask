@@ -1,0 +1,69 @@
+﻿@model IEnumerable<string>
+@{
+    ViewBag.Title = "快速選擇";
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var query = new { formId = ViewBag.FormID };
+}
+
+<div class="groove groove-1">
+    <form id="editForm" action="@Url.Action("QuickChoose", query)" method="post">
+        <ul class="forms quick-chooese">
+            <li>
+                <div class="col-1 border-B m-B-8">
+                    <div class="title">快速選擇</div>
+                </div>
+                <div>
+                    <div id="divFields" class="btnGroup validate[funcCall[checkFields]]" data-checkGroup="fields">
+                        @{ string[] fields = { "姓名 + 性別", "名稱", "身份證字號", "出生年月日", "手機", "電話", "傳真", "Email", "地址", "婚姻狀況", "學歷", "職業", "產業", "公司名稱", "部門", "職稱", "喜好", "專長", "年收入", "照片",
+                                "緊急聯絡人姓名", "緊急聯絡人手機", "緊急聯絡人電話", "緊急聯絡人Email", "留言", "滿意度調查", "如何得知？", "願意收到訊息？", "開立發票", "攜伴參加", "用餐需求", "住宿需求" }; }
+                        @foreach (string field in fields) {
+                        <a class="btn-grey textC bg-grey-lighten-2" href="javascript:">
+                            <input class="with-gap" type="checkbox" value="@field" @(Model?.Contains(field) == true ? "checked=\"checked\"" : string.Empty) />
+                            <label>@field</label>
+                        </a>
+                        }
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft(); Component.closeRight();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>建立</a>
+        </div>        
+    </form>
+</div>
+
+@section FArea {
+    <link href="~/Css/Cards/Form/style1.css" rel="stylesheet" />    
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+
+        function checkFields(field) {
+            if (field.find('input:checked').length == 0)
+                return '* 請至少選擇一項';
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+        parent.setField(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.FieldIds)));
+        setTimeout(function () {            
+            Component.closeLeft();
+            Component.closeRight();
+        }, 100);        
+            </text>
+        }
+    </script>
+}
+
+

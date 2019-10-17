@@ -1,0 +1,335 @@
+﻿@model WorkV3.Models.FieldModel
+
+@{
+    string val = Model.Value?.Value;
+    string[] widthClassList = { "", "col-4", "col-2", "col-1" };
+    string uploadDesignUrl = ViewBag.UploadDesignUrl;
+    string uploadUrl = ViewBag.UploadUrl;
+}
+
+@functions {
+    string GetInputValidateClass(WorkV3.Models.FieldModel item, out string wordNumRange) {
+        List<string> validate = new List<string>();
+        if (item.Requied) {
+            validate.Add("required");
+        }
+        if (item.Fomat && item.FomatType != null) {
+            FieldInputFormat format = (FieldInputFormat)(int)item.FomatType;
+            if (format == FieldInputFormat.Email) {
+                validate.Add("custom[email]");
+            } else if (format == FieldInputFormat.中國手機號) {
+                validate.Add("funcCall[checkChinaMobile]");
+            } else if (format == FieldInputFormat.中國身份證) {
+                validate.Add("funcCall[checkChinaIDCard]");
+            } else if (format == FieldInputFormat.台灣手機號) {
+                validate.Add("funcCall[checkTwMobile]");
+            } else if (format == FieldInputFormat.台灣統一編號) {
+                validate.Add("funcCall[checkTwUniteSN]");
+            } else if (format == FieldInputFormat.台灣身份證) {
+                validate.Add("funcCall[checkTwIDCard]");
+            } else if (format == FieldInputFormat.台灣電話號) {
+                validate.Add("funcCall[checkTwPhone]");
+            } else if (format == FieldInputFormat.數字) {
+                validate.Add("custom[number]");
+            } else if (format == FieldInputFormat.網址) {
+                validate.Add("funcCall[checkUrl]");
+            } else if (format == FieldInputFormat.美國SSN) {
+                validate.Add("funcCall[checkUsSSN]");
+            } else if (format == FieldInputFormat.英文) {
+                validate.Add("funcCall[checkLetter]");
+            } else if (format == FieldInputFormat.英文或數字) {
+                validate.Add("funcCall[checkLetterOrNum]");
+            }
+        }
+
+        wordNumRange = string.Empty;
+        if (item.WordLimit && (item.WordMin != null || item.WordMax != null)) {
+            validate.Add("funcCall[checkTextLength]");
+            if (item.WordMin != null) {
+                wordNumRange += $" data-min=\"{ item.WordMin }\"";
+            }
+            if (item.WordMax != null) {
+                wordNumRange += $" data-max=\"{ item.WordMax }\"";
+            }
+        }
+        return validate.Count > 0 ? $"validate[{ string.Join(",", validate) }]" : string.Empty;
+    }
+
+    string GetDateValidateClass(WorkV3.Models.FieldModel item, out string typeClass) {
+        List<string> validate = new List<string>();
+        if (item.Requied) {
+            validate.Add("required");
+        }
+        typeClass = string.Empty;
+        if(item.Fomat && item.FomatType != null) {
+            FieldDateFormat format = (FieldDateFormat)(int)item.FomatType;
+            if(format == FieldDateFormat.時間) {
+                validate.Add("funcCall[checkTime]");
+                typeClass = "time";
+            } else if(format == FieldDateFormat.民國日期) {
+                validate.Add("funcCall[checkTwDate]");
+                typeClass = "twDate";
+            } else if(format == FieldDateFormat.民國日期時間) {
+                validate.Add("funcCall[checkTwDateTime]");
+                typeClass = "twDateTime";
+            } else if (format == FieldDateFormat.西元日期) {
+                validate.Add("funcCall[checkDate]");
+                typeClass = "date";
+            } else if (format == FieldDateFormat.西元日期時間) {
+                validate.Add("funcCall[checkDateTime]");
+                typeClass = "datetime";
+            }
+        }
+        return validate.Count > 0 ? $"validate[{ string.Join(",", validate) }]" : string.Empty;
+    }
+
+    string GetFileValidateClass(WorkV3.Models.FieldModel item, out string dataType, out string dataSize, out string dataMax) {
+        List<string> validate = new List<string>();
+        if (item.Requied) {
+            validate.Add("funcCall[checkFile]");
+        }
+
+        dataType = string.Empty;
+        if(item.TypeID == "file") {
+            if(item.Fomat && item.FomatType != null) {
+                FieldFileFormat format = (FieldFileFormat)(int)item.FomatType;
+                if(format == FieldFileFormat.PDF) {
+                    dataType = $"data-type=\"pdf\"";
+                } else if(format == FieldFileFormat.圖檔) {
+                    dataType = $"data-type=\"jpg,jpeg,png,gif\"";
+                } else if (format == FieldFileFormat.壓縮檔) {
+                    dataType = $"data-type=\"zip,rar,7z\"";
+                } else if(format == FieldFileFormat.影片) {
+                    dataType = $"data-type=\"mp4\"";
+                } else if(format == FieldFileFormat.文件) {
+                    dataType = $"data-type=\"doc,docx,xls,xlsx,ppt,pptx,pdf,txt\"";
+                } else if (format == FieldFileFormat.聲音) {
+                    dataType = $"data-type=\"mp3\"";
+                }
+            }
+        } 
+
+        dataSize = string.Empty;
+        if(item.FileSize && item.FileSizeType != null) {
+            FieldSizeFormat format = (FieldSizeFormat)(int)item.FileSizeType;
+            if(format == FieldSizeFormat.小於100kb) {
+                dataSize = $"data-size=\"0.1\"";
+            } else if(format == FieldSizeFormat.小於200kb) {
+                dataSize = $"data-size=\"0.2\"";
+            } else if (format == FieldSizeFormat.小於500kb) {
+                dataSize = $"data-size=\"0.5\"";
+            } else if (format == FieldSizeFormat.小於1mb) {
+                dataSize = $"data-size=\"1\"";
+            } else if (format == FieldSizeFormat.小於2mb) {
+                dataSize = $"data-size=\"2\"";
+            } else if (format == FieldSizeFormat.小於5mb) {
+                dataSize = $"data-size=\"5\"";
+            } else if (format == FieldSizeFormat.小於10mb) {
+                dataSize = $"data-size=\"10\"";
+            }
+        }
+        
+        dataMax = "data-max=\"1\"";
+        if(item.FileNumber && item.FileNumberMax != null && (int)item.FileNumberMax > 0) {
+            dataMax = $"data-max=\"{ item.FileNumberMax }\"";
+        }
+
+        return validate.Count > 0 ? $"validate[{ string.Join(",", validate) }]" : string.Empty;
+    }
+}
+
+@helper ShowAlertText(WorkV3.Models.FieldModel item) {
+    if (!string.IsNullOrWhiteSpace(item.Hint)) {
+    <div class="alert transparent">
+        <i class="cc cc-attention"></i>
+        <div>@item.Hint</div>
+    </div>
+    }
+}
+<div class="swiper-slide" data-num="@Model.SN">
+    <ul class="forms">
+        <li>
+            <div class="@widthClassList[Model.Width] @(Model.TypeID == "address" ? "multiple" : "")">    
+                <div class="title">
+                @if (!string.IsNullOrWhiteSpace(Model.Title)) {
+                    @:@Model.Title
+                }
+                @if (Model.Requied) {
+                    <span class="required">*</span>
+                }
+                </div>    
+                @if(Model.IsDescription) {
+                <div class="full-desc">
+                    @if(Model.Match == "image")
+                    {
+                        if (!string.IsNullOrWhiteSpace(Model.Image))
+                        {
+                            <div class="full-desc-img">
+                                <img src="@(uploadDesignUrl + Server.UrlPathEncode(Model.Image))" />
+                            </div>
+                        }
+                    }else if(Model.Match == "video")
+                    {
+                        if (!string.IsNullOrWhiteSpace(Model.VideoID) || !string.IsNullOrWhiteSpace(Model.Video))
+                        {
+                            <div class="full-desc-img video">
+                                @if (Model.VideoType == "youtube")
+                                {
+                                    <iframe src="https://www.youtube.com/embed/@(Model.VideoID)?rel=0&amp;controls=0" frameborder="0" allowfullscreen></iframe>
+                                } else if (Model.VideoType == "vimeo")
+                                {
+                                    <iframe src="https://player.vimeo.com/video/@(Model.VideoID)" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+                                } else if (Model.VideoType == "custom")
+                                {
+                                    <iframe src="@(uploadDesignUrl + Model.Video)" frameborder="0" allowfullscreen></iframe>
+                                }
+                            </div>
+                        }
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        @Model.Description
+                    }
+                </div>
+                }
+                @if (Model.TypeID == "radio") {
+                    if (!string.IsNullOrWhiteSpace(Model.Options)) {
+                        string[] options = Model.Options.Split(';');
+                        <div id="div_@Model.ID" class="radio-box full @(Model.OptionArray ? "inline" : string.Empty) @(Model.Requied ? "validate[funcCall[checkRadioBox]]" : string.Empty)" data-radioGroup="radio_@Model.ID">
+                            @foreach (string option in options) {
+                                <div>
+                                    <input type="radio" value="@option" />
+                                    <label>@option</label>
+                                </div>
+                            }
+                            @if (Model.OtherOprion) {
+                                <div>
+                                    <input type="radio" value="其它" />
+                                    <label>其它</label>
+                                </div>
+                            }
+                            <input type="hidden" id="@Model.ID" name="@Model.ID" value="@val" />
+                        </div>
+                        @ShowAlertText(Model)
+                    }
+                } else if (Model.TypeID == "checkbox") {        
+                    if (!string.IsNullOrWhiteSpace(Model.Options)) {
+                        string[] options = Model.Options.Split(';');
+                        <div id="div_@Model.ID" class="radio-box full @(Model.OptionArray ? "inline" : string.Empty) @(Model.Requied ? "validate[funcCall[checkCheckBox]]" : string.Empty)" data-checkGroup="check_@Model.ID">
+                            @foreach (string option in options) {
+                                <div>
+                                    <input type="checkbox" value="@option" name="cb_@Model.ID" />
+                                    <label>@option</label>
+                                </div>
+                            }
+                            @if (Model.OtherOprion) {
+                                <div>
+                                    <input type="checkbox" value="其它" name="cb_@Model.ID" />
+                                    <label>其它</label>
+                                </div>
+                            }
+                        </div>
+                        <input type="hidden" name="@Model.ID" value="@val" />
+                        @ShowAlertText(Model)
+                    }
+                } else if (Model.TypeID == "select") {
+                    if (!string.IsNullOrWhiteSpace(Model.Options)) {
+                        string[] options = Model.Options.Split(';');
+                        <div id="div_@Model.ID" class="input-field @(Model.Requied ? "validate[funcCall[checkSelect]]" : string.Empty)">
+                            <select id="@Model.ID" name="@Model.ID">
+                                <option value="">請選擇</option>
+                                @foreach (string option in options) {
+                                    <option value="@option" @(val == option ? "selected" : string.Empty)>@option</option>
+                                }
+                                @if (Model.OtherOprion) {
+                                    <option value="其他" @(val == "其他" ? "selected" : string.Empty)>其他</option>
+                                }
+                            </select>
+                        </div>
+                        @ShowAlertText(Model)
+                    }
+                } else if (Model.TypeID == "input") {
+                    string wordNumRange;
+                    string validateExp = GetInputValidateClass(Model, out wordNumRange);
+                    string repeatCount = string.Empty;
+                    if(Model.RepeatLimit == (byte)FieldRepeatLimit.不可重複) {
+                        repeatCount = $"data-repeat=\"1\"";
+                    } else if(Model.RepeatLimit == (byte)FieldRepeatLimit.可重複數次) {
+                        repeatCount = $"data-repeat=\"{ Model.RepeatCount ?? 1 }\"";
+                    }
+                    <div id="div_@Model.ID" class="input-field">
+                        <input type="text" id="@Model.ID" name="@Model.ID" class="@validateExp" value="@val" @Html.Raw(wordNumRange) @Html.Raw(repeatCount) />
+                    </div>
+                    @ShowAlertText(Model)
+                } else if (Model.TypeID == "textarea") {
+                    string wordNumRange;
+                    string validateExp = GetInputValidateClass(Model, out wordNumRange);
+                    <div id="div_@Model.ID" class="input-field">
+                        @{
+                            string highClass = "height-mm";
+                            if (Model.High == 3) {
+                                highClass = "";
+                            } else if (Model.High == 10) {
+                                highClass = "height-lg";
+                            }
+                        }
+                        <textarea id="@Model.ID" name="@Model.ID" class="materialize-textarea @highClass @validateExp" @Html.Raw(wordNumRange)>@val</textarea>
+                    </div>
+                    @ShowAlertText(Model)
+                } else if (Model.TypeID == "datetime") {
+                    string typeClass;
+                    string validateExp = GetDateValidateClass(Model, out typeClass);
+                    <div id="div_@Model.ID" class="input-field">
+                        <input type="text" id="@Model.ID" name="@Model.ID" class="input-cal @typeClass @validateExp" value="@val" />
+                    </div>
+                    @ShowAlertText(Model)
+                } else if (Model.TypeID == "file" || Model.TypeID == "image" || Model.TypeID == "video" || Model.TypeID == "voice") {
+                    string dataType, dataSize, dataMax;
+                    string validateExp = GetFileValidateClass(Model, out dataType, out dataSize, out dataMax);
+                    <div id="div_@Model.ID" class="input-field @validateExp">
+                        <input type="file" id="f@(Model.ID)" name="f@(Model.ID)" class="field@(Model.TypeID)" data-field="@Model.ID" @Html.Raw(dataType) @Html.Raw(dataSize) @Html.Raw(dataMax) />
+                    </div>
+                    if (Model.HasTemplate && !string.IsNullOrWhiteSpace(Model.Template)) {
+                        <div class="alert transparent">
+                            <i class="cc cc-file-o"></i>
+                            <div><a href="@(uploadDesignUrl + "/" + Model.Template)" download>範本下載</a></div>
+                        </div>
+                    }
+                    @ShowAlertText(Model)
+                    <input type="hidden" id="@Model.ID" name="@Model.ID" value='@Html.Raw(val)' />
+                } else if (Model.TypeID == "hr") {
+                    <hr class="hr @Model.Description" data-label="@Model.Hint" />
+                } else if (Model.TypeID == "text") {
+                    <div class="input-field">
+                        <div class="static-text">
+                            @if (!string.IsNullOrWhiteSpace(Model.Image)) {
+                                <div class="img"><img src="@(uploadDesignUrl + "/" + Model.Image)"/></div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.Description)) {
+                                @Html.Raw(Model.Description.ReplaceEnterToBr())
+                            }
+                        </div>
+                    </div>
+                } else if (Model.TypeID == "address") {  
+                    string address = string.Empty, regions = string.Empty;
+                    if(!string.IsNullOrWhiteSpace(val)) {
+                        FieldAddress fieldAddress = Newtonsoft.Json.JsonConvert.DeserializeObject<FieldAddress>(val);
+                        address = fieldAddress.Address;
+                        if(fieldAddress.Regions?.Length > 0) {
+                            regions = Newtonsoft.Json.JsonConvert.SerializeObject(fieldAddress.Regions);
+                        }
+                    }
+                    int[] fix = Model.GetRangeHierarchy();   
+                    <div id="div_@Model.ID" class="constant @(Model.Requied ? "validate[checkAddress]" : string.Empty)">
+                        <input type="hidden" id="Regions_@Model.ID" name="Regions_@Model.ID" class="fieldRegion" data-fix='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(fix))' value='@Html.Raw(regions)' />
+                        <div class="input-field longer">
+                            <input placeholder="請填入地址" type="text" id="Address_@Model.ID" name="Address_@Model.ID" value="@address" />
+                        </div>            
+                    </div>
+                    @ShowAlertText(Model)
+                }
+            </div>
+        </li>
+    </ul>
+</div>
+

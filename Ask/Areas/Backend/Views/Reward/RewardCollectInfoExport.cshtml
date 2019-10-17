@@ -1,0 +1,136 @@
+﻿@using Newtonsoft.Json.Linq;
+@{
+    Layout = null;
+        
+    IEnumerable< WorkV3.Models.RewardCollectInfoModel> infos = ViewData["RewardCollectInfo"] as IEnumerable<WorkV3.Models.RewardCollectInfoModel>;
+    
+    bool privacy = (bool)ViewData["Privacy"];    
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+    table {
+        width:95%;
+        margin:0px auto;
+        text-align:center;
+        border-style:solid;
+    }
+
+    table th {
+        border:1px black solid;
+        padding:3px;
+        font-size: 12pt;
+        text-align: center;
+    }
+
+    table td {
+        border:1px black solid;
+        padding:3px;
+        font-size: 11pt;
+        text-align: center;
+        mso-number-format:"\@@";
+    }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>身份證字號</th>
+                <th>出生年月日</th>
+                <th>手機</th>
+                <th>電話</th>
+                <th>Email</th>
+                <th>地址</th>
+                <th>活動名稱</th>
+                <th>備註</th>
+                <th>處理狀態</th>
+                <th>標示中獎</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(WorkV3.Models.RewardCollectInfoModel item in infos)
+            {
+                WorkV3.Models.MemberShipModels member = item.GetMemberData();
+                string Address, name, Mobile, IDCard, Email, Birthday, Phone, address;
+                JObject data = item.CompleteData == null? new JObject(): JObject.Parse(item.CompleteData);
+
+                //string mobile = item.KeyType.ToLower() == "member" ? member.Mobile : item.KeyType.ToLower() == "手機" ? item.KeyValue : string.Empty;
+                //string idCard = item.KeyType.ToLower() == "member" ? member.IDCard : item.KeyType.ToLower() == "身分證字號" ? item.KeyValue : string.Empty;
+
+                //string email = item.KeyType.ToLower() == "email" ? member.Mobile : item.KeyType.ToLower() == "Email" ? item.KeyValue : string.Empty;
+                if (item.KeyType.ToLower() != "member")
+                {
+                    Address = data["Address"] == null ? string.Empty : data["Address"].ToString();
+                    name = data["Name"] == null ? string.Empty : data["Name"].ToString();
+                    Mobile = data["Mobile"] == null ? string.Empty : data["Mobile"].ToString();
+                    IDCard = data["IDCard"] == null ? string.Empty : data["IDCard"].ToString();
+                    Email = data["Email"] == null ? string.Empty : data["Email"].ToString();
+                    Birthday = data["Birthday"] == null ? string.Empty : data["Birthday"].ToString();
+                    Phone = data["Phone"] == null ? string.Empty : data["Phone"].ToString();
+                    string strRegionText = "";
+                    if (data["Regions"] != null)
+                    {
+                        string strRegions = data["Regions"].ToString().TrimStart('[').TrimEnd(']');
+                        string[] strRegionArr = strRegions.Split(',');
+                        List<int> regions = new List<int>();
+
+                        foreach (string str in strRegionArr)
+                        {
+                            regions.Add(int.Parse(str));
+                        }
+
+                        IEnumerable<WorkV3.Models.WorldRegionModels> wrmRegions = WorkV3.Models.DataAccess.WorldRegionDAO.GetRegions(regions);
+
+                        foreach (WorkV3.Models.WorldRegionModels region in wrmRegions)
+                        {
+                            strRegionText += region.Name + " ";
+                        }
+                    }
+                     address = strRegionText + Address;
+                }
+                else
+                {
+                    address = member.Address;
+                    name = member.Name;
+                    Mobile = member.Mobile;
+                    IDCard = member.IDCard;
+                    Email = member.Email;
+                    Birthday = member.Birthday.ToString("yyyy.MM.dd");
+                    Phone = member.Phone;
+                }
+
+                RewardModel rewardObj = WorkV3.Areas.Backend.Models.DataAccess.RewardDAO.GetItem(item.RewardID);
+                <tr>
+                    @if (privacy) {
+                    <td>*@(name?.Length > 1 ? name.Substring(1) : name)</td>
+                    <td>@(IDCard?.Length > 5 ? IDCard.Substring(0, 5) : IDCard)*********</td>
+                    <td>@(Birthday.Length > 5 ? Birthday.Substring(0, 5) :Birthday)**.**</td>
+                    <td>@(Mobile?.Length > 5 ? Mobile.Substring(0, 5) : Mobile)*********</td>
+                    <td>@(Phone?.Length > 5 ? Phone.Substring(0, 5) : Phone)*********</td>
+                    <td>@(Email?.Length > 1 ? $"*****@{ Email.Substring(Email.IndexOf('@') + 1) }" : Email)</td>
+                    <td>@(address?.Length > 6 ? address.Substring(0, 6) : address)*********</td>
+                    } else {
+                     <td>@name</td>
+                    <td>@IDCard</td>
+                    <td>@Birthday</td>@*<td>@member.Birthday.ToString("yyyy年MM月dd日")</td>*@
+                    <td>@Mobile</td>
+                    <td>@Phone</td>
+                    <td>@Email</td>
+                    <td>@address</td>
+                    } 
+                    <td>@rewardObj.Title</td>
+                    <td>@item.ProcessRemark</td>
+                    <td>@(item.IsProcess ? "是" : string.Empty)</td>
+                    <td>@(item.IsWonPrice ? "是" : string.Empty)</td>                    
+                </tr>
+            } 
+        </tbody>
+    </table>
+</body>
+</html>

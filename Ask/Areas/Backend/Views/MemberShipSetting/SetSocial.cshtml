@@ -1,0 +1,129 @@
+﻿@model MemberShipRegSocialSetModels
+
+@{
+    long siteId = ViewBag.SiteID;
+    ViewBag.Title = "社群登入設定";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    List<WorkV3.Areas.Backend.Models.MemberModels> managerList = ViewBag.Managers;
+}
+@BundleConfig.Validate()
+@BundleConfig.Component()
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#aSaveSocial').on('click', function (e) {
+            var form = $('#editForm');
+            if ($("#IsOpen").prop("checked")) {
+                if (form.validationEngine('validate')) {
+                    saveSocialSet();
+                }
+            }
+            else {
+                saveSocialSet();
+            }
+        });
+
+        //$("#aCancelSocial").on("click", function () {
+
+        //    console.log(222);
+
+        //    window.close();
+        //});
+
+    });
+    function saveSocialSet() {
+        var isOpen = false;
+        if ($("#IsOpen").prop("checked"))
+            isOpen = true;
+        var formData = new FormData();
+        formData.append("SiteID", "@siteId");
+        formData.append("SocialType", "@((int)Model.SocialType)");
+        formData.append("IsOpen", isOpen);
+        formData.append("AppID", $("#AppID").val());
+        formData.append("SecretKey", $("#SecretKey").val());
+        formData.append("Scope", $("#Scope").val());
+        $.ajax({
+            url: "@Url.Action("UpdateSocial", "MemberShipSetting")",
+            data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    Component.alert('資料已儲存', function () {
+                        parent.$.colorbox.close();
+                    });
+                }
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+    }
+</script>
+
+<div class="zone zone-full">
+    <div class="wrapper">
+        <div class="groove groove-1">
+            <form id="editForm">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline no-label">社群類別</div>
+                            <div class="input-field inline full no-label">
+                                @Model.SocialTitle
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline no-label">應用程式編號</div>
+                            <div class="input-field inline full no-label">
+                                <input id="AppID" type="text" name="AppID" value="@Model.AppID" class="validate[required]" />
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1 m-T-8">
+                            <div class="title inline no-label">應用程式密鑰</div>
+                            <div class="input-field inline full no-label">
+                                <input id="SecretKey" type="text" name="SecretKey" value="@Model.SecretKey" class="validate[required]" />
+                            </div>
+                        </div>
+                    </li>
+                    <li style="display:none">
+                        <div class="col-1 m-T-8">
+                            <div class="title inline no-label">應用程式讀取欄位</div>
+                            <div class="input-field inline full no-label">
+                                <input id="Scope" type="text" name="Scope" value="@Model.Scope" class="validate[required]" />
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="">
+                            <input type="checkbox" id="IsOpen" name="IsOpen" @(Model.IsOpen ? "checked" : "") />
+                            <label for="IsOpen">啟用</label>
+                        </div>
+                    </div>
+                    <a class="btn-cancel" href="@Url.Action("List", "MemberShipSetting", new { SiteID = siteId, MenuID = 1000 })" id="aCancelSocial"><i class="cc cc-close"></i>取消</a>
+                    <a class="btn-bulid" href="javascript:" id="aSaveSocial"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div id="cboxOverlay" style="display: none;"></div><div id="colorbox" class="" role="dialog" tabindex="-1" style="display: none;"><div id="cboxWrapper"><div><div id="cboxTopLeft" style="float: left;"></div><div id="cboxTopCenter" style="float: left;"></div><div id="cboxTopRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxMiddleLeft" style="float: left;"></div><div id="cboxContent" style="float: left;"><div id="cboxTitle" style="float: left;"></div><div id="cboxCurrent" style="float: left;"></div><button type="button" id="cboxPrevious"></button><button type="button" id="cboxNext"></button><button type="button" id="cboxSlideshow"></button><div id="cboxLoadingOverlay" style="float: left;"></div><div id="cboxLoadingGraphic" style="float: left;"></div></div><div id="cboxMiddleRight" style="float: left;"></div></div><div style="clear: left;"><div id="cboxBottomLeft" style="float: left;"></div><div id="cboxBottomCenter" style="float: left;"></div><div id="cboxBottomRight" style="float: left;"></div></div></div><div style="position: absolute; width: 9999px; visibility: hidden; display: none; max-width: none;"></div></div><div class="hiddendiv common"></div>
+
+

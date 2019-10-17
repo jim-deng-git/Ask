@@ -1,0 +1,308 @@
+.card-advertising[data-style="1"] .advertising-content .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out; }
+
+.card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn::before, .card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn::after {
+  content: "";
+  display: block;
+  width: 88%;
+  height: 2px;
+  background: #ffffff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) rotate(0deg);
+      -ms-transform: translate(-50%, -50%) rotate(0deg);
+          transform: translate(-50%, -50%) rotate(0deg);
+  -webkit-transition-delay: 0.14s;
+       -o-transition-delay: 0.14s;
+          transition-delay: 0.14s;
+  -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+       -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+          transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); }
+
+.card-advertising[data-style="1"] {
+  position: relative;
+  margin: 0 auto 10px; }
+  .card-advertising[data-style="1"].card-overlay {
+    display: none; }
+  .card-advertising[data-style="1"] .advertising-content {
+    margin: 0 auto 10px;
+    position: relative; }
+    .card-advertising[data-style="1"] .advertising-content .content-inner {
+      display: inline-block;
+      position: relative; }
+      .card-advertising[data-style="1"] .advertising-content .content-inner > a {
+        display: inline-block;
+        position: relative;
+        overflow: hidden; }
+        .card-advertising[data-style="1"] .advertising-content .content-inner > a .play {
+          display: block;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background-color: rgba(0, 0, 0, 0.33);
+          filter: alpha(opacity=0);
+          opacity: 0;
+          z-index: 2;
+          -webkit-transition: opacity 700ms;
+          -o-transition: opacity 700ms;
+          transition: opacity 700ms; }
+          @media only screen and (max-width: 800px) {
+            .card-advertising[data-style="1"] .advertising-content .content-inner > a .play {
+              opacity: 1;
+              background-color: transparent; } }
+          .card-advertising[data-style="1"] .advertising-content .content-inner > a .play::before {
+            content: "\ea38";
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+                -ms-transform: translate(-50%, -50%);
+                    transform: translate(-50%, -50%);
+            font-family: 'FontCCwork';
+            font-size: inherit;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 28px;
+            z-index: 2;
+            border: 2px solid #ffffff;
+            border-radius: 100%;
+            width: 45px;
+            height: 45px;
+            line-height: 46px;
+            text-align: center;
+            color: #ffffff;
+            background-color: rgba(0, 0, 0, 0.33); }
+        .card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn {
+          display: block;
+          cursor: pointer;
+          width: 18px;
+          height: 18px;
+          border: 1px solid #ffffff;
+          position: absolute;
+          right: 6px;
+          top: 6px;
+          z-index: 20;
+          border-radius: 18px;
+          opacity: 0; }
+          @media only screen and (max-width: 800px) {
+            .card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn {
+              opacity: 1;
+              width: 32px;
+              height: 32px;
+              top: 0;
+              right: 0;
+              border: none;
+              border-radius: 0;
+              background-color: rgba(0, 0, 0, 0.3); } }
+          @media only screen and (max-width: 800px) {
+            .card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn::before {
+              width: 80%;
+              -webkit-transform: translate(-50%, -50%) rotate(45deg);
+                  -ms-transform: translate(-50%, -50%) rotate(45deg);
+                      transform: translate(-50%, -50%) rotate(45deg);
+              -webkit-transition-delay: 0.14s;
+                   -o-transition-delay: 0.14s;
+                      transition-delay: 0.14s;
+              -webkit-transition-duration: 1s;
+                   -o-transition-duration: 1s;
+                      transition-duration: 1s;
+              -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+                   -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+                      transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); } }
+          @media only screen and (max-width: 800px) {
+            .card-advertising[data-style="1"] .advertising-content .content-inner > a.ad-close-btn::after {
+              width: 80%;
+              -webkit-transform: translate(-50%, -50%) rotate(135deg);
+                  -ms-transform: translate(-50%, -50%) rotate(135deg);
+                      transform: translate(-50%, -50%) rotate(135deg);
+              -webkit-transition-delay: 0.14s;
+                   -o-transition-delay: 0.14s;
+                      transition-delay: 0.14s;
+              -webkit-transition-duration: 1s;
+                   -o-transition-duration: 1s;
+                      transition-duration: 1s;
+              -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+                   -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+                      transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); } }
+    .card-advertising[data-style="1"] .advertising-content .card-text {
+      padding: 4px 2px; }
+    .card-advertising[data-style="1"] .advertising-content .card-text-name {
+      font-size: 16px;
+      color: #222222; }
+      @media only screen and (max-width: 420px) {
+        .card-advertising[data-style="1"] .advertising-content .card-text-name {
+          font-size: 16px;
+          display: -webkit-box;
+          overflow: hidden;
+          -o-text-overflow: ellipsis;
+             text-overflow: ellipsis;
+          word-break: break-all;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          white-space: normal; } }
+      .card-advertising[data-style="1"] .advertising-content .card-text-name a {
+        color: #222222; }
+        .card-advertising[data-style="1"] .advertising-content .card-text-name a:focus, .card-advertising[data-style="1"] .advertising-content .card-text-name a:active, .card-advertising[data-style="1"] .advertising-content .card-text-name a:hover {
+          color: #222222; }
+      .card-advertising[data-style="1"] .advertising-content .card-text-name ~ .card-text-info {
+        margin-top: 0; }
+    .card-advertising[data-style="1"] .advertising-content .card-text-info {
+      font-size: 13px;
+      color: #999999; }
+    .card-advertising[data-style="1"] .advertising-content:hover .content-inner > a .play {
+      filter: alpha(opacity=100);
+      opacity: 1; }
+    .card-advertising[data-style="1"] .advertising-content:hover .content-inner > a.ad-close-btn {
+      filter: alpha(opacity=100);
+      opacity: 1;
+      -webkit-transition-duration: 1s;
+           -o-transition-duration: 1s;
+              transition-duration: 1s; }
+      .card-advertising[data-style="1"] .advertising-content:hover .content-inner > a.ad-close-btn::before {
+        -webkit-transform: translate(-50%, -50%) rotate(45deg);
+            -ms-transform: translate(-50%, -50%) rotate(45deg);
+                transform: translate(-50%, -50%) rotate(45deg);
+        -webkit-transition-delay: 0.14s;
+             -o-transition-delay: 0.14s;
+                transition-delay: 0.14s;
+        -webkit-transition-duration: 1s;
+             -o-transition-duration: 1s;
+                transition-duration: 1s;
+        -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+             -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+                transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); }
+      .card-advertising[data-style="1"] .advertising-content:hover .content-inner > a.ad-close-btn::after {
+        -webkit-transform: translate(-50%, -50%) rotate(135deg);
+            -ms-transform: translate(-50%, -50%) rotate(135deg);
+                transform: translate(-50%, -50%) rotate(135deg);
+        -webkit-transition-delay: 0.14s;
+             -o-transition-delay: 0.14s;
+                transition-delay: 0.14s;
+        -webkit-transition-duration: 1s;
+             -o-transition-duration: 1s;
+                transition-duration: 1s;
+        -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+             -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+                transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); }
+    .card-advertising[data-style="1"] .advertising-content .ad-images {
+      max-width: 100%;
+      max-height: inherit; }
+
+.overlay_ad#colorbox, .overlay_ad #cboxWrapper {
+  overflow: visible; }
+
+.overlay_ad #cboxClose {
+  width: 48px;
+  height: 0px;
+  bottom: 100%;
+  top: auto;
+  right: 0;
+  background: none;
+  text-indent: 0px;
+  filter: alpha(opacity=0);
+  opacity: 0; }
+  @media only screen and (max-width: 800px) {
+    .overlay_ad #cboxClose {
+      top: 0;
+      background-color: rgba(0, 0, 0, 0.3); } }
+  .overlay_ad #cboxClose::before, .overlay_ad #cboxClose::after {
+    content: "";
+    display: block;
+    width: 88%;
+    height: 3px;
+    background: #ffffff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); }
+    @media only screen and (max-width: 800px) {
+      .overlay_ad #cboxClose::before, .overlay_ad #cboxClose::after {
+        width: 80%; } }
+
+.overlay_ad #cboxLoadedContent::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 2; }
+
+.overlay_ad .timer {
+  color: #ffffff;
+  font-size: 15px;
+  position: absolute;
+  left: 0px;
+  bottom: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  padding: 9px 22px;
+  line-height: 1; }
+
+.overlay_ad.images-link #cboxLoadedContent::before {
+  display: none; }
+
+.overlay_ad.time-up #cboxLoadedContent::before {
+  display: none; }
+
+.overlay_ad.time-up.images-link #cboxLoadedContent::before {
+  display: none; }
+
+.overlay_ad.time-up #cboxClose {
+  height: 48px;
+  filter: alpha(opacity=100);
+  opacity: 1; }
+  .overlay_ad.time-up #cboxClose::before {
+    -webkit-transform: translate(-50%, -50%) rotate(45deg);
+        -ms-transform: translate(-50%, -50%) rotate(45deg);
+            transform: translate(-50%, -50%) rotate(45deg);
+    -webkit-transition-delay: 0.14s;
+         -o-transition-delay: 0.14s;
+            transition-delay: 0.14s;
+    -webkit-transition-duration: 1s;
+         -o-transition-duration: 1s;
+            transition-duration: 1s;
+    -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+         -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+            transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); }
+  .overlay_ad.time-up #cboxClose::after {
+    -webkit-transform: translate(-50%, -50%) rotate(135deg);
+        -ms-transform: translate(-50%, -50%) rotate(135deg);
+            transform: translate(-50%, -50%) rotate(135deg);
+    -webkit-transition-delay: 0.14s;
+         -o-transition-delay: 0.14s;
+            transition-delay: 0.14s;
+    -webkit-transition-duration: 0.7s;
+         -o-transition-duration: 0.7s;
+            transition-duration: 0.7s;
+    -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+         -o-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+            transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); }
+
+.overlay_ad.time-up .timer {
+  -webkit-transition-duration: 0.7s;
+       -o-transition-duration: 0.7s;
+          transition-duration: 0.7s;
+  filter: alpha(opacity=0);
+  opacity: 0; }
+
+[zonestyle="1"] .card-advertising[data-style="1"], [zonestyle="6"] .card-advertising[data-style="1"], [zonestyle="12"] .card-advertising[data-style="1"] {
+  margin: 0 auto; }
+  [zonestyle="1"] .card-advertising[data-style="1"] .advertising-content, [zonestyle="6"] .card-advertising[data-style="1"] .advertising-content, [zonestyle="12"] .card-advertising[data-style="1"] .advertising-content {
+    margin: 40px auto; }

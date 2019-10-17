@@ -1,0 +1,56 @@
+﻿@model IEnumerable<WorkV3.Models.MemberShipMailLogModel>
+
+@{
+    ViewBag.Title = "寄信名單";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    IEnumerable<WorkV3.Models.MemberShipModels> infos = ViewBag.MemberShipMailLogInfos;
+    long siteId = ViewBag.SiteID;    
+
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+}
+
+@section FArea {
+    @BundleConfig.Component()
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">寄信名單</div>
+        </div>
+        <table class="fixTable">
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>帳號</th>
+                    <th>姓名</th>                    
+                    <th>Email</th>                 
+                    <th>已讀</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int index = 0; }
+                @foreach (WorkV3.Models.MemberShipMailLogModel item in Model) {
+                    WorkV3.Models.MemberShipModels infoItem = infos.FirstOrDefault(f => f.ID == item.MemberShipID);
+                <tr>
+                    <td class="sort">@(++index)</td>
+                    <td>@infoItem.Account</td>
+                    <td>
+                        @infoItem.Name
+                    </td>                
+                    <td>
+                        @infoItem.Email
+                    </td>                  
+                    <td>@Html.Raw(item.ReadDate != null ? "<i class=\"cc cc-check\"></i>" : string.Empty)</td>
+                </tr>
+                    }
+                }
+            </tbody>
+        </table>        
+    </div>
+    <div class="control-bar">
+        <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>
+    </div> 
+</div>
+

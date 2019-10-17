@@ -1,0 +1,25 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+    long siteID = ViewBag.SiteID;
+    long menuID = ViewBag.MenuID;
+    string uploadUrl = ViewBag.UploadVPath;
+}
+
+<script src="~/script/workV3/customMember.js"></script>
+@BundleConfig.FileUploader()
+<div class="fileuploader fileuploader-theme-thumbnails">
+    <div class="imgFileProfile">
+        <input type="file" name="fPhoto" id="fPhoto" data-field="Photo" style="position: absolute; z-index: -9999; height: 0px; width: 0px; padding: 0px; margin: 0px; line-height: 0; outline: 0px; border: 0px; opacity: 0;">
+        <input type="hidden" name="Photo" id="Photo" value="@Model.Photo" />
+    </div>
+</div>
+@BundleConfig.Component()
+<script>
+    jQuery(function ($) {
+        Member.imageUpload('#fPhoto', '@(Href("~/"))', '@Html.Raw(Url.Action("UploadPhoto", "Member", new { SiteID= siteID , MenuID=menuID}))', '@uploadUrl', '@Html.Raw(Url.Action("DeletePhoto", "Member", new { SiteID= siteID , MenuID=menuID}))', '@Model.SocialLargePhoto');
+    });
+</script>

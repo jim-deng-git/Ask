@@ -1,0 +1,16 @@
+.card-imageTextList[data-style="4"] {
+  padding-bottom: 30px; }
+  .card-imageTextList[data-style="4"] > div {
+    width: 100%; }
+  .card-imageTextList[data-style="4"] .flexslider {
+    overflow: visible; }
+    .card-imageTextList[data-style="4"] .flexslider .slides img {
+      width: auto; }
+  .card-imageTextList[data-style="4"] .flex-viewport {
+    overflow: hidden !important; }
+  .card-imageTextList[data-style="4"] .flex-control-nav {
+    bottom: -30px; }
+  .card-imageTextList[data-style="4"] .flex-control-paging li a {
+    background-color: rgba(255, 255, 255, 0.5); }
+    .card-imageTextList[data-style="4"] .flex-control-paging li a.flex-active, .card-imageTextList[data-style="4"] .flex-control-paging li a:hover {
+      background-color: rgba(0, 0, 0, 0.5); }

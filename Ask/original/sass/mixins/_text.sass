@@ -1,0 +1,67 @@
+//text-align
+=text-L
+    text-align: left !important
+
+=text-R
+    text-align: right !important
+
+=text-C
+    text-align: center !important
+
+=text-ii
+    text-align: initial !important
+
+=text-ih
+    text-align: inherit !important
+
+=text-jt
+    text-align: justify !important
+
+//text over show '...'
+=text-truncate
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
+
+//text-decoration
+=text-deco-none
+    text-decoration: none !important
+
+=text-deco-over
+    text-decoration: overline !important
+
+=text-deco-through
+    text-decoration: line-through !important
+
+=text-deco-under
+    text-decoration: underline !important
+
+//text-transform
+=text-transform-lower
+    text-align: lowercase !important
+
+=text-transform-upper
+    text-align: uppercase !important
+
+=text-transform-capi
+    text-align: capitalize !important
+
+//text & a :hover :focus :active color
+=text-emphasis-variant($parent, $color)
+    #{$parent}
+        color: $color !important
+
+    a#{$parent}
+        +hover-focus-active
+            color: darken($color, 10%) !important
+
+//underline text & a :hover :focus :active color
+=underline-emphasis-variant($parent, $color)
+    #{$parent}
+        color: $color !important
+        border-color: $color !important
+
+    a#{$parent}
+        +hover-focus-active
+            color: darken($color, 10%) !important
+            border-color: darken($color, 10%) !important

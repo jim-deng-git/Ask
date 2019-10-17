@@ -1,0 +1,33 @@
+doctype html
+html(lang="zh-Hant-TW")
+  head
+    include includes/meta.pug
+    include includes/link.pug  
+    link(rel="stylesheet" href="css/index.css")
+    
+    title 首頁-耘田 Ask | 耘田 Ask
+  body
+    h1.seo 耘田 Ask
+    .body-layout#body
+      include includes/side-list.pug
+      .push-body
+        .menu-open-background
+        include includes/navbar.pug
+
+        .wrapper-fluid.zone.zone-full(data-style="1")
+          .wrapper
+            .groove.groove-1
+              .card-plainText(data-style="2").first-card  
+                .title-main 個人評估檢測
+                .title-sub Talent
+                .title-detail 採階段性付費，降低進入門檻。 採階段性合約，隨時可終止顧問服務。每階段都會根據前一階段的狀況進行快速調整。 展現客製化能力與回應速度。
+                button(type='button') GO!
+
+                .card-btn
+                  a.btn-custom(href='#') 000
+
+                
+ 
+        //include includes/footer.pug
+    
+    include includes/script.pug

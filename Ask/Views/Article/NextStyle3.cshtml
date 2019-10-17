@@ -1,0 +1,49 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    ArticleSettingModels setting = ViewBag.Setting;
+
+    string uploadUrl = ViewBag.UploadUrl;
+    long typeID = 0;
+    if (!string.IsNullOrEmpty(Request.QueryString["typeId"]))
+    {
+        try
+        {
+            typeID = long.Parse(Request.QueryString["typeId"]);
+        }
+        catch
+        { }
+    }
+
+}
+
+@foreach (ArticleModels item in Model) {
+    List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+    SitePage page = itemPages[item.CardNo];
+    string img = item.GetFirstImg(setting);
+    if (typeID > 0)
+    {
+        var fTypes = articleTypes.Where(t => t.ID == typeID);
+        if (fTypes != null && fTypes.Count() > 0)
+        {
+            articleTypes = fTypes.ToList();
+        }
+    }
+    <li class="item-static">
+        <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+            @if (!string.IsNullOrWhiteSpace(img)) {
+                <img src="@(uploadUrl + img)" />
+            }
+            @if (articleTypes?.Count() > 0) {
+                foreach (ArticleTypesModels type in articleTypes.Take(1)) {
+                    <div class="article-list-type" data-type="@type.ID">
+                        <span data-color="@type.Color">@type.Name</span>
+                    </div>
+                }
+            }
+            <div class="article-list-title">@item.Title</div>
+            <div class="article-list-desc">@item.Summary.TrimTags().Truncate(150)</div>
+        </a>
+    </li>    
+}

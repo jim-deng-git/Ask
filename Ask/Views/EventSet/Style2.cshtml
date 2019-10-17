@@ -1,0 +1,77 @@
+﻿@model IEnumerable<EventModels>
+@{    
+    EventSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<EventTypesModels>> itemTypes = ViewBag.ItemTypes;    
+}
+
+@BundleConfig.Swiper()
+@*<link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />*@
+<link href="~/css/Cards/EventSet/style2.css" rel="stylesheet" />
+
+<div id="card_@(setting.CardNo)" class="card-common card-eventSet" data-style="2">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            @foreach (EventModels item in Model) {
+                string singleDateText = (item.DateKind == "單日") ? item.DateStart.ToString("MM.dd") : string.Empty;
+                SitePage page = itemPages.GetValue(item.CardNo);
+                if (page != null) {
+                    <div class="swiper-slide">
+                        <div class="card shadow-none">
+                            <div class="card-box">
+                                <div class="card-img wide" style="background-image:url('@item.Icon')">
+                                    @* carrie 201802050130
+                                        @if (!string.IsNullOrWhiteSpace(item.Icon)) {
+                                        <img src="@item.Icon" alt=""/>
+                                        }*@
+                                    <div class="card-img-content flex" style="background-image:url('@item.Icon')" onclick="location.href='@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))'"></div>
+                                </div>
+                                <div class="card-text" onclick="location.href='@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))'">
+                                    <div class="card-text-name">@item.Title</div>
+                                    <div class="card-text-info">
+                                        <span>
+                                            @if (singleDateText == string.Empty) {
+                                                @item.DateStart.ToString("MM.dd")<span>-</span>@item.DateEnd.ToString("MM.dd")
+                                            } else {
+                                                @singleDateText
+                                            }
+                                        </span>
+                                        @if (!string.IsNullOrWhiteSpace(item.TimeStart) || !string.IsNullOrWhiteSpace(item.TimeEnd)) {
+                                            <span class="font-sm m-L-1">
+                                                @if (string.IsNullOrWhiteSpace(item.TimeStart)) {
+                                                    @item.TimeEnd
+                                                } else if (string.IsNullOrWhiteSpace(item.TimeEnd)) {
+                                                    @item.TimeStart
+                                                } else {
+                                                    @item.TimeStart<span>-</span>@item.TimeEnd
+                                                }
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+</div>
+@*<script type="text/javascript" src="~/script/swiper/swiper.jquery.js"></script>*@
+<script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(setting.CardNo)');        
+        var swiper = new Swiper(outerElm.find('.swiper-container'), {
+            slidesPerView: 'auto',
+            centeredSlides: false,
+            paginationClickable: true,
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev',
+            spaceBetween: 0,            
+            loop: true,
+            speed: 800,
+        });
+    })();
+</script>

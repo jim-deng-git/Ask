@@ -1,0 +1,22 @@
+.card-plainText[data-style="9"] {
+  text-align: center; }
+  .card-plainText[data-style="9"] .title-main {
+    margin-bottom: 20px;
+    font-size: 48px;
+    font-weight: 800;
+    color: #212121; }
+    .card-plainText[data-style="9"] .title-main span {
+      position: relative;
+      display: inline-block; }
+      .card-plainText[data-style="9"] .title-main span::before {
+        content: "";
+        display: block;
+        position: absolute;
+        bottom: -1px;
+        width: 100%;
+        height: 5px;
+        background-color: #003247; }
+  .card-plainText[data-style="9"] .title-sub {
+    padding: 5px 15px;
+    margin-left: 10px;
+    font-size: 15px; }

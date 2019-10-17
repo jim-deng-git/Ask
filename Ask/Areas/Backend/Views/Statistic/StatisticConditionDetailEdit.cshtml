@@ -1,0 +1,1199 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model StatisticConditionDetailModels
+@{
+    ViewBag.Title = "編輯條件";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    ViewBag.BodyClass = "body-admin-main";
+    string UploadUrl = ViewBag.UploadUrl;
+    List<AnalysisMemberGroupViewModel> groupMembers = ViewBag.GroupMembers;
+    var ListIdentityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.IdentityCategories;
+    var ListFavorityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.FavorityCategories;
+    var ListCareerCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.CareerCategories;
+    var ListMarriageCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.MarriageCategories;
+    var ListEducationCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.EducationCategories;
+    //var EpaperTypeList = (List<WorkV3.Areas.Backend.Models.EpaperTypeModel>)ViewBag.EpaperTypeList;
+    var regSetModel = (WorkV3.Areas.Backend.Models.MemberShipRegSetModels)ViewBag.MemberSetModel;
+    long SiteId = (long)ViewBag.SiteId;
+    long ConditionID = (long)ViewBag.ConditionID;
+    bool HasDetailData = (bool)ViewBag.HasDetailData;
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @BundleConfig.Validate()
+}
+@section FArea {
+@BundleConfig.JWPlayer()
+@BundleConfig.StickyTableHeaders()
+@BundleConfig.Validate()
+@BundleConfig.FileUploader()
+@BundleConfig.Component()
+    <script type="text/javascript">
+     @if (ViewBag.Exit as bool? == true) {
+        <text>
+        Component.alert('條件已儲存', function () {
+            Component.closeLeft();
+            Component.closeCenter();
+            parent.finish;
+            //try {
+            parent.frames["mainWebContent"].frames["EidtConditionInfo"].refreshList();
+            //} catch (e) {
+
+            //}
+        });
+        </text>
+    }
+
+        function checkDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var date = Component.parseDate(v);
+                if (!date)
+                    return '* 日期格式錯誤';
+            }
+        }
+        function refreshList() {
+            location.replace(location.href);
+        }
+    </script>
+}
+<div class="zone zone-base p-8 p-T-none">
+       <div class="groove groove-1">
+            <h1 class="title-admin-page">篩選條件</h1>
+            <!-- swiper2 --><form id="editDetailForm" name="editDetailForm" method="post" action="@Url.Action("StatisticConditionDetailEdit", new { SiteID=SiteId, ConditionID = ConditionID })" enctype="multipart/form-data">
+
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <ul class="forms">
+                <li style="@((!HasDetailData || (Model!= null && Model.LogicType == LogicType.None))?"display:none":"")">
+                    <div class="col-1">
+                        <div class="title inline">關聯方式</div>
+                        <div class="input-field inline short"><a id="aErrorLogicType"></a>
+                            <select id="LogicType" name="LogicType" class="@((!HasDetailData || (Model!= null && Model.LogicType == LogicType.None))?"":"validate[required]")">
+                                <option value="" @(Model != null ? (Model.LogicType == LogicType.None ? "selected" : string.Empty) : "selected")></option>
+                                <option value="@((int)LogicType.AND)" @(Model != null ? (Model.LogicType == LogicType.AND ? "selected" : string.Empty) : string.Empty)>AND</option>
+                                <option value="@((int)LogicType.OR)" @(Model != null ? (Model.LogicType == LogicType.OR ? "selected" : string.Empty) : string.Empty)>OR</option>
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">分析設定 </div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-List" @(Model != null ? (Model.AnalysisType == AnalysisType.Page ? "checked=\"checked\"" : string.Empty) : "checked") value="@((int)AnalysisType.Page)" />
+                                <label for="sort-List">選單</label>
+                            </div>
+                            <div>
+                                <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Admin" value="@((int)AnalysisType.Manager)" @(Model != null ? (Model.AnalysisType == AnalysisType.Manager ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                <label for="sort-Admin">權限群組 / 管理員</label>
+                            </div>
+                            <div>
+                                <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Devices" value="@((int)AnalysisType.Machine)" @(Model != null ? (Model.AnalysisType == AnalysisType.Machine ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                <label for="sort-Devices">裝置</label>
+                            </div>
+                            <div>
+                                <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Browser" value="@((int)AnalysisType.Browser)" @(Model != null ? (Model.AnalysisType == AnalysisType.Browser ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                <label for="sort-Browser">瀏覽器</label>
+                            </div>
+                            @if (regSetModel != null)
+                                    {
+                                        for (int i = 0; i < regSetModel.RegColumnSets.Count; i++)
+                                        {
+                                            WorkV3.Areas.Backend.Models.MemberShipRegColumnSetModels colModel = regSetModel.RegColumnSets[i];
+                                            if (!colModel.IsOpen)
+                                            {
+                                                continue;
+                                            }
+                                            if (colModel.ColumnName == "Sex")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Gender" value="@((int)AnalysisType.Sex)" @(Model != null ? (Model.AnalysisType == AnalysisType.Sex ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Gender">性別</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Birthday")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Age" value="@((int)AnalysisType.Age)" @(Model != null ? (Model.AnalysisType == AnalysisType.Age ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Age">年紀</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Address")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Location" value="@((int)AnalysisType.Location)" @(Model != null ? (Model.AnalysisType == AnalysisType.Location ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Location">地點</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Marriage")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Marital" value="@((int)AnalysisType.Marriage)" @(Model != null ? (Model.AnalysisType == AnalysisType.Marriage ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Marital">婚姻狀況</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Education")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Education" value="@((int)AnalysisType.Education)" @(Model != null ? (Model.AnalysisType == AnalysisType.Education ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Education">學歷</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Career")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Occupation" value="@((int)AnalysisType.Career)" @(Model != null ? (Model.AnalysisType == AnalysisType.Career ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Occupation">職業</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Identity")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Identity" value="@((int)AnalysisType.Identity)" @(Model != null ? (Model.AnalysisType == AnalysisType.Identity ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Identity">身份</label>
+                                    </div>
+                                            }
+                                            if (colModel.ColumnName == "Favority")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Hobby" value="@((int)AnalysisType.Favority)" @(Model != null ? (Model.AnalysisType == AnalysisType.Favority ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Hobby">喜好</label>
+                                    </div>
+                                            }
+                                            @*if (colModel.ColumnName == "OrderEpaper")
+                                            {
+                                    <div>
+                                        <input class="with-gap validate[required]" name="typeItem" type="radio" id="sort-Epaper" value="@((int)AnalysisType.OrderEpaper)" @(Model != null ? (Model.AnalysisType == AnalysisType.OrderEpaper ? "checked=\"checked\"" : string.Empty) : string.Empty)/>
+                                        <label for="sort-Epaper">訂閱電子報</label>
+                                    </div>
+                                            }*@
+                                        }
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-List-box" style="display: none; ">
+                    <div class="col-1" style="height:280px">
+                        <div class="title inline no-label">篩選條件</div>
+                    </div>
+                </li>
+
+                <li id="sort-Admin-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="input-field inline">
+                            <ul class="forms">
+                                <li>
+                                    <ol class="dd-list checkStyle">
+                                        <li class="dd-item" data-id="1">
+                                            <input type="checkbox" id="allUsers" />
+                                            <label for="allUsers">全部創建者</label>
+                                            <ol class="dd-list show">
+                                                @if (groupMembers != null && groupMembers.Count > 0)
+                                                        {
+                                                            foreach (AnalysisMemberGroupViewModel groupMember in groupMembers)
+                                                            {
+                                                        <li class="dd-item" data-id="@("group"+groupMember.GroupModel.Id.ToString())">
+                                                            <div class="dd-handle">
+                                                                <input class="with-chip group" type="checkbox" id="@("group"+groupMember.GroupModel.Id.ToString())" />
+                                                                <label class="m-B-none" for="@("group"+groupMember.GroupModel.Id.ToString())">@groupMember.GroupModel.Name</label>
+                                                            </div>
+                                                            <ol class="dd-list show">
+                                                                @if (groupMember.GroupMembers != null && groupMember.GroupMembers.Count > 0)
+                                                                        {
+
+                                                                            foreach (MemberModels member in groupMember.GroupMembers)
+                                                                            {
+                                                                        <text>
+                                                                            <li class="dd-item" data-id="@groupMember.GroupModel.Id">
+                                                                                <div class="dd-handle">
+                                                                                    <input class="with-chip member" type="checkbox" id="@("member"+member.Id.ToString())" name="Manager" value="@member.Id" />
+                                                                                    <label class="m-B-none" for="@("member"+member.Id.ToString())">
+                                                                                        @if (string.IsNullOrEmpty(member.Img))
+                                                                                                {
+                                                                                                <i class="cc cc-user-o"></i>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                <img src="@(UploadUrl + member.Img)" alt="">
+                                                                                                }
+                                                                                        @(member.Name + " ( " + member.LoginID + " ) ")
+                                                                                    </label>
+                                                                                </div>
+                                                                            </li>
+                                                                        </text>
+                                                                            }
+                                                                        }
+                                                            </ol>
+                                                        </li>
+                                                            }
+                                                        }
+                                            </ol>
+                                        </li>
+                                    </ol>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Devices-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allDevices" />
+                                <label for="allDevices" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (string key in AnalysisPageLogViewModel.MachineNames)
+                                    {
+                                    <div>
+                                        <input type="checkbox" id="@key" class="devices" name="MachineNames" value="@key"/>
+                                        <label for="@key">@key</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Browser-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allBrowser" />
+                                <label for="allBrowser" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (string key in AnalysisPageLogViewModel.Browsers.Keys)
+                                    {
+                                    <div>
+                                        <input type="checkbox" id="@key" class="browser" name="Browsers" value="@key"/>
+                                        <label for="@key">@key</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Gender-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allGender" />
+                                <label for="allGender" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="male" name="Sex" value="男" class="gender" />
+                                <label for="male">男性</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="female" name="Sex" value="女" class="gender" />
+                                <label for="female">女性</label>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Age-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            @foreach (string key in AnalysisPageLogViewModel.Ages.Keys)
+                                    {
+                                    <div>
+                                        <input type="radio" name="ageFilter" id="age_@AnalysisPageLogViewModel.Ages[key][0]" class="with-gap" value="@key"  />
+                                        <label for="age_@AnalysisPageLogViewModel.Ages[key][0]">@key</label>
+                                    </div>
+                                    }
+                            <div>
+                                <input class="with-gap" name="ageFilter" type="radio" id="AgeSettingOther"  value="other" />
+                                <label for="AgeSettingOther">自訂</label>
+                                <div id="AgeSetting-box" class="input-field inline small" style="display: none;" name="ageFilter_Other">
+                                    <input id="ageFilter_customStart" type="text" name="ageFilter_customStart"> - <input id="ageFilter_customEnd" type="text" name="ageFilter_customEnd">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Location-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <a id="Location"></a>
+                    </div>
+                    <div class="col-1" style="height:360px">
+                        @{
+                            string regionValue = "";
+                            if (Model != null && Model.AnalysisType == AnalysisType.Location)
+                            {
+                                regionValue = Model.AnalysisItems;
+                            }
+                         }
+                        <input type="hidden" id="Regions" name="Regions" value="@regionValue" />
+                        <div class="col-1">
+                            <div class="input-field">
+                                <input placeholder="" id="Address" type="text" name="Address" value="" style="display:none" />
+                            </div>
+                        </div>
+                        </div>
+</li>
+
+                <li id="sort-Marital-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allMarital" />
+                                <label for="allMarital" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListMarriageCategories)
+                                    {
+                                    <div>
+                                        <input class="Marital" name="Marriage" type="checkbox" value="@cate.ID" id="Marriage_@cate.ID">
+                                        <label for="Marriage_@cate.ID">@cate.Title</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Education-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allEducation" />
+                                <label for="allEducation" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListEducationCategories)
+                                    {
+                                    <div>
+                                        <input class="Education" name="Education" type="checkbox" value="@cate.ID" id="Education_@cate.ID">
+                                        <label for="Education_@cate.ID">@cate.Title</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+                <li id="sort-Occupation-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allCareer" />
+                                <label for="allCareer" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListCareerCategories)
+                                    {
+                                    <div>
+                                        <input class="Career" name="Career" type="checkbox" value="@cate.ID" id="Career_@cate.ID">
+                                        <label for="Career_@cate.ID">@cate.Title</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+
+                <li id="sort-Identity-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allIdentity" />
+                                <label for="allIdentity" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListIdentityCategories)
+                                    {
+                                    <div>
+                                        <input class="Identity" name="Identity" type="checkbox" value="@cate.ID" id="Identity_@cate.ID">
+                                        <label for="Identity_@cate.ID">@cate.Title</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+
+                <li id="sort-Hobby-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allFavority" />
+                                <label for="allFavority" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        <div class="radio-box inline full">
+                            @foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListFavorityCategories)
+                                    {
+                                    <div>
+                                        <input class="Favority" name="Favority" type="checkbox" value="@cate.ID" id="Favority_@cate.ID">
+                                        <label for="Favority_@cate.ID">@cate.Title</label>
+                                    </div>
+                                    }
+                        </div>
+                    </div>
+                </li>
+
+
+                <li id="sort-Epaper-box" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">篩選條件</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" id="allEpaper" />
+                                <label for="allEpaper" class="font-grey">全選</label>
+                            </div>
+                        </div>
+                        @*<div class="radio-box inline full">  //Joe 20190923無電子報功能-註解
+                            @foreach (WorkV3.Areas.Backend.Models.EpaperTypeModel epaperTypeModel in EpaperTypeList)
+                                    {
+                                        if (!epaperTypeModel.Status)
+                                        {
+                                            continue;
+                                        }
+                                    <div>
+                                        <input type="checkbox" class="Epaper" value="@epaperTypeModel.ID" id="EpeprOrder_@epaperTypeModel.ID" name="EpeprOrder" />
+                                        <label for="EpeprOrder_@epaperTypeModel.ID">@epaperTypeModel.Name</label>
+                                    </div>
+                                    }
+                        </div>*@
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <input type="hidden" id="ID" name="ID" value="@(Model!= null?Model.ID.ToString():"")" />
+    <input type="hidden" id="AnalysisType" name="AnalysisType" value="@(Model!= null?((int)Model.AnalysisType).ToString(): "")" />
+    <input type="hidden" id="AnalysisItems" name="AnalysisItems" value="@(Model!= null? Model.AnalysisItems: "")" />
+</form>
+</div>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+        </div>
+</div>
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<script type="text/javascript">
+    var regionObj;
+    var isSetDefault = true;
+    function closeCenterEdit() {
+    }
+    $(function () {
+        $('#btnSave').click(function () {
+            var form = $('#editDetailForm');
+           // if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+
+                @{
+
+                                if (HasDetailData)
+                                {
+                                    if (Model == null || Model.LogicType != LogicType.None)
+                                    {
+
+                    <text>
+                if($("#LogicType").val() == "")
+                {
+                    Component.showElementError('#aErrorLogicType', '* 請選擇');
+                    $('#aErrorLogicType').focus();
+                    return;
+                }
+                </text>
+
+                                    }
+                                }
+                }
+                var values = "";
+                switch($("#AnalysisType").val())
+                {
+                    case "@((int)AnalysisType.Page)":
+                        break;
+                    case "@((int)AnalysisType.Age)":
+                        $("input[name=ageFilter]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=ageFilter]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        //if($("input[name=Manager]"))
+                        break;
+                    case "@((int)AnalysisType.Browser)":
+                        $("input[name=Browsers]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Browsers]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Career)":
+                        $("input[name=Career]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Career]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Education)":
+                        $("input[name=Education]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Education]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Favority)":
+                        $("input[name=Favority]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Favority]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Identity)":
+                        $("input[name=Identity]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Identity]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Location)":
+                        //$("input[name=Regions]").each(function(){
+                        //    if($(this).val() != "")
+                        //        values += $(this).val();
+                        //});
+                        var regionValue = regionObj.getTextVal();
+
+                        if(regionValue == "")
+                        {
+                            Component.showElementError("#Location", '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Machine)":
+                        $("input[name=MachineNames]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=MachineNames]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Manager)":
+                        $("input[name=Manager]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Manager]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Marriage)":
+                        $("input[name=Marriage]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Marriage]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.OrderEpaper)":
+                        $("input[name=EpeprOrder]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=EpeprOrder]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                    case "@((int)AnalysisType.Sex)":
+
+                        $("input[name=Sex]").each(function(){
+                            if($(this).prop("checked"))
+                                values += $(this).val();
+                        });
+                        if(values == "")
+                        {
+                            Component.showElementError("#"+$("input[name=Sex]").first().attr("id"), '* 請選擇');
+                            return ;
+                        }
+                        break;
+                }
+                window.scrollTo(0, document.body.scrollHeight);
+                form.submit();
+            //}
+            //else
+            //{
+            //    alert("abc");
+            //}
+        });
+        $('#btnCancel').click(function () {
+            Component.closeLeft();
+            Component.closeCenter();
+        });
+        $(".fixTable").stickyTableHeaders();
+
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function (e) {
+            e.stopPropagation();
+        });
+
+        $("input[name='typeItem']").each(function () {
+            var $this = $(this);
+
+            $this.on('change', function () {
+                if (this.checked) {
+                    $("#AnalysisType").val($(this).val());
+                    if ($this.attr('id') === 'sort-List') {
+                        $('#sort-List-box').slideDown();
+                    } else {
+                        $('#sort-List-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-List') {
+                        $('#sort-List-box').slideDown();
+                    } else {
+                        $('#sort-List-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Admin') {
+                        $('#sort-Admin-box').slideDown();
+                    } else {
+                        $('#sort-Admin-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Devices') {
+                        $('#sort-Devices-box').slideDown();
+                    } else {
+                        $('#sort-Devices-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Browser') {
+                        $('#sort-Browser-box').slideDown();
+                    } else {
+                        $('#sort-Browser-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Gender') {
+                        $('#sort-Gender-box').slideDown();
+                    } else {
+                        $('#sort-Gender-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Age') {
+                        $('#sort-Age-box').slideDown();
+                    } else {
+                        $('#sort-Age-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Location') {
+                        $('#sort-Location-box').slideDown();
+                    } else {
+                        $('#sort-Location-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Marital') {
+                        $('#sort-Marital-box').slideDown();
+                    } else {
+                        $('#sort-Marital-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Education') {
+                        $('#sort-Education-box').slideDown();
+                    } else {
+                        $('#sort-Education-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Occupation') {
+                        $('#sort-Occupation-box').slideDown();
+                    } else {
+                        $('#sort-Occupation-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Identity') {
+                        $('#sort-Identity-box').slideDown();
+                    } else {
+                        $('#sort-Identity-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Hobby') {
+                        $('#sort-Hobby-box').slideDown();
+                    } else {
+                        $('#sort-Hobby-box').slideUp();
+                    }
+
+                    if ($this.attr('id') === 'sort-Epaper') {
+                        $('#sort-Epaper-box').slideDown();
+                    } else {
+                        $('#sort-Epaper-box').slideUp();
+                    }
+
+                }
+            }).change();
+
+        });
+
+        $("input[name='ageFilter']").each(function () {
+            var $this = $(this);
+            $this.on('change', function () {
+                if (this.checked) {
+                    if ($this.attr('id') === 'AgeSettingOther') {
+                        $('#AgeSetting-box').slideToggle();
+                    }
+                }
+            }).change();
+        });
+        BindGenderSelect();
+        BindMemberSelect();
+        BindBrowserSelect();
+        BindDevicesSelect();
+        BindMaritalSelect();
+        BindEducationSelect();
+        BindCareerSelect();
+        BindIdentitySelect();
+        BindFavoritySelect();
+        BindEpaperSelect();
+        BindMenus();
+        var fix = [];
+        @*@if (adddressOptionType != "Global")
+        {
+            <text>
+            fix = [1];
+            </text>
+        }*@
+         regionObj = Component.worldRegion('#Regions', '@Html.Raw(Url.Action("Regions", "Common"))', { fix: fix });
+        @if (Model != null)
+        {
+            <text>
+        SetSelectedValue();
+        </text>
+        }
+    });
+    function BindMemberSelect() {
+        $("#allUsers").bind("click", function () {
+            $(".group").prop("checked", $(this).prop("checked"));
+            $(".member").prop("checked", $(this).prop("checked"));
+        });
+
+        $(".group").bind("click", function () {
+            $(this).parent().parent().children("ol").find(".member").prop("checked", $(this).prop("checked"));
+        });
+        $(".member").bind("click", function () {
+            if (!$(this).prop("checked"))
+                $(this).parent().parent().parent().parent().children("div").find(".group").prop("checked", false);
+        });
+    }
+    function BindGenderSelect() {
+        $("#allGender").bind("click", function () {
+            $(".gender").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindBrowserSelect() {
+        $("#allBrowser").bind("click", function () {
+            $(".browser").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindDevicesSelect() {
+        $("#allDevices").bind("click", function () {
+            $(".devices").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindMaritalSelect() {
+        $("#allMarital").bind("click", function () {
+            $(".Marital").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindEducationSelect() {
+        $("#allEducation").bind("click", function () {
+            $(".Education").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindCareerSelect() {
+        $("#allCareer").bind("click", function () {
+            $(".Career").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindIdentitySelect() {
+        $("#allIdentity").bind("click", function () {
+            $(".Identity").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindFavoritySelect() {
+        $("#allFavority").bind("click", function () {
+            $(".Favority").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindEpaperSelect() {
+        $("#allEpaper").bind("click", function () {
+            $(".Epaper").prop("checked", $(this).prop("checked"));
+        });
+    }
+    function BindMenus()
+    {
+        $.post("@Url.Action("SelectMenus")", { SiteId: @SiteId}, function (data) {
+            var container = $("#sort-List-box").children("div:first");
+            if($(container).children("div").length > 2)
+            {
+                for(var k=2;k<$(container).children("div").length;k++)
+                {
+                    //console.log("revmoew "+k.toString());
+                    $(container).children("div").eq((k)).remove();
+                }
+            }
+            if(data.length > 0)
+            {
+                var divContent1 = $("<div class=\"col-1\"></div>");
+                var divContent2 = $("<div class=\"input-field no-label\"></div>");
+
+                var sel = $('<select id="MenuRoot" name="Pages" data-level="'+ index +'"></select>');
+                $(sel).append("<option value=''>全部選單</option>");
+                for(var i=0;i<data.length;i++)
+                {
+                    $(sel).append("<option value='" + data[i].ID + "'>" + data[i].Title+ "</option>");
+                }
+                $(divContent2).append($(sel));
+                $(container).append($(divContent2));
+                //$(divContent1).append($(divContent2));
+                //$("#sort-List-box").append($(divContent1));
+                $(sel).material_select();
+                var index = $(container).children("div").length;
+                var defaultValue = "";
+                
+                @if (Model != null)
+                {
+                    if (Model.AnalysisType == AnalysisType.Page)
+                    {
+                        <text>
+                var selectItems = $("#AnalysisItems").val();
+                if(selectItems!= "")
+                {
+                    var s = selectItems.split(';');
+                    if(s.length == 1)
+                        isSetDefault = false;
+                    if(s.length > 0)
+                    {
+                        defaultValue= s[0];
+                    }
+                    else
+                        isSetDefault= false;
+                }
+                        </text>
+                    }
+                }
+                $(sel).val(defaultValue);
+                $(sel).change(function () {
+                    var v = $(this).val();
+                    if($(container).children("div").length > 2)
+                    {
+                        for(var k=2;k<=$(container).children("div").length;k++)
+                        {
+                            //console.log("revmoew "+k.toString());
+                            $(container).children("div").eq((k)).remove();
+                        }
+                    }
+                    if(v && v!= "")
+                    {
+                        LoadChildMenu(v, index);
+                    }
+                }).material_select();
+                if(isSetDefault && defaultValue!= "")
+                {
+                    //console.log("LoadMenu: "+index.toString());
+                    LoadChildMenu(defaultValue, index);
+                }
+
+               // console.log(isSetDefault);
+            }
+        });
+        //$("#sort-List-box").children();
+    }
+    function LoadChildMenu(parentID, lev)
+    {
+        $.post("@Url.Action("SelectMenus")", { SiteId: @SiteId, parentID: parentID}, function (data) {
+            var container = $("#sort-List-box").children("div:first");
+            for(var k=lev;k<$(container).children("div").length;k++)
+            {
+                $(container).children("div").eq((k)).remove();
+            }
+            if(data.length > 0)
+            {
+                var divContent1 = $("<div class=\"col-1\"></div>");
+                var divContent2 = $("<div class=\"input-field no-label\"></div>");
+                var sel = $('<select id="ChildRoot_'+parentID+'"  name="Pages" data-level="'+ (lev+1) +'"></select>');
+                $(sel).append("<option value=''>全部次選單</option>");
+                for(var i=0;i<data.length;i++)
+                {
+                    $(sel).append("<option value='" + data[i].ID + "'>" + data[i].Title+ "</option>");
+                }
+                $(divContent2).append($(sel));
+                //$(divContent1).append($(divContent2));
+                $(container).append($(divContent2));
+                //$("#sort-List-box").append($(divContent1));
+                $(sel).material_select();
+                var index = $(container).children("div").length;
+                var defaultValue = "";  
+                @if (Model != null)
+                {
+                    if (Model.AnalysisType == AnalysisType.Page)
+                    {
+                        <text>
+                        var selectItems = $("#AnalysisItems").val();
+                        if(selectItems!= "")
+                        {
+                            var s = selectItems.split(';');
+                            if(index-1 == s.length)
+                                isSetDefault = false;
+                            if(s.length >= index-1)
+                            {
+                                defaultValue= s[index-2];
+                            }
+                            else
+                                isSetDefault = false;
+                        }
+                        </text>
+                    }
+                }
+                $(sel).val(defaultValue);
+                $(sel).change(function () {
+                    var v = $(this).val();
+                    if(v && v!= "")
+                    {
+                        LoadChildMenu(v, index);
+                    }
+                }).material_select();
+                
+                if(isSetDefault && defaultValue!= "")
+                {
+                    //console.log("LoadChildMenu: "+index.toString());
+                    LoadChildMenu(defaultValue, index);
+                }
+
+               // console.log(isSetDefault);
+            }
+            else
+            {
+
+            }
+            //console.log(data);
+        });
+        //$("#sort-List-box").children();
+    }
+    function SetSelectedValue()
+    {
+        var selectItems = $("#AnalysisItems").val();
+        @if (Model != null)
+        {
+
+            if (Model.AnalysisType == AnalysisType.Browser)
+            {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".browser").length;i++)
+        {
+            if(s.includes($($(".browser")[i]).val()))
+            {
+                $($(".browser")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+
+        if (Model.AnalysisType == AnalysisType.Age)
+        {
+            <text>
+        var s = selectItems.split(';'); if(selectItems.indexOf("other") >= 0)
+        {
+            var s_Val = selectItems.split(':')[1].split('-');
+
+            $("#AgeSettingOther").prop("checked", true);
+
+            $('#AgeSetting-box').slideToggle();
+            $("#ageFilter_customStart").val(s_Val[0]);
+            $("#ageFilter_customEnd").val(s_Val[1]);
+        }
+        else
+        {
+            for(var i=0;i<$("input[name=ageFilter]").length;i++)
+            {
+
+                if(s.includes($($("input[name=ageFilter]")[i]).val()))
+                {
+                    $($("input[name=ageFilter]")[i]).prop("checked", true);
+                }
+
+            }
+        }
+        </text>
+        }
+        if (Model.AnalysisType == AnalysisType.Career)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".Career").length;i++)
+        {
+            if(s.includes($($(".Career")[i]).val()))
+            {
+                $($(".Career")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+        if (Model.AnalysisType == AnalysisType.Education)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".Education").length;i++)
+        {
+            if(s.includes($($(".Education")[i]).val()))
+            {
+                $($(".Education")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+
+        if (Model.AnalysisType == AnalysisType.Favority)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".Favority").length;i++)
+        {
+            if(s.includes($($(".Favority")[i]).val()))
+            {
+                $($(".Favority")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+
+        if (Model.AnalysisType == AnalysisType.Identity)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".Identity").length;i++)
+        {
+            if(s.includes($($(".Identity")[i]).val()))
+            {
+                $($(".Identity")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+        if (Model.AnalysisType == AnalysisType.Machine)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".devices").length;i++)
+        {
+            if(s.includes($($(".devices")[i]).val()))
+            {
+                $($(".devices")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+
+        if (Model.AnalysisType == AnalysisType.Manager)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".member").length;i++)
+        {
+            if(s.includes($($(".member")[i]).val()))
+            {
+                $($(".member")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+        if (Model.AnalysisType == AnalysisType.Marriage)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".Marital").length;i++)
+        {
+            if(s.includes($($(".Marital")[i]).val()))
+            {
+                $($(".Marital")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+        if (Model.AnalysisType == AnalysisType.OrderEpaper)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$(".Epaper").length;i++)
+        {
+            if(s.includes($($(".Epaper")[i]).val()))
+            {
+                $($(".Epaper")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+        if (Model.AnalysisType == AnalysisType.Sex)
+        {
+            <text>
+        var s = selectItems.split(';');
+        for(var i=0;i<$("input[name=Sex]").length;i++)
+        {
+            if(s.includes($($("input[name=Sex]")[i]).val()))
+            {
+                $($("input[name=Sex]")[i]).prop("checked", true);
+            }
+        }
+        </text>
+        }
+            }
+    }
+</script>
+

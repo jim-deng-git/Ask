@@ -1,0 +1,83 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleSet/style2.css" rel="stylesheet" />
+
+<div id="card_@setting.CardNo" class="card-common card-articleSet" data-style="2">
+    <div class="article-list">
+        <ul id="article-ul">
+            @foreach (ArticleModels item in Model) {
+                List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                SitePage page = itemPages.GetValue(item.CardNo);
+                if (page != null) {
+            <li>
+                <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))">
+                    <div class="article-list-title">@item.Title</div>
+                    @if (item.IssueDate != null) {
+                    <div class="article-list-date">@item.IssueDate.ToString("yyyy.MM.dd")</div>
+                    }
+                    <div class="article-list-info">@item.Summary.TrimTags().Truncate(150)</div>
+                    @if (articleTypes?.Count() > 0) {
+                        bool isFirst = true;
+                    <div class="article-list-type">
+                        @foreach (ArticleTypesModels type in articleTypes) {
+                            if (isFirst) {
+                                isFirst = false;
+                                <span>@type.Name</span>
+                            } else {
+                                @:,<span>@type.Name</span>
+                            }
+                        }
+                    </div>
+                    }
+                </a>               
+            </li>
+                }
+            }
+        </ul>
+        @**@
+        @if (setting.PagingMode == "點擊看更多") {
+        <div class="pagination text-C" style="display: none;">
+            <a class="btn-black-o btn-more" href="javascript:">More</a>
+        </div>
+        }
+        <!-- 華山客製20170902 carrie -->
+        <div class="pagination text-C">
+            <a class="btn-black-o" href="news">More</a>
+        </div>
+    </div>
+</div>
+@if (setting.PagingMode == "點擊看更多") {
+    <script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(setting.CardNo)');
+        var pageIndex = 1;
+        var processing = false;
+        outerElm.find('a.btn-more').click(function () {
+            if (processing)
+                return;
+
+            processing = true;
+            var btn = $(this);
+            $.get('@Html.Raw(Url.Action("Next", "ArticleSet", new { siteId = ViewBag.SiteID, cardNo = setting.CardNo, style = 2 }))&pageIndex=' + (++pageIndex), function (html) {
+                if (!$.trim(html)) {
+                    btn.parent().fadeOut(function () {
+                        $(this).remove();
+                    });
+                }
+
+                html = $(html).hide();
+                outerElm.find('#article-ul').append(html);
+                html.fadeIn();
+
+                processing = false;
+            });
+        });
+    })();
+    </script>
+}

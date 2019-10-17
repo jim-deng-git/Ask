@@ -1,0 +1,34 @@
+﻿
+@{
+    Layout = null;
+
+}
+ @**@
+<div class="input-field inline full">
+    <input type="file" name="updFiles" data-fileuploader-extensions="@ViewBag.FileExtensions" data-fileuploader-files='[@ViewBag.FileExists]'>
+</div>
+@Scripts.Render("~/JS/fileuploader")
+
+<script type="text/JavaScript">
+
+    $(function(){
+
+        $('input[name="updFiles"]').fileuploader({
+            changeInput: '<div class="fileuploader-input">' +
+    					      '<div class="fileuploader-input-inner">' +
+    						      '<i class="cc cc-cloud-upload-o"></i>' +
+    							  '<h3 class="fileuploader-input-caption"><span>Drag and drop files here</span></h3>' +
+    							  '<p>or</p>' +
+    							  '<div class="fileuploader-input-button"><span>Browse Files</span></div>' +
+    						  '</div>' +
+    					  '</div>',
+            theme: 'dragdrop',
+            thumbnails: {             
+                startImageRenderer: true,
+                canvasImage: false,
+            },
+            addMore: true,
+            limit: @ViewBag.FileLimit,
+        });
+    });
+</script>

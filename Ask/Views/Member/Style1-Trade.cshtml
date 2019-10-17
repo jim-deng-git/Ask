@@ -1,0 +1,190 @@
+﻿@model WorkV3.Models.MemberShipModels
+@{ 
+    WorkV3.Models.Repository.EshopOrderRepository orderRepos = new WorkV3.Models.Repository.EshopOrderRepository();
+    WorkV3.Models.Repository.EshopProductRepository productRepos = new WorkV3.Models.Repository.EshopProductRepository();
+    WorkV3.Models.Repository.EshopOrderDetailRepository detailRepos = new WorkV3.Models.Repository.EshopOrderDetailRepository();
+    IEnumerable< EshopOrderShippingModel> orderShippingList = null;
+    WorkV3.Common.Pagination pager = null;
+    if (ViewBag.OrderShippingList != null)
+    {
+        orderShippingList = ViewBag.OrderShippingList as IEnumerable<EshopOrderShippingModel>;
+    }
+    if (ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager as WorkV3.Common.Pagination;
+    }
+    List<PaymentCodesModel> paymentCodeList = new List<PaymentCodesModel>();
+    if (ViewBag.EnabledPaymentCodes != null)
+    {
+        paymentCodeList = (ViewBag.EnabledPaymentCodes as IEnumerable<PaymentCodesModel>).ToList();
+    }
+}
+
+<div class="mainPage card-member points" data-style="1">
+
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+
+    <div class="article-wrap member-trade">
+        <div class="article-list">
+            <div class="article-title">交易紀錄</div>
+            <ul class="">
+                @if (orderShippingList != null)
+                {
+                    for (int i = 0; i < orderShippingList.Count(); i++)
+                    {
+                        var orderShippingItem = orderShippingList.ElementAt(i);
+                        var orderItem = orderRepos.GetItem(orderShippingItem.OrderID);
+                        var storeItem = WorkV3.Models.DataAccess.StoreDAO.GetItem(orderShippingItem.StoreID);
+                        var detailItems = detailRepos.GetItems(orderShippingItem.OrderShippingID, "OrderShippingID");
+                        string payment_title = "", storeName = "", productName = "";
+                        if (paymentCodeList != null)
+                        {
+                            var paymentCode = paymentCodeList.Where(p => p.PaymentCode == orderItem.PaymentCode);
+                            if (paymentCode != null && paymentCode.Count() > 0)
+                            {
+                                payment_title = paymentCode.First().Title;
+                            }
+                        }
+                        if (storeItem != null)
+                        {
+                            storeName = storeItem.Name;
+                        }
+                        foreach (EshopOrderDetailModel detailItem in detailItems)
+                        {
+                            var productItem = productRepos.GetItem(detailItem.EshopProductID);
+                            productName = productItem.Name;
+                        }
+                        if (detailItems.Count() > 1)
+                        {
+                            productName += string.Format("...共{0}件", detailItems.Count().ToString()) ;
+                        }
+                        <li class="trade">
+                            <div class="article-list-title">
+                                訂單編號 @orderItem.OrderNumber <span class="time">@orderItem.CreateTime.ToString("yyyy/MM/dd hh:mm")</span>
+                                <!-- <div class="button-check">
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Member/FrontEnd/chatroom.aspx" class="openEdit-m">聯繫客服<i class="cc cc-lnr-chevron-right"></i></a>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/DemoPage/StoreStep4-Style1.aspx" target="_blank">查訂單<i class="cc cc-lnr-chevron-right"></i></a>
+                                </div> -->
+                            </div>
+                            <div class="trade-info">
+                                <div class="return"></div>
+                                <div class="article-list-info">
+                                    <div class="payway">
+                                        <span class="title-s">付款:</span>
+                                        <span class="data_content">@payment_title</span>
+                                    </div>
+                                    <div class="brand">
+                                        <span class="title-s">品牌:</span>
+                                        <span class="data_content">@storeName</span>
+                                    </div>
+                                    <div class="product">
+                                        <span class="title-s">商品:</span>
+                                        <span class="data_content">@productName</span>
+                                    </div>
+                                </div>
+                                <ul class="steps default">
+                                    @Html.Partial("~/Views/Shop/OrderStatusView.cshtml", orderShippingItem.Orderstatus)
+                                </ul>
+                            </div>
+
+                            @{
+                                string orderUrl = "";
+                                if ((OrderStatus)orderShippingItem.Orderstatus == OrderStatus.ReadToPay)
+                                {
+                                    orderUrl = Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "PayPreCheck", OrderID = orderShippingItem.OrderID });
+                                }
+                                else
+                                {
+                                    orderUrl = Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "PayFinish", OrderID = orderShippingItem.OrderID });
+                                }
+                            }
+                            <a href="@orderUrl" target="_blank"></a>
+                        </li>
+
+                    }
+                }
+            </ul>
+        </div>
+        @if (pager != null)
+        {
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pager)
+        </div>
+        }
+    </div>
+    </div>
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+<link href="~/css/vendor/sweetalert/sweetalert.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/script/tooltipster/tooltipster.bundle.min.css" rel="stylesheet" />
+<link href="~/script/tooltipster/themes/tooltipster-sideTip-shadow.min.css" rel="stylesheet" />
+    <script>
+        jQuery(function ($) {
+
+            $(".filters-bar").stick_in_parent({
+                offset_top: 100
+            });
+
+            $('body').scrollspy({ target: '.filters-bar', offset: filtersbar_top() });
+
+            $('.filters-bar a').each(function () {
+
+                var _this = $(this);
+
+                _this.on('click', function () {
+                    event.preventDefault();
+                    var _spacing = 32,
+                        _right_position = $('#header').outerHeight() + _spacing;
+                    $($(this).attr('href'))[0].scrollIntoView();
+                    scrollBy(0, -_right_position);
+                });
+            });
+
+            $('.filter-activity a').click(function () {
+                // alert($(this).data('target'));
+                var _filter_target = $(this).data('target');
+                $(this).addClass('active').siblings().removeClass('active');
+
+                var _content = $(this).parents('.filter-activity').siblings('.activity-content');
+
+                _content.find('li').stop().hide(100).addClass('hide_this');
+                _content.find('.' + _filter_target).stop().show().removeClass('hide_this');
+            });
+            $(".openEdit-m").on('click', function (e) {
+                e.preventDefault();
+                window.parent.$.colorbox({
+                    href: $(this).attr('href'),
+                    width: function () {
+                        var NW = "600";
+                        if ($.isNumeric($(this).data("width"))) {
+                            NW = $(this).data("width");
+                        }
+                        //console.log("NW:" + NW);
+                        return NW;
+                    },
+                    height: "95%",
+                    right: "20",
+                    iframe: true,
+                    transition: false,
+                    speed: 0,
+                    fadeOut: 100,
+                    onClosed: function () {
+                        var formBox = window.parent.$("#leftEditBox");
+
+                        if (formBox.length) {
+                            if (formBox.hasClass('active')) {
+                                formBox.fadeOut(300).removeClass('active');
+                            }
+                        }
+                    }
+                });
+            });
+            /**重新計算Top**/
+            function filtersbar_top() {
+                var _spacing = 60,
+                    filtersbar_top = $('.article-wrap').offset().top + _spacing;
+                return filtersbar_top;
+            }
+
+        });
+    </script>

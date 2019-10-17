@@ -1,0 +1,62 @@
+@-webkit-keyframes mainVision {
+  0% {
+    -webkit-transform: scale(1.4);
+            transform: scale(1.4); }
+  50% {
+    -webkit-transform: scale(1);
+            transform: scale(1); }
+  100% {
+    -webkit-transform: scale(1.4);
+            transform: scale(1.4); } }
+
+@keyframes mainVision {
+  0% {
+    -webkit-transform: scale(1.4);
+            transform: scale(1.4); }
+  50% {
+    -webkit-transform: scale(1);
+            transform: scale(1); }
+  100% {
+    -webkit-transform: scale(1.4);
+            transform: scale(1.4); } }
+
+.card-mainVision[data-style="9"] {
+  position: relative;
+  overflow: hidden; }
+  .card-mainVision[data-style="9"] .mainVisionLogo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+    z-index: 1; }
+  .card-mainVision[data-style="9"] .swiper-slide-active .mainVisionImg {
+    -webkit-animation: mainVision 50s infinite ease-in-out;
+            animation: mainVision 50s infinite ease-in-out; }
+  .card-mainVision[data-style="9"] .mainVisionImg {
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat; }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="9"] .mainVisionImg {
+        height: 0 !important;
+        padding-bottom: 75%; } }
+  @media only screen and (max-width: 580px) {
+    .card-mainVision[data-style="9"] .mainVisionVideo {
+      height: 0 !important;
+      padding-bottom: 75%; } }
+  .card-mainVision[data-style="9"] .swiper-containerImg .swiper-button-prev, .card-mainVision[data-style="9"] .swiper-containerImg .swiper-button-next {
+    width: auto; }
+    .card-mainVision[data-style="9"] .swiper-containerImg .swiper-button-prev::after, .card-mainVision[data-style="9"] .swiper-containerImg .swiper-button-next::after {
+      font-family: "FontCCwork";
+      font-size: 60px;
+      line-height: 100px;
+      display: inline-block;
+      content: "\e905";
+      color: rgba(0, 0, 0, 0.8);
+      text-shadow: 1px 0px 8px rgba(255, 255, 255, 0.3); }
+  .card-mainVision[data-style="9"] .swiper-containerImg .swiper-button-next::after {
+    content: "\e907"; }

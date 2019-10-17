@@ -1,0 +1,265 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@using WorkV3.Models;
+@using System.Web;
+@using Newtonsoft.Json.Linq;
+@using Newtonsoft.Json;
+@model List<KeywordQueriedViewModel>
+@{
+    ViewBag.Title = "熱門關鍵字設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    SitesModels siteSN = WorkV3.Models.DataAccess.SitesDAO.GetInfo(ViewBag.SiteID);//wei 20180809
+    long menuId = ViewBag.MenuID;
+    JObject searchData = ViewBag.Search;
+    var siteQuery = new { siteId = siteId, menuId = menuId, area = "Backend" };
+    Pagination pagination = ViewBag.Pagination;
+
+    bool checkIsSet = ViewBag.Search["isSet"] != null && ViewBag.Search["isSet"].ToString() != "false";
+    bool checkIsNotSet = ViewBag.Search["isNotSet"] != null && ViewBag.Search["isNotSet"].ToString() != "false";
+
+    var dataJson = Html.Raw(JsonConvert.SerializeObject(Model));
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+<div class="groove groove-1" id="app">
+    <div class="card shadow-none">
+        <div id="SearchBox" class="search-box pushup">
+            <form id="searchForm" method="post" action="@Url.Action("Index", siteQuery)" ref="submitForm">
+                <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input name="search" type="text" placeholder="請輸入關鍵字" value="@ViewBag.Search["search"].ToString()">
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-3">
+                            <div class="title inline">搜尋次數</div>
+                            <div class="input-field inline small">
+                                <input type="number" name="leastSearch" min="0" class="" value="@ViewBag.Search["leastSearch"].ToString()">  -
+                            </div>
+                            <div class="input-field inline small">
+                                <input type="number" name="maxSearch" min="0" class="" value="@ViewBag.Search["maxSearch"].ToString()">
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">熱門關鍵字</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    @Html.CheckBox("isSet", checkIsSet, new { id = "setup" })
+                                    <label for="setup">被設為熱門關鍵字</label>
+                                </div>
+                                <div>
+                                    @Html.CheckBox("isNotSet", checkIsNotSet, new { id = "unset" })
+                                    <label for="unset">未被設為熱門關鍵字</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li v-show="false">
+                        <div class="col-2">
+                            <div class="title inline">搜尋期間</div>
+                            <div class="input-field inline">
+                                <input name="searchStart" type='text' class="input-cal datetimepicker" value="@ViewBag.Search["searchStart"].ToString()">
+                            </div>
+                            <span style="vertical-align: bottom;">-</span>
+                            <div class="input-field inline">
+                                <input name="searchEnd" type='text' class="input-cal datetimepicker" value="@ViewBag.Search["searchEnd"].ToString()">
+                            </div>
+                        </div>
+                    </li>
+
+                </ul>
+                <div class="float-R"><a class="btn-grey-darken-4-o btn-large" href="javascript:" @@click="submit"><i class="cc cc-search"></i>搜尋</a></div>
+                <input type="submit" style="display: none;" />
+            </form>
+        </div>
+        <table class="fixTable">
+            <caption>
+                搜尋關鍵字分析
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o" href="@Url.Action("Index", "Keyword", new { area = "Backend" })" title="自訂熱門關鍵字"><i class="cc cc-search-text"></i>自訂熱門關鍵字</a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    <!-- 移動的確定END -->
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>關鍵字</th>
+                    <th>搜尋次數</th>
+                    <th>預覽搜尋結果</th>
+                    <th>設為熱門關鍵字</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="(item, index) in dataList">
+                    <list-item :index="index+1" :data="item"></list-item>
+                </template>
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>
+
+<script type="text/x-template" id="list-item-template">
+    <tr>
+        <td class="sort">{{index}}</td>
+        <td class="text-L">{{data.Text}}</td>
+        <td class="">{{data.Count}}</td>
+        <td class="icon"><a class="btn-grey-darken-4-o transparent square" target="_blank" :href="`@Url.Action("Index", "Home", new { SiteSN = siteSN.SN, PageSN = "SearchResults", area = string.Empty })?key=${data.Text}&isPreview=true`"><i class="cc cc-desktop-message"></i></a></td>
+        <td class="icon" v-show="!data.KeywordQueriedID">
+            <a class="btn-grey-darken-4-o transparent square transparent fileuploader-action-remove img-del tooltip" title="設為熱門關鍵字" href="javascript:" @@click="setKeyword"><i class="cc cc-plus"></i></a>
+        </td>
+        <td class="icon font-grey" v-show="data.KeywordQueriedID != null">已設定</td>
+    </tr>
+</script>
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/script/vue/vue.js"></script>
+    <script type="text/javascript">
+
+        Vue.component('list-item', {
+            template: '#list-item-template',
+            props: ['data', 'mode', 'index', 'cancelSort'],
+            data(){
+                return {
+                    isChecked: false,
+                    sortValue: 1,
+                    isSortChanged: false,
+                };
+            },
+            methods: {
+                toggleIssue(){
+                    $.get(`@Url.Action("toggleIssue", "Keyword", new { @siteId = siteId, @menuId = menuId })&id=${this.data.ID}`, () => {
+                        this.$emit('refresh-data');
+                    });
+                },
+                setKeyword(){
+                    let self = this;
+                    Component.confirm('確定要設為熱門關鍵字？ 設定後會自動成為熱門關鍵字的第一筆。', isOk => {
+                        if(isOk){
+                            $.ajax({
+                                url: '@Url.Action("Add", "Keyword")',
+                                data: {
+                                    Text: self.data.Text,
+                                    IsIssue: true,
+                                },
+                                type: 'post',
+                                success(response) {
+                                    if (response === '0')
+                                        Component.alert('該關鍵字已存在');
+
+                                    location.reload();
+                                }
+                            });
+                        }
+                    });
+                },
+            },
+            computed: {
+                isNormalMode(){
+                    return this.mode === 'normal';
+                },
+                isSortMode(){
+                    return this.mode === 'sort';
+                },
+                isDeleteMode(){
+                    return this.mode === 'delete';
+                },
+            },
+            watch: {
+                mode(){
+                    if(this.mode === 'normal'){
+                        this.sortValue = this.index;
+                        this.isSortChanged = false;
+                        this.isChecked = false;
+                    }
+                },
+                sortValue(){
+                    this.isSortChanged = true;
+                },
+            },
+            created(){
+                this.sortValue = this.index;
+            },
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                dataList: @dataJson,
+            },
+            methods: {
+                submit(){
+                    this.$refs.submitForm.submit();
+                },
+            },
+            created(){
+            },
+            computed: {
+            },
+        });
+        Vue.config.devtools = false;
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+        });
+
+        $(window).on('load', function () {
+            if ($('#SearchBox').length) {
+                var $SearchBoxH = $('#SearchBox').outerHeight();
+                if ($('#SearchBox').hasClass('pushup')) {
+                    // $('.fixTable, .pagination').css({
+                    //     top: $SearchBoxH
+                    // });
+
+                    $('#closeSerach').on('click', function () {
+                        $('#SearchBox').removeClass('pushup');
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    });
+                } else {
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                }
+
+                $('#openSearch').on('click', function () {
+                    $('#SearchBox').toggleClass('pushup');
+                    if ($('#SearchBox').hasClass('pushup')) {
+                        // $('.fixTable, .pagination').css({
+                        //     top: $SearchBoxH
+                        // });
+                    } else {
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    }
+                });
+            }
+        });
+    </script>
+}

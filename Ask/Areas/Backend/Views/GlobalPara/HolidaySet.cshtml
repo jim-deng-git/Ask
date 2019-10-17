@@ -1,0 +1,90 @@
+﻿
+<script type="text/javascript" src="~/script/amazeui_calendar.js"></script>
+<script type="text/javascript" src="~/Script/workV3/component.js"></script>
+<link rel="stylesheet" href="~/css/amazeui_calendar.css">
+
+@*<div class="swiper-slide p-T-10">*@
+    <h1 class="title-admin-page">例假日設定</h1>
+    <div class="col-1 border-T">
+        <ul class="forms m-v-5">
+            <li>
+                <div class="col-1" id="divCalendar"></div>
+            </li>
+        </ul>
+        <div class="control-bar relative">
+            <div class="bar-item float-L">
+                <div class="alert transparent">
+                    <i class="cc cc-attention"></i>
+                    <div>下拉切換年度，勾選日為假日。</div>
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:" onclick="HolidaySetSave();"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+@*</div>*@
+
+<script type="text/javascript">
+	/*日历*/
+
+    $(function () {
+        loading_calendar("divCalendar", "cn", GetHolidaySetByYear(new Date().getFullYear()));
+        SetCalendarDefault();
+    });
+
+    parent.chekCalender = function (year, date) {
+        var showDate = year + '/' + date.replace('-', '/');
+        $.post('@Url.Action("CheckHolidaySet")', { date: showDate }, function (e) {
+            if (e) {
+                Component.alert(showDate + " 已被設定國定假日，不可重複設定。");
+                $("td.selected").removeClass("freeday");
+            }
+        });
+    }
+
+    //取某一年的假日
+    function GetHolidaySetByYear(year) {
+        var dates = [];
+        $.ajax({
+            type: 'POST',
+            url: "@Url.Action("GetHolidaySet", "GlobalPara")",
+            data: { Year: year },
+            dataType: "text",
+            async: false,
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                Component.alert("調用目標發生異常！");
+            },
+            success: function (RsData) {//查询成功,data为返回的数据  
+                eval("dates = [" + RsData + "];");
+            }
+        });
+        return dates;
+    }
+
+    function HolidaySetSave() {
+        var datas = [];
+        $("#divCalendar .freeday.able_day").not(".empty").each(function () {
+            var day = $(this).get(0).innerHTML;
+            var data = $("#cen_year").text() + '/' + $(this).get(0).parentNode.parentNode.rows[0].cells[0].getAttribute('index') + "/" + day;
+            datas.push({ "Date": data });
+        });
+
+        if (datas.length > 0) {
+            Component.confirm("確認儲存？", function (isOk) {
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("UpdateHolidaySet", "GlobalPara")",
+                    data: { Year: $("#cen_year").text(), jsonDates: JSON.stringify(datas) },
+                    dataType: "json",
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        Component.alert("調用目標發生異常！");
+                    },
+                    success: function (RsData) {//查询成功,data为返回的数据  
+                        Component.alert('儲存成功！');
+                    }
+                });
+            });
+        }
+        //alert(JSON.stringify(datas));
+    };
+</script>

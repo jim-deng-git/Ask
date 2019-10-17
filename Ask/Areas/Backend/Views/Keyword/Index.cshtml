@@ -1,0 +1,217 @@
+﻿@using Newtonsoft.Json;
+@using WorkV3.Areas.Backend.ViewModels;
+@using System.Web;
+@using WorkV3.Models;
+@model List<KeywordViewModel>
+@{
+    ViewBag.Title = "熱門關鍵字設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    SitesModels siteSN = WorkV3.Models.DataAccess.SitesDAO.GetInfo(ViewBag.SiteID);//wei 20180809
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+
+    var dataJson = Html.Raw(JsonConvert.SerializeObject(Model));
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+<div class="groove groove-1" id="app">
+    <div class="card shadow-none">
+        <table class="fixTable">
+            <caption class="p-h-4">
+                熱門關鍵字設定
+                <div class="float-R">
+                    <div v-show="isNormalMode">
+                        <a class="btn-grey-o square tooltip-info" href="javascript:" title="排序" @@click="changeMode('sort')"><i class="cc cc-sort"></i></a>
+                        <a class="btn-grey-darken-4-o square tooltip-info openEdit-c" href="@Url.Action("Add", "Keyword", new { area = "Backend" })" title="新增"><i class="cc cc-plus"></i></a>
+                        <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" title="刪除" @@click="changeMode('delete')"><i class="cc cc-trash-o"></i></a>
+                    </div>
+
+                    <span data-for="sort" v-show="isSortMode">
+                        <a class="btn-grey-o no" href="javascript:" @@click="cancelSort"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:" @@click="submitSort"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" v-show="isDeleteMode">
+                        <a class="btn-grey-o no" href="javascript:" @@click="cancelDelete"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:" @@click="submitDelete"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>關鍵字</th>
+                    <th>搜尋次數</th>
+                    <th>刊登</th>
+                    <th>預覽搜尋結果</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="(keyword, index) in keywords">
+                    <list-item :index="index+1" :data="keyword" :mode="currentMode" :key="keyword.ID" @@refresh-data="refreshData"></list-item>
+                </template>
+            </tbody>
+        </table>
+        <div class="alert transparent m-5">
+            <i class="cc cc-attention"></i>
+            <div>在前台進行搜尋，並按下「搜尋框」時，會自動於下展區中帶出本頁所設定的關鍵字</div>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-template" id="list-item-template">
+    <tr>
+        <td v-if="!isSortMode" class="sort">{{index}}</td>
+        <td v-if="isSortMode" class="sort"><div class="input-field"><input placeholder="" type="text" v-model="sortValue"></div></td>
+        <td class="text-L">{{data.Text}}</td>
+        <td class="">{{data.Count}}</td>
+        <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" @@click="toggleIssue" href="javascript:void(0)"><i class="cc" :class="{'cc-eye': data.IsIssue, 'cc-eye-off font-red': !data.IsIssue}"></i></a></td>
+        <td class="icon"><a class="btn-grey-darken-4-o transparent square" target="_blank" :href="`@Url.Action("Index", "Home", new { SiteSN = siteSN.SN, PageSN = "SearchResults", area = string.Empty })?key=${data.Text}&isPreview=true`"><i class="cc cc-desktop-message"></i></a></td>
+        <td v-show="!isDeleteMode" class="icon"><a class="btn-grey-darken-4-o transparent square openEdit-c" :href="`@Url.Action("Edit", "Keyword", new { area = "Backend" })?id=${data.ID}`" title="編輯"><i class="cc cc-edit"></i></a></td>
+        <td v-show="isDeleteMode" class="icon edit"><input type="checkbox" :id="`list-delete-${data.ID}`" v-model="isChecked"><label :for="`list-delete-${data.ID}`"></label></td>
+    </tr>
+</script>
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/script/vue/vue.js"></script>
+    <script type="text/javascript">
+
+        Vue.component('list-item', {
+            template: '#list-item-template',
+            props: ['data', 'mode', 'index', 'cancelSort'],
+            data(){
+                return {
+                    isChecked: false,
+                    sortValue: 1,
+                    isSortChanged: false,
+                };
+            },
+            methods: {
+                toggleIssue(){
+                    $.get(`@Url.Action("toggleIssue", "Keyword", new { @siteId = siteId, @menuId = menuId })&id=${this.data.ID}`, () => {
+                        this.$emit('refresh-data');
+                    });
+                },
+            },
+            computed: {
+                isNormalMode(){
+                    return this.mode === 'normal';
+                },
+                isSortMode(){
+                    return this.mode === 'sort';
+                },
+                isDeleteMode(){
+                    return this.mode === 'delete';
+                },
+            },
+            watch: {
+                mode(){
+                    if(this.mode === 'normal'){
+                        this.sortValue = this.index;
+                        this.isSortChanged = false;
+                        this.isChecked = false;
+                    }
+                },
+                sortValue(){
+                    this.isSortChanged = true;
+                },
+            },
+            created(){
+                this.sortValue = this.index;
+            },
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                keywords: @dataJson,
+                currentMode: 'normal',
+            },
+            methods: {
+                changeMode(modeName){
+                    this.currentMode = modeName;
+                },
+                cancelSort(){
+                    this.changeMode('normal');
+                },
+                cancelDelete(){
+                    this.changeMode('normal');
+                },
+                submitSort(){
+                    let changed = this.getSortedItems();
+                    let vueSelf = this;
+
+                    if(changed.length == 0)
+                        return;
+
+                    $.post("@Url.Action("Sort", "Keyword", new { @siteId = siteId, @menuId = menuId })", { items: changed }, () => {
+                        vueSelf.refreshData().then(() => {
+                            vueSelf.changeMode('normal');
+                        });
+                    });
+                },
+                submitDelete(){
+                    let checked = this.checkedItems();
+                    let vueSelf = this;
+
+                    if(checked.length == 0)
+                        return;
+
+                    Component.confirm('刪除後，資料無法復原，確定刪除？', isOk => {
+                        if(isOk){
+                            $.post("@Url.Action("DeleteKeywords", "Keyword", new { @siteId = siteId, @menuId = menuId })", { 'ids': checked }, function () {
+                                vueSelf.refreshData().then(() => {
+                                    vueSelf.changeMode('normal');
+                                });
+                            });
+                        }
+                    });
+                },
+                refreshData(){
+                    return $.get(`@Url.Action("GetAllKeywords", "Keyword", new { @siteId = siteId, @menuId = menuId })`, (data) => {
+                        this.keywords = JSON.parse(data);
+                    })
+                },
+                checkedItems(){
+                    let retValue = [];
+
+                    this.$children.findIndex((item, index) => {
+                        if(item.isChecked)
+                            retValue.push(item.data.ID);
+                    });
+
+                    return retValue;
+                },
+                getSortedItems(){
+                    let retValue = [];
+
+                    this.$children.forEach((item) => {
+                        retValue.push({ID: item.data.ID, Index: this.$children.length - item.sortValue + 1});
+                    });
+
+                    return retValue;
+                },
+            },
+            created(){
+                //console.log(this.$children);
+            },
+            computed: {
+                isNormalMode(){
+                    return this.currentMode === 'normal';
+                },
+                isSortMode(){
+                    return this.currentMode === 'sort';
+                },
+                isDeleteMode(){
+                    return this.currentMode === 'delete';
+                },
+            },
+        });
+        Vue.config.devtools = false;
+    </script>
+}

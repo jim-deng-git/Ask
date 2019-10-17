@@ -1,0 +1,8 @@
+﻿@model PlainTextModel
+
+<link href="~/css/Cards/PlainText/style6.css" rel="stylesheet" />
+
+<div id="plainText_@Model.CardNo" class="card-plainText" data-style="6">
+    <div class="title-main">@Model.Title</div>
+    <div class="title-sub">@Html.Raw(Model.Description)</div>
+</div>

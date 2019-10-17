@@ -1,0 +1,106 @@
+﻿@model IEnumerable<WorkV3.Models.FormAdmin>
+@{
+    ViewBag.Title = "管理員";
+    ViewBag.BodyClass = "body-dropdown";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;    
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="title">選擇管理員<span class="required">*</span></div>
+            <div class="input-field">
+                <input id="txtKey" type="text" placeholder="關鍵字搜尋" />
+            </div>
+        </li>
+        <li>
+            <div class="radio-box" id="divList">
+                @foreach (WorkV3.Models.FormAdmin item in Model) {
+                <div data-item='@Newtonsoft.Json.JsonConvert.SerializeObject(item, ViewBag.Int64Converter)'>
+                    <input class="with-chip" type="checkbox" id="@item.MemberID" />
+                    <label for="@item.MemberID">
+                        @if (!string.IsNullOrWhiteSpace(item.Img)) {
+                            <img src="@item.Img" alt="@item.Name" />
+                        }
+                        @item.Name @item.Email
+                    </label>
+                </div>
+                }                
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar">
+        <div style="display: none;">
+            <div id="addTag" class="float-box">
+                <div class="title">請輸入新的管理員E-Mail</div>
+                <input id="txtNewAdmin" type="text" placeholder="輸入完畢請按下Enter" />
+            </div>
+        </div>
+        <a class="btn-grey-o set-left openInlineEdit" href="#addTag">
+            <i class="cc cc-plus"></i>快速新增
+        </a>
+        <a class="btn-cancel" href="javascript:parent.document.body.click();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSelect" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>選入</a>
+    </div>
+</div>
+
+@section FArea {
+    <script type="text/javascript">
+        var listOuterElm = $('#divList');
+
+        $('#txtKey').change(function () {
+            var val = $.trim(this.value);
+            listOuterElm.children().each(function () {
+                if (!$(this).find('input').prop('checked')) {
+                    var admin = $.parseJSON($(this).attr('data-item'));
+                    if (admin.Name.indexOf(val) == -1)
+                        $(this).fadeOut();
+                    else
+                        $(this).fadeIn();
+                }
+            });
+        });
+
+        $('#btnSelect').click(function () {
+            var selectedAdmins = [];
+            listOuterElm.children().each(function () {
+                if ($(this).find('input').prop('checked')) {
+                    var admin = $.parseJSON($(this).attr('data-item'));
+                    selectedAdmins.push(admin);
+                }
+            });
+                        
+            parent.setAdmins(selectedAdmins);
+            setTimeout(function () { parent.document.body.click(); }, 100);
+        });
+
+        $('#txtNewAdmin').keypress(function (e) {
+            if (e.keyCode == '13') {
+                var email = $.trim(this.value);
+                if (!email) {
+                    parent.Component.alert('請輸入管理員 E-Mail');
+                    return;
+                }
+
+                if (!/^([a-zA-Z0-9_-])+@@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(email)) {
+                    parent.Component.alert('管理員 E-Mail 格式不正確');
+                    return;
+                }
+
+                var item = { Email: email };
+                var html =
+                    "<div data-item='" + JSON.stringify(item) + "'>" +
+                    '   <input class="with-chip" type="checkbox" id="' + item.Email + '" checked="checked" />' +
+                    '   <label for="' + item.Email + '"> ' + item.Email + '</label>' +
+                    '</div>';
+                listOuterElm.append(html);
+
+                $.colorbox.close();
+            }
+        });
+    </script>
+}
+
+

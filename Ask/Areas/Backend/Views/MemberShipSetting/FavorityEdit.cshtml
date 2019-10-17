@@ -1,0 +1,101 @@
+﻿@model CategoryModels
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+    string uploadUrl = ViewBag.UploadVPath;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            Component.editor('RemarkText');
+            Component.singleImageUpload('#fIcon', '@(Href("~/"))', '@ViewBag.UploadVPath', true);
+            $('#btnSave').click(function () {
+                $("#editForm").submit();
+            });
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            @if (ViewBag.Exit as bool? == true)
+            {
+                    <text>
+                    Component.alert('資料已儲存', function () {
+                        try {
+                            parent.refreshList(3);
+                        } catch (e) {
+
+                        }
+
+                        Component.closeRight();
+                        Component.closeLeft();
+                        Component.closeCenter();
+                    });
+                    </text>
+                }
+        });
+
+
+    </script>
+}
+
+@using (Html.BeginForm("FavorityEdit", "MemberShipSetting", siteQuery, FormMethod.Post, new { enctype = "multipart/form-data", id = "editForm" }))
+{   <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <ul class="forms">
+                    <li>
+                        <h1 class="title-admin-page" style="background: none;">喜好編輯</h1>
+                    </li>
+                    <li>
+                        <div class="input-field">
+                            @Html.TextBoxFor(x => x.Title)
+                        </div>
+                    </li>
+                    <li>
+                        <div class="input-field m-T-none">
+                            <input type="file" id="fIcon" name="fIcon" />
+                            <input type="hidden" id="Icon" name="Icon" value='@Model.Icon' />
+                            <input type="hidden" id="fIconBase64" name="fIconBase64" />
+                        </div>
+                    </li>
+                    <li>
+                        <div class="line">
+                            <div class="input-field">
+                                <textarea class="" contenteditable="true" id="RemarkText" name="RemarkText" placeholder="說明">@Model.RemarkText</textarea>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="">
+                            @Html.CheckBoxFor(model => model.ShowStatus)
+                            <label for="ShowStatus">刊登</label>
+                        </div>
+                    </div>
+                    <a id="btnCancel" onclick="parent.$.colorbox.close();" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" id="Type" name="Type" value="@Model.Type" />        
+    <input type="hidden" id="Icon" name="Icon" value="@Model.Icon" />
+    <input type="hidden" id="SiteID" name="SiteID" value="@ViewBag.SiteID" />
+    <input type="hidden" id="MenuID" name="MenuID" value="@ViewBag.MenuID" />
+}
+

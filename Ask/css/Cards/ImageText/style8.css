@@ -1,0 +1,117 @@
+.card-imageText[data-style="8"] .card-img {
+  -webkit-transition: none;
+  -o-transition: none;
+  transition: none; }
+
+.card-imageText[data-style="8"] .activeWrap {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-imageText[data-style="8"] .activeWrap {
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
+
+.card-imageText[data-style="8"] .activeWrap {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
+
+.card-imageText[data-style="8"] .card-img {
+  -webkit-transform: rotateX(calc(var(--mouseY))) rotateY(calc(var(--mouseX)));
+          transform: rotateX(calc(var(--mouseY))) rotateY(calc(var(--mouseX))); }
+  .card-imageText[data-style="8"] .card-img img {
+    width: 100%; }
+  @media only screen and (max-width: 800px) {
+    .card-imageText[data-style="8"] .card-img {
+      -webkit-transform: rotateX(0) rotateY(0);
+              transform: rotateX(0) rotateY(0); } }
+  .card-imageText[data-style="8"] .card-img .videoCurrentBox {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0%;
+    left: 0%;
+    z-index: 3; }
+    .card-imageText[data-style="8"] .card-img .videoCurrentBox > a {
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      font-size: 20px;
+      position: absolute;
+      z-index: 2;
+      right: 0;
+      color: #ffffff;
+      text-align: center; }
+    .card-imageText[data-style="8"] .card-img .videoCurrentBox > iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0; }
+    .card-imageText[data-style="8"] .card-img .videoCurrentBox ~ img {
+      -webkit-filter: blur(15px);
+      filter: blur(15px); }
+  .card-imageText[data-style="8"] .card-img:focus .activeWrap, .card-imageText[data-style="8"] .card-img:hover .activeWrap {
+    opacity: 1;
+    bottom: 0; }
+
+.card-imageText[data-style="8"] .card-text {
+  padding-left: 2px;
+  padding-right: 2px; }
+
+.card-imageText[data-style="8"] .card-text-info {
+  font-size: 13px; }
+
+.card-imageText[data-style="8"] .card-text-name {
+  font-size: 15px; }
+  .card-imageText[data-style="8"] .card-text-name ~ .card-text-info {
+    margin-top: 5px; }
+
+.card-imageText[data-style="8"] .imgInfo {
+  padding: 15px 20px;
+  text-align: center;
+  width: 100%; }
+  .card-imageText[data-style="8"] .imgInfo > span {
+    font-size: 22px;
+    color: #ffffff;
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    text-align: center;
+    line-height: 38px;
+    border-radius: 100%;
+    border: 1px solid #ffffff;
+    margin-top: 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none; }
+    .card-imageText[data-style="8"] .imgInfo > span > i.cc-play {
+      margin-left: 2px; }
+  .card-imageText[data-style="8"] .imgInfo .imgTitle {
+    font-size: 24px;
+    color: #ffffff; }
+  .card-imageText[data-style="8"] .imgInfo .imgKind {
+    font-size: 24px;
+    color: #ffffff; }
+  .card-imageText[data-style="8"] .imgInfo .imgIntro {
+    font-size: 18px;
+    margin: 0;
+    width: 100%;
+    display: block;
+    color: #ffffff;
+    max-width: 100%;
+    margin: 0; }
+    .card-imageText[data-style="8"] .imgInfo .imgIntro a:focus, .card-imageText[data-style="8"] .imgInfo .imgIntro a:active, .card-imageText[data-style="8"] .imgInfo .imgIntro a:hover {
+      color: #ffffff; }
+
+.card-imageText[data-style="8"] .activeWrap {
+  opacity: 0;
+  bottom: 0;
+  height: 100%;
+  cursor: pointer; }
+  .card-imageText[data-style="8"] .activeWrap.openJWPlayer .imgInfo > span, .card-imageText[data-style="8"] .activeWrap.openVideo .imgInfo > span, .card-imageText[data-style="8"] .activeWrap.openVideoImg .imgInfo > span, .card-imageText[data-style="8"] .activeWrap.openVoice .imgInfo > span {
+    display: inline-block; }
+
+.card-imageText[data-style="8"] .card-img.openJWPlayer .imgInfo > span, .card-imageText[data-style="8"] .card-img.openVideo .imgInfo > span, .card-imageText[data-style="8"] .card-img.openVideoImg .imgInfo > span, .card-imageText[data-style="8"] .card-img.openVoice .imgInfo > span {
+  display: inline-block; }

@@ -1,0 +1,91 @@
+.card-html.WonTen[data-style="1"] .counter-container .counter-list {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-html.WonTen[data-style="1"] .counter-container .counter-list {
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between; }
+
+.card-html.WonTen[data-style="1"] .counter-container .counter-list {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
+
+.card-html.WonTen[data-style="1"] {
+  width: 100%;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: bottom center;
+  color: #ffffff;
+  position: relative; }
+  .card-html.WonTen[data-style="1"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.5;
+    z-index: 1; }
+  .card-html.WonTen[data-style="1"] .counter-container {
+    z-index: 2;
+    position: relative; }
+    .card-html.WonTen[data-style="1"] .counter-container .counter-wrapper {
+      max-width: 1180px;
+      width: 100%;
+      margin: auto;
+      padding: 90px 10px; }
+      @media only screen and (max-width: 800px) {
+        .card-html.WonTen[data-style="1"] .counter-container .counter-wrapper {
+          padding: 60px 10px; } }
+      @media only screen and (max-width: 420px) {
+        .card-html.WonTen[data-style="1"] .counter-container .counter-wrapper {
+          padding: 40px 10px; } }
+    .card-html.WonTen[data-style="1"] .counter-container .counter-list {
+      text-align: center; }
+      @media only screen and (max-width: 800px) {
+        .card-html.WonTen[data-style="1"] .counter-container .counter-list {
+          -ms-flex-wrap: wrap;
+              flex-wrap: wrap; } }
+      .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-item {
+        position: relative;
+        -webkit-box-flex: 1;
+            -ms-flex: 1;
+                flex: 1; }
+        @media only screen and (max-width: 800px) {
+          .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-item {
+            -webkit-box-flex: 0;
+                -ms-flex: 0 0 50%;
+                    flex: 0 0 50%; } }
+        .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-item .counter-name {
+          font-weight: 300;
+          font-size: 28px; }
+          @media only screen and (max-width: 800px) {
+            .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-item .counter-name {
+              font-size: 22px; } }
+        .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-item .counter-info {
+          max-width: 140px;
+          width: 100%;
+          margin: 0 auto;
+          margin-top: 30px;
+          font-size: 18px; }
+          @media only screen and (max-width: 800px) {
+            .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-item .counter-info {
+              margin-top: 5px;
+              margin-bottom: 30px;
+              font-size: 16px; } }
+      .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-box {
+        font-size: 50px; }
+        @media only screen and (max-width: 800px) {
+          .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-box {
+            font-size: 36px; } }
+        .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-box .counter {
+          padding-right: 10px;
+          font-size: 56px;
+          font-weight: 600; }
+          @media only screen and (max-width: 800px) {
+            .card-html.WonTen[data-style="1"] .counter-container .counter-list .counter-box .counter {
+              font-size: 42px; } }

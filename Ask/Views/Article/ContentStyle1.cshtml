@@ -1,0 +1,862 @@
+﻿@model ArticleModels
+@{ 
+    string uploadUrl = ViewBag.UploadUrl;
+    int style = ViewBag.Style;
+    System.Globalization.CultureInfo culture = new System.Globalization.CultureInfo("en-us");
+
+    ArticleSettingModels setting = ViewBag.Setting;
+    IEnumerable<ArticlePosterModels> posters = Model.GetPosters();
+    IEnumerable<ArticleTypesModels> types = ViewBag.Types;
+    IEnumerable<ArticleSeriesModels> series = ViewBag.Series;
+    SitePage listPage = ViewBag.ListSitePage;
+
+    var Paragraphsquery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = Model.ID, siteSN = ViewBag.SiteSN, readMode = Model.ReadMode, readModeCategories = (IEnumerable<ArticleCategoryModels>)ViewBag.ReadModeCategories };
+    var query = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = Model.ID };
+    var collectionResult = (WorkV3.Models.DataAccess.CollectionResult)ViewBag.CollectionResult;
+    int collectionCount = (int)ViewBag.CollectionCount;
+    string issueTimeFormat = "MMM dd, yyyy";
+}
+
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/Cards/Article/page-style1.css" rel="stylesheet" />
+<!-- fay 20180308 -->
+<link rel="stylesheet" href="~/css/vendor/tooltipster/tooltipster.css" />
+<!-- 列表設定的回文區 選擇 開放匿名回文 跟 開放會員回文 才要引用 -->
+<link href="~/css/forms.css" rel="stylesheet" />
+@BundleConfig.JWPlayer()
+
+<script type="text/javascript" src="~/script/stickyKit/sticky-kit.js"></script>
+<script src="https://player.vimeo.com/api/player.js"></script>
+
+<!-- carrie 20171210 -->
+<!-- <script type="text/javascript" src="~/script/pager/pager.js"></script> -->
+<!-- carrie 20171210 end-->
+
+@* 換位置 carrie 20171211 *@
+
+@functions {
+    public string GetVideoUrl(string videoType, string uploadUrl, string videoID)
+    {
+        string videoUrl = string.Empty;
+        if (videoType == "youtube")
+        {
+            videoUrl = $"https://www.youtube.com/embed/{ videoID }?rel=0&amp;showinfo=0";
+            //if (video.IsAuto)
+            videoUrl += "&amp;autoplay=0";
+            //if (video.IsRepeat)
+            videoUrl += $"&amp;playlist={ videoID }&amp;loop=0";
+        }
+        else if (videoType == "vimeo")
+        {
+            videoUrl = $"https://player.vimeo.com/video/{ videoID }?title=0";
+            //if (video.IsAuto)
+            videoUrl += "&amp;autoplay=0";
+            //if (video.IsRepeat)
+            videoUrl += "&amp;loop=0";
+        }
+        else if (videoType == "tudou")
+        {
+            videoUrl = $"http://www.tudou.com/programs/view/html5embed.action?code={ videoID }";
+        }
+        else if (videoType == "custom")
+        {
+            videoUrl = uploadUrl + videoID;
+        }
+
+        return videoUrl;
+    }
+}
+
+@helper VideoEmbedInfo(string videoType, string uploadUrl, string videoID, bool IsCustomCover, string CoverName)
+{
+if (!string.IsNullOrEmpty(videoType) && !string.IsNullOrWhiteSpace(videoID))
+{
+    string videoUrl = GetVideoUrl(videoType, uploadUrl, videoID);
+    string shotUrl = "";
+    if (IsCustomCover)
+    {
+        ResourceImagesModels imgModel = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(CoverName);
+        shotUrl = uploadUrl + imgModel.Img;
+    }
+    else
+    {
+        shotUrl = CoverName;
+    }
+    if (videoType == "youtube")
+    {
+        <div class="fixed-mainVideo">
+            <a class="fxdVideo-colse" id="fxdVideo-colse" href="javascript:"><i class="cc cc-close"></i></a>
+            <div id="fixed-mainVideo"></div>
+            <script>window.ytPlayerList.push({Id: 'fixed-mainVideo', DivId: 'fixed-mainVideo', VideoId: '@Html.Raw(videoUrl)'});</script>
+        </div>
+        <div class="fxdVideo">
+            @{
+                if (!string.IsNullOrEmpty(shotUrl))
+                {
+                    <div class="video-mask main-playVideoImg" style="background-image: url(@shotUrl);">
+                        <a href="javascript:;" class="btn-grey-darken-1 btn-huge btn-play circle">
+                            <i class="cc cc-play font-hg"></i>
+                        </a>
+                    </div>
+                }
+            }
+                <div id="mainVideo" class="played" video-id="@videoID"></div>
+                <script>window.ytPlayerList.push({ Id: 'mainVideo', DivId: 'mainVideo', VideoId: '@Html.Raw(videoUrl)', autoPlay: 0});</script>
+        </div>
+    }
+    else if (videoType == "custom")
+    {
+            <div class="fxdVideo" id="fixed-mainVideo">
+
+                @{
+                    if (!string.IsNullOrEmpty(shotUrl))
+                    {
+                        <div class="video-mask main-playVideoImg" style="background-image: url(@shotUrl);">
+                            <a href="javascript:;" class="btn-grey-darken-1 btn-huge btn-play circle">
+                                <i class="cc cc-play font-hg"></i>
+                            </a>
+                        </div>
+                    }
+                }
+                <script>window.mp4PlayerList.push({ Id: 'fixed-mainVideo', DivId: 'fixed-mainVideo', VideoId: '@Html.Raw(videoUrl)', VideoCover: '@Html.Raw(shotUrl)', autoPlay: 0, width: 304, height: 171});</script>
+            </div>
+            <div class="fixed-mainVideo" id="mainVideo">
+                <div class="played"></div>
+                <script>window.mp4PlayerList.push({ Id: 'mainVideo', DivId: 'mainVideo', VideoId: '@Html.Raw(videoUrl)', VideoCover: '@Html.Raw(shotUrl)', autoPlay: 0});</script>
+            </div>
+    }
+    else if (videoType == "vimeo")
+    {
+            <div class="fixed-mainVideo" >
+                <a class="fxdVideo-colse" id="fxdVideo-colse" href="javascript:"><i class="cc cc-close"></i></a>
+                <div id="fixed-mainVideo" style="width:100%;height:100%"></div>
+                <script>window.vimeoPlayerList.push({ Id: 'fixed-mainVideo', DivId: 'fixed-mainVideo', VideoId: '@Html.Raw(videoID)', autoPlay: 0, width: 304, height: 171});</script>
+            </div>
+            <div class="fxdVideo" id="mainVideo" video-id="@videoID">
+
+                @{
+                    if (!string.IsNullOrEmpty(shotUrl))
+                    {
+                        <div class="video-mask main-playVideoImg-vimeo" style="background-image: url(@shotUrl);">
+                            <a href="javascript:;" class="btn-grey-darken-1 btn-huge btn-play circle">
+                                <i class="cc cc-play font-hg"></i>
+                            </a>
+                        </div>
+                    }
+                }
+                <div  class="played"></div>
+                <script>window.vimeoPlayerList.push({ Id: 'mainVideo', DivId: 'mainVideo', VideoId: '@Html.Raw(videoID)', autoPlay: 0});</script>
+            </div>
+    }
+}
+}
+
+@if (Model.isShowVideo == true && Model.VideoID != null)
+{
+    @* carrie 20171222 string videoUrl = $"https://www.youtube.com/embed/{ @Model.VideoID }?rel=0&amp;showinfo=0&amp;autoplay=1";
+    <div class="fxdVideo" id="mainVideo">
+         <iframe width="100%" height="100%" src="@Html.Raw(videoUrl)" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <a class="fxdVideo-colse" id="fxdVideo-colse" href="javascript:"><i class="cc cc-close"></i></a>*@
+    @VideoEmbedInfo(Model.VideoType, uploadUrl, Model.VideoID, Model.VideoImgIsCustom, Model.VideoImg);
+}
+        @* 換位置 carrie 20171211 END *@
+
+        <div class="card-common card-article" data-style="1" data-sticky_parent>
+            <div class="article-left" data-sticky_column>
+                @if (posters?.Count() > 0)
+                {
+                    <div class="card-poster">
+                        @foreach (ArticlePosterModels poster in posters)
+                        {
+                            ResourceImagesModels img = (string.IsNullOrWhiteSpace(poster.Photo) ? null : Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(poster.Photo));
+                            <div class="posted">
+                                <a href="@Url.Action("Index","Home", new { PageSN = "SearchResults", key=poster.Name, SearchType="Poster", SearchPoster=poster.ID})" target="_blank">
+                                    @if (!string.IsNullOrWhiteSpace(img?.Img))
+                                    {
+                                        <span class="img"><img src="@(uploadUrl + img.Img)" title="@img.Spec" /></span>
+                                    }
+                                    @poster.Name
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+                <div id="socialShareBox" class="shareBox">
+                    @{
+                        Html.RenderAction("Index", "SocialShares", new { CollectionCount = collectionCount });
+                    }
+                    @*<a class="btn-social-facebook-o transparent square" href="javascript:" data-social=""><i class="cc cc-facebook"></i></a>*@
+                    @*add new items fay 20180403*@
+                    @*<a class="btn-social-line-o transparent square" href="javascript:" data-social><i class="cc cc-line-text"></i></a>
+                        <a class="btn-social-wechat transparent square" href="javascript:" data-social><i class="cc cc-wechat"></i></a>
+                        <a class="btn-social-sina-weibo-o transparent square" href="javascript:" data-social style="display:none;"><i class="cc cc-sina-weibo"></i></a>
+                        <a class="btn-social-twitter-o transparent square" href="javascript:" data-social style="display:none;"><i class="cc cc-twitter"></i></a>
+                        <a class="btn-social-pinterest-o transparent square" href="javascript:" data-social style="display:none;"><i class="cc cc-pinterest"></i></a>*@
+                    @*Add copy fay 20180308*@
+                    @*<a class="btn-url-copy transparent square" href="javascript:" id="custom_mouse_click" title="網址已複製"  data-social style="display:none;"><i class="cc cc-content-copy"></i></a>*@
+                    @* neil 20180402 新增顯示收藏人數的 span *@
+                    @*<a class="btn-member-collection transparent square tooltip" title="收藏" href="javascript:" data-collection  data-social style="display:none;"><i class="cc cc-favorite-o"></i><span>@collectionCount</span></a>*@
+                    @*add more fay 20180403*@
+                    @*<a id="socialMore" class="btn-default square transparent tooltip" title="more" href="javascript:"><i class="cc cc-dots-horizontal cc-rotate-90"></i></a>*@
+                </div>
+            </div>
+            <div class="article-main" data-sticky_column  style="word-break:break-all">@*Joe 20190923問題單 文章內文英文字換行*@
+                <div class="article-center">
+                    @if (types?.Count() > 0)
+                    {
+                        <div class="chips showDesktop">
+                            <!-- 電腦版 -->
+                            @foreach (ArticleTypesModels type in types)
+                        {
+                                <div class="chip" data-color="@type.Color" data-listUrl="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = listPage.SiteSN, PageSN = listPage.PageSN, type = type.ID }))"><span class="chip-name">@type.Name</span><span class="chip-count" style="display:none;">@type.GetArticleCount().ToString("00")</span></div>
+                            }
+                        </div>
+                    }
+                    @if (Model.IssueDate != null)
+                    {
+                        <div class="date showDesktop">@(((DateTime)Model.IssueDate).ToString(issueTimeFormat, culture))</div><!-- 電腦版 -->
+                    }
+                    @if (series?.Count() > 0)
+                    {
+                        <div class="article-set-title">
+                            @foreach (ArticleSeriesModels seriesModel in series)
+                        {
+                                <span data-color="@seriesModel.Color"><a href="@Url.Action("Index","Home", new { SiteSN = ViewBag.SiteSN, PageSN = "SearchResults", key=seriesModel.Name, SearchType="Series", SearchSeries=seriesModel.ID})">@seriesModel.Name</a></span>
+                            }
+                        </div>
+                    }
+                    <div class="article-title page">@Model.Title</div>
+                    <div class="article-sub-title">@Model.SubTitle</div>
+                    @if (types?.Count() > 0)
+                    {
+                        <div class="chips showMobile">
+                            <!-- 手機版 -->
+                            @foreach (ArticleTypesModels type in types)
+                        {
+                                <div class="chip" data-color="@type.Color" data-listUrl="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = listPage.SiteSN, PageSN = listPage.PageSN, typeId = type.ID }))"><span class="chip-name">@type.Name</span><span class="chip-count" style="display:none;">@type.GetArticleCount().ToString("00")</span></div>
+                            }
+                        </div>
+                    }
+                    @if (Model.IssueDate != null)
+                    {
+                        <div class="date showMobile">@(((DateTime)Model.IssueDate).ToString(issueTimeFormat, culture))</div><!-- 手機版 -->
+                    }
+                    
+                    <div class="article-main-contnet">
+                        @Html.Action("Paragraphs", "Common", Paragraphsquery)
+                        @Html.Action("Keywords", "Common", query)
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.RemarkText))
+                    {
+                        <div class="copyright">@Html.Raw(Model.RemarkText)</div>
+                    }
+
+                    <!-- 電腦版 上下頁 換位置 carrie 20171212 -->
+                    <div class="desktop-controlBars pager">
+                        @if (ViewBag.Prev != null)
+                    {
+                        ArticleModels prev = ViewBag.Prev;
+                        SitePage page = ViewBag.PrevSitePage;
+                            <a class="pager-prev" href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })"><div></div>Prev.</a>
+                        }
+                        <a class="pager-list" href="@Url.Action("Index", "Home", new { SiteSN = listPage.SiteSN, PageSN = listPage.PageSN, index = ViewBag.ListSitePageIndex })">
+                            <div></div>
+                        </a>
+                        @if (ViewBag.Next != null)
+                    {
+                        ArticleModels next = ViewBag.Next;
+                        SitePage page = ViewBag.NextSitePage;
+                            <a class="pager-next" href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })"><div></div>Next.</a>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.ReplyCommentSetting.ReplyStatus))
+                    {
+                        WorkV3.ViewModels.CommentType replyType = WorkV3.ViewModels.CommentType.Closed;
+                        try
+                        {
+                            replyType = (WorkV3.ViewModels.CommentType)(int.Parse(Model.ReplyCommentSetting.ReplyStatus));
+                        }
+                        catch
+                        {
+                        }
+                        if (replyType != WorkV3.ViewModels.CommentType.Closed)
+                        {
+                            WorkV3.ViewModels.PageCommentViewModel pageComment = new WorkV3.ViewModels.PageCommentViewModel();
+                            pageComment.SiteID = listPage.SiteID.ToString();
+                            pageComment.PageSN = Model.ID.ToString();
+                            pageComment.ReplyTitle = Model.ReplyCommentSetting.ReplyTitle;
+                            pageComment.FBID = Model.ReplyCommentSetting.ReplyFBID;
+                            pageComment.ReplyType = replyType;
+                            pageComment.RowCount = Model.ReplyCommentSetting.ReplyPageSize;
+                            Html.RenderAction("Index", "PageComments", pageComment);
+                            @*<div class="comment m-T-12 p-T-12">
+                                @if (replyType == WorkV3.ViewModels.CommentType.All || replyType == WorkV3.ViewModels.CommentType.MemberOnly)
+                                {
+                                                <!-- 如果回文是 開放匿名回文 跟 開放會員回文 -->
+                                                <div class="commentBtn" style="display:none;">
+                                                    <i class="cc cc-comment-o"></i>
+                                                    <span>回文</span>
+                                                </div>
+                                                <div class="comment-content">
+                                                    <div class="comment-title">@Model.ReplyCommentSetting.ReplyTitle</div>
+                                                    <ul>
+                                                        <li class="comment-edit">
+                                                            <div class="comment-content">
+                                                                <div class="userName">
+                                                                    <div class="input-field inline">
+                                                                        <input type="text" placeholder="暱稱">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="content">
+                                                                    <textarea class="materialize-textarea" placeholder="留言內容"></textarea>
+                                                                </div>
+                                                                <div class="text-C margin-T-8"><a class="btn-grey-lighten-1 block" href="javascript:">送出</a></div>
+                                                            </div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="comment-content">
+                                                                <div class="userImg"><i class="cc cc-user-o"></i></div>
+                                                                <div class="time"><span>3</span>分鐘前</div>
+                                                                <div class="userName">Mimi Fish</div>
+                                                                <div class="content">100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。...<a class="btn-blue-o transparent btn-mini margin-L-4" href="javascript:">更多</a></div>
+                                                            </div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="comment-content">
+                                                                <div class="userImg"><img src="~/images/default.png" /></div>
+                                                                <div class="time"><span>3</span>分鐘前</div>
+                                                                <div class="userName">Mimi Fish</div>
+                                                                <div class="content">100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。100字後點點點，點擊看更多。...<a class="btn-blue-o transparent btn-mini margin-L-4" href="javascript:">更多</a></div>
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                    <div class="text-R m-B-8"><a class="btn-grey-darken-2-o transparent right p-none" href="javascript:"><i class="cc cc-arrow-right"></i>更多回文</a></div>
+                                                </div>
+                                }
+                                                @if (replyType == WorkV3.ViewModels.CommentType.FB)
+                                                {
+                                                <!-- 如果回文是fb -->
+                                                <div class="comment-title">@Model.ReplyCommentSetting.ReplyTitle</div>
+                                                <div id="fb-root"></div>
+                                                <script>
+                                                (function(d, s, id) {
+                                                    var js, fjs = d.getElementsByTagName(s)[0];
+                                                    if (d.getElementById(id)) return;
+                                                    js = d.createElement(s);
+                                                    js.id = id;
+                                                    js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.7";
+                                                    fjs.parentNode.insertBefore(js, fjs);
+                                                }(document, 'script', 'facebook-jssdk'));
+                                                </script>
+                                                <!-- <div class="fb-like" data-href="https://www.facebook.com/taisounds/?fref=ts" data-layout="box_count" data-action="like" data-size="small" data-show-faces="false" data-share="false"></div> -->
+                                                <div class="fb-comments" data-href="@WorkLib.uUrl.GetURL(false)@Url.Action("Index", "Home", new { SiteSN = PageCache.SiteSN, PageSN = PageCache.PageSN })" data-width="100%" data-numposts="5"></div>
+                                                }
+                                            </div>*@
+                        }
+                    }
+                    @if (setting.ExtendReadOpen)
+                    {
+                        IEnumerable<ArticleModels> recommends = ViewBag.Recommends;
+                        Dictionary<long, SitePage> recommendSitePages = ViewBag.RecommendSitePages;
+                        <div class="recommend">
+                            <div class="recommend-title">@setting.ExtendReadTitle</div>
+                            <div class="recommend-tontent">
+                                <div class="card shadow-none">
+                                    <div class="card-box">
+                                        <div class="card-img flex">
+                                            @foreach (ArticleModels item in recommends)
+                                            {
+                                                IEnumerable<ArticleTypesModels> itemTypes = item.GetTypes();
+                                                SitePage page = recommendSitePages[item.CardNo];
+                                                <div class="card-img-box">
+                                                    <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+                                                        @if (!string.IsNullOrWhiteSpace(item.Icon))
+                                                        {
+                                                            <img src="@item.Icon" alt="" />
+                                                        }
+                                                        @if (itemTypes?.Count() > 0)
+                                                        {
+                                                            <div class="chips">
+                                                                @foreach (ArticleTypesModels t in itemTypes)
+                                                                {
+                                                                    <div class="chip">@t.Name</div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </a>
+                                                    <div class="card-text">
+                                                        <div class="card-text-name"><a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">@item.Title</a></div>@* carrie add a tag 20171215 *@
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (setting.ExtendReadOpen2)
+                    {
+                        IEnumerable<ArticleModels> recommends2 = ViewBag.Recommends2;
+                        Dictionary<long, SitePage> recommendSitePages2 = ViewBag.RecommendSitePages2;
+                        <div class="recommend">
+                            <div class="recommend-title">@setting.ExtendReadTitle2</div>
+                            <div class="recommend-tontent">
+                                <div class="card shadow-none">
+                                    <div class="card-box">
+                                        <div class="card-img flex">
+                                            @foreach (ArticleModels item in recommends2)
+                                            {
+                                                IEnumerable<ArticleTypesModels> itemTypes = item.GetTypes();
+                                                SitePage page = recommendSitePages2[item.CardNo];
+                                                <div class="card-img-box">
+                                                    <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+                                                        @if (!string.IsNullOrWhiteSpace(item.Icon))
+                                                        {
+                                                            <img src="@item.Icon" alt="" />
+                                                        }
+                                                        @if (itemTypes?.Count() > 0)
+                                                        {
+                                                            <div class="chips">
+                                                                @foreach (ArticleTypesModels t in itemTypes)
+                                                                {
+                                                                    <div class="chip">@t.Name</div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </a>
+                                                    <div class="card-text">
+                                                        <div class="card-text-name"><a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">@item.Title</a></div>@* carrie add a tag 20171215 *@
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (setting.ADOpen)
+                {
+                    <div class="article-right">
+                        <div class="card">
+                            <div class="card-box">
+                                <div class="card-img original border-T">
+                                    <a href="javascript:"><img src="<%= SysHelp.GetURL() %>images/temp/IMG_1854.jpg" alt=""></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-box">
+                                <div class="card-img original border-T">
+                                    <a href="javascript:"><img src="<%= SysHelp.GetURL() %>images/temp/IMG_5254.jpg" alt=""></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-box">
+                                <div class="card-img original border-T">
+                                    <a href="javascript:"><img src="<%= SysHelp.GetURL() %>images/temp/IMG_1375.jpg" alt=""></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- 手機版 分享與上下頁 carrie 20160728 -->
+            <div class="mobile-controlBars">
+                @{
+                    Html.RenderAction("Pad", "SocialShares", new { CollectionCount = collectionCount });
+                }
+                @*<a class="btn-social-facebook square" href="javascript:" data-social="facebook"><i class="cc cc-facebook"></i></a>
+                    <a class="btn-social-line square" href="javascript:" data-social="line"><i class="cc cc-line-text"></i></a>*@
+                @*add new items fay 20180403*@
+                @*<a class="btn-social-wechat square" href="javascript:" data-social="wechat"><i class="cc cc-wechat"></i></a>
+                    <a class="btn-social-sina-weibo square" href="javascript:" data-social="sina-weibo" data-social style="display:none;"><i class="cc cc-sina-weibo"></i></a>
+                    <a class="btn-social-twitter square" href="javascript:" data-social="twitter" data-social style="display:none;"><i class="cc cc-twitter"></i></a>
+                    <a class="btn-social-pinterest square" href="javascript:" data-social="pinterest" data-social style="display:none;"><i class="cc cc-pinterest"></i></a>*@
+                @*Add copy fay 20180308*@
+                @*<a class="btn-url-copy transparent square" href="javascript:" id="custom_mobile_click" title="網址已複製" data-social style="display:none;"><i class="cc cc-content-copy"></i></a>
+                    <a class="btn-member-collection transparent square" href="javascript:" data-collection data-social><i class="cc cc-favorite-o"></i></a>
+                    <a id="mobile-socialMore" class="btn-default square tooltip" style="display:none;" title="more" href="javascript:">
+                        <i class="cc cc-dots-horizontal"></i>
+                    </a>*@
+
+                <!-- <a id="mobile-socialMore" class="btn-default square tooltip" title="more" href="javascript:">
+                    <i class="cc cc-dots-horizontal"></i>
+                </a> -->
+                @if (ViewBag.Prev != null)
+                {
+                    ArticleModels prev = ViewBag.Prev;
+                    SitePage page = ViewBag.PrevSitePage;
+                    <a class="btn-pager-prev square" href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })"><i class="cc cc-chevron-left"></i></a>
+                }
+                @if (ViewBag.Next != null)
+                {
+                    ArticleModels next = ViewBag.Next;
+                    SitePage page = ViewBag.NextSitePage;
+                    <a class="btn-pager-next square" href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })"><i class="cc cc-chevron-right"></i></a>
+                }
+
+            </div>
+        </div>
+
+        <script type="text/javascript" src="~/script/share/simple-share.js"></script>
+        <script type="text/javascript" src="~/script/fixedVideo/fixedVideo.js"></script>
+        @*copy url fay 20180308*@
+        <script type="text/javascript" src="~/script/clipboard/clipboard.min.js"></script>
+        @*copy tooltipster fay 20180308*@
+        <script type="text/javascript" src="~/script/tooltipster/tooltipster.bundle.js"></script>
+
+        <script type="text/javascript">
+            function resizeHandler() {
+                var $winWidth = $(window).width()
+                var $centerWidth = $('.article-center').width();
+                function breakpoint() {
+                    var atc = {
+                        isMobile: function () {
+                            var e = !1;
+                            return function (n) {
+                                (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|webgolds|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(n) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(n.substr(0, 4))) && (e = !0)
+                            }(navigator.userAgent || navigator.vendor || window.opera), e
+                        }
+                    };
+                    if (atc.isMobile()) {
+                        $("[data-sticky_column]").trigger("sticky_kit:detach");
+
+                    } else {
+                        $("[data-sticky_column]").stick_in_parent({
+                            parent: "[data-sticky_parent]",
+                            //spacer: false,
+                            //inner_scrolling: false,
+                            offset_top: 120
+                        });
+                        if ($('.article-left').length) {
+                            $('.article-main').addClass('hasLeft');
+                        }
+                        if ($('.article-right').length) {
+                            $('.article-main').addClass('hasRight');
+                        }
+
+                        $('.article-center .card').each(function () {
+                            var $this = $(this),
+                                $width = $this.width(),
+                                $pWidth = $this.parents('.groove').outerWidth(),
+                                // $winWidth = $(window).width(),
+                                $imgBox = $this.find('.card-img'),
+                                $slider = $this.find('.flexslider'),
+                                $imgInfoW = $this.find('.imgInfo');
+
+                            if ($this.hasClass('imgWidth-large')) {
+                                if ($slider.length) {
+                                    $slider.css({
+                                        width: $pWidth
+                                    });
+                                } else {
+                                    $imgBox.css({
+                                        width: $pWidth
+                                    });
+                                }
+                            }
+                            if ($this.hasClass('original')) {
+
+                                if ($slider.length) {
+                                    $slider.css({
+                                        width: $winWidth
+                                    });
+                                    $imgInfoW.css({
+                                        width: $centerWidth
+                                    });
+                                }
+                                if ($imgBox.hasClass('text-C')) {
+                                    if ($slider.length) {
+                                        $slider.css({
+                                            'margin-left': -(($winWidth / 2) + 20)
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                $(window).resize(function () {
+                    var $centerWidth = $('.article-center').width();
+                    breakpoint();
+                }).trigger('resize');
+
+                //copy url fay 20180308
+                var url = document.location.href;
+                new Clipboard('.btn-url-copy', {
+                    text: function() {
+                        return url;
+                    }
+                });
+
+                //copy tooltipster fay 20180308
+                $(document).ready(function() {
+                    
+                    new Clipboard('.btn-url-copy-mobile', {
+                        text: function() {
+                            return url;
+                        }
+                    });     
+                    $('#custom_mouse_click').tooltipster({
+                        trigger: 'custom',
+                        triggerOpen: {
+                            click: true
+                        },
+                        triggerClose: {
+                            mouseleave: true
+                        },
+                        position: 'right'
+                    });
+
+                    $('#custom_mobile_click').tooltipster({
+                        delayTouch: 0,
+                        trigger: 'custom',
+                        triggerOpen: {
+                            click: true,
+                            tap: true
+                        },
+                        triggerClose: {
+                            click: true,
+                            scroll: true
+                        }
+                    });
+
+                });
+
+                $('.tooltip').tooltipster({
+                    trigger: 'hover',
+                    position: 'right'
+                });
+
+            }
+
+            // carrie 20171210
+            // function chipHandler() {
+            //     $('.chip').hover(function () {
+            //         $(this).stop().animate({ paddingRight: ($('.chip-count', this).outerWidth() - 3) }, 'easeInOutExpo').addClass('active');
+            //     }, function () {
+            //         $(this).stop().animate({ paddingRight: 0 }, 'easeInOutExpo').removeClass('active');
+            //     });
+            //     $('.chip').on('click', false);
+            // }
+
+            function socialHandler() {
+                // carrie 20170814
+                // $('#socialMore').on('click', function () {
+                //     var $this = $(this);
+                //     if ($this.hasClass('icon-close')) {
+                //         var items = $('#socialShareBox').children('a:gt(2)');
+                //         var len = items.length;
+                //         // carrie 20170814
+                //         // function fade(index) {
+                //         //     if (index < 0) {
+                //         //         $this.fadeOut(function () {
+                //         //             $this.removeClass('icon-close').fadeIn();
+                //         //         });
+                //         //         return;
+                //         //     }
+                //         //     items.eq(index).fadeOut(function () {
+                //         //         fade(--index);
+                //         //     });
+                //         // }
+                //         // fade(len - 1);
+                //         items.addClass('hide');
+                //         $this.removeClass('icon-close');
+                //     } else {
+                //         var items = $('#socialShareBox').children('a.hide');
+                //         var len = items.length;
+                //         // carrie 20170814
+                //         // function fade(index) {
+                //         //     if (index == len) {
+                //         //         $this.fadeOut(function () {
+                //         //             $this.addClass('icon-close').fadeIn();
+                //         //         });
+                //         //         return;
+                //         //     }
+                //         //     items.eq(index).fadeIn(function () {
+                //         //         fade(++index);
+                //         //     });
+                //         // }
+                //         // fade(0);
+                //         items.removeClass('hide');
+                //         $this.addClass('icon-close');
+                //     }
+                // });
+
+                //社群分享功能 fay 20180403
+                if (('#socialMore').length) {
+                    $('#socialMore').on('click', function () {
+                        var $this = $(this);
+                        var moreShareCount = $this.attr("dada-count");
+                        if(moreShareCount != null && moreShareCount >= 0)
+                        {
+                            if ($this.hasClass('icon-close')) {
+                                var items = $('#socialShareBox').children('a:gt('+moreShareCount+')');
+                                var len = items.length;
+                                items.fadeOut();
+                                $this.removeClass('icon-close').fadeIn();
+                            } else {
+                                var items = $('#socialShareBox').children('a:hidden');
+                                var len = items.length;
+                                items.fadeIn();
+                                $this.addClass('icon-close').fadeIn();
+                            }
+                        }
+                    });
+                }
+
+                //手機版分享 點擊展開全部分享
+                if ($('.mobile-controlBars').length) {
+                    $(document).scroll(function () {
+                        var y = $(this).scrollTop();
+                        if (y > 200) {
+                            $('.mobile-controlBars').addClass('active');
+                        }
+                        else {
+                            $('.mobile-controlBars').removeClass('active');
+                        }
+                    });
+                    $('#mobile-socialMore').on('click', function () {
+                        if ($(this).hasClass('active')) {
+                            $(this).siblings('.extraDiv').slideUp(600);
+                            $(this).siblings('.overlayer').fadeOut();
+                            $(this).removeClass('active');
+                            //$('html,body').removeAttr('style');
+                        } else {
+                            $(this).siblings('.extraDiv').slideDown(600);
+                            $(this).siblings('.overlayer').fadeIn();
+                            $(this).addClass('active');
+                            //$('html,body').css({'position':'fixed','width':'100%','left':'0','top':'0','height':'0','overflow-y':'hidden'});
+                        }
+                    });
+                    $('#extra-close').on('click', function () {
+                        if ($(this).closest('.extraDiv').siblings('#mobile-socialMore').hasClass('active')) {
+                            $(this).closest('.extraDiv').slideUp(600);
+                            $(this).closest('.extraDiv').next('.overlayer').fadeOut();
+                            $(this).closest('.extraDiv').siblings('#mobile-socialMore').removeClass('active');
+                            //$('html,body').removeAttr('style');
+                        } else {
+                            $(this).closest('.extraDiv').slideDown(600);
+                            $(this).closest('.extraDiv').next('.overlayer').fadeIn();
+                            $(this).closest('.extraDiv').siblings('#mobile-socialMore').addClass('active');
+                            //$('html,body').css({'position':'fixed','width':'100%','left':'0','top':'0','height':'0','overflow-y':'hidden'});
+                        }
+                    });
+                }
+            }
+
+            (function () {
+                @if (collectionResult == WorkV3.Models.DataAccess.CollectionResult.Collectioned)
+        {
+            <text>
+                var collectionType = 1;
+                </text>
+        }
+        else if (collectionResult == WorkV3.Models.DataAccess.CollectionResult.NotLogin)
+        {
+            <text>
+                var collectionType = -1;
+                </text>
+        }
+        else if (collectionResult == WorkV3.Models.DataAccess.CollectionResult.NoCollection)
+        {
+            <text>
+                var collectionType = 0;
+                </text>
+        }
+                $('div[data-listUrl]').click(function () {
+                    location.href = $(this).attr('data-listUrl');
+                });
+                Component.memberCollection(".btn-member-collection", collectionType, '@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Collection", PageID= ViewBag.PageID })', @collectionCount);
+                resizeHandler();
+                // carrie20171210
+                // chipHandler();
+                socialHandler();
+            })();
+
+            //carrie 20171210
+            // var onReady = function() {
+            //     $.pager({
+            //         footer: "#footer",
+            //         theTarget: ".desktop-controlBars",
+            //         speed: 300,
+            //         easing: "easeInExpo"
+            //     });
+            // }
+            // $(document).ready(onReady);
+            //carrie 20171210 end
+            
+                    
+                
+            //if($("#video_vimeo").length > 0)
+            //{
+            //    var vimeo_player = new Vimeo.Player('video_vimeo');
+            //    console.log(vimeo_player);
+            //    vimeo_player.on('play', function() {
+            //    });
+            //}
+            //if($("#video_main_vimeo").length > 0)
+            //{
+            //    var vimeo_player = new Vimeo.Player('video_main_vimeo');
+            //    console.log(vimeo_player);
+            //    vimeo_player.on('play', function() {
+            //    });
+            //}
+            $('.main-playVideoImg').on('click', function(e) {
+                e.preventDefault();
+                if ($(this).next('#mainVideo').length) {
+                    $(this).siblings('img').remove();
+                    $(this).css({
+                        'display': 'none',
+                    });
+                    window['mainVideo'].playVideo();
+                    // $(this).siblings(".videoIframeLink").playVideo();
+                    //var youtubeId = $('#mainVideo').attr('video-id');
+                    ////var id = 'v_' + youtubeId;
+                    ////alert(youtubeId);
+                    //main_player = new YT.Player(youtubeId, {
+                    //    height: '720',
+                    //    width: '1280',
+                    //    videoId: youtubeId,
+                    //    events: {
+                    //        'onReady': function () {
+                    //            main_player.playVideo();
+                    //        }
+                    //    }
+                    //});
+                }
+            });
+            $('.main-playVideoImg-vimeo').on('click', function(e) {
+                e.preventDefault();
+                if ($('#mainVideo').length) {
+                    $(this).siblings('img').remove();
+                    $(this).css({
+                        'display': 'none',
+                    });
+                    window['mainVideo'].play();
+                    // $(this).siblings(".videoIframeLink").playVideo();
+                    //var vimeoId = $(this).next('.videoIframeLink_vimeo').prop('id');
+                    ////var id = 'v_' + youtubeId;
+                    ////alert(youtubeId);
+
+                    //var options = {
+                    //    id: vimeoId,
+                    //    loop: 0,
+                    //    autopause: 0,
+                    //    autoplay: 0,
+                    //    background: 0
+                    //};
+                    //main_player = new Vimeo.Player(vimeoId, options);
+                    //main_player.setVolume(1);
+                    //main_player.play();
+                }
+            });
+        </script>

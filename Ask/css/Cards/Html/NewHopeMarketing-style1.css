@@ -1,0 +1,324 @@
+@charset "UTF-8";
+.card-html[data-style="1"] .index-service .service-step:before {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover; }
+
+.card-html[data-style="1"] .index-about > .col-1, .card-html[data-style="1"] .index-about .about-logo, .card-html[data-style="1"] .index-percircle .percircle-container, .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"], .card-html[data-style="1"] .index-service {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-html[data-style="1"] .index-service .service-step {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex; }
+
+.card-html[data-style="1"] .index-percircle .percircle-container, .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"], .card-html[data-style="1"] .index-service .service-step {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column; }
+
+.card-html[data-style="1"] .index-about .about-logo, .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"], .card-html[data-style="1"] .index-service, .card-html[data-style="1"] .index-service .service-step {
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
+
+.card-html[data-style="1"] .index-about > .col-1 {
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between; }
+
+.card-html[data-style="1"] .index-about .about-logo, .card-html[data-style="1"] .index-percircle .percircle-container, .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
+
+.card-html[data-style="1"] .index-about > .col-1 {
+  -webkit-box-align: stretch;
+      -ms-flex-align: stretch;
+          align-items: stretch; }
+
+.card-html[data-style="1"] {
+  width: 100%;
+  /* -------------- 關於 ---------------*/
+  /* -------------- 品牌理念 ---------------*/
+  /* -------------- 服務流程 ---------------*/ }
+  .card-html[data-style="1"] .index-about {
+    padding: 0 40px; }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .index-about {
+        padding: 0; } }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .index-about > .col-1 {
+        -ms-flex-wrap: wrap;
+            flex-wrap: wrap; } }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .index-about > .col-1 .col-2 {
+        margin-top: 20px; } }
+    .card-html[data-style="1"] .index-about .about-logo {
+      height: 100%; }
+  .card-html[data-style="1"] .card-htmlText .title-wrap {
+    position: relative;
+    padding: 20px 0; }
+    .card-html[data-style="1"] .card-htmlText .title-wrap .title-deco {
+      position: absolute;
+      display: block;
+      width: 80%;
+      max-width: 320px;
+      height: 97%;
+      border: 4px solid #e0e0e0;
+      top: 1%;
+      left: 14%;
+      z-index: 0; }
+      .card-html[data-style="1"] .card-htmlText .title-wrap .title-deco:before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 8px;
+        height: 83%;
+        left: -5px;
+        top: 8px;
+        background-color: #ffffff; }
+        @media only screen and (max-width: 800px) {
+          .card-html[data-style="1"] .card-htmlText .title-wrap .title-deco:before {
+            top: 4px; } }
+      @media only screen and (max-width: 800px) {
+        .card-html[data-style="1"] .card-htmlText .title-wrap .title-deco {
+          height: 82%;
+          top: 9%; } }
+      @media only screen and (max-width: 580px) {
+        .card-html[data-style="1"] .card-htmlText .title-wrap .title-deco {
+          border-width: 3px; } }
+  .card-html[data-style="1"] .card-htmlText .title-main {
+    position: relative;
+    margin-bottom: 5px;
+    font-size: 30px;
+    font-weight: 600;
+    color: #757575;
+    z-index: 1; }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .card-htmlText .title-main {
+        margin-bottom: 0;
+        font-size: 24px; } }
+    @media only screen and (max-width: 420px) {
+      .card-html[data-style="1"] .card-htmlText .title-main {
+        font-size: 20px; } }
+  .card-html[data-style="1"] .card-htmlText .title-sub {
+    position: relative;
+    font-size: 30px;
+    font-weight: 600;
+    color: #1b9183;
+    z-index: 1; }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .card-htmlText .title-sub {
+        font-size: 24px; } }
+    @media only screen and (max-width: 420px) {
+      .card-html[data-style="1"] .card-htmlText .title-sub {
+        font-size: 20px; } }
+  .card-html[data-style="1"] .card-htmlText .title-content {
+    margin-top: 30px; }
+  .card-html[data-style="1"] .index-percircle {
+    margin-top: 100px; }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .index-percircle {
+        margin-top: 30px; } }
+    .card-html[data-style="1"] .index-percircle .percircle-container {
+      padding: 10px; }
+      @media only screen and (max-width: 800px) {
+        .card-html[data-style="1"] .index-percircle .percircle-container {
+          margin-bottom: 20px; } }
+      .card-html[data-style="1"] .index-percircle .percircle-container .bar, .card-html[data-style="1"] .index-percircle .percircle-container .gt50 .fill {
+        border-color: #1b9183; }
+      .card-html[data-style="1"] .index-percircle .percircle-container .percircle {
+        margin: 0 auto 20px;
+        background-color: transparent; }
+        .card-html[data-style="1"] .index-percircle .percircle-container .percircle:after {
+          background-color: transparent; }
+        .card-html[data-style="1"] .index-percircle .percircle-container .percircle > span {
+          color: #1b9183;
+          top: calc(50% - .1em * 2); }
+        .card-html[data-style="1"] .index-percircle .percircle-container .percircle:hover > span {
+          color: #1b9183; }
+      .card-html[data-style="1"] .index-percircle .percircle-container .desc {
+        width: 100%;
+        text-align: center; }
+        @media only screen and (max-width: 800px) {
+          .card-html[data-style="1"] .index-percircle .percircle-container .desc {
+            max-width: 400px; } }
+        .card-html[data-style="1"] .index-percircle .percircle-container .desc .percircle-title {
+          font-weight: 600; }
+        .card-html[data-style="1"] .index-percircle .percircle-container .desc .percircle-subtitle {
+          margin-bottom: 8px;
+          color: #9e9e9e;
+          font-size: 12px; }
+        .card-html[data-style="1"] .index-percircle .percircle-container .desc .percircle-content {
+          font-size: 14px;
+          line-height: 1.5;
+          -webkit-line-clamp: 3;
+          height: calc(14px * 1.5 * 3);
+          overflow: hidden; }
+  .card-html[data-style="1"] .index-vision {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px; }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .index-vision .col-6 {
+        width: 50% !important; } }
+    @media only screen and (max-width: 580px) {
+      .card-html[data-style="1"] .index-vision .col-6 {
+        width: 100% !important; } }
+    .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      background-color: #ffffff;
+      margin: 10px auto;
+      padding: 5px 15px 15px;
+      border-radius: 100%; }
+      @media only screen and (max-width: 1440px) {
+        .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] {
+          width: 200px;
+          height: 200px; } }
+      @media only screen and (max-width: 1280px) {
+        .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] {
+          width: 160px;
+          height: 160px; } }
+      @media only screen and (max-width: 1024px) {
+        .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] {
+          width: 120px;
+          height: 120px; } }
+      @media only screen and (max-width: 800px) {
+        .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] {
+          width: 220px;
+          height: 220px; } }
+      .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] > div {
+        position: relative;
+        display: block;
+        width: 100%;
+        z-index: 1; }
+      .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] .title-main {
+        font-size: 18px; }
+      .card-html[data-style="1"] .index-vision .card-plainText[data-style="1"] .title-sub {
+        font-size: 14px;
+        line-height: 1.35;
+        -webkit-line-clamp: 3;
+        height: calc(14px * 1.35 * 3);
+        overflow: hidden; }
+  .card-html[data-style="1"] .index-service {
+    width: 100%;
+    max-width: 1680px;
+    margin: auto;
+    padding: 40px 20px;
+    text-align: center; }
+    @media only screen and (max-width: 800px) {
+      .card-html[data-style="1"] .index-service {
+        -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+        width: 90%;
+        max-width: 580px;
+        -webkit-box-pack: justify;
+            -ms-flex-pack: justify;
+                justify-content: space-between; } }
+    .card-html[data-style="1"] .index-service .service-step {
+      position: relative;
+      width: calc(100% / 7 + 20px);
+      height: 0;
+      padding-bottom: calc(100% / 7 + 20px);
+      margin: auto -20px; }
+      @media only screen and (max-width: 800px) {
+        .card-html[data-style="1"] .index-service .service-step {
+          width: calc(100% / 2 + 20px);
+          padding-bottom: calc(100% / 2 + 20px); } }
+      @media only screen and (max-width: 420px) {
+        .card-html[data-style="1"] .index-service .service-step {
+          width: calc(60%);
+          padding-bottom: calc(60%); } }
+      .card-html[data-style="1"] .index-service .service-step:hover .step-desc .step-content {
+        margin-top: 0;
+        opacity: 1;
+        -webkit-transition: all .4s ease;
+        -o-transition: all .4s ease;
+        transition: all .4s ease; }
+      .card-html[data-style="1"] .index-service .service-step:before {
+        content: "";
+        position: absolute;
+        display: block;
+        width: 100%;
+        height: 0;
+        padding-top: 100%;
+        top: 0;
+        z-index: 0; }
+      .card-html[data-style="1"] .index-service .service-step:nth-of-type(odd) {
+        margin-bottom: 160px; }
+        @media only screen and (max-width: 800px) {
+          .card-html[data-style="1"] .index-service .service-step:nth-of-type(odd) {
+            margin-bottom: 0;
+            margin-top: -16vw; } }
+        @media only screen and (max-width: 420px) {
+          .card-html[data-style="1"] .index-service .service-step:nth-of-type(odd) {
+            margin-top: -17vw; } }
+        .card-html[data-style="1"] .index-service .service-step:nth-of-type(odd):before {
+          background-image: url(../../../Websites/newHopeMarketing/images/index/circle-light.svg); }
+      .card-html[data-style="1"] .index-service .service-step:nth-of-type(even) {
+        margin-top: 160px; }
+        @media only screen and (max-width: 800px) {
+          .card-html[data-style="1"] .index-service .service-step:nth-of-type(even) {
+            margin-top: 5vw; } }
+        @media only screen and (max-width: 420px) {
+          .card-html[data-style="1"] .index-service .service-step:nth-of-type(even) {
+            margin-top: 12vw; } }
+        .card-html[data-style="1"] .index-service .service-step:nth-of-type(even):before {
+          background-image: url(../../../Websites/newHopeMarketing/images/index/circle-dark.svg); }
+      @media only screen and (max-width: 800px) {
+        .card-html[data-style="1"] .index-service .service-step:first-of-type {
+          margin-top: 0; } }
+      @media only screen and (max-width: 800px) {
+        .card-html[data-style="1"] .index-service .service-step:nth-of-type(2) {
+          margin-top: 23vw; } }
+      @media only screen and (max-width: 420px) {
+        .card-html[data-style="1"] .index-service .service-step:nth-of-type(2) {
+          margin-top: 28vw; } }
+      .card-html[data-style="1"] .index-service .service-step .step-desc {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+        width: 80%;
+        margin: auto;
+        padding: 3px 15px 15px;
+        z-index: 1; }
+        .card-html[data-style="1"] .index-service .service-step .step-desc .step-icon {
+          width: 48px;
+          margin: 4px auto; }
+          .card-html[data-style="1"] .index-service .service-step .step-desc .step-icon img {
+            max-height: 52px; }
+            @media only screen and (max-width: 1280px) {
+              .card-html[data-style="1"] .index-service .service-step .step-desc .step-icon img {
+                max-height: 40px; } }
+        .card-html[data-style="1"] .index-service .service-step .step-desc .step-title {
+          margin-top: 4px 0;
+          font-weight: bold;
+          font-size: 18px;
+          -webkit-transition: all .4s ease;
+          -o-transition: all .4s ease;
+          transition: all .4s ease; }
+        .card-html[data-style="1"] .index-service .service-step .step-desc .step-content {
+          font-size: 14px;
+          line-height: 1.5;
+          -webkit-line-clamp: 2;
+          height: calc(14px * 1.5 * 2);
+          overflow: hidden;
+          opacity: 0;
+          margin-top: calc(-14px * 1.5 * 2);
+          -webkit-transition: all .4s ease;
+          -o-transition: all .4s ease;
+          transition: all .4s ease; }
+          @media only screen and (max-width: 800px) {
+            .card-html[data-style="1"] .index-service .service-step .step-desc .step-content {
+              opacity: 1;
+              margin-top: 0; } }

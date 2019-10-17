@@ -1,0 +1,33 @@
+﻿@model List<WorkV3.Models.ClickImgModel>
+@{
+    Layout = null;
+
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+}
+
+<li>
+    <div class="col-1">
+        <div class="fileuploader fileuploader-theme-thumbnails normal">
+            <div class="fileuploader-items">
+                <ul class="fileuploader-items-list">
+                    @foreach (var item in Model)
+                    {
+                        <li class="fileuploader-item file-type-image file-ext-jpg">
+                            <div class="fileuploader-item-inner">
+                                <div class="thumbnail-holder">
+                                    <div class="fileuploader-item-image">
+                                        <img src="@(pageCache.UploadVPath + item.Img)" alt="@item.Spec" />
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                    <div class="actions-holder">
+                        <a class="btn-white-o square transparent fileuploader-action-text tooltip click" title="編輯" href="@Url.Action("ImgEdit", "Click")"><i class="cc cc-edit-o"></i></a>
+                        <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del tooltip delclick" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</li>

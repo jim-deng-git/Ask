@@ -1,0 +1,104 @@
+﻿@model IEnumerable<WorkV3.Models.EventTypesModels>
+@{
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+
+    IHtmlString paraUrl = Html.Raw(Url.Action("Para", siteQuery));
+}
+
+<table id="TypeTable" class="fixTable">
+    <caption>
+        類別
+        <span class="info"></span>
+        <div class="float-R">
+            @*<a class="btn-grey-o square tooltip-info" href="javascript:" title="複製"><i class="cc cc-content-copy"></i></a>
+                <a class="btn-grey-o square tooltip-info" href="javascript:" title="移動"><i class="cc cc-content-cut"></i></a>*@
+            <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+            <a class="btn-grey-darken-4-o square tooltip-info" data-action="add" href="@Html.Raw(Url.Action("ParaTypeEdit", siteQuery))" title="新增"><i class="cc cc-plus"></i></a>
+            <a class="btn-grey-o square tooltip-info btn-del" data-action="del" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+            <span data-for="sort" style="display:none;">
+                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+            </span>
+            <span data-for="del" style="display:none;">
+                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+            </span>
+            @*<!-- 複製的確定 -->
+                <a class="btn-grey-darken-4-o dropdown-button" href="javascript:" data-activates="dropdown-copy"><i class="cc cc-check"></i>確定</a>
+                <ul id="dropdown-copy" class="dropdown-content customContent closeOnClick">
+                    <li>
+                        <iframe class="dropdownIframe" src="copy.aspx" frameborder="0"></iframe>
+                    </li>
+                </ul>
+                <!-- 複製的確定END -->
+                <!-- 移動的確定 -->
+                <a class="btn-grey-darken-4-o dropdown-button" href="javascript:" data-activates="dropdown-move"><i class="cc cc-check"></i>確定</a>
+                <ul id="dropdown-move" class="dropdown-content customContent closeOnClick">
+                    <li>
+                        <iframe class="dropdownIframe" src="move.aspx" frameborder="0"></iframe>
+                    </li>
+                </ul>
+                <!-- 移動的確定END -->*@
+        </div>
+    </caption>
+    <thead>
+        <tr>
+            <th>序</th>
+            <th>名稱</th>
+            <th>色調</th>
+            <th>刊登</th>
+            <th>編輯</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0, len = Model.Count(); i < len; ++i) {
+            WorkV3.Models.EventTypesModels item = Model.ElementAt(i);
+            <tr data-id="@item.ID">
+                <td class="sort">@(i + 1)</td>
+                <td class="text-L">@item.Name</td>
+                <td><i class="btn-default btn-tiny circle" data-color="@item.Color"></i></td>
+                <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openRight" href="@Html.Raw(Url.Action("ParaTypeEdit", new { id = item.ID, siteId = siteId, menuId = menuId }))"><i class="cc cc-edit-o"></i></a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    (function () {
+        var outerElm = $('#TypeTable');
+
+        var listObj = Component.dataList('TypeTable');
+        listObj.sorted = function (sortItems) {
+            $.post('ParaTypeSort?siteId=@siteId&menuId=@menuId', { 'items': sortItems }, function () {
+                location.replace('@paraUrl&type=Type');
+            });
+        }
+        listObj.deleted = function (delIds) {
+            $.post('ParaTypeDel?siteId=@siteId&menuId=@menuId', { 'ids': delIds }, function () {
+                location.replace('@paraUrl&type=Type');
+            });
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                outerElm.find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace('@paraUrl&type=Type');
+            }
+        }
+        listObj.statusChange = function (id) {
+            $.get('ParaTypeToggleIssue/' + id + '?siteId=@siteId&menuId=@menuId');
+        }
+
+        outerElm.on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            outerElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+    })();
+</script>

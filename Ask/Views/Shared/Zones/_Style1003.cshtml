@@ -1,0 +1,24 @@
+﻿@model List<CardsModels>
+@{
+    CardsModels Card1 = new CardsModels();
+    if (Model != null)
+    {
+        Card1 = Model[0];
+    }
+}
+<div class="zone zone-base" zoneLayout="h-c1-s1003" ZoneStyle="1003" data-ZoneNo="@Html.Raw("Z" + ViewBag.ZoneNo)">
+    <div class="wrapper">
+        <div class="groove groove-1" mT="" mR="" mB="" mL="" data-CardType="@Card1.CardsType" data-CardNo="@Html.Raw("C" + Card1.No)">
+            @{
+                if (Card1.No != 0 && Card1.Status == 1)
+                {
+                    Html.RenderAction(!string.IsNullOrEmpty(Card1.ViewAction) ? Card1.ViewAction : "Index", Card1.CardsType, Card1);
+                }
+                else
+                {
+                    Html.RenderAction("EmptyGroove", "Home");
+                }
+            }
+    </div>
+</div>
+</div>

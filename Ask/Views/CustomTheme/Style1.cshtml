@@ -1,0 +1,109 @@
+﻿@* 希望客製主視覺 *@
+<div class="card-customMainVision" data-style="2">
+    <div class="mainVision-container">
+        <div class="mainVision-letter-wrap">
+            <div class="mainVision-letter">
+                <svg version="1.1" id="letter" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                     viewBox="-190 -47 578 654" style="enable-background:new -190 -47 578 654;" xml:space="preserve">
+                    <g id="letter-path">
+                        <polygon class="outline" points="246.7,-47 182,16 182,165.4 15,165.4 15,-47 -126.3,-47 -190,16 -190,607 -49,607 15,544 15,370 182,370 182,607 323,607 388,544 388,-47 "/>
+                    </g>
+                    <polygon id="shadow_2_" class="animate-fill st1" points="-49,229 15,165.4 15,-47 -49,16 "/>
+                    <path id="shadow_1_" class="animate-fill st1" d="M388,544l-65,63V16l65-63V544z"/>
+                    <polygon id="top-L" class="animate-fill st2" points="-126.3,-47 -190,16 -49,16 15,-47 "/>
+                    <polygon id="top-R" class="animate-fill st2" points="246.7,-47 182,16 323,16 388,-47 "/>
+                    <path id="shadow" class="animate-fill st1" d="M-49,370h64v174l-64,63V370z"/>
+                    <polygon id="bridge" class="animate-fill st2" points="15,165.4 -49,229 182,229 182,165.4 "/>
+                    <polygon id="fill" class="animate-fill st0" points="182,16 182,229 -49,229 -49,16 -190,16 -190,607 -49,607 -49,370 182,370 182,607 323,607 323,16 "/>
+                </svg>
+            </div>
+            <div class="mainVision-letter mainVision-letter-link-wrap">
+                <div class="mainVision-letter-link">
+                    <div class="link-line link-line1"></div>
+                    <div class="link-line link-line2">
+                        <span class="arrow arrow-down"></span>
+                    </div>
+                    <div class="link-line link-line3"></div>
+                    <div class="link-line link-line4">
+                        <span class="arrow arrow-up"></span>
+                    </div>
+                    <div class="link-line link-line5"></div>
+                    <a href="#" class="letter-link letter-link1">link1</a>
+                    <a href="#" class="letter-link letter-link2">link2</a>
+                    <a href="#" class="letter-link letter-link3">link3</a>
+                    <a href="#" class="letter-link letter-link4">link4</a>
+                    <a href="#" class="letter-link letter-link5">link5</a>
+                    <a href="#" class="letter-link letter-link6">link6</a>
+                    <a href="#" class="letter-link letter-link7">link7</a>
+                </div>
+            </div>
+        </div>
+        <div class="mainVision-title">
+            <p>Nature makes and distributes video content</p>
+        </div>
+    </div>
+
+</div>
+
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:400,700,900" rel="stylesheet">
+<link href="~/css/Cards/CustomMainVision/style2.css" rel="stylesheet" />
+<script>
+    function whichAnimationEvent(){
+      var t,
+          el = document.createElement("fakeelement");
+
+      var animations = {
+        "animation"      : "animationend",
+        "OAnimation"     : "oAnimationEnd",
+        "MozAnimation"   : "animationend",
+        "WebkitAnimation": "webkitAnimationEnd"
+      }
+
+      for (t in animations){
+        if (el.style[t] !== undefined){
+          return animations[t];
+        }
+      }
+    }
+    var animationEvent = whichAnimationEvent();
+
+    var animationInit = function(){
+        function getBroswer(){
+            var sys = {};
+            var ua = navigator.userAgent.toLowerCase();
+            var s;
+            (s = ua.match(/edge\/([\d.]+)/)) ? sys.edge = s[1] :
+            (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1] :
+            (s = ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] :
+            (s = ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] :
+            (s = ua.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] :
+            (s = ua.match(/opera.([\d.]+)/)) ? sys.opera = s[1] :
+            (s = ua.match(/version\/([\d.]+).*safari/)) ? sys.safari = s[1] : 0;
+
+            if (sys.edge) return { broswer : "Edge", version : sys.edge };
+            if (sys.ie) return { broswer : "IE", version : sys.ie };
+            if (sys.firefox) return { broswer : "Firefox", version : sys.firefox };
+            if (sys.chrome) return { broswer : "Chrome", version : sys.chrome };
+            if (sys.opera) return { broswer : "Opera", version : sys.opera };
+            if (sys.safari) return { broswer : "Safari", version : sys.safari };
+            
+            return { broswer : "", version : "0" };
+        }
+            
+        var getBroswer = getBroswer();
+        var isIe = false;
+        if ((getBroswer.broswer == "Edge") || (getBroswer.broswer == "IE")) {
+            isIe = true;
+            // $(".outline").addClass("fade-in");
+            $("#letter").addClass("floating-letter");
+            // $("body").on(animationEvent, ".outline.fade-in", function(event) {
+            //     $("#letter").addClass("floating-letter");
+            // });
+        }
+
+        $("body").on(animationEvent, ".animate-fill", function(event) {
+            $("#letter").addClass("floating-letter");
+        });
+    }
+    $(document).ready(animationInit);
+</script>

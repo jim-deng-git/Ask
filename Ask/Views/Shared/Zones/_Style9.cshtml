@@ -1,0 +1,118 @@
+﻿@model List<CardsModels>
+@{ 
+    //右側廣告 Style File 
+    CardsModels Card1 = new CardsModels();
+    IEnumerable<CardsModels> RightSideAdCards = null;
+
+    if (Model != null)
+    {
+        if (Model.Count > 0)
+        {
+            Card1 = Model[0];
+            RightSideAdCards = Model.Skip(1);
+        }
+    }
+}
+<div class="zone zone-base" zoneLayout="h-AD-s1" ZoneStyle="9" data-ZoneNo="@Html.Raw("Z" + ViewBag.ZoneNo)">
+    <div class="wrapper">
+        <!-- 內容區  -->
+        <div class="groove groove-9" mT="main" mR="" mB="main" mL="" data-CardType="@Card1.CardsType" data-CardNo="@Html.Raw("C" + Card1.No)">
+            @{
+                if (Card1.No != 0 && Card1.Status == 1)
+                {
+                    Html.RenderAction(!string.IsNullOrEmpty(Card1.ViewAction) ? Card1.ViewAction : "Index", Card1.CardsType, Card1);
+                }
+                else
+                {
+                    Html.RenderAction("EmptyGroove", "Home");
+                }
+            }
+        </div>
+        <!-- 右側廣告區 -->
+        <div class="groove groove-3" mT="main" mR="" mB="main" mL="">
+            @if (RightSideAdCards != null)
+            {
+                var r1 = RightSideAdCards.Where(m => m.TempSort == 1);
+                if (r1.Any())
+                {
+                    var item = r1.FirstOrDefault();
+                    <text>
+                        <div class="groove groove-1" mT="main" mR="" mB="main" mL="" data-CardType="@item.CardsType" data-CardNo="@Html.Raw("C" + item.No)">
+                            @{
+                                if (item.No != 0 && item.Status == 1)
+                                {
+                                    Html.RenderAction(!string.IsNullOrEmpty(item.ViewAction) ? item.ViewAction : "Index", item.CardsType, item);
+                                }
+                                else
+                                {
+                                    Html.RenderAction("EmptyGroove", "Home");
+                                }
+                            }
+                        </div>
+                    </text>
+                }
+                var r3 = RightSideAdCards.Where(m => m.TempSort == 3);
+                if (r3.Any())
+                {
+                    var item = r3.FirstOrDefault();
+                    <text>
+                        <div class="groove groove-1" mT="main" mR="" mB="main" mL="" data-CardType="@item.CardsType" data-CardNo="@Html.Raw("C" + item.No)">
+                            @{
+                                if (item.No != 0 && item.Status == 1)
+                                {
+                                    Html.RenderAction(!string.IsNullOrEmpty(item.ViewAction) ? item.ViewAction : "Index", item.CardsType, item);
+                                }
+                                else
+                                {
+                                    Html.RenderAction("EmptyGroove", "Home");
+                                }
+                            }
+                        </div>
+                    </text>
+                }
+                var r5 = RightSideAdCards.Where(m => m.TempSort == 5);
+                if (r5.Any())
+                {
+                    var item = r5.FirstOrDefault();
+                    <text>
+                        <div class="groove groove-1" mT="main" mR="" mB="main" mL="" data-CardType="@item.CardsType" data-CardNo="@Html.Raw("C" + item.No)">
+                            @{
+                                if (item.No != 0 && item.Status == 1)
+                                {
+                                    Html.RenderAction(!string.IsNullOrEmpty(item.ViewAction) ? item.ViewAction : "Index", item.CardsType, item);
+                                }
+                                else
+                                {
+                                    Html.RenderAction("EmptyGroove", "Home");
+                                }
+                            }
+                        </div>
+                    </text>
+                }
+                var r7 = RightSideAdCards.Where(m => m.TempSort == 7);
+                if (r7.Any())
+                {
+                    var item = r7.FirstOrDefault();
+                    <text>
+                        <div class="groove groove-1" mT="main" mR="" mB="main" mL="" data-CardType="@item.CardsType" data-CardNo="@Html.Raw("C" + item.No)">
+                            @{
+                                if (item.No != 0 && item.Status == 1)
+                                {
+                                    Html.RenderAction(!string.IsNullOrEmpty(item.ViewAction) ? item.ViewAction : "Index", item.CardsType, item);
+                                }
+                                else
+                                {
+                                    Html.RenderAction("EmptyGroove", "Home");
+                                }
+                            }
+                        </div>
+                    </text>
+                }
+            }
+
+            @{
+                Html.RenderAction("Render", "ImageTextList", new { SiteID = Card1.SiteID, ZoneNo = Card1.ZoneNo });
+            }
+        </div>
+    </div>
+</div>

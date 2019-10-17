@@ -1,0 +1,40 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{ 
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+    <div class="card-member loginPage" data-style="1">
+        <div class="login">
+            <div class="login-logo">會員註冊驗證</div>
+            <div class="login-box small">
+                <div class="left-box">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title">@ViewBag.VerifyMessage</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="btnBox">
+                                <a class="btn-grey-o btn-large" href="@Url.Action("../")">回首頁</a>
+                                <a class="btn-custom btn-large" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Login" })">登入</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>

@@ -1,0 +1,310 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model  MemberFieldAnalysisViewModel
+@{
+    ViewBag.Title = "會員資料";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    string UploadUrl = ViewBag.UploadUrl;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.HighCharts()
+
+}
+
+@section Script {
+    @BundleConfig.Component()
+}
+<div class="groove groove-1">
+    <h1 class="title-admin-page">會員資料</h1>
+    <div class="analytics-control-bar">
+        <form id="searchForm" method="post" action="@Url.Action("FieldAnalysis")">
+            <div class="selectDateRange" style="float:left;">
+                <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title="" id="selectedDates"><span id="spDateRange">@(Model.SearchStartDate.ToString("yyyy/MM/dd") + " - " + ((Model.SearchEndDate.Year == Model.SearchStartDate.Year) ? Model.SearchEndDate.ToString("MM/dd") : Model.SearchEndDate.ToString("yyyy/MM/dd")))</span> <i class="cc cc-chevron-down"></i></a>
+                <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                    <li>
+                        <input type='hidden' name="SearchStartDate" id="SearchStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                        <input type='hidden' name="SearchEndDate" id="SearchEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                        <input type='hidden' name="RangeType" id="RangeType" value="@Model.RangeType">
+                        <iframe class="dropdownIframe" src="@Url.Action("SelectRangeDate", "Common", new { start=Model.SearchStartDate.ToString("yyyy/MM/dd"), end=Model.SearchEndDate.ToString("yyyy/MM/dd"), select =Model.RangeType})" frameborder="0"></iframe>
+                        @*<div class="body-dropdown">
+                                <div class="zone zone-full">
+                                    <div class="wrapper">
+                                        <div class="groove groove-1">
+                                            <ul class="forms">
+                                                <li>
+                                                    <div class="input-field inline m-T-none">
+                                                        <input type='text' class="input-cal startAnalyticsDate" placeholder="開始時間" name="SearchStartDate" id="SearchStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                                                        <input type='hidden' placeholder="開始時間" name="InitStartDate" id="InitStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                                                    </div>
+                                                    <span style="display:inline">-</span>
+                                                    <div class="input-field inline m-T-none">
+                                                        <input type='text' class="input-cal endAnalyticsDate" placeholder="結束時間" name="SearchEndDate" id="SearchEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                                                        <input type='hidden' placeholder="結束時間" name="InitEndDate" id="InitEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                                                    </div>
+                                                    <div class="analyticsDatePicker"></div>
+                                                </li>
+                                            </ul>
+                                            <div class="control-bar">
+                                                <div class="bar-item float-L">
+                                                    <div class="radio-box inline m-T-none">
+                                                        <div>
+                                                            <input class="with-gap" name="kind" type="radio" id="rdDateRange1" value="1" style="z-index:999" checked />
+                                                            <label for="kind1">兩週內</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-gap" name="kind" type="radio" id="rdDateRange2" value="2" style="z-index:999" />
+                                                            <label for="kind2">一個月內</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-gap" name="kind" type="radio" id="rdDateRange3" value="3" style="z-index:999" />
+                                                            <label for="kind3">三個月內</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-gap" name="kind" type="radio" id="rdDateRange4" value="4" style="z-index:999" />
+                                                            <label for="kind4">半年內</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-gap" name="kind" type="radio" id="rdDateRange5" value="5" style="z-index:999" />
+                                                            <label for="kind5">一年內</label>
+                                                        </div>
+                                                        <div>
+                                                            <input class="with-gap" name="kind" type="radio" id="rdDateRange6" value="6" />
+                                                            <label for="kind6">自訂</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <a class="btn-cancel" href="javascript:" onclick="CancelSelectedDate();"><i class="cc cc-close"></i>取消</a>
+                                                <a class="btn-bulid" href="javascript:" onclick="SetSelectedDate();"><i class="cc cc-check"></i>確定</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>*@
+                    </li>
+                </ul>
+            </div>
+        </form>
+        <div class="selectCreator">
+            <a href="@Url.Action("ExportToXLS_Fields", "MemberAnalysis", new { SearchStartDate=Model.SearchStartDate, SearchEndDate=Model.SearchEndDate })" target="_blank" class="btn-grey-o"><i class="cc cc-playlist-play"></i>匯出統計</a>
+        </div>
+    </div>
+    <div class="card shadow-none">
+        <ul class="forms m-L-none m-R-none">
+            @if (Model != null && Model.FieldStatisticList.Count() > 0)
+            {
+                int ModelIndex = 0;
+                foreach (MemberFieldViewModel fieldModel in Model.FieldStatisticList)
+                {
+                    string nonValueColor = "#bcc4ca", bg_nonValueColor = "rgb(188, 196, 202)";
+                    var colorList = new[] { "#FF6384", "#36A2EB", "#FFCE56", "#6ABD45" };
+                    var bg_colorList = new[] { "rgb(255, 99, 132)", "rgb(54, 162, 235)", "rgb(255, 206, 86)", "rgb(106, 189, 69)" };
+                    int fCount = 0;
+                    ModelIndex++;
+                    if (fieldModel.FieldName != "會員序號")
+                    {
+                        <li>
+                            <div class="col-1">
+                                <div class="title">@fieldModel.FieldName</div>
+                                <div class="col-4-partner">
+                                    <div class="chart-wrap">
+                                        @foreach (MemberFieldStatisticViewModel statdModel in fieldModel.StatisticList)
+                                        {
+                                            string color = nonValueColor;
+                                            string bg_color = bg_nonValueColor;
+                                            if (statdModel.FieldValue != "未填")
+                                            {
+                                                color = colorList[fCount % colorList.Length];
+                                                bg_color = bg_colorList[fCount % bg_colorList.Length];
+                                            }
+                                            fCount++;
+                                            <div id="dashboard-stats" class="chart bars-horizontal brand-primary chart_info_@ModelIndex">
+                                                <div class="row" style="cursor: pointer;">
+                                                    <span class="label">@statdModel.FieldValue</span>
+                                                    <div class="bar-wrap">
+                                                        <div class="bar in" data-value="@statdModel.Percentage" data-color="@color" data-name="@statdModel.FieldValue" style="width: @statdModel.Percentage%; background-color: @bg_color;"></div>
+                                                    </div>
+                                                    <span class="number">@statdModel.Count (@statdModel.Percentage %)</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <iframe class="chartjs-hidden-iframe" style="width: 100%; display: block; border: 0px; height: 0px; margin: 0px; position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px;"></iframe>
+                                    <canvas id="chart-name" class="m-B-8 chart_pie_@ModelIndex" width="200" height="100" style="display: block; width: 200px; height: 100px;"></canvas>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                }
+            }
+        </ul>
+    </div>
+</div>
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<link href="~/css/Cards/Form/style2.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+<script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.5/Chart.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var to = new Date();
+        var from = new Date(to.getTime() - 1000 * 60 * 60 * 24 * 14);
+
+        $('.analyticsDatePicker').DatePicker({
+            inline: true,
+            date: [from, to],
+            calendars: 3,
+            mode: 'range',
+            current: new Date(to.getFullYear(), to.getMonth() - 1, 1),
+            onChange: function (dates, el) {
+                // update the range display
+                // $('#analyticsDate > div.clickBtn > span').html(
+                //   dates[0].getFullYear()+'<span>/</span>'+
+                //   dates[0].getMonthName(true)+'<span>/</span>'+
+                //   dates[0].getDate()+'<span>-</span>'+
+
+                //   dates[1].getFullYear()+'<span>/</span>'+
+                //   dates[1].getMonthName(true)+'<span>/</span>'+
+                //   dates[1].getDate()
+
+                // );
+
+                $('input.startAnalyticsDate').val(
+                    dates[0].getFullYear() + '/' +
+                    dates[0].getMonthName(true) + '/' +
+                    dates[0].getDate()
+                );
+
+                $('input.endAnalyticsDate').val(
+                    dates[1].getFullYear() + '/' +
+                    dates[1].getMonthName(true) + '/' +
+                    dates[1].getDate()
+                );
+            }
+        });
+    });
+
+    //function setSelectedDateRange(startdate, enddate) {
+    //    var selectedDate = startdate;
+    //    if (startdate.split("/")[0] == enddate.split("/")[0])
+    //        selectedDate += " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+    //    else
+    //        selectedDate += " - " + enddate;
+    //    $("#SearchStartDate").val(startdate);
+    //    $("#SearchEndDate").val(enddate);
+    //    $("#spDateRange").html(selectedDate);
+    //    $('#choiceDateRange').hide();
+    //    $("#searchForm").submit();
+    //}
+
+    function setSelectedDateRange(startdate, enddate, selectCbxValue) {
+        var selectedDate = startdate;
+        if (startdate.split("/")[0] == enddate.split("/")[0])
+            selectedDate += " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+        else
+            selectedDate += " - " + enddate;
+
+        $("#SearchStartDate").val(startdate);
+        $("#SearchEndDate").val(enddate);
+        $("#RangeType").val(selectCbxValue);
+        $("#spDateRange").html(selectedDate);
+        $('#choiceDateRange').hide();
+
+        var checkStartDateResult = Component.parseDate($("#SearchStartDate").val());
+        var checkEndDateResult = Component.parseDate($("#SearchEndDate").val());
+        if (checkStartDateResult == null) {
+            Component.alert('開始日期格式錯誤。');
+            return;
+        }
+        if (checkEndDateResult == null) {
+            Component.alert('結束日期格式錯誤。');
+            return;
+
+        }
+        $("#searchForm").submit();
+    }
+</script>
+<script type="text/javascript">
+    function generateBarGraph(barChart, pieChart) {
+        // Set Up Values Array
+        var values = [];
+        var colors = [];
+        var names = [];
+
+        // Get Values and save to Array
+        $(barChart + ' .bar').each(function(index, el) {
+            values.push($(this).data('value'));
+            colors.push($(this).data('color'));
+            names.push($(this).data('name'));
+        });
+
+        // Get Max Value From Array
+        //var max_value = Math.max.apply(Math, 100);
+
+        // Set width of bar to percent of max value
+        $(barChart + ' .bar').each(function(index, el) {
+            var bar = $(this),
+                value = bar.data('value'),
+                color = bar.data('color'),
+                percent = Math.ceil(value * 1);
+
+            // Set Width & Add Class
+            bar.width(percent + '%');
+            bar.addClass('in');
+            bar.css("background-color", color)
+        });
+        var formatData = {
+            labels: names,
+            datasets: [{
+                data: values,
+                backgroundColor: colors
+            }]
+        };
+
+        new Chart($(pieChart), {
+            type: 'pie',
+            data: formatData,
+            options: {
+                legend: {
+                    display: false
+                }
+            }
+        });
+    }
+    $(function() {
+        // $(".fixTable").stickyTableHeaders();
+
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function(e) {
+            e.stopPropagation();
+        });
+         @if (Model != null && Model.FieldStatisticList.Count() > 0)
+         {
+             int ModelIndex = 0;
+             foreach (MemberFieldViewModel fieldModel in Model.FieldStatisticList)
+             {
+                 ModelIndex++;
+                <text>
+        generateBarGraph('.chart_info_@ModelIndex', '.chart_pie_@ModelIndex');
+                </text>
+             }
+         }
+        $('.chart-wrap .row').css('cursor','pointer');
+        $('.chart-wrap .row').click(function(){
+                 var _member_list=$(this).attr("data-href");
+                 if(_member_list!= ""&&_member_list != null){
+                     window.top.mainWebContent.location.href = _member_list;
+                 }
+             });
+
+         });
+</script>

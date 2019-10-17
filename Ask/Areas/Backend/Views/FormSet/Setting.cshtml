@@ -1,0 +1,92 @@
+﻿@using WorkV3.Models;
+@model IEnumerable<FormModel>
+@{
+    ViewBag.Title = "表單卡設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long SiteID = ViewBag.SiteID;
+    long MenuID = ViewBag.MenuID;
+    long CardNo = ViewBag.CardNo;
+    FormSet formSet = ViewBag.FormSet;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+}
+<div class="groove groove-1">
+    <form id="settingForm" method="post" action="@Url.Action("Setting", new { SiteID = SiteID , MenuID = MenuID , CardNo = CardNo })" enctype="multipart/form-data">
+        <h1 class="title-admin-page">表單 設定</h1>
+        <div class="col-1 border-T">
+            <ul class="forms">
+                <li>
+                    <div class="title">哪個是你想顯示的項目？</div>
+                    <ol class="dd-list checkStyle">
+                        @foreach (var item in Model)
+                        {
+                            string checkboxStr = "";
+                            if(formSet != null)
+                            {
+                                if(formSet.FormID == item.ID)
+                                {
+                                    checkboxStr = "checked";
+                                }
+                            }
+                            <li class="dd-item">
+                                <input type="radio" name="form" class="with-gap" id="@item.ID" @checkboxStr/>
+                                <label id="@item.ID" for="@item.ID" onclick="changeVal(this)">@item.Title</label>
+                            </li>
+                        }
+                    </ol>
+                    <input type="hidden" id="FormID" name="FormID" value="@(formSet != null ? formSet.FormID.ToString() : "")">
+                </li>
+            </ul>
+        </div>
+        <div class="control-bar">
+            <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>
+
+<link href="~/css/card.css" rel="stylesheet" />
+
+<script src="~/script/StickyTableHeaders/jquery.stickytableheaders.js"></script>
+<script src="~/Script/workV3/component.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $(".fixTable").stickyTableHeaders();
+
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function(e){
+            e.stopPropagation();
+        });
+    });
+
+    var changeVal = function (e) {
+        $('#FormID').val(e.id);
+    }
+
+    $('#btnSave').click(function () {
+        var form = $('#settingForm');
+        if ($('#FormID').val())
+        {
+            form.submit();
+        }
+        else
+        {
+            Component.alert('請選擇表單');
+        }
+    });
+
+    $('#btnCancel').click(function () {
+        location.href = '@Html.Raw(Url.Action("List", "Intro", new { siteId = SiteID, menuId = MenuID }))';
+    });
+</script>
+
+

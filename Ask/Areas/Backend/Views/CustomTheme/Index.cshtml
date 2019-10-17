@@ -1,0 +1,20 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ViewBag.Title = "客製化主題";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+}
+
+@section Script {
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+    </div>
+</div>
+

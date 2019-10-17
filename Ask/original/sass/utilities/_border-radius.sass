@@ -1,0 +1,33 @@
+.rounded
+    +border-radius($border-radius)
+
+    // size
+    &.rounded-huge
+        +border-radius($border-radius-hg)
+
+    &.rounded-large
+        +border-radius($border-radius-lg)
+
+    &.rounded-small
+        +border-radius($border-radius-sm)
+
+.rounded-top
+    +border-top-radius($border-radius)
+
+.rounded-right
+    +border-right-radius($border-radius)
+
+.rounded-bottom
+    +border-bottom-radius($border-radius)
+
+.rounded-left
+    +border-left-radius($border-radius)
+
+.rounded-circle, .circle
+    border-radius: 50%
+    overflow: hidden
+//    > *, img
+//        overflow: hidden
+
+.rounded-0
+    +border-radius($border-radius-base)

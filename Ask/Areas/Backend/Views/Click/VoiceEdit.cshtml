@@ -1,0 +1,86 @@
+﻿
+@{
+    ViewBag.Title = "VoiceEdit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+}
+
+@using (Html.BeginForm("VoiceEdit", "Click", siteQuery, FormMethod.Post, new { enctype = "multipart/form-data", id = "VoiceEditForm" }))
+{
+    <div class="groove groove-1">
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">上傳聲音</div>
+            </div>
+        </div>
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    <input type="file" id="voiceUpload" name="voiceUpload" data-field="voices" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar flex">
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+}
+
+@section FArea {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    @BundleConfig.JWPlayer()
+
+    <script type="text/javascript">
+        function Callbacks() {
+            @if (ViewBag.Exit as bool? == true)
+            {
+                <text>
+                var dataStr = '@Html.Raw(ViewBag.Data)';
+                if (dataStr != "") {
+                    parent.setClick(3, $.parseJSON(dataStr));
+                } else {
+                    parent.setClick(0, "{}");
+                }
+                Component.closeRight();
+                </text>
+            }
+        }
+
+        $(function () {
+            var type = parent.getClickType();
+            var data;
+            if (type == 3) {
+                data = parent.getClickEvent();
+            }
+
+            Component.singleVoiceUpload(
+                '#voiceUpload',
+                '@(Href("~/"))',
+                '@Html.Raw(Url.Action("FileUpload", "Click", siteQuery))',
+                '@ViewBag.UploadVPath',
+                data);
+
+            $('#btnSave').click(function () {
+                if (Component.singleVoiceUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    var form = $('#VoiceEditForm');
+                    form.submit();
+                }
+            });
+
+            Callbacks();
+        });
+    </script>
+}

@@ -1,0 +1,473 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model MemberAnalysisLogViewModel
+@{
+    ViewBag.Title = "會員分析";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    string UploadUrl = ViewBag.UploadUrl;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.HighCharts()
+
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        function SetIsShowLabelLine(isShow)
+        {
+            $("#IsShowCustomLableLine").prop("checked" , isShow);
+            var form = $('#searchForm');
+            form.submit();
+        }
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+
+        $('.modify_label_line').click(function (e) {
+            e.preventDefault();
+            window.parent.$.colorbox({
+                href: $(this).attr("href"),
+                width: "600",
+                height: "95%",
+                right: "20",
+                iframe: true,
+                transition: false,
+                speed: 0,
+                fadeOut: 100,
+                onClosed: function () {
+                    location.reload(true);
+                }
+            });
+        });
+
+        function refreshList()
+        {
+            location.replace(location.href);
+        }
+    </script>
+<script type="text/javascript">
+    $(function() {
+        // $(".fixTable").stickyTableHeaders();
+        var dateArray = [], dailayTotalViews = [], dailyLoginCount = [], dailyMemberCount = [], statistic_celling = [], plot_lines = [];
+        var monthArray =[], monthLoginCount=[], monthMemberCount = [];
+        var range_max = 0, range_min = 0, celling_interval = 100;
+        var month_range_max = 0, month_range_min = 0, month_celling_interval = 100;
+        @if (Model.LogDailyList != null && Model.LogDailyList.Count() > 0)
+        {
+            int cell_interval = 100;
+            long max = 0, min = 0;
+            for (int i = 0; i < Model.LogDailyList.Count(); i++)
+            {
+                MemberAnalysisDailyLogViewModel daily_item = Model.LogDailyList.ElementAt(i);
+                if (Model.IsShowCustomLableLine && Model.LabelLineList.Count() > 0)
+                {
+                    for (int m = 0; m < Model.LabelLineList.Count(); m++)
+                    {
+                        MemberAnalysisLogCustomLabelLineViewModel label_item = Model.LabelLineList.ElementAt(m);
+                        if (label_item.LabelDate == daily_item.LogDate)
+                        {
+                        <text>
+        var plotLineOption = {
+            color: Component.ColorBar('@label_item.LabelColor'),
+            width: 2,
+            value: @i.ToString(),
+            label: {
+                text: '@label_item.Title',
+                verticalAlign: 'top',
+                textAlign: 'center',
+                rotation: 0,
+                y: -20,
+            }
+        };
+        plot_lines.push(plotLineOption);
+        </text>
+                    }
+                }
+            }
+            <text>
+        dateArray.push("@daily_item.LogDate");
+        dailyLoginCount.push(@daily_item.LoginCount);
+        dailyMemberCount.push(@daily_item.MemberCount);
+        </text>
+            if (i == 0)
+            {
+                max = Math.Max(daily_item.MemberCount, daily_item.LoginCount);
+            }
+            else
+            {
+                max = Math.Max(Math.Max(daily_item.MemberCount, daily_item.LoginCount), max);
+            }
+        }
+        if (max < 100)
+        {
+            cell_interval = 10;
+        }
+        int cell_count = (int)(max / cell_interval);
+        if (max % cell_interval != 0)
+        {
+            cell_count++;
+        }
+        for (int i = 0; i <= cell_count; i++)
+        {
+            <text>
+        statistic_celling.push(@(cell_interval * i))
+        </text>
+        }
+        max = cell_count * cell_interval;
+        <text>
+        range_max=@max;
+        range_min=@min;
+        celling_interval =@cell_interval;
+        </text>
+    }
+        @if (Model.LogMonthList != null && Model.LogMonthList.Count() > 0)
+        {
+            int cell_interval = 100;
+            long max = 0, min = 0;
+            for (int i = 0; i < Model.LogMonthList.Count(); i++)
+            {
+                MemberAnalysisMonthlyLogViewModel month_item = Model.LogMonthList.ElementAt(i);
+                 <text>
+
+        monthArray.push("@month_item.LogMonth");
+        monthLoginCount.push(@month_item.LoginCount);
+        monthMemberCount.push(@month_item.MemberCount);
+        </text>
+                if (i == 0)
+                {
+                    max = Math.Max(month_item.MemberCount, month_item.LoginCount);
+                }
+                else
+                {
+                    max = Math.Max(Math.Max(month_item.MemberCount, month_item.LoginCount), max);
+                }
+            }
+            if (max < 100)
+            {
+                cell_interval = 10;
+            }
+            int cell_count = (int)(max / cell_interval);
+            if (max % cell_interval != 0)
+            {
+                cell_count++;
+            }
+            for (int i = 0; i <= cell_count; i++)
+            {
+                    <text>
+        statistic_celling.push(@(cell_interval * i))
+        </text>
+            }
+            max = cell_count * cell_interval;
+            <text>
+        month_range_max=@max;
+        month_range_min=@min;
+        month_celling_interval =@cell_interval;
+        </text>
+
+        }
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function(e) {
+            e.stopPropagation();
+        });
+        $('.chart-line').highcharts({
+            chart: {
+                height: 500,
+                /*style: {
+                    padding: '30px 0 20px'
+                },*/
+                type: 'line',
+                spacingTop: 50
+            },
+            title: {
+                text: null,
+            },
+            subtitle: {
+                text: null,
+            },
+            /*legend: {
+                enabled: false
+            },*/
+            xAxis: {
+                title: {
+                    text: '日期',
+                    margin: 20
+                },
+                categories:dateArray,
+                tickmarkPlacement: 'on',
+                labels: {
+                    style: {
+                        fontSize: '18px'
+                    },
+                },
+                plotLines: plot_lines
+            },
+            yAxis: {
+                min: range_min,
+                max: range_max,
+                tickInterval: celling_interval,
+                //min: 0,
+                //max: 1200,
+                //tickInterval: 1200,
+                title: {
+                    text: '人數',
+                    rotation: 0,
+                    align: 'high',
+                    offset: 0,
+                    y: -20,
+                    x: -15
+                },
+                ceiling: range_max,
+                categories: statistic_celling,
+                labels: {
+                    style: {
+                        fontSize: '18px'
+                    }
+                },
+                maxPadding: 0.05
+            },
+            series: [{
+                name: '會員註冊人數',
+                data: dailyMemberCount,
+                marker: {
+                    enabled: false
+                },
+                // lineWidth:5,
+                color: '#0070c0',
+                zIndex: 2
+            },
+
+                {
+                    name: '會員登入次數',
+                    data: dailyLoginCount,
+                    marker: {
+                        enabled: false
+                    },
+                    color: '#009242'
+                }
+            ]
+        });
+        $('.chart-stackedbar').highcharts({
+            chart: {
+                height: 500,
+                /*style: {
+                    padding: '30px 0 20px'
+                },*/
+                type: 'column',
+                spacingTop: 50
+            },
+            title: {
+                text: null,
+            },
+            subtitle: {
+                text: null,
+            },
+            /*legend: {
+                enabled: false
+            },*/
+            xAxis: {
+                title: {
+                    text: '月份',
+                    margin: 20
+                },
+                categories: monthArray,
+                tickmarkPlacement: 'on',
+                labels: {
+                    style: {
+                        fontSize: '18px'
+                    },
+                }
+            },
+            yAxis: {
+                min: month_range_min,
+                max: month_range_max,
+                tickInterval: month_celling_interval,
+                title: {
+                    text: '人數',
+                    rotation: 0,
+                    align: 'high',
+                    offset: 0,
+                    y: -20,
+                    x: -15
+                },
+                ceiling: month_range_max,
+                categories: month_celling_interval,
+                labels: {
+                    style: {
+                        fontSize: '18px'
+                    }
+                },
+                maxPadding: 0.05
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                name: '會員註冊人數',
+                data: monthMemberCount,
+                marker: {
+                    enabled: false
+                },
+                // lineWidth:5,
+                color: '#0070c0',
+                zIndex: 2
+            },
+                {
+                    name: '會員登入次數',
+                    data: monthLoginCount,
+                    marker: {
+                        enabled: false
+                    },
+                    color: '#009242'
+                }
+            ]
+        });
+    });
+</script>
+}
+<div class="groove groove-1">
+    <h1 class="title-admin-page">會員註冊/登入分析</h1>
+    <div class="analytics-control-bar">
+        <form id="searchForm" method="post" action="@Url.Action("Logs")">
+            <div class="selectDateRange" style="float:left;">
+                <a class="btn-grey-darken-4-o transparent dropdown-button" href="javascript:" data-activates="choiceDateRange" title="" id="selectedDates"><span id="spDateRange">@(Model.SearchStartDate.ToString("yyyy/MM/dd") + " - " + ((Model.SearchEndDate.Year == Model.SearchStartDate.Year) ? Model.SearchEndDate.ToString("MM/dd") : Model.SearchEndDate.ToString("yyyy/MM/dd")))</span> <i class="cc cc-chevron-down"></i></a>
+                <ul id="choiceDateRange" class="dropdown-content customContent full closeOnClick">
+                    <li>
+                        <input type='hidden' name="SearchStartDate" id="SearchStartDate"  value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                        <input type='hidden' name="SearchEndDate" id="SearchEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                        <input type='hidden' name="RangeType" id="RangeType" value="@Model.RangeType">
+                        <iframe class="dropdownIframe" src="@Url.Action("SelectRangeDate", "Common", new { start=Model.SearchStartDate.ToString("yyyy/MM/dd"), end=Model.SearchEndDate.ToString("yyyy/MM/dd"), select =Model.RangeType})" frameborder="0"></iframe>
+                        @*<div class="body-dropdown">
+                            <div class="zone zone-full">
+                                <div class="wrapper">
+                                    <div class="groove groove-1">
+                                        <ul class="forms">
+                                            <li>
+                                                <div class="input-field inline m-T-none">
+                                                    <input type='text' class="input-cal startAnalyticsDate" placeholder="開始時間" name="SearchStartDate" id="SearchStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                                                    <input type='hidden' placeholder="開始時間" name="InitStartDate" id="InitStartDate" value="@Model.SearchStartDate.ToString("yyyy/MM/dd")">
+                                                </div>
+                                                <span style="display:inline">-</span>
+                                                <div class="input-field inline m-T-none">
+                                                    <input type='text' class="input-cal endAnalyticsDate" placeholder="結束時間" name="SearchEndDate" id="SearchEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                                                    <input type='hidden' placeholder="結束時間" name="InitEndDate" id="InitEndDate" value="@Model.SearchEndDate.ToString("yyyy/MM/dd")">
+                                                </div>
+                                                <div class="analyticsDatePicker"></div>
+                                            </li>
+                                        </ul>
+                                        <div class="control-bar">
+                                            <div class="bar-item float-L">
+                                                <div class="radio-box inline m-T-none">
+                                                    <div>
+                                                        <input class="with-gap" name="kind" type="radio" id="rdDateRange1" value="1" style="z-index:999" checked />
+                                                        <label for="kind1">兩週內</label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="with-gap" name="kind" type="radio" id="rdDateRange2" value="2" style="z-index:999" />
+                                                        <label for="kind2">一個月內</label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="with-gap" name="kind" type="radio" id="rdDateRange3" value="3" style="z-index:999" />
+                                                        <label for="kind3">三個月內</label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="with-gap" name="kind" type="radio" id="rdDateRange4" value="4" style="z-index:999" />
+                                                        <label for="kind4">半年內</label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="with-gap" name="kind" type="radio" id="rdDateRange5" value="5" style="z-index:999" />
+                                                        <label for="kind5">一年內</label>
+                                                    </div>
+                                                    <div>
+                                                        <input class="with-gap" name="kind" type="radio" id="rdDateRange6" value="6" />
+                                                        <label for="kind6">自訂</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a class="btn-cancel" href="javascript:" onclick="CancelSelectedDate();"><i class="cc cc-close"></i>取消</a>
+                                            <a class="btn-bulid" href="javascript:" onclick="SetSelectedDate();"><i class="cc cc-check"></i>確定</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>*@
+                    </li>
+                </ul>
+            </div>
+            </form>
+            <input type="checkbox" id="IsShowCustomLableLine" name="IsShowCustomLableLine" @((Model != null) ? (Model.IsShowCustomLableLine ? "checked" : string.Empty) : string.Empty ) />
+            <div class="selectCreator">
+                <a href="@Url.Action("CustomLabelLine", "MemberAnalysis")" class="btn-grey-o modify_label_line"><i class="cc cc-edit"></i>自訂標線</a>
+                <a href="@Url.Action("ExportToXLS_Daily", "MemberAnalysis", new { SearchStartDate=Model.SearchStartDate, SearchEndDate=Model.SearchEndDate })" target="_blank" class="btn-grey-o"><i class="cc cc-playlist-play"></i>日匯出統計</a>
+                <a href="@Url.Action("ExportToXLS_Month", "MemberAnalysis", new { SearchStartDate=Model.SearchStartDate, SearchEndDate=Model.SearchEndDate })" target="_blank" class="btn-grey-o"><i class="cc cc-playlist-play"></i>月匯出統計</a>
+            </div>
+</div>
+    <div class="charts">
+        <div class="chart-line highcharts" data-highcharts-chart="0"><div class="highcharts-container" id="highcharts-0" style="position: relative; overflow: hidden; width: 891.391px; height: 500px; text-align: left; line-height: normal; z-index: 0; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); touch-action: none;"><svg version="1.1" style="font-family:&quot;Lucida Grande&quot;, &quot;Lucida Sans Unicode&quot;, Arial, Helvetica, sans-serif;font-size:12px;" xmlns="http://www.w3.org/2000/svg" width="891.390625" height="500"><desc>Created with Highcharts 4.1.4</desc><defs><clipPath id="highcharts-1"><rect x="0" y="0" width="816" height="327"></rect></clipPath></defs><rect x="0" y="0" width="891" height="500" strokeWidth="0" fill="#FFFFFF" class=" highcharts-background"></rect><path fill="none" d="M 619 50 L 619 377" stroke="#cccccc" stroke-width="2"></path><text x="623" text-anchor="middle" transform="translate(0,0)" style="" y="30" visibility="visible">標線1</text><path fill="none" d="M 677 50 L 677 377" stroke="#cccccc" stroke-width="2"></path><text x="681" text-anchor="middle" transform="translate(0,0)" style="" y="30" visibility="visible">標線2</text><path fill="none" d="M 794 50 L 794 377" stroke="#cccccc" stroke-width="2"></path><text x="798" text-anchor="middle" transform="translate(0,0)" style="" y="30" visibility="visible">標線3</text><g class="highcharts-grid" zIndex="1"></g><g class="highcharts-grid" zIndex="1"><path fill="none" d="M 65 377.5 L 881 377.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 322.5 L 881 322.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 268.5 L 881 268.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 214.5 L 881 214.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 159.5 L 881 159.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 105.5 L 881 105.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 50.5 L 881 50.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path></g><g class="highcharts-axis" zIndex="2"><path fill="none" d="M 93.5 377 L 93.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 151.5 377 L 151.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 210.5 377 L 210.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 268.5 377 L 268.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 326.5 377 L 326.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 385.5 377 L 385.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 443.5 377 L 443.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 501.5 377 L 501.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 559.5 377 L 559.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 618.5 377 L 618.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 676.5 377 L 676.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 734.5 377 L 734.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 793.5 377 L 793.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 851.5 377 L 851.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><text x="473" zIndex="7" text-anchor="middle" transform="translate(0,0)" class=" highcharts-xaxis-title" style="color:#707070;fill:#707070;" visibility="visible" y="438">日期</text><path fill="none" d="M 65 377.5 L 881 377.5" stroke="#C0D0E0" stroke-width="1" zIndex="7" visibility="visible"></path></g><g class="highcharts-axis" zIndex="2"><text x="50" zIndex="7" text-anchor="end" transform="translate(0,0)" class=" highcharts-yaxis-title" style="color:#707070;fill:#707070;" visibility="visible" y="30">人數</text></g><g class="highcharts-series-group" zIndex="3"><path fill="rgba(0,112,192,0.25)" d="M 0 0"></path><g class="highcharts-series" visibility="visible" zIndex="0.1" transform="translate(65,50) scale(1 1)" clip-path="url(#highcharts-1)"><path fill="none" d="M 29.142857142857142 286.02289758534556 L 87.42857142857143 258.7955870108243 L 145.71428571428572 217.95462114904248 L 204 190.72731057452123 L 262.2857142857143 195.35595337218984 L 320.5714285714286 158.05453788509575 L 378.8571428571429 136.27268942547877 L 437.14285714285717 203.5241465445462 L 495.42857142857144 163.5 L 553.7142857142857 168.94546211490425 L 612 177.11365528726063 L 670.2857142857142 149.8863447127394 L 728.5714285714286 81.81806827643634 L 786.8571428571428 190.72731057452123" stroke="#009242" stroke-width="2" zIndex="1" stroke-linejoin="round" stroke-linecap="round"></path><path fill="none" d="M 19.142857142857142 286.02289758534556 L 29.142857142857142 286.02289758534556 L 87.42857142857143 258.7955870108243 L 145.71428571428572 217.95462114904248 L 204 190.72731057452123 L 262.2857142857143 195.35595337218984 L 320.5714285714286 158.05453788509575 L 378.8571428571429 136.27268942547877 L 437.14285714285717 203.5241465445462 L 495.42857142857144 163.5 L 553.7142857142857 168.94546211490425 L 612 177.11365528726063 L 670.2857142857142 149.8863447127394 L 728.5714285714286 81.81806827643634 L 786.8571428571428 190.72731057452123 L 796.8571428571428 190.72731057452123" stroke-linejoin="round" visibility="visible" stroke="rgba(192,192,192,0.0001)" stroke-width="22" zIndex="2" class=" highcharts-tracker" style=""></path></g><g class="highcharts-markers highcharts-tracker" visibility="visible" zIndex="0.1" transform="translate(65,50) scale(1 1)" clip-path="url(#highcharts-2)" style=""></g><g class="highcharts-series" visibility="visible" zIndex="2" transform="translate(65,50) scale(1 1)" clip-path="url(#highcharts-1)"><path fill="none" d="M 29.142857142857142 272.40924229808496 L 87.42857142857143 188.27685262281432 L 145.71428571428572 54.590757701915074 L 204 122.65903413821819 L 262.2857142857143 141.71815154038302 L 320.5714285714286 163.5 L 378.8571428571429 57.85803497085764 L 437.14285714285717 149.06952539550375 L 495.42857142857144 212.5091590341382 L 553.7142857142857 161.0495420482931 L 612 68.20441298917574 L 670.2857142857142 231.56827643630308 L 728.5714285714286 168.12864279766862 L 786.8571428571428 163.5" stroke="#0070c0" stroke-width="2" zIndex="1" stroke-linejoin="round" stroke-linecap="round"></path><path fill="none" d="M 19.142857142857142 272.40924229808496 L 29.142857142857142 272.40924229808496 L 87.42857142857143 188.27685262281432 L 145.71428571428572 54.590757701915074 L 204 122.65903413821819 L 262.2857142857143 141.71815154038302 L 320.5714285714286 163.5 L 378.8571428571429 57.85803497085764 L 437.14285714285717 149.06952539550375 L 495.42857142857144 212.5091590341382 L 553.7142857142857 161.0495420482931 L 612 68.20441298917574 L 670.2857142857142 231.56827643630308 L 728.5714285714286 168.12864279766862 L 786.8571428571428 163.5 L 796.8571428571428 163.5" stroke-linejoin="round" visibility="visible" stroke="rgba(192,192,192,0.0001)" stroke-width="22" zIndex="2" class=" highcharts-tracker" style=""></path></g><g class="highcharts-markers highcharts-tracker" visibility="visible" zIndex="2" transform="translate(65,50) scale(1 1)" clip-path="url(#highcharts-2)" style=""><path fill="#0070c0" d="M 204 116.65903413821819 C 211.992 116.65903413821819 211.992 128.6590341382182 204 128.6590341382182 C 196.008 128.6590341382182 196.008 116.65903413821819 204 116.65903413821819 Z" stroke="#FFFFFF" stroke-width="1" visibility="hidden"></path></g></g><g class="highcharts-legend" zIndex="7" transform="translate(335,459)"><g zIndex="1"><g><g class="highcharts-legend-item" zIndex="1" transform="translate(8,3)"><path fill="none" d="M 0 11 L 16 11" stroke="#0070c0" stroke-width="2"></path><text x="21" style="color:#333333;font-size:12px;font-weight:bold;cursor:pointer;fill:#333333;" text-anchor="start" zIndex="2" y="15">會員註冊人數</text></g><g class="highcharts-legend-item" zIndex="1" transform="translate(121,3)"><path fill="none" d="M 0 11 L 16 11" stroke="#009242" stroke-width="2"></path><text x="21" y="15" style="color:#333333;font-size:12px;font-weight:bold;cursor:pointer;fill:#333333;" text-anchor="start" zIndex="2">會員登入次數</text></g></g></g></g><g class="highcharts-axis-labels highcharts-xaxis-labels" zIndex="7"><text x="94.14285714285714" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">7/29</text><text x="152.42857142857144" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">7/30</text><text x="210.71428571428572" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">7/31</text><text x="269" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/1</text><text x="327.2857142857143" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/2</text><text x="385.5714285714286" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/3</text><text x="443.8571428571429" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/4</text><text x="502.14285714285717" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/5</text><text x="560.4285714285714" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/6</text><text x="618.7142857142857" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/7</text><text x="677" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/8</text><text x="735.2857142857142" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/9</text><text x="793.5714285714286" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/10</text><text x="851.8571428571428" style="color:#606060;cursor:default;font-size:18px;fill:#606060;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">8/11</text></g><g class="highcharts-axis-labels highcharts-yaxis-labels" zIndex="7"><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="383" opacity="1">0</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="329" opacity="1">200</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="274" opacity="1">400</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="220" opacity="1">600</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="166" opacity="1">800</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="111" opacity="1">1000</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:284px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="57" opacity="1">1200</text></g><g class="highcharts-tooltip" zIndex="8" style="cursor:default;padding:0;white-space:nowrap;" transform="translate(206,-9999)" opacity="0" visibility="visible"><path fill="none" d="M 3.5 0.5 L 123.5 0.5 C 126.5 0.5 126.5 0.5 126.5 3.5 L 126.5 41.5 C 126.5 44.5 126.5 44.5 123.5 44.5 L 69.5 44.5 63.5 50.5 57.5 44.5 3.5 44.5 C 0.5 44.5 0.5 44.5 0.5 41.5 L 0.5 3.5 C 0.5 0.5 0.5 0.5 3.5 0.5" isShadow="true" stroke="black" stroke-opacity="0.049999999999999996" stroke-width="5" transform="translate(1, 1)" width="126" height="44"></path><path fill="none" d="M 3.5 0.5 L 123.5 0.5 C 126.5 0.5 126.5 0.5 126.5 3.5 L 126.5 41.5 C 126.5 44.5 126.5 44.5 123.5 44.5 L 69.5 44.5 63.5 50.5 57.5 44.5 3.5 44.5 C 0.5 44.5 0.5 44.5 0.5 41.5 L 0.5 3.5 C 0.5 0.5 0.5 0.5 3.5 0.5" isShadow="true" stroke="black" stroke-opacity="0.09999999999999999" stroke-width="3" transform="translate(1, 1)" width="126" height="44"></path><path fill="none" d="M 3.5 0.5 L 123.5 0.5 C 126.5 0.5 126.5 0.5 126.5 3.5 L 126.5 41.5 C 126.5 44.5 126.5 44.5 123.5 44.5 L 69.5 44.5 63.5 50.5 57.5 44.5 3.5 44.5 C 0.5 44.5 0.5 44.5 0.5 41.5 L 0.5 3.5 C 0.5 0.5 0.5 0.5 3.5 0.5" isShadow="true" stroke="black" stroke-opacity="0.15" stroke-width="1" transform="translate(1, 1)" width="126" height="44"></path><path fill="rgba(249, 249, 249, .85)" d="M 3.5 0.5 L 123.5 0.5 C 126.5 0.5 126.5 0.5 126.5 3.5 L 126.5 41.5 C 126.5 44.5 126.5 44.5 123.5 44.5 L 69.5 44.5 63.5 50.5 57.5 44.5 3.5 44.5 C 0.5 44.5 0.5 44.5 0.5 41.5 L 0.5 3.5 C 0.5 0.5 0.5 0.5 3.5 0.5" stroke="#0070c0" stroke-width="1"></path><text x="8" zIndex="1" style="font-size:12px;color:#333333;fill:#333333;" transform="translate(0,20)"><tspan style="font-size: 10px">8/1</tspan><tspan style="fill:#0070c0" x="8" dy="15">●</tspan><tspan dx="0"> 會員註冊人數: </tspan><tspan style="font-weight:bold" dx="0">750</tspan></text></g><text x="881" text-anchor="end" zIndex="8" style="cursor:pointer;color:#909090;display:none;font-size:9px;fill:#909090;" y="495"></text></svg></div></div>
+    </div>
+    <div class="charts">
+        <div class="chart-stackedbar highcharts" data-highcharts-chart="1"><div class="highcharts-container" id="highcharts-4" style="position: relative; overflow: hidden; width: 876.094px; height: 500px; text-align: left; line-height: normal; z-index: 0; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); touch-action: none;"><svg version="1.1" style="font-family:&quot;Lucida Grande&quot;, &quot;Lucida Sans Unicode&quot;, Arial, Helvetica, sans-serif;font-size:12px;" xmlns="http://www.w3.org/2000/svg" width="876.09375" height="500"><desc>Created with Highcharts 4.1.4</desc><defs><clipPath id="highcharts-5"><rect x="0" y="0" width="801" height="327"></rect></clipPath></defs><rect x="0" y="0" width="876" height="500" strokeWidth="0" fill="#FFFFFF" class=" highcharts-background"></rect><g class="highcharts-grid" zIndex="1"></g><g class="highcharts-grid" zIndex="1"><path fill="none" d="M 65 377.5 L 866 377.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 322.5 L 866 322.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 268.5 L 866 268.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 214.5 L 866 214.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 159.5 L 866 159.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 105.5 L 866 105.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path><path fill="none" d="M 65 50.5 L 866 50.5" stroke="#D8D8D8" stroke-width="1" zIndex="1" opacity="1"></path></g><g class="highcharts-axis" zIndex="2"><path fill="none" d="M 198.5 377 L 198.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 465.5 377 L 465.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><path fill="none" d="M 732.5 377 L 732.5 387" stroke="#C0D0E0" stroke-width="1" opacity="1"></path><text x="465.5" zIndex="7" text-anchor="middle" transform="translate(0,0)" class=" highcharts-xaxis-title" style="color:#707070;fill:#707070;" visibility="visible" y="438">月份</text><path fill="none" d="M 65 377.5 L 866 377.5" stroke="#C0D0E0" stroke-width="1" zIndex="7" visibility="visible"></path></g><g class="highcharts-axis" zIndex="2"><text x="50" zIndex="7" text-anchor="end" transform="translate(0,0)" class=" highcharts-yaxis-title" style="color:#707070;fill:#707070;" visibility="visible" y="30">人數</text></g><g class="highcharts-series-group" zIndex="3"><g class="highcharts-series highcharts-tracker" visibility="visible" zIndex="0.1" transform="translate(65,50) scale(1 1)" style="" clip-path="url(#highcharts-5)"><rect x="134" y="287" width="80" height="41" fill="#009242" rx="0" ry="0"></rect><rect x="401" y="260" width="80" height="68" fill="#009242" rx="0" ry="0"></rect><rect x="668" y="219" width="80" height="109" fill="#009242" rx="0" ry="0"></rect></g><g class="highcharts-markers" visibility="visible" zIndex="0.1" transform="translate(65,50) scale(1 1)" clip-path="none"></g><g class="highcharts-series highcharts-tracker" visibility="visible" zIndex="2" transform="translate(65,50) scale(1 1)" style="" clip-path="url(#highcharts-5)"><rect x="53" y="273" width="81" height="55" fill="#0070c0" rx="0" ry="0"></rect><rect x="320" y="189" width="81" height="139" fill="#0070c0" rx="0" ry="0"></rect><rect x="587" y="56" width="81" height="272" fill="#0070c0" rx="0" ry="0"></rect></g><g class="highcharts-markers" visibility="visible" zIndex="2" transform="translate(65,50) scale(1 1)" clip-path="none"></g></g><g class="highcharts-legend" zIndex="7" transform="translate(327,459)"><g zIndex="1"><g><g class="highcharts-legend-item" zIndex="1" transform="translate(8,3)"><text x="21" style="color:#333333;font-size:12px;font-weight:bold;cursor:pointer;fill:#333333;" text-anchor="start" zIndex="2" y="15">會員註冊人數</text><rect x="0" y="4" width="16" height="12" zIndex="3" fill="#0070c0"></rect></g><g class="highcharts-legend-item" zIndex="1" transform="translate(121,3)"><text x="21" y="15" style="color:#333333;font-size:12px;font-weight:bold;cursor:pointer;fill:#333333;" text-anchor="start" zIndex="2">會員登入次數</text><rect x="0" y="4" width="16" height="12" zIndex="3" fill="#009242"></rect></g></g></g></g><g class="highcharts-axis-labels highcharts-xaxis-labels" zIndex="7"><text x="198.5" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:257px;text-overflow:clip;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">2017年8月</text><text x="465.5" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:257px;text-overflow:clip;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">2017年8月</text><text x="732.5" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:257px;text-overflow:clip;" text-anchor="middle" transform="translate(0,0)" y="402" opacity="1">2017年8月</text></g><g class="highcharts-axis-labels highcharts-yaxis-labels" zIndex="7"><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="383" opacity="1">0</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="329" opacity="1">200</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="274" opacity="1">400</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="220" opacity="1">600</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="166" opacity="1">800</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="111" opacity="1">1000</text><text x="50" style="color:#606060;cursor:default;font-size:18px;fill:#606060;width:279px;text-overflow:clip;" text-anchor="end" transform="translate(0,0)" y="57" opacity="1">1200</text></g><g class="highcharts-tooltip" zIndex="8" style="cursor:default;padding:0;white-space:nowrap;" transform="translate(0,-9999)"><path fill="none" d="M 3 0 L 13 0 C 16 0 16 0 16 3 L 16 13 C 16 16 16 16 13 16 L 3 16 C 0 16 0 16 0 13 L 0 3 C 0 0 0 0 3 0" isShadow="true" stroke="black" stroke-opacity="0.049999999999999996" stroke-width="5" transform="translate(1, 1)"></path><path fill="none" d="M 3 0 L 13 0 C 16 0 16 0 16 3 L 16 13 C 16 16 16 16 13 16 L 3 16 C 0 16 0 16 0 13 L 0 3 C 0 0 0 0 3 0" isShadow="true" stroke="black" stroke-opacity="0.09999999999999999" stroke-width="3" transform="translate(1, 1)"></path><path fill="none" d="M 3 0 L 13 0 C 16 0 16 0 16 3 L 16 13 C 16 16 16 16 13 16 L 3 16 C 0 16 0 16 0 13 L 0 3 C 0 0 0 0 3 0" isShadow="true" stroke="black" stroke-opacity="0.15" stroke-width="1" transform="translate(1, 1)"></path><path fill="rgba(249, 249, 249, .85)" d="M 3 0 L 13 0 C 16 0 16 0 16 3 L 16 13 C 16 16 16 16 13 16 L 3 16 C 0 16 0 16 0 13 L 0 3 C 0 0 0 0 3 0"></path><text x="8" zIndex="1" style="font-size:12px;color:#333333;fill:#333333;" transform="translate(0,20)"></text></g><text x="866" text-anchor="end" zIndex="8" style="cursor:pointer;color:#909090;display:none;font-size:9px;fill:#909090;" y="495"></text></svg></div></div>
+    </div>
+</div>
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+<link href="~/css/vendor/rangeDatePicker/rangeDatePicker.css" rel="stylesheet" type="text/css" />
+<script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+    //function setSelectedDateRange(startdate, enddate)
+    //{
+    //    var selectedDate =startdate ;
+    //    if(startdate.split("/")[0] == enddate.split("/")[0])
+    //        selectedDate +=  " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+    //    else
+    //        selectedDate +=  " - " + enddate;
+    //    $("#SearchStartDate").val(startdate);
+    //    $("#SearchEndDate").val(enddate);
+    //    $("#spDateRange").html(selectedDate);
+    //    $('#choiceDateRange').hide();
+    //    $("#searchForm").submit();
+    //}
+    
+    function setSelectedDateRange(startdate, enddate, selectCbxValue)
+    {
+        var selectedDate =startdate ;
+        if(startdate.split("/")[0] == enddate.split("/")[0])
+            selectedDate +=  " - " + enddate.split("/")[1] + "/" + enddate.split("/")[2];
+        else
+            selectedDate +=  " - " + enddate;
+
+        $("#SearchStartDate").val(startdate);
+        $("#SearchEndDate").val(enddate);
+        $("#RangeType").val(selectCbxValue);
+        $("#spDateRange").html(selectedDate);
+        $('#choiceDateRange').hide();
+       
+        var checkStartDateResult = Component.parseDate($("#SearchStartDate").val());
+        var checkEndDateResult = Component.parseDate($("#SearchEndDate").val());
+        if (checkStartDateResult == null) {
+            Component.alert('開始日期格式錯誤。');
+            return;
+        }
+        if (checkEndDateResult == null) {
+            Component.alert('結束日期格式錯誤。');
+            return;
+
+        }
+        $("#searchForm").submit();
+    }
+    function cancelSelectedDateRange() {
+        $('#choiceDateRange').hide();
+    }
+</script>
+

@@ -1,0 +1,362 @@
+﻿@model IEnumerable<ArticleModels>
+@{ 
+    IEnumerable<ArticleTypesModels> types = ViewBag.Types;
+    Pagination pagination = ViewBag.Pagination;
+    ArticleSettingModels setting = ViewBag.Setting;
+    SitePage sitePage = ViewBag.SitePage;
+
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+
+    MenusModels menu = ViewBag.Menu;
+    string uploadUrl = ViewBag.UploadUrl;
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(sitePage.SiteID, sitePage.MenuID);
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Article/list-style2.css" rel="stylesheet" />
+
+<div id="card_@setting.MenuID" class="card-common card-article" data-style="2">
+    <h1 class="article-title">@menu.Title</h1>
+    <div class="filters-bar">
+        <ol id="filter-bar">
+            <li data-filter="all" class="active"><span>全部</span></li>
+            @foreach (ArticleTypesModels type in types) {
+
+                string iconUrl = "";
+                if (!string.IsNullOrEmpty(type.Icon))
+                {
+                    WorkV3.Models.ImageModel imgModel = Newtonsoft.Json.JsonConvert.DeserializeObject<WorkV3.Models.ImageModel>(type.Icon);
+                    iconUrl = uploadUrl + imgModel.Img;
+                }
+                <li data-filter="@type.ID">
+            @if (!string.IsNullOrEmpty(iconUrl))
+            {
+                <div class="type-img" style="background-image: url('@iconUrl');"></div>
+            }
+            <span>@type.Name</span></li>
+            }
+        </ol>
+    </div>
+    <div class="article-list">
+        <ul id="article-ul">
+            @foreach (ArticleModels item in Model) {
+                List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                string filterClass = (articleTypes?.Count > 0 ? "all, " + string.Join(", ", articleTypes.Select(t => t.Name)) : "all");
+                SitePage page = itemPages[item.CardNo];
+                string img = item.GetFirstImg(setting);
+                if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, img)))
+                {
+                    img = string.Format("R_{0}", img);
+                }
+                string target = "_self";
+                string url = string.Empty;
+                if (item.Type == "page") {
+                    url = Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN });
+                } else if (item.Type == "link") {
+                    url = item.Link;
+                    if (item.IsOpenNew) {
+                        target = "_blank";
+                    }
+                } else if (item.Type == "archive") {
+                    target = "_blank";
+                    if (!string.IsNullOrWhiteSpace(item.Archive)) {
+                        ResourceFilesModels file = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.Archive);
+                        url = uploadUrl + file.FileInfo;
+                    }
+                }
+            <li class="item-static" data-filter-class="@filterClass">
+                <a href="@Html.Raw(url)" target="@target">
+                    @if (!string.IsNullOrWhiteSpace(img)) {
+                    <img src="@(uploadUrl + img)" />
+                    }
+                    @if (articleTypes?.Count() > 0) {
+                        foreach (ArticleTypesModels type in articleTypes) {
+                    <div class="article-list-type" data-type="@type.Name">
+                        <span data-color="@type.Color">@type.Name</span>
+                    </div>
+                        }
+                    }
+                    <div class="article-list-title">@item.Title</div>
+                    <div class="article-list-desc">@item.Summary.TrimTags().Truncate(150)</div>
+                </a>
+            </li>
+            }                
+        </ul>
+    </div>
+    @if (setting.PagingMode == "頁碼分頁") {
+        <div class="pagination text-C">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    } else if (setting.PagingMode == "點擊看更多") {
+        <div class="pagination text-C">
+            <a class="btn-black-o btn-more" href="javascript:">More</a>
+        </div>
+    } else if (setting.PagingMode == "捲動看更多") {
+        <div class="pagination">
+            <a id="btnMore" href="@Url.Action("Next", "Article", new { siteId = ViewBag.SiteID, menuId = setting.MenuID, pageIndex = 2, style = 2 })"></a>
+        </div>
+    }    
+</div>
+
+<script src="~/script/isotope/isotope.pkgd.js"></script>
+<script type="text/javascript" src="~/script/imagesloaded/imagesloaded.js"></script>
+<script type="text/javascript">
+    @if ((ViewBag.CheckReadMode as bool?) == false) {
+        string alertStr = "", pageSn = "";
+        if((ViewBag.IsLogin as bool?) == false)
+        {
+            alertStr = $"想要瀏覽?請先登入會員(限{ViewBag.IdentityName}觀看全文)";
+            pageSn = "Login";
+        }
+        else
+        {
+            alertStr = $"想要瀏覽?(限{ViewBag.IdentityName}觀看全文)";
+            pageSn = "Index";
+        }
+        <text>
+            Component.alert('@alertStr', function () {
+               location.href = '@Html.Raw(Url.Action("Index", "Home", new { siteSn = sitePage.SiteSN, pageSn = pageSn }))';
+            });
+        </text>
+    }
+</script>
+
+@if (setting.PagingMode == "捲動看更多") {
+<script type="text/javascript" src="~/script/infinitescroll/jquery.infinitescroll.dev.js"></script>
+}
+@if (setting.PagingMode == "點擊看更多" || setting.PagingMode == "捲動看更多" || setting.PagingMode == "不分頁") {
+<script type="text/javascript">
+    (function ($) {
+        var outerElm = $('#card_@setting.MenuID');
+
+        var $grid = outerElm.find('#article-ul');
+        $grid.imagesLoaded(function () {
+            $grid.isotope({
+                itemSelector: '.item-static',
+                percentPosition: true,
+                masonry: {
+                    horizontalOrder: true
+                },
+            });
+        });
+
+        function filterList(value) {
+            var value = $("#article-ul").find("li[data-filter-class*=" + value + "]");
+            return value;
+        }
+        $('#filter-bar > li').each(function () {
+            var $this = $(this);
+            $this.on('click', function () {
+                $('#filter-bar').find('.active').removeClass('active');
+                $(this).addClass('active');
+
+                var filterValue = $(this).attr('data-filter');
+                if (filterValue == 'all') {
+                    $grid.children().each(function () {
+                        var items = $(this).find('div.article-list-type');
+                        items.eq(0).show();
+                        items.filter(':gt(0)').hide();
+                    });
+                } else {
+                    $grid.children().each(function () {
+                        $(this).find('div.article-list-type').each(function () {
+                            if ($(this).attr('data-type') == filterValue)
+                                $(this).show();
+                            else
+                                $(this).hide();
+                        });
+                    });
+                }
+
+                $grid.isotope({
+                    filter: filterList(filterValue)
+                });
+            });
+        }).filter('.active').triggerHandler('click');
+
+
+        @if (setting.PagingMode == "點擊看更多") {
+            <text>
+            var pageIndex = 1;
+            var processing = false;
+            var finish = false;
+
+            function loadNextPage(button) {
+                if (processing || finish)
+                    return;
+
+                processing = true;
+                var url = '@Html.Raw(Url.Action("Next", "Article", new { siteId = ViewBag.SiteID, menuId = setting.MenuID, style = 2 }))&pageIndex=' + (++pageIndex);
+
+                var key = Component.queryString('key');
+                if (key)
+                    url += '&key=' + encodeURIComponent(key);
+
+                var type = Component.queryString('type');
+                if (type)
+                    url += '&type=' + encodeURIComponent(type);
+                var typeId = Component.queryString('typeId');
+                if (typeId)
+                    url += '&typeId=' + encodeURIComponent(typeId);
+
+                $.get(url, function (html) {
+                    if (!$.trim(html)) {
+                        finish = true;
+                        if (button) {
+                            button.parent().fadeOut(function () {
+                                $(this).remove();
+                            });
+                        }
+                    }
+
+                    html = $(html);
+                    var imgdefereds = [];
+                    html.find('img').each(function () {
+                        var dfd = $.Deferred();
+                        $(this).bind('load', function () {
+                            dfd.resolve();
+                        }).bind('error', function () {
+                            dfd.resolve();
+                        })
+                        if (this.complete) {
+                            setTimeout(function () {
+                                dfd.resolve();
+                            }, 100);
+                        }
+                        imgdefereds.push(dfd);
+                    })
+                    $.when.apply(null, imgdefereds).done(function () {
+                        $grid.append(html);
+                        processing = false;
+
+                        $grid.isotope('appended', html);
+                        outerElm.find('#filter-bar > li.active').triggerHandler('click');
+                    });
+                });
+            }
+
+            outerElm.find('a.btn-more').click(function () {
+                loadNextPage($(this));
+            });
+            </text>
+        } else if (setting.PagingMode == "捲動看更多") {
+            <text>
+            $grid.infinitescroll(
+                {
+                    navSelector: '.pagination',
+                    nextSelector: '.pagination a:first',
+                    itemSelector: '.item-static',
+                    loading:
+                    {
+                        msgText: "讀取中，請稍後.....",
+                        finishedMsg: '列表已無內容',
+                        img: 'http://i.imgur.com/6RMhx.gif'
+                    },
+                },
+                // Infinite Scroll Callback
+                function(html) {
+                    html = $(html);
+                    html.imagesLoaded(function() {
+                        $grid.isotope('appended', html);
+                        outerElm.find('#filter-bar > li.active').triggerHandler('click');
+                    });
+                }
+            );
+            </text>
+        }
+    })(jQuery);
+</script>
+} else if (setting.PagingMode == "頁碼分頁") {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@setting.MenuID');
+
+        function initList(type) {
+            var $grid = outerElm.find('#article-ul');
+            $grid.imagesLoaded(function () {
+                $grid.isotope({
+                    itemSelector: '.item-static',
+                    percentPosition: true,
+                    masonry: {
+                        horizontalOrder: true
+                    },
+                });
+            });
+
+            outerElm.find('#article-ul > li').each(function () {
+                if (type && type != 'all') {
+                    $(this).find('div.article-list-type[data-type!="' + type + '"]').remove();
+                } else {
+                    $(this).find('div.article-list-type:gt(0)').remove();
+                }
+            });
+
+            if (type) {
+                outerElm.find('#filter-bar > li').each(function () {
+                    if ($(this).attr('data-filter') == type)
+                        $(this).addClass('active');
+                    else
+                        $(this).removeClass('active');
+                });
+            }
+            
+        }
+
+        var type = Component.queryString('type');
+        initList(type);
+
+        outerElm.on('click', '#filter-bar > li', function () {
+            var type = $(this).attr('data-filter');
+            var url = '@Url.Action("Index", "Home", new { SiteSN = sitePage.SiteSN, PageSN = sitePage.PageSN })';
+
+            var query = [];
+            if (type != 'all')
+                query.push('type=' + encodeURIComponent(type));
+
+            var key = Component.queryString('key');
+            if (key)
+                query.push('key=' + encodeURIComponent(key));
+                        
+            if (query.length)
+                url += '?' + query.join('&');
+
+            console.log(url);
+
+            $.get(url, function (html) {
+                html = $(html);
+                outerElm.fadeOut(function () {
+                    outerElm.html(html.find('#' + outerElm.prop('id')).html());
+                    initList(type);
+                    outerElm.fadeIn();
+                    var action = location.pathname.substr(location.pathname.lastIndexOf('/') + 1);
+                    if (type != 'all')
+                        action += '?type=' + encodeURIComponent(type);
+                    history.pushState(null, null, action);
+                });
+            });
+        });
+
+        outerElm.on('click', 'div.pagination a', function (e) {
+            e.preventDefault();
+
+            var url = this.href;
+            var m = url.match(/[?&]type=([^&]+)/i);
+            var type = m ? m[1] : '';
+
+            $.get(url, function (html) {
+                html = $(html);
+                outerElm.fadeOut(function () {
+                    $('html,body').animate({
+                        scrollTop: $("#filter-bar").offset().bottom
+                    }, 'slow');
+                    outerElm.html(html.find('#' + outerElm.prop('id')).html());
+                    initList(type);
+                    outerElm.fadeIn();
+                });
+            });
+        });
+        })();
+    </script>
+}

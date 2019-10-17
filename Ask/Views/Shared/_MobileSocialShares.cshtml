@@ -1,0 +1,20 @@
+﻿@model List<WorkV3.Areas.Backend.Models.SocialRelationModels>
+@foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in Model)
+{
+    if (!item.IsOpen)
+    {
+        continue;
+    }
+    string style = "", iconClassName = "", btnClassName = "" ;
+    if (item.ShowType == WorkV3.Areas.Backend.Models.ShowType.Show)
+    {
+        style = "";
+    }
+    else
+    {
+        style = "style='display:none'";
+    }
+    btnClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeButtonStyle(item.SocialType);
+    iconClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeStyle(item.SocialType);
+    <a class="@btnClassName transparent square" href="javascript:" data-social  @Html.Raw(style)><i class="cc @iconClassName"></i></a>
+}

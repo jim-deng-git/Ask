@@ -1,0 +1,22 @@
+.border
+    border: 1px solid $input-disabled-solid-color
+
+.border-T
+    border-top: 1px solid $input-disabled-solid-color
+
+.border-R
+    border-right: 1px solid $input-disabled-solid-color
+
+.border-B
+    border-bottom: 1px solid $input-disabled-solid-color
+
+.border-L
+    border-left: 1px solid $input-disabled-solid-color
+
+//susan 20190408 add
+.border-none
+    border: none !important
+
+@for $bb from 1 to 10
+    .border-#{$bb}x
+        border-width: #{$bb}px !important

@@ -1,0 +1,92 @@
+﻿@model WorkV3.Models.MemberShipModels
+
+@{
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<form id="editForm" action="@Url.Action("Index", "Home", new { PageSN = pageSn, SiteSN = ViewBag.SiteSN, MemberID = Model.ID })" method="post" enctype="multipart/form-data">
+    <div class="card-member loginPage" data-style="1">
+        <div class="login">
+            <div class="login-logo">手機驗證</div>
+            <div class="login-box small">
+                <div class="left-box">
+                    <div class="col-2">
+                        <div class="title">驗證碼</div>
+                        <div class="input-field ">
+                            <input type="text" id="captcha" name="captcha" maxlength="6" />
+                        </div>
+                        </br>
+                        <div class="btnBox">
+                            <a id="btnSend" class="btn-custom btn-large half" href="javascript:">重新發送</a>
+                            <a id="btnSave" class="btn-custom btn-large half" href="javascript:">確認</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>
+<script type="text/javascript">
+    $(function () {
+        @Html.Raw(ViewBag.Script)
+
+        $('#btnSend').on('click', function () {
+            var diffTime = 0;
+            $.post('@Url.Action("getVerifyTime", "Member", new { MemberID = Model.ID })', function (VerifyTime) {
+                if (VerifyTime.length != 0)
+                {
+                    diffTime = parseInt( new Date() - new Date(VerifyTime.replace(/-/g, '/')) );
+                }
+
+                if (diffTime / 1000 > 10 || VerifyTime.length == 0)
+                {
+                    $.post('@Url.Action("ReSnedMobileVerify", "Member", new { MemberID = Model.ID })&Mobile=@Model.Mobile', function (SendStatus) {
+                        if (SendStatus == 'success')
+                        {
+                            Component.alert("驗證碼已送出!請查看您的手機簡訊，驗證碼將於60秒後失效!");
+                        }
+                        else
+                        {
+                            Component.alert("驗證碼發送失敗!");
+                        }
+                    });
+                }
+                else
+                {
+                    Component.alert("請稍後再試!");
+                }
+            });
+            
+        });
+
+        var form = $('#editForm');
+        $('#btnSave').on('click', function () {
+            if (!$('#captcha').val())
+            {
+                Component.alert("請輸入驗證碼!");
+            }
+            else
+            {
+                form.submit();
+            }
+        });
+        @if ((ViewBag.Exit as bool?) == true)
+    {
+        <text>
+        Component.alert('@ViewBag.Message', function () {
+            location.href = '@Url.Action("Index", "Home", new { SiteSN = siteSn, PageSN = "Login" })';
+        });
+        </text>
+    }
+    });
+</script>

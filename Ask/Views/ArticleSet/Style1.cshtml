@@ -1,0 +1,71 @@
+﻿@model IEnumerable<ArticleModels>
+@{    
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleSet/style1.css" rel="stylesheet" />
+
+<div id="card_@(setting.CardNo)" class="card-common card-articleSet" data-style="1">
+    <div class="article-list">
+        <ul id="article-ul">
+            @foreach (ArticleModels item in Model) {
+                List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                SitePage page = itemPages.GetValue(item.CardNo);
+                if (page != null) {
+                <li>
+                    <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))">
+                        @if (item.IssueDate != null) {
+                        <div class="article-list-date">
+                            <div>@(((DateTime)item.IssueDate).Month.ToString("00"))</div>
+                            <div>@(((DateTime)item.IssueDate).Day.ToString("00"))</div>
+                        </div>
+                        }
+                        @if (articleTypes?.Count() > 0) {
+                            ArticleTypesModels type = articleTypes.First();
+                        <div class="article-list-type">@type.Name</div>
+                        }
+                        <div class="article-list-title">@item.Title</div>
+                    </a>
+                </li>
+                }
+            }
+        </ul>
+        @if (setting.PagingMode == "點擊看更多") {
+        <div class="pagination text-C">
+            <a class="btn-black-o btn-more" href="javascript:">More</a>
+        </div>
+        }
+    </div>
+</div>
+@if (setting.PagingMode == "點擊看更多") {
+<script type="text/javascript">
+    (function () {
+        var outerElm = $('#card_@(setting.CardNo)');
+        var pageIndex = 1;
+        var processing = false;
+        outerElm.find('a.btn-more').click(function () {
+            if (processing)
+                return;
+
+            processing = true;
+            var btn = $(this);
+            $.get('@Html.Raw(Url.Action("Next", "ArticleSet", new { siteId = ViewBag.SiteID, cardNo = setting.CardNo, style = 1 }))&pageIndex=' + (++pageIndex), function (html) {
+                if (!$.trim(html)) {
+                    btn.parent().fadeOut(function () {
+                        $(this).remove();
+                    }); 
+                }
+
+                html = $(html).hide();
+                outerElm.find('#article-ul').append(html);
+                html.fadeIn();
+
+                processing = false;
+            });
+        });
+    })();
+</script>
+}

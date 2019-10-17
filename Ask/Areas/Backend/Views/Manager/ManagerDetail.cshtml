@@ -1,0 +1,84 @@
+﻿@model MemberModels
+@using Newtonsoft.Json.Linq;
+@{
+    ViewBag.Title = "Draw";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    GroupModels group = GroupDAO.GetItem(Model.GroupId);
+}
+
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">管理者檢視</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <ul class="forms">
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">帳號</div>
+                            <div class="title inline">@Model.LoginID</div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">名稱</div>
+                            <div class="title inline">@Model.Name</div>
+                        </div>
+                    </li>
+                        @if (!String.IsNullOrEmpty(Model.Email))
+                        {
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">Email</div>
+                            <div class="title inline">@Model.Email </div>
+                        </div>
+                    </li>
+                        }
+                    <li>
+                        @if (!String.IsNullOrEmpty(Model.Mobile))
+                        {
+                        <div class="col-2">
+                            <div class="title inline">手機</div>
+                            <div class="title inline">@Model.Mobile</div>
+                        </div>
+                        }
+                        @if (!String.IsNullOrEmpty(Model.Phone))
+                        {
+                        <div class="col-2">
+                            <div class="title inline">電話</div>
+                            <div class="title inline">@Model.Phone</div>
+                        </div>
+                        }
+                    </li>
+                    @if (group != null)
+                    {
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">權限群組</div>
+                            <div class="title inline">@group.Name</div>
+                        </div>
+                    </li>
+                    }
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">狀態</div>
+                            @if (Model.MStatus == 0)
+                            {
+                            <div class="title inline">可正常登入後台</div>
+                            }
+                            else
+                            {
+                            <div class="title inline">停權</div>
+                            }
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

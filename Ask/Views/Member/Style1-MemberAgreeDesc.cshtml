@@ -1,0 +1,12 @@
+﻿@model WorkV3.Areas.Backend.Models.AgreeStatementSetModels
+<link href="/TaiSounds/css/card.css" rel="stylesheet">
+<link href="/TaiSounds/css/Cards/ArticleIntro/style1.css" rel="stylesheet">
+
+<div class="card-common card-article" data-style="1">
+    <div class="article-main">
+        <div class="article-center">
+            <div class="article-title page">會員同意條款</div>
+            @Html.Raw( Model.StatementContent)
+        </div>
+    </div>
+</div>

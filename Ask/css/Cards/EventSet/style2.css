@@ -1,0 +1,93 @@
+.card-eventSet[data-style="2"] .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-eventSet[data-style="2"] .swiper-slide {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box; }
+
+.card-eventSet[data-style="2"] .swiper-button-prev, .card-eventSet[data-style="2"] .swiper-button-next, .card-eventSet[data-style="2"] .swiper-button-prev::after, .card-eventSet[data-style="2"] .swiper-button-next::after {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out; }
+
+.card-eventSet[data-style="2"] .card-text-name {
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap; }
+
+.card-eventSet[data-style="2"] .card-text {
+  background-color: #ffffff; }
+
+.card-eventSet[data-style="2"] .card-text-name {
+  font-size: 22px;
+  color: #222222; }
+  .card-eventSet[data-style="2"] .card-text-name a {
+    color: #222222; }
+    .card-eventSet[data-style="2"] .card-text-name a:focus, .card-eventSet[data-style="2"] .card-text-name a:active, .card-eventSet[data-style="2"] .card-text-name a:hover {
+      color: #222222; }
+  .card-eventSet[data-style="2"] .card-text-name ~ .card-text-info {
+    margin-top: 0; }
+
+.card-eventSet[data-style="2"] .card-text-info {
+  font-size: 17px;
+  color: #999999; }
+
+.card-eventSet[data-style="2"] .card-text-kind {
+  font-size: 24px;
+  color: #000000; }
+
+.card-eventSet[data-style="2"] .pagination {
+  margin-top: 20px; }
+  .card-eventSet[data-style="2"] .pagination .btn-black-o {
+    padding: 3px 50px; }
+
+.card-eventSet[data-style="2"] .swiper-slide {
+  width: 33.33333%;
+  padding: 0 20px; }
+  @media only screen and (max-width: 800px) {
+    .card-eventSet[data-style="2"] .swiper-slide {
+      width: 50%; } }
+  @media only screen and (max-width: 420px) {
+    .card-eventSet[data-style="2"] .swiper-slide {
+      width: 100%;
+      padding: 0; } }
+
+.card-eventSet[data-style="2"] .swiper-button-prev, .card-eventSet[data-style="2"] .swiper-button-next {
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  margin-top: -20px;
+  border-radius: 100%;
+  opacity: 0;
+  overflow: hidden;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-align: center; }
+  @media only screen and (max-width: 420px) {
+    .card-eventSet[data-style="2"] .swiper-button-prev, .card-eventSet[data-style="2"] .swiper-button-next {
+      opacity: 1; } }
+  .card-eventSet[data-style="2"] .swiper-button-prev:hover, .card-eventSet[data-style="2"] .swiper-button-next:hover {
+    background-color: black; }
+  .card-eventSet[data-style="2"] .swiper-button-prev::after, .card-eventSet[data-style="2"] .swiper-button-next::after {
+    font-family: "FontCCWork";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    line-height: 50px;
+    top: 40%;
+    margin-top: -20px;
+    font-size: 30px; }
+
+.card-eventSet[data-style="2"] .swiper-button-prev::after {
+  content: "\ea06"; }
+
+.card-eventSet[data-style="2"] .swiper-button-next::after {
+  content: "\ea08"; }
+
+.card-eventSet[data-style="2"] .swiper-container:hover .swiper-button-prev, .card-eventSet[data-style="2"] .swiper-container:hover .swiper-button-next {
+  opacity: 1; }

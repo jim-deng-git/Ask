@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "參數設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    string type = ViewBag.Type;
+    string termContents = ViewBag.Term;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader() @*admin-iframe.js 會調用到*@
+}
+
+@section Script {
+    @BundleConfig.Component()    
+    <script type="text/javascript">
+        $(".fixTable").stickyTableHeaders();
+
+        var editor = Component.editor('Contents');
+        editor.on('change', function (event) {
+            $.post('@Html.Raw(Url.Action("ParaTermEdit", new { menuId = menuId }))', { contents: this.getData() });
+        });
+
+        var swiperTab = new Swiper('.swiper-tab-bar', {
+            slidesPerView: 'auto',
+            paginationClickable: true,
+            spaceBetween: 0,
+            freeMode: true,
+            loop: false
+        });
+
+        var swiperContent = new Swiper('.swiper-tab-content', {
+            direction: 'horizontal',
+            slidesPerView: 'auto',
+            loop: false,
+            autoHeight: true,
+            simulateTouch: false,
+            onSlideChangeEnd: function (swiper) {
+                var n = swiper.activeIndex;
+                setCurrentSlide($(".swiper-tab-bar .swiper-slide").eq(n), n);
+                swiper1.slideTo(n, 500, false);
+            }
+        });
+
+        swiperTab.slides.each(function (index, val) {
+            $(this).click(function () {
+                var $this = $(this);
+                var tabType = $this.attr('data-type');
+                var contentElm = $('#div' + tabType);
+                if (contentElm.is(':empty')) {
+                    contentElm.load('Para' + tabType + '?siteId=@ViewBag.SiteID&menuId=@ViewBag.MenuID', function () {
+                        $(".swiper-tab-bar .swiper-slide").removeClass("selected");
+                        $this.addClass("selected");
+                        swiperContent.update();
+                    });
+                } else {
+                    $(".swiper-tab-bar .swiper-slide").removeClass("selected");
+                    $this.addClass("selected");
+                }
+
+                setTimeout(function () {
+                    swiperContent.slideTo(index, 500, false);
+                }, 100);                
+            });
+
+            if ($(this).hasClass('selected'))
+                $(this).click();
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide @(type == "Type" ? "selected" : string.Empty)" data-type="Type"><i class="cc cc-tag cc-rotate-270"></i>類別</div>
+            <div class="swiper-slide @(type == "Organizer" ? "selected" : string.Empty)" data-type="Organizer"><i class="cc cc-voice-o"></i>主辦單位</div>
+            <div class="swiper-slide @(type == "Contact" ? "selected" : string.Empty)" data-type="Contact"><i class="cc cc-phone"></i>聯絡人</div>
+            <div class="swiper-slide @(type == "Place" ? "selected" : string.Empty)" data-type="Place"><i class="cc cc-map-o"></i>地點</div>
+            <div class="swiper-slide @(type == "Guest" ? "selected" : string.Empty)" data-type="Guest"><i class="cc cc-user-circle-o"></i>貴賓</div>
+            <div class="swiper-slide @(type == "Object" ? "selected" : string.Empty)" data-type="Object"><i class="cc cc-target-user"></i>適合對象</div>
+            <div class="swiper-slide @(type == "Year" ? "selected" : string.Empty)" data-type="Year"><i class="cc cc-business-users"></i>適合年齡</div>
+            <div class="swiper-slide @(type == "Term" ? "selected" : string.Empty)" data-type="Term"><i class="cc cc-tutorial-o"></i>預設活動條款</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div id="divType" class="swiper-slide p-T-10"></div>
+            <div id="divOrganizer" class="swiper-slide p-T-10"></div>
+            <div id="divContact" class="swiper-slide p-T-10"></div>
+            <div id="divPlace" class="swiper-slide p-T-10"></div>
+            <div id="divGuest" class="swiper-slide p-T-10"></div>
+            <div id="divObject" class="swiper-slide p-T-10"></div>
+            <div id="divYear" class="swiper-slide p-T-10"></div>
+
+            <!-- id與divOrganizer重複 改為divTerm cc 20180907 -->
+            <div id="divTerm" class="swiper-slide p-T-10">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="input-field">
+                                <textarea contenteditable="true" id="Contents">@(string.IsNullOrWhiteSpace(termContents) ? "請填入段落內文" : termContents)</textarea>                                
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

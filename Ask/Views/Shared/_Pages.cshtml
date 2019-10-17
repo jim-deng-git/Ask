@@ -1,0 +1,12 @@
+﻿@model List<ZonesModels> 
+
+@{
+    if (Model != null) {
+
+        foreach (var Zone in Model)
+        {           
+            Html.RenderAction("Zone", "Pages", Zone);
+        }
+
+    }
+}

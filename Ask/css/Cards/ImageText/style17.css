@@ -1,0 +1,52 @@
+.card-imageText[data-style="17"] .card-text .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+@media only screen and (max-width: 420px) {
+  .card-imageText[data-style="17"] {
+    width: 100%;
+    margin: 0 auto; } }
+
+.card-imageText[data-style="17"] .card-img .img-box {
+  display: inline-block;
+  height: auto;
+  width: 100%;
+  background-color: #eee;
+  padding: 10px; }
+  .card-imageText[data-style="17"] .card-img .img-box .img-info {
+    padding-top: 100%;
+    overflow: hidden;
+    position: relative;
+    display: block; }
+  .card-imageText[data-style="17"] .card-img .img-box img {
+    width: auto !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%; }
+
+.card-imageText[data-style="17"] .card-text {
+  margin-top: 0;
+  padding: 15px 0;
+  text-align: center; }
+  .card-imageText[data-style="17"] .card-text .card-text-name {
+    padding: 0 20px; }
+    .card-imageText[data-style="17"] .card-text .card-text-name a {
+      font-size: 22px;
+      color: #000; }
+    .card-imageText[data-style="17"] .card-text .card-text-name ~ .card-text-info {
+      margin-top: 5px; }
+  .card-imageText[data-style="17"] .card-text .card-text-info {
+    font-size: 16px;
+    color: #606060;
+    line-height: 1.8; }
+
+.card-imageText[data-style="17"] .card-text-kind {
+  font-size: 24px;
+  color: #000000; }

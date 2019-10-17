@@ -1,0 +1,154 @@
+﻿@using WorkV3.Areas.Backend.ViewModels;
+@model  List<AnalysisMemberGroupViewModel> 
+@{
+    ViewBag.Title = "選擇管理者";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    ViewBag.BodyClass = "body-dropdown bg-transparent";
+    string UploadUrl = ViewBag.UploadUrl;
+    List<AnalysisMemberGroupViewModel> groupMembers = Model;
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Validate()
+}
+@section FArea {
+@BundleConfig.Component()
+    
+}
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <ol class="dd-list checkStyle">
+                <li class="dd-item" data-id="1">
+    <input type="checkbox" id="allUsers"/>
+    <label for="allUsers">全部創建者</label>
+    @if (groupMembers != null && groupMembers.Count > 0)
+    {
+        foreach (AnalysisMemberGroupViewModel groupMember in groupMembers)
+        {
+        <li class="dd-item" data-id="@("group"+groupMember.GroupModel.Id.ToString())">
+            <div class="dd-handle">
+                <input class="with-chip group" type="checkbox" id="@("group"+groupMember.GroupModel.Id.ToString())" />
+                <label class="m-B-none" for="@("group"+groupMember.GroupModel.Id.ToString())">@groupMember.GroupModel.Name</label>
+            </div>
+            <ol class="dd-list show">
+                @if (groupMember.GroupMembers != null && groupMember.GroupMembers.Count > 0)
+                {
+
+                    foreach (MemberModels member in groupMember.GroupMembers)
+                    {
+                        <text>
+                            <li class="dd-item" data-id="@groupMember.GroupModel.Id">
+                                <div class="dd-handle">
+                                    <input class="with-chip member" type="checkbox" id="@("member"+member.Id.ToString())" />
+                                    <label class="m-B-none" for="@("member"+member.Id.ToString())">
+                                        @if (string.IsNullOrEmpty(member.Img))
+                                        {
+                                            <i class="cc cc-user-o"></i>
+                                        }
+                                        else
+                                        {
+                                            <img src="@(UploadUrl + member.Img)" alt="">
+                                        }
+                                        @(member.Name + " ( " + member.LoginID + " ) ")
+                                    </label>
+                                </div>
+                            </li>
+                        </text>
+                    }
+                }
+            </ol>
+        </li>
+        }
+    }
+                    
+                </li>
+            </ol>
+        </li>
+    </ul>
+
+</div>
+<input type="hidden" id="SelectMembers" name="SelectMembers" value="@ViewBag.Members" />
+<input type="hidden" id="SelectMemberNames" name="SelectMemberNames" value="" />
+<link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+<script type="text/javascript">
+        $(function () {
+            $('.toggleBox').each(function() {
+                var $this = $(this),
+                    $toggleContent = $(this).siblings('.dd-list');
+
+                $this.on('click', function(){
+                    if ($toggleContent.hasClass('show')) {
+                        $toggleContent.slideUp('normal', function() {
+                            $(this).removeClass('show');
+                            $this.removeClass('active');
+                        });
+                    } else {
+                        $toggleContent.slideDown('normal', function() {
+                            $(this).addClass('show');
+                            $this.addClass('active');
+                        });
+                    }
+                });
+            });
+            if ($("#SelectMembers").val() != "")
+                ResetMemberSelectedValue();
+        });
+
+        function BindMemberSelect() {
+            $(".group").bind("click", function () {
+                $(this).parent().parent().children("ol").find(".member").prop("checked", $(this).prop("checked"));
+            });
+            $(".member").bind("click", function () {
+                if (!$(this).prop("checked"))
+                    $(this).parent().parent().parent().parent().children("div").find(".group").prop("checked", false);
+            });
+        }
+        function SetMemberSelectedValue() {
+            var selectMemberCount = 0;
+            var selectMembers = "", selectMemberNames = "";
+            $(".member:checked").each(function () {
+                if (selectMembers != "")
+                    selectMembers += ";";
+                selectMembers += $(this).prop("id").replace("member", "");
+                if (selectMemberNames != "")
+                    selectMemberNames += "、";
+                selectMemberNames += $("label[for=" + $(this).prop("id") + "]").text().trim();
+                selectMemberCount++;
+            });
+            $("#SelectMembers").val(selectMembers);
+            $("#aSelectMemberNames").attr("title", selectMemberNames);
+            if (selectMemberNames.length > 10)
+                selectMemberNames = selectMemberNames.substring(0, 10);
+            $("#SelectMemberNames").html(selectMemberNames + "...(" + selectMemberCount.toString() + ")");
+        }
+        function ResetMemberSelectedValue() {
+            var selectMemberCount = 0;
+            var isSelectAllUser = true;
+            var selectMembers = $("#SelectMembers").val().split(";");
+            var selectMemberNames = "";
+            $(".member").each(function () {
+                for (var i = 0; i < selectMembers.length; i++) {
+                    if ($(this).prop("id") == "member" + selectMembers[i]) {
+                        $(this).prop("checked", true);
+                        if (selectMemberNames != "")
+                            selectMemberNames += "、";
+                        selectMemberNames += $("label[for=" + $(this).prop("id") + "]").text().trim();
+                        selectMemberCount++;
+                    }
+                }
+                if (!$(this).prop("checked")) {
+                    isSelectAllUser = false;
+                }
+            });
+            $("#allUsers").prop("checked", isSelectAllUser);
+            $("#SelectMemberNames").attr("title", selectMemberNames);
+            if (selectMemberNames.length > 10)
+                selectMemberNames = selectMemberNames.substring(0, 10);
+            $("#SelectMemberNames").html(selectMemberNames + "...(" + selectMemberCount.toString() + ")");
+
+        }
+</script>
+
+

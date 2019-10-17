@@ -1,0 +1,119 @@
+﻿@{
+    ViewBag.Title = "定位";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    @*<div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">定位</div>
+        </div>
+    </div>*@
+    <!-- swiper2 -->
+    @*<div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">*@
+                            <div id="map" class=""></div>
+                        @*</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>*@
+    @*<div class="control-bar flex">
+        <a class="btn-cancel" href="#"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="#" onclick="parent.setValue1('pass');"><i class="cc cc-check"></i>儲存</a>
+    </div>*@
+</div>
+
+@section FArea {
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=@(WorkLib.GetItem.appSet("GoogleMapKey"))&callback=initMap"></script>
+    <script type="text/javascript">
+
+
+        var Gmap;
+        function initMap() {
+            /* ------------ Min 20180521 直接通過 js 獲取相應的經緯度 --------------- */
+            @*var lat = parseFloat('@ViewBag.lat');
+            var lng = parseFloat('@ViewBag.lng');
+
+            if (isNaN(lat) || isNaN(lng)) {
+                //預設座標 (客製項目)
+                lat = 25.044150;
+                lng = 121.529441;
+            }
+            var point = { lat: lat, lng: lng };
+            Gmap = new google.maps.Map(document.getElementById('map'), {
+                center: point,
+                zoom: 15,
+                disableDefaultUI: true //停用預設UI
+            });
+
+            var marker = new google.maps.Marker({
+                position: point,
+                map: Gmap,
+                draggable: true, //是否可移動這個Maker
+                title: ''
+            });
+
+            google.maps.event.addListener(marker, 'dragend', function () {
+                //移動前觸發 dragstart
+                //移動後觸發 dragend
+                parent.UpdatePosition(marker.getPosition().lat(), marker.getPosition().lng());
+            });*@
+
+            function createMap(lat, lng) {
+                if (isNaN(lat) || isNaN(lng)) {
+                    //預設座標 (客製項目)
+                    lat = 25.044150;
+                    lng = 121.529441;
+                }
+                var point = { lat: lat, lng: lng };
+                Gmap = new google.maps.Map(document.getElementById('map'), {
+                    center: point,
+                    zoom: 15,
+                    disableDefaultUI: true //停用預設UI
+                });
+
+                var marker = new google.maps.Marker({
+                    position: point,
+                    map: Gmap,
+                    draggable: true, //是否可移動這個Maker
+                    title: ''
+                });
+
+                google.maps.event.addListener(marker, 'dragend', function () {
+                    //移動前觸發 dragstart
+                    //移動後觸發 dragend
+                    parent.UpdatePosition(marker.getPosition().lat(), marker.getPosition().lng());
+                });
+            }
+
+            var address = '@ViewBag.Address';
+            if (address) {
+                var geo = new google.maps.Geocoder();
+                geo.geocode({ address: address }, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        var latLng = results[0].geometry.location;
+                        createMap(latLng.lat(), latLng.lng(), true);
+                    } else {
+                        createMap();
+                    }
+                });
+            } else {
+                var lat = '@ViewBag.lat', lng = '@ViewBag.lng';
+                if (lat && lng) {
+                    createMap(lat - 0, lng - 0);
+                } else {
+                    createMap();
+                }
+            }            
+            /* ------------ Min 20180521 直接通過 js 獲取相應的經緯度 END --------------- */            
+        }
+
+    </script>
+}

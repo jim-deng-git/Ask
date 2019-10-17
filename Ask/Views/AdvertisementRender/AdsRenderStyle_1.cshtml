@@ -1,0 +1,297 @@
+﻿@using WorkV3.Models.DataAccess;
+@model WorkV3.Models.DataAccess.AdsCustomizeInfo
+@{
+    ResourceImagesModels ImgModelForPC = ViewBag.ImgModelForPC ?? new ResourceImagesModels();
+    ResourceImagesModels ImgModelForMobile = ViewBag.ImgModelForMobile ?? new ResourceImagesModels();
+    bool IsOverlay = ViewBag.GroupPosition == "Overlay";
+
+    int ImgSizeByCom_H = 0;
+    int ImgSizeByCom_W = 0;
+    int ImgSizeByMobi_W = 0;
+    int ImgSizeByMobi_H = 0;
+
+    if (Model.AdvertisementDatas != null)
+    {
+        var adData = Model.AdvertisementDatas;
+        ImgSizeByCom_H = adData.ComputerHeight ?? 0;
+        ImgSizeByCom_W = adData.ComputerWidth ?? 0;
+        ImgSizeByMobi_W = Model.PhonePicFollowPC ? ImgSizeByCom_H : adData.PhoneWidth ?? 0;
+        ImgSizeByMobi_H = Model.PhonePicFollowPC ? ImgSizeByCom_W : adData.PhoneHeight ?? 0;
+
+    }
+
+    AdsCustomizeToLinkInfo Linkitem = null;
+    if (Model.AdsCustomizeToLinkDatas != null)
+    {
+        Linkitem = Model.AdsCustomizeToLinkDatas;
+    }
+    AdsCustomizeToVideoModelInfo Videoitem = null;
+    string video_url = "";
+    if (Model.AdsCustomizeToVideoDatas != null)
+    {
+        Videoitem = Model.AdsCustomizeToVideoDatas;
+        if (Videoitem.Type == WorkV3.Areas.Backend.Models.VideoType.Youtube)
+        {
+            video_url = "https://youtu.be/" + Videoitem.Link;
+        }
+        else if (Videoitem.Type == WorkV3.Areas.Backend.Models.VideoType.Vimeo)
+        {
+            video_url = string.Format("https://player.vimeo.com/video/{0}?app_id=122963&autoplay=true", Videoitem.Link);
+        }
+        else if (Videoitem.Type == WorkV3.Areas.Backend.Models.VideoType.Custom)
+        {
+            string videoPath = $"{ViewBag.UploadUrl}{Videoitem.Link}";
+            VideoPlayerParamModel param = new VideoPlayerParamModel();
+            param.Url = videoPath;
+            param.AutoPlay = true;
+            param.Width = Model.AdvertisementDatas.IsUseForComputer ? ImgSizeByCom_W : ImgSizeByMobi_W;
+            param.Height = Model.AdvertisementDatas.IsUseForComputer ? ImgSizeByCom_H : ImgSizeByMobi_H;
+            video_url = Url.Action("VideoPlayer", "Common", param);
+        }
+    }
+
+
+    //蓋台廣告說明-控制說明
+    //data-ad-delay="7"延遲關閉按鈕打開的時間  
+    //data-random="20"廣告打開的機率範例為20%  
+    //data-one-time="on"第一次打開後等清除紀錄才會再打開  / chuan remark 20180321: 使用時, loop,idle,random建議另設為0
+    //data-loop="100"間隔多少秒以後才會再打開   
+    //data-idle="30"閒置多久以後打開燈箱  
+
+}
+
+<link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/css/Cards/Advertising/style1.css" type="text/css" />
+<script type="text/javascript" src="~/script/jquery-cookie/jquery.cookie.js"></script>
+<script type="text/javascript" src="~/script/colorbox/jquery.colorbox.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var url = '@Url.Action("SetUserEvent", "AdvertisementRender")';
+        $.post(url + '?AdsCustomizeID=@(Model.ID)&PageID=@(ViewBag.PageNo)&Event=@(WorkV3.Areas.Backend.Models.UserEvent.Browsing)&MemberID=@(ViewBag.MemberID as long?)');
+        $("img").click(function () {
+            $.post(url + '?AdsCustomizeID=@(Model.ID)&PageID=@(ViewBag.PageNo)&Event=@(WorkV3.Areas.Backend.Models.UserEvent.Click)&MemberID=@(ViewBag.MemberID as long?)');
+        });
+    });
+</script>
+
+@if (!IsOverlay)
+{
+    if (Model.AdsCustomizeToLinkDatas != null && Model.ClickEvent == WorkV3.Areas.Backend.Models.ClickEvent.Link)
+    {
+        <div id="link-1" class="card-advertising" data-style="1">
+            @if (Model.AdvertisementDatas.IsUseForComputer)
+            {
+                <div class="advertising-content mobile-none" style="max-width: @(ImgSizeByCom_W)px; max-height: (@ImgSizeByCom_H)px;">
+                    <div class="content-inner">
+                        <a class="links" href="@Linkitem.Url" @(Linkitem.IsOpenNew ? "target='_blank'" : "")>
+                            <img class="ad-images" src="@(ViewBag.UploadUrl + ImgModelForPC.Img)" alt="">
+                        </a>
+                        <a class="ad-close-btn" href="javascript:"></a>
+                    </div>
+                </div>
+            }
+            @if (Model.AdvertisementDatas.IsUseForPhone)
+            {
+                <div class="advertising-content desktop-none">
+                    <div class="content-inner">
+                        <a class="links" href="@Linkitem.Url" @(Linkitem.IsOpenNew ? "target='_blank'" : "") style="max-width: @(ImgSizeByMobi_W)px; max-height: @(ImgSizeByMobi_H)px;">
+                            <img class="ad-images" src="@( ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))" alt="">
+                        </a>
+                        <a class="ad-close-btn" href="javascript:"></a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (Model.AdsCustomizeToVideoDatas != null && Model.ClickEvent == WorkV3.Areas.Backend.Models.ClickEvent.Video)
+    {
+        <div id="video-1" class="card-advertising" data-style="1">
+            @if (Model.AdvertisementDatas.IsUseForComputer)
+            {
+                <div class="advertising-content mobile-none" style="max-width: @(ImgSizeByCom_W)px; max-height: @(ImgSizeByCom_H)px;">
+                    <div class="content-inner">
+                        <a class="videos" href="@video_url">
+                            <img class="ad-images" src="@(ViewBag.UploadUrl + ImgModelForPC.Img)" alt="">
+                            <span class="play"></span>
+                        </a>
+                        <a class="ad-close-btn" href="javascript:"></a>
+                    </div>
+                </div>
+            }
+            @if (Model.AdvertisementDatas.IsUseForPhone)
+            {
+                <div class="advertising-content desktop-none" style="max-width: @(ImgSizeByMobi_W)px; max-height: @(ImgSizeByMobi_H)px;">
+                    <div class="content-inner">
+                        <a class="videos" href="@video_url">
+                            <img class="ad-images" src="@( ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))" alt="">
+                            <span class="play"></span>
+                        </a>
+                        <a class="ad-close-btn" href="javascript:"></a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div id="link-1" class="card-advertising" data-style="1">
+            @if (Model.AdvertisementDatas.IsUseForComputer)
+            {
+                <div class="advertising-content mobile-none" style="max-width: @(ImgSizeByCom_W)px; max-height: @(ImgSizeByCom_H)px;">
+                    <div class="content-inner">
+                        <a class="links" href="#">
+                            <img class="ad-images" src="@(ViewBag.UploadUrl + ImgModelForPC.Img)" alt="">
+                        </a>
+                        <a class="ad-close-btn" href="javascript:"></a>
+                    </div>
+                </div>
+            }
+            @if (Model.AdvertisementDatas.IsUseForPhone)
+            {
+                <div class="advertising-content desktop-none" style="max-width: @(ImgSizeByMobi_W)px; max-height: @(ImgSizeByMobi_H)px;">
+                    <div class="content-inner">
+                        <a class="links" href="#">
+                            <img class="ad-images" src="@( ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))" alt="">
+                        </a>
+                        <a class="ad-close-btn" href="javascript:"></a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <div id="video-3" class="card-advertising card-overlay" data-style="1">
+
+        @if (Model.AdsCustomizeToVideoDatas != null && Model.ClickEvent == WorkV3.Areas.Backend.Models.ClickEvent.Video)
+        {
+            //影片
+          if (Model.AdvertisementDatas.IsUseForComputer)
+          {
+            <text>
+             <div class="advertising-content mobile-none" style="max-width: @(ImgSizeByCom_W)px; max-height: @(ImgSizeByCom_H)px;">
+                 <a id="video-3-link"
+                    class="overlay"
+                    data-ad-delay="@(Videoitem.CoverSecond??7)"
+                    data-random="@(Model.AdsDisplayAreaSetInfo.OverlayChance??0)"
+                    data-one-time="@(Model.AdsDisplayAreaSetInfo.OverlayType == WorkV3.Areas.Backend.Models.OverlayType.Once ? "on" : "")"
+                    data-loop="@(Model.AdsDisplayAreaSetInfo.OverlayRepeatSeconds??100)"
+                    data-idle="@(Model.AdsDisplayAreaSetInfo.OverlayIdleSeconds??100)"
+                    href="@Html.Raw(video_url)">
+
+                     <img class="ad-images" src="@(ViewBag.UploadUrl + ImgModelForPC.Img)" alt="">
+                     <span class="play"></span>
+                 </a>
+              </div>
+              </text>
+            }
+            else if (Model.AdvertisementDatas.IsUseForPhone)
+            {
+              <text>
+              <div class="advertising-content desktop-none" style="max-width: @(ImgSizeByMobi_W)px; max-height: @(ImgSizeByMobi_H)px;">
+                  <a id="video-3-link"
+                     class="overlay"
+                     data-ad-delay="@(Videoitem.CoverSecond??7)"
+                     data-random="@(Model.AdsDisplayAreaSetInfo.OverlayChance??0)"
+                     data-one-time="@(Model.AdsDisplayAreaSetInfo.OverlayType == WorkV3.Areas.Backend.Models.OverlayType.Once ? "on" : "")"
+                     data-loop="@(Model.AdsDisplayAreaSetInfo.OverlayRepeatSeconds??100)"
+                     data-idle="@(Model.AdsDisplayAreaSetInfo.OverlayIdleSeconds??100)"
+                     href="@video_url">
+
+                      <img class="ad-images" src="@(ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))" alt="">
+                      <span class="play"></span>
+                  </a>
+              </div>
+              </text>
+            }
+        }
+        else if(Model.AdsCustomizeToLinkDatas != null && Model.ClickEvent == WorkV3.Areas.Backend.Models.ClickEvent.Link)
+        {
+            //連結
+            if (Model.AdvertisementDatas.IsUseForComputer)
+            {
+              <text>
+               <div class="advertising-content mobile-none" style="max-width: @(ImgSizeByCom_W)px; max-height: @(ImgSizeByCom_H)px;">
+                   <a id="video-5-link" class="overlay"
+                      data-ad-delay="7"
+                      data-random="@(Model.AdsDisplayAreaSetInfo.OverlayChance??0)"
+                      data-one-time="@(Model.AdsDisplayAreaSetInfo.OverlayType == WorkV3.Areas.Backend.Models.OverlayType.Once ? "on" : "")"
+                      data-loop="@(Model.AdsDisplayAreaSetInfo.OverlayRepeatSeconds??100)"
+                      data-idle="@(Model.AdsDisplayAreaSetInfo.OverlayIdleSeconds??100)"
+                      href="@(ViewBag.UploadUrl + ImgModelForPC.Img)"
+                      data-ad-link="@Linkitem.Url">
+
+                       <img class="ad-images" src="@(ViewBag.UploadUrl + ImgModelForPC.Img)" alt="">
+                       <span class="play"></span>
+                   </a>
+              </div>
+              </text>
+            }
+            else if (Model.AdvertisementDatas.IsUseForPhone)
+            {
+              <text>
+              <div class="advertising-content desktop-none" style="max-width: @(ImgSizeByMobi_W)px; max-height: @(ImgSizeByMobi_H)px;">
+                    <a id="video-5-link" class="overlay"
+                       data-ad-delay="7"
+                       data-random="@(Model.AdsDisplayAreaSetInfo.OverlayChance??0)"
+                       data-one-time="@(Model.AdsDisplayAreaSetInfo.OverlayType == WorkV3.Areas.Backend.Models.OverlayType.Once ? "on" : "")"
+                       data-loop="@(Model.AdsDisplayAreaSetInfo.OverlayRepeatSeconds??100)"
+                       data-idle="@(Model.AdsDisplayAreaSetInfo.OverlayIdleSeconds??100)"
+                       href="@(ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))"
+                       data-ad-link="@Linkitem.Url">
+
+                        <img class="ad-images" src="@(ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))" alt="">
+                        <span class="play"></span>
+                    </a>
+              </div>
+              </text>
+            }
+        }
+        else
+        {
+            //沒有設定連結或影片時
+
+           if (Model.AdvertisementDatas.IsUseForComputer)
+            {
+              <text>
+              <div class="advertising-content mobile-none" style="max-width: @(ImgSizeByCom_W)px; max-height: @(ImgSizeByCom_H)px;">
+                   <a id="video-5-link" class="overlay"
+                      data-ad-delay="7"
+                      data-random="@(Model.AdsDisplayAreaSetInfo.OverlayChance??0)"
+                      data-one-time="@(Model.AdsDisplayAreaSetInfo.OverlayType == WorkV3.Areas.Backend.Models.OverlayType.Once ? "on" : "")"
+                      data-loop="@(Model.AdsDisplayAreaSetInfo.OverlayRepeatSeconds??100)"
+                      data-idle="@(Model.AdsDisplayAreaSetInfo.OverlayIdleSeconds??100)"
+                      href="@(ViewBag.UploadUrl + ImgModelForPC.Img)"
+                      data-ad-link="#">
+
+                       <img class="ad-images" src="@(Html.Raw(ViewBag.UploadUrl + ImgModelForPC.Img))" alt="">
+                       <span class="play"></span>
+                   </a>
+              </div>
+              </text>
+            }
+            else if (Model.AdvertisementDatas.IsUseForPhone)
+            {
+              <text>
+              <div class="advertising-content desktop-none" style="max-width: @(ImgSizeByMobi_W)px; max-height: @(ImgSizeByMobi_H)px;">
+                    <a id="video-5-link" class="overlay"
+                       data-ad-delay="7"
+                       data-random="@(Model.AdsDisplayAreaSetInfo.OverlayChance??0)"
+                       data-one-time="@(Model.AdsDisplayAreaSetInfo.OverlayType == WorkV3.Areas.Backend.Models.OverlayType.Once ? "on" : "")"
+                       data-loop="@(Model.AdsDisplayAreaSetInfo.OverlayRepeatSeconds??100)"
+                       data-idle="@(Model.AdsDisplayAreaSetInfo.OverlayIdleSeconds??100)"
+                       href="@(ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))"
+                       data-ad-link="#">
+
+                        <img class="ad-images" src="@(ViewBag.UploadUrl + ( Model.PhonePicFollowPC ? ImgModelForPC.Img : ImgModelForMobile.Img ))" alt="">
+                        <span class="play"></span>
+                    </a>
+              </div>
+              </text>
+            }
+        }
+
+    </div>
+}
+

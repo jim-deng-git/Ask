@@ -1,0 +1,71 @@
+﻿@model List<MenusModels>
+
+@{ 
+    List<MenusModels> bottomMenus = Model.Where(m => m.AreaID == 3).ToList();
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    IEnumerable<WorkV3.Areas.Backend.Models.SocialRelationModels> ChannelList = null;
+    if (ViewBag.Channels != null)
+    {
+        ChannelList = (IEnumerable<WorkV3.Areas.Backend.Models.SocialRelationModels>)ViewBag.Channels;
+    }
+    SitesModels SiteItem = ViewBag.SitesInfo;
+}
+
+@helper CreateMenu(IEnumerable<MenusModels> allMenus, IEnumerable<MenusModels> currentMenus) {
+PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+if (currentMenus?.Count() > 0) {
+    foreach (MenusModels item in currentMenus) {
+        string url = item.MenuCode == "SingleLink" ? item.LinkInfo : item.PageSN;
+        string target = (item.MenuCode == "SingleLink" && item.RLClickType == 2) ? "_blank" : "_self";
+
+        IEnumerable<MenusModels> subMenus = allMenus.Where(dr => dr.ParentID == item.Id);
+    <li class="@(item.Id == pageCache.MenuID ? "current-menu" : string.Empty)">
+        <a href="@url" target="@target">@item.Title</a>
+        @if (subMenus?.Count() > 0) {
+            <ul class="sub-menu">
+                @CreateMenu(allMenus, subMenus)
+            </ul>
+        }
+    </li>
+        }
+    }
+}
+
+<link rel="stylesheet" href="~/css/Cards/Footer/style3.css" type="text/css" />
+<div id="footer" class="footer card-footer" data-style="3">
+    <svg viewBox="0 0 1920 100" preserveAspectRatio="none">
+        <path d="M0 50 C 640 0 1280 0 1920 50 V 100 H0 Z" />
+    </svg>
+    <div class="footer-main">
+        <div class="footer-nav">
+            <ul class="nav-menu">
+                @CreateMenu(bottomMenus, bottomMenus.Where(m => m.ParentID == 0))
+            </ul>
+        </div>
+        @if (ChannelList != null && ChannelList.Count() > 0)
+        {
+            var openList = ChannelList.Where(p => p.IsOpen);
+        <div class="footer-nav">
+            <ul class="nav-menu">
+                @foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in openList)
+                {
+                    string iconClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeStyle(item.SocialType);
+                    <li><a href="@item.LinkUrl" target="_blank"><i class="cc @iconClassName"></i></a></li>
+                }
+            </ul>
+            </div>
+            }
+        </div>
+
+    @if (SiteItem.FooterCustomized)
+    {
+        <div class="footer-wrapper">
+            @Html.Raw(ViewBag.FooterCont)
+        </div>
+    }
+    <div class="footer-copyright">
+        <div class="footer-wrapper">&copy; @Html.Raw(ViewBag.Copyright)</div>
+    </div>
+    <div id="back-to-top" class="goTop"></div>
+</div>
+<script type="text/javascript" src="~/Script/footer/footer.js"></script>

@@ -1,0 +1,179 @@
+﻿@model CategoryModels
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string uploadUrl = ViewBag.UploadVPath;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        $(function () {
+            Component.singleImageUpload('#fImage', '@(Href("~/"))', '@uploadUrl', true);
+            Component.radioList('div[data-radioGroup]');
+            Component.editor('RemarkText');
+            $('#btnSave').click(function () {
+                $("#editForm").submit();
+            });
+
+            $('#btnCancel').click(function () {
+                Component.closeRight();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+
+            @if (ViewBag.Exit as bool? == true)
+            {
+                    <text>
+                    Component.alert('資料已儲存', function () {
+                        try {
+                            parent.refreshList(2);
+                        } catch (e) {
+
+                        }
+
+                        Component.closeRight();
+                        Component.closeLeft();
+                        Component.closeCenter();
+                    });
+                    </text>
+                }
+        });
+
+
+    </script>
+}
+
+<form id="editForm" method="post" action="@Url.Action("Edit", "MemberShipSetting")" enctype="multipart/form-data">
+    <div class="zone zone-full">
+        <div class="wrapper">
+            <div class="groove groove-1">
+                <div class="swiper-container swiper-tab-bar">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide selected">身分編輯</div>
+                    </div>
+                </div>
+                <div class="swiper-container swiper-tab-content">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">身分名稱</div>
+                                        <div class="input-field inline">
+                                            <input id="Title" name="Title" type="text" value="@Model.Title">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title">代表圖</div>
+                                        <div class="input-field">
+                                            <input type="file" id="fImage" name="fImage" />
+                                            <input type="hidden" id="Image" name="Image" value='@(string.IsNullOrWhiteSpace(Model.Image) ? string.Empty : Newtonsoft.Json.JsonConvert.SerializeObject(new { ID = 1, Img = Model.Image }))' />
+                                            <input type="hidden" id="fImageBase64" name="fImageBase64" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title">說明</div>
+                                        <div class="input-field img-text-height">
+                                            <textarea class="" contenteditable="true" id="RemarkText" name="RemarkText" placeholder="說明">@Model.RemarkText</textarea>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">會期長度</div>
+                                        <div class="radio-box inline full" data-radioGroup="MemberSession">
+                                            <div>
+                                                <input type="radio" class="with-gap" value="1"/>
+                                                <label>ㄧ日期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="2"/>
+                                                <label>一週期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="3"/>
+                                                <label>雙週期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="4"/>
+                                                <label>一月期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="5"/>
+                                                <label>雙月期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="6"/>
+                                                <label>一季期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="7"/>
+                                                <label>四月期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="8"/>
+                                                <label>半年期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="9"/>
+                                                <label>一年期</label>
+                                            </div>
+                                            <div>
+                                                <input type="radio" class="with-gap" value="10"/>
+                                                <label>不限制</label>
+                                            </div>
+                                            <input type="hidden" name="MemberSession" value="@Model.MemberSession" />
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="PresetIdentity" value="@Model.PresetIdentity" />
+                @*<ul class="forms">
+                        <li>
+                            <h1 class="title-admin-page" style="background: none;">身分編輯</h1>
+                        </li>
+                        <li>
+                            <div class="input-field">
+                                @Html.TextBoxFor(x => x.Title)
+                            </div>
+                        </li>
+                        <li>
+                            <div class="line">
+                                <div class="input-field">
+                                    <textarea class="" contenteditable="true" id="RemarkText" name="RemarkText" placeholder="說明">@Model.RemarkText</textarea>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>*@
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="">
+                            @Html.CheckBoxFor(model => model.ShowStatus)
+                            <label for="ShowStatus">刊登</label>
+                        </div>
+                    </div>
+                    <a id="btnCancel" onclick="parent.$.colorbox.close();" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                    <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" id="Type" name="Type" value="@Model.Type" />
+    <input type="hidden" id="Icon" name="Icon" value="@Model.Icon" />
+    <input type="hidden" id="SiteID" name="SiteID" value="@ViewBag.SiteID" />
+    <input type="hidden" id="MenuID" name="MenuID" value="@ViewBag.MenuID" />
+</form>
+

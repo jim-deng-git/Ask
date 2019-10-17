@@ -1,0 +1,308 @@
+﻿@model List<ImageTextModel>
+@{
+    PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(pageCache.SiteID, pageCache.MenuID);
+}
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/Cards/ImageText/style14.css" rel="stylesheet" />
+@BundleConfig.Colorbox()
+@BundleConfig.JWPlayer()
+
+@helper ShowTextInfo(ImageTextModel item) {
+    <div class="card-text">
+        <div class="card-text-box">
+            <div class="card-text-name">
+                @if (string.IsNullOrWhiteSpace(item.Link)) {
+                    @:@item.Title
+                } else {
+                    <a href="@item.Link" target="@(item.IsOpenNew ? "_blank" : "_self")">@item.Title</a>
+                }
+            </div>
+            <div class="card-text-info">@Html.Raw(item.Description)</div>
+        </div>        
+    </div>    
+}
+
+@helper ShowOpenNewInfo(ImageTextModel item, string img, string link) {
+    <div class="card-img original" onclick="window.open('@link','_blank')">
+        <img src="@img" alt="">
+        <div class="card-img-content flex" style="background-image:url('@img')"></div>
+        <div class="activeWrap">
+            <div class="card-img-content" style="background-image:url('@img')"></div>
+            @ShowTextInfo(item)
+        </div>
+    </div>
+}
+
+@functions {
+    public string GetVideoUrl(ClickVideoModel video, string uploadUrl) {
+        string videoUrl = string.Empty;
+        if (video.Type == "youtube") {
+            videoUrl = $"https://www.youtube.com/embed/{ video.Link }?rel=0&amp;controls=0";
+            if (video.IsAuto)
+                videoUrl += "&amp;autoplay=1";
+            if (video.IsRepeat)
+                videoUrl += $"&amp;playlist={ video.Link }&amp;loop=1";
+        } else if (video.Type == "vimeo") {
+            videoUrl = $"https://player.vimeo.com/video/{ video.Link }?title=0";
+            if (video.IsAuto)
+                videoUrl += "&amp;autoplay=1";
+            if (video.IsRepeat)
+                videoUrl += "&amp;loop=1";
+        } else if (video.Type == "tudou") {
+            videoUrl = $"http://www.tudou.com/programs/view/html5embed.action?code={ video.Link }";
+        } else if (video.Type == "custom") {
+            videoUrl = uploadUrl + video.Link;
+        }
+
+        return videoUrl;
+    }
+}
+
+@{ 
+    string uploadUrl = pageCache.UploadVPath;    
+}
+@foreach(ImageTextModel item in Model) {
+    bool hasOpenImg = false, hasOpenVideo = false, hasOpenVideoImg = false, hasOpenJWPlayer = false, hasOpenVoice = false;
+
+    string imgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Img).Img;
+    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, imgFileName)))
+    {
+        imgFileName = string.Format("R_{0}", imgFileName);
+    }
+    string itemImg = string.IsNullOrWhiteSpace(item.Img) ? string.Empty : uploadUrl + Server.UrlPathEncode(imgFileName);
+    string clickCountUrl = "$.get('" + Url.Action("Click", "ImageText", new { id = item.ID }) + "')";
+    if (!string.IsNullOrWhiteSpace(item.ClickEvent)) {
+<div data-id="div_@item.ID" class="card-imageText" data-style="14">
+    <div class="card shadow-none">
+        <div class="card-box" onclick="@clickCountUrl">            
+            @if (item.ClickType == 1) { // 圖片
+                List<ClickImgModel> imgs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ClickImgModel>>(item.ClickEvent);
+                if (imgs.Count > 0) {
+                    hasOpenImg = true;
+                    string firstImg = (itemImg == string.Empty ? uploadUrl + Server.UrlPathEncode(imgs.First().Img) : itemImg);            
+                    <div class="card-img original">
+                        <a class="openImg" href="@firstImg">
+                            <img src="@firstImg" alt="" />
+                            <div class="card-img-content flex" style="background-image:url('@firstImg')"></div>
+                        </a>
+                        @foreach (ClickImgModel img in imgs) {
+                            <a class="openImg" href="@(uploadUrl + Server.UrlPathEncode(img.Img))"></a>
+                        }
+                        <div class="activeWrap img">
+                            <div class="card-img-content" style="background-image:url('@firstImg')"></div>
+                            @ShowTextInfo(item)
+                        </div>
+                    </div>
+                }
+            } else if (item.ClickType == 2) { // 視頻
+                ClickVideoModel video = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickVideoModel>(item.ClickEvent);                
+                if (video.PlayMode == "燈箱播放") {
+                    <div class="card-img original">
+                        <div class="card-img-content" style="background-image:url('@itemImg')"></div>
+                        @if (video.Type == "custom") {
+                            hasOpenJWPlayer = true;
+                            <a class="openJWPlayer" data-id="@item.ID" data-file="@GetVideoUrl(video, uploadUrl)" data-image="@itemImg">
+                                <div class="imgInfo">
+                                    <span><i class="cc cc-play"></i></span>
+                                </div>
+                                @if (itemImg != string.Empty) {
+                                    <img src="@itemImg" alt="" />
+                                }
+                            </a>
+                        } else {
+                            hasOpenVideo = true;
+                            <a class="openVideo" href="@GetVideoUrl(video, uploadUrl)">
+                                <div class="imgInfo">
+                                    <span><i class="cc cc-voice"></i></span>
+                                </div>
+                                @if (itemImg != string.Empty) {
+                                    <img src="@itemImg" alt="" />
+                                }
+                            </a>
+                        }
+                        <div class="activeWrap video">
+                            <div class="card-img-content" style="background-image:url('@itemImg')"></div>
+                            @ShowTextInfo(item)
+                        </div>
+                    </div>
+                } else if (video.PlayMode == "直接嵌入") {
+                    if (video.Type == "custom") {
+
+                    } else {
+                        hasOpenVideoImg = true;
+                        <div class="card-img original openVideoImg" data-href="@GetVideoUrl(video, uploadUrl)">
+                            @if (itemImg != string.Empty) {
+                                <img src="@itemImg" alt="" />
+                            }
+                            <div class="imgInfo">
+                                <span><i class="cc cc-play"></i></span>
+                            </div>
+                            <div class="card-img-content" style="background-image:url('@itemImg')"></div>
+                            <div class="activeWrap video">
+                                <div class="card-img-content" style="background-image:url('@itemImg')"></div>
+                                @ShowTextInfo(item)
+                            </div>
+                        </div>
+                    }
+                } else if (video.PlayMode == "另開視窗") {
+                    @ShowOpenNewInfo(item, itemImg, GetVideoUrl(video, uploadUrl))
+                }
+            } else if (item.ClickType == 3) { // 聲音
+                ClickVoiceModel voice = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickVoiceModel>(item.ClickEvent);
+                hasOpenVoice = true;            
+                <div class="card-img original">
+                    <div class="card-img-content" style="background-image:url('@itemImg')"></div>
+                    <a class="openVoice" data-id="@item.ID" data-voice="@(uploadUrl + Server.UrlPathEncode(voice.Path))">
+                        <div class="imgInfo">
+                            <span><i class="cc cc-voice"></i></span>
+                        </div>
+                        @if (itemImg != string.Empty) {
+                            <img src="@itemImg" alt="" />
+                        }
+                    </a>
+                    <div class="activeWrap audio">
+                        <div class="card-img-content" style="background-image:url('@itemImg')"></div>
+                        @ShowTextInfo(item)
+                    </div>
+                </div>
+            } else if (item.ClickType == 4) { // 檔案
+                ClickFileModel file = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickFileModel>(item.ClickEvent);
+                @:@ShowOpenNewInfo(item, itemImg, uploadUrl + Server.UrlPathEncode(file.FileInfo))
+            } else if(item.ClickType == 5) { // 連結
+                ClickLinkModel link = Newtonsoft.Json.JsonConvert.DeserializeObject<ClickLinkModel>(item.ClickEvent);
+                @:@ShowOpenNewInfo(item, itemImg, link.Link)
+            }
+        </div>
+    </div>
+</div>
+    }
+    if (hasOpenImg) {
+<script type="text/javascript">
+    $(function () {
+        var outerElm = $('div[data-id="div_@item.ID"]');
+        outerElm.find(".openImg").colorbox({
+            rel: 'group_@item.ID',
+            maxWidth: "90%",
+            maxHeight: "90%",
+            closeButton: true
+            //cc 20180606
+        });        
+    });
+</script>
+    } else if(hasOpenVideoImg) {
+<script type="text/javascript">
+    $(function () {
+        var outerElm = $('div[data-id="div_@item.ID"]');
+        outerElm.find(".openVideoImg").on('click', function (e) {
+            e.preventDefault();
+
+            var video = '<div class="videoCurrentBox"><a href="javascriot:"><i class="cc cc-close"></i></a><iframe src="' + $(this).data('href') + '"></iframe></div>';
+            var $video = $(this).find('.videoCurrentBox')[0];
+
+            if ($(this).find('.videoCurrentBox').length) {
+                $video.remove();
+                $('.header').removeClass('playVideo');
+                $(this).parents('.flexsliderV').removeClass('playVideo');
+            } else {
+                $('.videoCurrentBox').remove();
+                $(this).prepend(video);
+                $('.header').addClass('playVideo');
+                $(this).parents('.flexsliderV').addClass('playVideo');
+            }
+        });    
+    });
+</script>
+    } else if (hasOpenVideo) {
+<script type="text/javascript">
+    $(function () {
+        var outerElm = $('div[data-id="div_@item.ID"]');
+        outerElm.find(".openVideo").on('click', function (e) {
+            e.preventDefault();
+            var self = $(this);
+
+            $.colorbox({
+                href: self.attr("href"), //cc 20181217
+                iframe: true,
+                width: "1408px",
+                height: "792px",
+                maxWidth: "90%",
+                maxHeight: "90%"
+            });
+        });    
+    });
+</script>
+    } else if (hasOpenJWPlayer) {
+<script type="text/javascript">
+    $(function () {
+        var outerElm = $('div[data-id="div_@item.ID"]');
+        outerElm.find(".openJWPlayer").on('click', function (e) {
+            e.preventDefault();
+            var self = $(this);
+            var id = 'jw_' + self.data('id');
+            $.colorbox({
+                html: '<div id="' + id + '"></div>',
+                width: "1408px",
+                height: "792px",
+                maxWidth: "90%",
+                maxHeight: "90%",
+                scrolling: false,
+                fixed: true,
+                onComplete: function () {
+                    jwplayer(id).setup({
+                        file: self.data("file"),
+                        image: self.data("image"),
+                        width: "auto",
+                        height: "100%",
+                        type: "mp4",
+                        skin: {
+                            name: "default",//選擇主題
+                            active: "#2e2e2e",//選擇主色
+                            inactive: "#ffffff",
+                            background: "#000000"//選擇背景
+                        },
+                        showdownload: false,
+                        aspectratio: "16:9",//影片比例
+                        autostart: false //自動播放
+                    });
+                }
+            });
+        });    
+    });
+</script>
+    } else if (hasOpenVoice) {
+<script type="text/javascript">
+    $(function () {
+        var outerElm = $('div[data-id="div_@item.ID"]');
+        outerElm.find(".openVoice").on('click', function (e) {
+            e.preventDefault();
+            var self = $(this);
+            var id = 'jw_' + self.data('id');
+            $.colorbox({
+                html: '<div id="' + id + '"></div>',
+                width: "270px",
+                height: "30px",
+                maxWidth: "90%",
+                maxHeight: "90%",
+                scrolling: false,
+                fixed: true,
+                onComplete: function () {
+                    jwplayer(id).setup({
+                        file: self.data("voice"),
+                        width: "270",
+                        height: "30",
+                        skin: {
+                            name: "default",//選擇主題
+                            active: "#2e2e2e",//選擇主色
+                            inactive: "#ffffff",
+                            background: "#000000"//選擇背景
+                        },
+                        autostart: true
+                    });
+                }
+            });
+        });    
+    });
+</script>
+    }
+}

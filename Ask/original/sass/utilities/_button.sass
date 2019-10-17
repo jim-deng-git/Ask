@@ -1,0 +1,397 @@
+// Base styles
+//.btn
+[class*='btn-']
+    position: relative
+    display: inline-block
+    font-weight: normal
+    text-align: center
+
+    // white-space: nowrap
+    vertical-align: middle
+    user-select: none
+    text-decoration: none
+    border-width: 1px
+    border-style: solid
+    cursor: pointer
+
+    @extend %border-box
+
+    @extend %transition-btn
+
+    // Gets rid of tap active state
+    -webkit-tap-highlight-color: transparent
+
+    // color: #ffffff
+
+    +button-size(0.5rem, 2rem, $line-height, $border-radius-base)
+
+    font-size: 15px
+    font-size: 1.5rem
+
+    &:focus, &.focus
+        outline: 0
+
+        // box-shadow: $btn-focus-box-shadow
+
+    // Disabled comes first so active can properly restyle
+    &.disabled, &:disabled
+        cursor: default
+        opacity: 0.65
+        pointer-events: none
+
+        // +box-shadow(none)
+
+    &:active, &.active
+        background-image: none
+
+    > i
+        margin-right: 3px
+
+    &.right
+        direction: rtl
+
+        > i
+            margin-right: 0
+            margin-left: 3px
+
+        > span
+            display: inline-block
+            direction: ltr
+
+    &.btn-del
+        +hover-focus
+            color: #ffffff
+            background-color: color("red", "base")
+            border-color: color("red", "base")
+
+
+        &.transparent
+            +hover-focus
+                color: color("red", "base")
+
+    &.prev
+        float: left
+
+        &.transparent
+            padding-right: 0
+            padding-left: 0
+
+    &.next
+        float: right
+
+        &.transparent
+            padding-right: 0
+            padding-left: 0
+
+    &.transparent
+        background-color: transparent !important
+        border-color: transparent !important
+
+    &.circle, &.square
+        width: 35px
+        height: 35px
+        padding: 0 !important
+        overflow: hidden
+
+        > i
+            line-height: 35px
+            margin-right: 0px
+            font-size: 20px
+
+        // with-item
+        &.btn-with-item
+            width: 100px
+            height: 100px
+            font-size: 1.3rem
+
+            @extend %inline-flex
+
+            @extend %flex-column
+
+            @extend %justify-center
+
+            @extend %align-center
+
+            color: color("grey", "base")
+            border: transparent
+            background: #f2f2f2
+
+            +hover-focus
+                color: color("grey", "darken-3")
+
+
+            > i
+                line-height: 1
+                font-size: 42px
+
+            > span
+                position: absolute
+                bottom: 0
+                width: size(100)
+                padding: 2px 5px
+                background-color: rgba(0, 0, 0, 0.3)
+                color: $white
+
+            &.empty
+                border: 2px dashed #dedede
+                background-color: transparent
+
+    // size
+    &.btn-huge
+        +button-size(1.2rem, 3rem, $line-height, $border-radius-base)
+
+        font-size: 18px
+        font-size: 1.8rem
+
+        > i
+            vertical-align: text-bottom
+            font-size: 24px
+
+        &.circle, &.square
+            width: 60px
+            height: 60px
+
+            > i
+                line-height: 60px
+                font-size: 40px
+
+    &.btn-large
+        +button-size(0.8rem, 3rem, $line-height, $border-radius-base)
+
+        &.circle, &.square
+            width: 45px
+            height: 45px
+
+            > i
+                line-height: 45px
+                font-size: 35px
+
+    &.btn-small
+        font-size: 14px
+        font-size: 1.4rem
+
+        +button-size(0.3rem, 1.5rem, $line-height, $border-radius-base)
+
+        > i
+            font-size: 12px
+
+        &.circle, &.square
+            width: 30px
+            height: 30px
+
+            > i
+                line-height: 30px
+
+    &.btn-mini
+        font-size: 13px
+        font-size: 1.3rem
+
+        +button-size(0.25rem, 1rem, $line-height, $border-radius-base)
+
+        > i
+            font-size: 10px
+
+        &.circle, &.square
+            width: 24px
+            height: 24px
+
+            > i
+                line-height: 24px
+
+    &.btn-tiny
+        &.circle, &.square
+            width: 16px
+            height: 16px
+
+            > i
+                line-height: 16px
+
+    &.block
+        width: size(100) !important
+        padding-left: 1rem
+        padding-right: 1rem
+
+        + .block
+            margin-top: 20px
+
+    &.half
+        width: 48% !important
+        padding-left: 0
+        padding-right: 0
+        margin-right: 1.6%
+
+        &:nth-child(2n)
+            margin-right: 0
+
+// tool-btn
+.tool-btn
+    position: relative
+    display: inline-block
+
+    // position: fixed
+    // right: 23px
+    // bottom: 23px
+    // padding-top: 15px
+    // margin-bottom: 0
+    z-index: 998
+
+    ul
+        left: 0
+        right: 0
+        text-align: center
+        position: absolute
+        bottom: 30px
+        padding-bottom: 55px
+        margin: 0
+        visibility: hidden
+
+        @extend %list-style-none
+
+        li
+            margin-bottom: 15px
+
+        [class*='btn-']
+            opacity: 0
+
+    // &.right
+    //  float: right
+
+    &.active
+        ul
+            visibility: visible
+
+    &.horizontal
+        // padding: 0 0 0 15px
+
+        ul
+            text-align: left
+            right: auto
+            top: 50%
+            transform: translateY(-50%)
+            height: 100%
+            left: 30px
+            width: 500px
+            padding-bottom: 0px
+
+            li
+                display: inline-block
+                margin: 5px 15px 0 0
+
+        &.right
+            ul
+                text-align: right
+                padding-right: 50px
+                right: 30px
+                left: auto
+
+        .btn-with-item
+            ~ ul
+                left: 84px
+                // width: 620px
+                width: 720px    // 20181004 yulin 新增燈箱效果
+
+                li
+                    margin: 0 13px 5px 0
+
+    .fab-backdrop
+        position: absolute
+        top: 0
+        left: 0
+        z-index: -1
+        width: 35px
+        height: 35px
+        transform: scale(0)
+
+@each $color_name, $color in $colors
+    @each $color_type, $color_value in $color
+        @if $color_type == "base"
+            .btn-#{$color_name}
+                +button-variant($color_value, $color_value, $color: #ffffff)
+
+            .btn-#{$color_name}-o
+                // +button-outline-variant($color_value, $color-hover: #ffffff)
+                +button-outline-variant($color_value, $color_value)
+        @else if $color_name != "shades"
+            .btn-#{$color_name}-#{$color_type}
+                +button-variant($color_value, $color_value, $color: #ffffff)
+
+            .btn-#{$color_name}-#{$color_type}-o
+                // +button-outline-variant($color_value, $color-hover: #ffffff)
+                +button-outline-variant($color_value, $color_value)
+
+// Shade classes
+// @each $color, $color_value in $shades
+//  .btn-#{$color}
+//      +button-variant($color_value, $color_value, $color: #666666)
+
+//  .btn-#{$color}-o
+//      +button-outline-variant($color_value, $color-hover: #666666)
+//
+//  white
+.btn-white
+    &, &:link, &:visited, &.visited
+        color: #000000
+        background-color: #ffffff
+        border-color: #ffffff
+
+    &:focus, &:hover, &:active, &.active
+        color: #ffffff
+        background-color: #000000
+        border-color: #000000
+
+    &.disabled, &:disabled
+        background-color: #cccccc
+        border-color: #cccccc
+
+.btn-white-o
+    &, &:link, &:visited, &.visited
+        color: #ffffff
+        background-color: transparent
+        border-color: #ffffff
+
+    &:focus, &:hover, &:active, &.active
+        color: #222222
+        border-color: #222222
+
+    &.disabled, &:disabled
+        color: #cccccc
+
+// black 
+.btn-black 
+    &, &:link, &:visited, &.visited
+        color: #ffffff
+        background-color: #000000
+        border-color: #000000
+    //&:active, &:focus
+    &:hover, &.active 
+        color: #000000
+        background-color: #ffffff
+        border-color: #ffffff
+
+    &.disabled, &:disabled
+        background-color: #cccccc
+        border-color: #cccccc
+
+.btn-black-o 
+    &, &:link, &:visited, &.visited
+        color: #000000
+        background-color: transparent
+        border-color: #000000
+    // &:active ,&:focus
+    &:hover, &.active  
+        color: #ffffff
+        border-color: #ffffff
+
+    &.disabled, &:disabled
+        color: #cccccc
+
+//transparent
+// [class*='btn-'].transparent
+//     &:link, &:visited, &.visited
+//         color: #323232
+
+//     &:focus, &:hover, &:active, &.active
+//         color: #9e9e9e
+
+//     &.disabled, &:disabled
+//         color: #9e9e9e

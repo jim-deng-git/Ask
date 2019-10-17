@@ -1,0 +1,65 @@
+﻿@{
+    ViewBag.Title = "新增追蹤標記";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    IEnumerable<string> flags = ViewBag.Flags;
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">新增追蹤標記</div>
+        </div>
+        <ul id="ulForm" class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="input-field inline full no-label">
+                        <textarea id="txtFlags" class="tagEditor"></textarea>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-grey prev" href="javascript:parent.$.colorbox.close();"><i class="cc cc-arrow-left"></i>上一步，已選了<span id="spanCount"></span>筆</a>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:save();"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</div>
+
+@section FArea {    
+    @BundleConfig.TagEditor()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var selectIds = parent.getSelectIds();        
+        $('#spanCount').html(selectIds.length);
+
+        $('#txtFlags').tagEditor({
+            delimiter: ';, ',
+            placeholder: '新增標記名稱',
+            autocomplete: {
+                delay: 0,
+                position: {
+                    collision: 'flip'
+                },
+                source: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(flags))
+            },
+            forceLowercase: false
+        });
+
+        function save() {
+            var flags = $('#txtFlags').val();
+            if (!flags) {
+                Component.alert('請至少填寫一項標記');
+                return;
+            }
+
+            flags = $.unique(flags.split(';'));
+            $.post('@Url.Action("AddFlag", new { siteId = siteId })', { 'formItemIds[]': selectIds, 'flags[]': flags }, function () {
+                parent.refreshList();
+                parent.$.colorbox.close();
+            });
+        }
+    </script>
+}

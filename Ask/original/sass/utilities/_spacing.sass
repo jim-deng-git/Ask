@@ -1,0 +1,35 @@
+@function line($style)
+    @if $style != ""
+        @return "-"
+    @else
+        @return ""
+
+@each $n-key, $n-value in $spacerNames
+    @each $style, $length in $spacers
+        $line: line($style)
+
+        .#{$n-key}#{$line}#{$style}
+            #{$n-value}: $length !important
+
+    @each $style, $length in $spacers
+        $line: line($style)
+
+        .#{$n-key}-v#{$line}#{$style}
+            #{$n-value}-top: $length !important
+            #{$n-value}-bottom: $length !important
+
+    @each $style, $length in $spacers
+        $line: line($style)
+
+        .#{$n-key}-h#{$line}#{$style}
+            #{$n-value}-left: $length !important
+            #{$n-value}-right: $length !important
+
+    $directions: (T: top, B: bottom, L: left, R: right)
+
+    @each $d-key, $d-value in $directions
+        @each $style, $length in $spacers
+            $line: line($style)
+
+            .#{$n-key}-#{$d-key}#{$line}#{$style}
+                #{$n-value}-#{$d-value}: $length !important

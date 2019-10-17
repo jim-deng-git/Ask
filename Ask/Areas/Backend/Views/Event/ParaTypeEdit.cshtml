@@ -1,0 +1,85 @@
+﻿@model WorkV3.Models.EventTypesModels
+@{
+    ViewBag.Title = "類別編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("ParaTypeEdit", siteQuery))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">類別編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">類別名稱</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">色調</div>
+                                <div class="radio-box inline" data-radioGroup="Color">
+                                    @{ string[] colors = { "red", "orange", "yellow", "green", "light-green", "blue", "teal", "deep-purple", "gold", "light-grey", "grey", "black" }; }
+                                    @foreach (string color in colors) {
+                                        <div>
+                                            <input type="radio" class="with-gap" value="@color" />
+                                            <label data-color="@color"></label>
+                                        </div>
+                                    }
+                                    <input type="hidden" id="Color" name="Color" value="@Model.Color" />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.radioList('div[data-radioGroup]');
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

@@ -1,0 +1,27 @@
+.card-plainText[data-style="5"]::before, .card-plainText[data-style="5"]::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 45%;
+  height: 1px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  background-color: #eeeeee; }
+
+.card-plainText[data-style="5"] {
+  text-align: center;
+  position: relative;
+  padding: 10px 0; }
+  .card-plainText[data-style="5"]::before {
+    top: 0; }
+  .card-plainText[data-style="5"]::after {
+    bottom: 0; }
+  .card-plainText[data-style="5"] .title-main {
+    font-size: 28px;
+    color: #222222; }
+    .card-plainText[data-style="5"] .title-main ~ .title-sub {
+      margin-top: 5px; }
+  .card-plainText[data-style="5"] .title-sub {
+    font-size: 16px;
+    color: #999999; }

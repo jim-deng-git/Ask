@@ -1,0 +1,136 @@
+.card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-imageTextList[data-style="19"] .swiper-slide {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box; }
+
+.card-imageTextList[data-style="19"] .swiper-button-prev, .card-imageTextList[data-style="19"] .swiper-button-next, .card-imageTextList[data-style="19"] .swiper-button-prev::after, .card-imageTextList[data-style="19"] .swiper-button-next::after {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out; }
+
+.card-imageTextList[data-style="19"] .card-text-name {
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap; }
+
+.card-imageTextList[data-style="19"] .card-imageText[data-style="8"] {
+  border: 1px solid #cccccc; }
+  .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text {
+    padding-left: 12px;
+    padding-right: 12px; }
+  .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-img {
+    padding-bottom: 100%;
+    overflow: hidden;
+    -webkit-transform: none;
+        -ms-transform: none;
+            transform: none;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center; }
+    .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-img > a {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: center;
+          -ms-flex-pack: center;
+              justify-content: center; }
+    .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-img img {
+      max-width: inherit;
+      width: auto;
+      height: 100%;
+      position: absolute; }
+  .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-img-content {
+    background-position: center top !important; }
+  .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name {
+    font-size: 22px;
+    color: #222222; }
+    @media only screen and (max-width: 420px) {
+      .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name {
+        font-size: 20px;
+        display: -webkit-box;
+        overflow: hidden;
+        -o-text-overflow: ellipsis;
+           text-overflow: ellipsis;
+        word-break: break-all;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal; } }
+    .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name a {
+      color: #222222; }
+      .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name a:focus, .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name a:active, .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name a:hover {
+        color: #222222; }
+    .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-name ~ .card-text-info {
+      margin-top: 0; }
+  .card-imageTextList[data-style="19"] .card-imageText[data-style="8"] .card-text-info {
+    font-size: 17px;
+    color: #999999; }
+
+.card-imageTextList[data-style="19"] .card-text-kind {
+  font-size: 24px;
+  color: #000000; }
+
+.card-imageTextList[data-style="19"] .pagination {
+  margin-top: 20px; }
+  .card-imageTextList[data-style="19"] .pagination .btn-black-o {
+    padding: 3px 50px; }
+
+.card-imageTextList[data-style="19"] .swiper-slide {
+  width: 25%;
+  margin-right: 15px; }
+  @media only screen and (max-width: 800px) {
+    .card-imageTextList[data-style="19"] .swiper-slide {
+      width: 50%; } }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="19"] .swiper-slide {
+      width: 100%;
+      padding: 0; } }
+
+.card-imageTextList[data-style="19"] .swiper-button-prev, .card-imageTextList[data-style="19"] .swiper-button-next {
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  margin-top: -20px;
+  border-radius: 100%;
+  opacity: 0;
+  overflow: hidden;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-align: center; }
+  @media only screen and (max-width: 420px) {
+    .card-imageTextList[data-style="19"] .swiper-button-prev, .card-imageTextList[data-style="19"] .swiper-button-next {
+      opacity: 1; } }
+  .card-imageTextList[data-style="19"] .swiper-button-prev:hover, .card-imageTextList[data-style="19"] .swiper-button-next:hover {
+    background-color: black; }
+  .card-imageTextList[data-style="19"] .swiper-button-prev::after, .card-imageTextList[data-style="19"] .swiper-button-next::after {
+    font-family: "FontCCWork";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    line-height: 50px;
+    top: 40%;
+    margin-top: -20px;
+    font-size: 30px; }
+  .card-imageTextList[data-style="19"] .swiper-button-prev.swiper-button-disabled, .card-imageTextList[data-style="19"] .swiper-button-next.swiper-button-disabled {
+    display: none; }
+
+.card-imageTextList[data-style="19"] .swiper-button-prev::after {
+  content: "\ea06"; }
+
+.card-imageTextList[data-style="19"] .swiper-button-next::after {
+  content: "\ea08"; }
+
+.card-imageTextList[data-style="19"] .swiper-container:hover .swiper-button-prev, .card-imageTextList[data-style="19"] .swiper-container:hover .swiper-button-next {
+  opacity: 1; }

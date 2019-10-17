@@ -1,0 +1,223 @@
+﻿@model IEnumerable<MainVisionModel>
+
+@{ 
+    SitePage sitePage = ViewBag.SitePage;
+    string uploadUrl = ViewBag.UploadVPath;
+    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(sitePage.SiteID, sitePage.MenuID);
+    string rootUrl = Href("~/");
+}
+
+@if (Model?.Count() > 0) {
+<link href="~/css/Cards/MainVision/style4.css" rel="stylesheet" />
+<script type="text/javascript" src="~/script/loadScript/xScript.js"></script>
+
+<div class="card-mainVision" data-style="4">
+    <div class="flexsliderV">
+        <ul id="mainVision_@Model.First().CardNo" class="slides">
+            @foreach (MainVisionModel item in Model) {
+                string icon = string.IsNullOrWhiteSpace(item.Icon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.Icon).Img;
+                string hover_icon = string.IsNullOrWhiteSpace(item.HoverIcon) ? string.Empty : uploadUrl + Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(item.HoverIcon).Img;
+
+                if (item.Type == "Image") {
+                    string img = WorkLib.uCheck.IsMobile() ? item.ImgM : item.Img;
+                    if (!string.IsNullOrWhiteSpace(img)) {
+                        string imgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(img).Img;
+                        if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, imgFileName)))
+                        {
+                            imgFileName = string.Format("R_{0}", imgFileName);
+                        }
+                        img = uploadUrl + Server.UrlPathEncode(imgFileName);
+                        <li class="@(string.IsNullOrEmpty(item.Link)? "":"openLink" )" data-target="@(item.IsOpenNew?"_blank":"")" data-thumb="@(icon == string.Empty ? img : icon)" data-id="@item.ID" data-second="@item.Second" @(string.IsNullOrEmpty(hover_icon) ?string.Empty:("data-hover-img='"+ hover_icon + "'")) style="background-image: url('@img');"  data-href="@item.Link" >
+                            @*@if (!string.IsNullOrWhiteSpace(item.Link)) {
+                                <a href="@item.Link" target="@(item.IsOpenNew ? "_blank" : "_self")" ><img src="@img"/></a>
+                            }*@ 
+                        </li>
+                    }
+                }
+                else
+                {
+                    string videoImg = item.VideoImg, videoImgFileName = "";
+                    if (WorkLib.uCheck.IsMobile() && !string.IsNullOrWhiteSpace(item.VideoImgM))
+                    {
+                        videoImg = item.VideoImgM;
+                    }
+                    if (item.VideoImgIsCustom && !string.IsNullOrWhiteSpace(videoImg) && videoImg[0] == '{')
+                    {
+                        videoImgFileName = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageModel>(videoImg).Img;
+                        if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, videoImgFileName)))
+                        {
+                            videoImgFileName = string.Format("R_{0}", videoImgFileName);
+                        }
+                        videoImg = uploadUrl + Server.UrlPathEncode(videoImgFileName);
+                    }
+                    if (!string.IsNullOrWhiteSpace(videoImg))
+                    {
+                    <li class="openVideoImg" data-video="@(item.VideoID)" data-thumb="@(icon == string.Empty ? videoImg : icon)" data-id="@item.ID" data-second="@item.Second" style="background-image: url('@videoImg');">
+                        
+                    </li>
+                    }
+                }
+            }
+        </ul>
+        <div class="deco-border waves">
+            <div class="wave-svg z-index-1">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="100%" height="180" xml:space="preserve">
+                    <pattern id="water" width=".25" height="1" patternContentUnits="objectBoundingBox">
+                        <path fill="#fff" d="M0.25,1H0c0,0,0-0.659,0-0.916c0.083-0.303,0.158,0.334,0.25,0C0.25,0.327,0.25,1,0.25,1z" />
+                    </pattern>
+                    <g id="eff">
+                        <use x="0" y="0" />
+                        <rect fill="url(#water)" y="0" width="5020" height="180" opacity="0.33">
+                            <animate attributeType="xml" attributeName="x" from="-1255" to="0" repeatCount="indefinite" dur="5.5s" />
+                        </rect>
+                        <rect fill="url(#water)" y="30" width="5020" height="260" opacity="0.66">
+                            <animate attributeType="xml" attributeName="x" from="-2560" to="0" repeatCount="indefinite" dur="8s" />
+                        </rect>
+                        <rect fill="url(#water)" y="60" width="5020" height="230">
+                            <animate attributeType="xml" attributeName="x" from="-2560" to="0" repeatCount="indefinite" dur="3.9s" />
+                        </rect>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/script/flexslider/jquery.flexslider.js"></script>
+<script type="text/javascript" src="https://www.youtube.com/iframe_api"></script>
+
+<script type="text/javascript">
+	$('.flexsliderV').flexslider({
+        animation: "fade",
+        animationLoop: true,
+        smoothHeight: false,
+        slideshow: false,
+        prevText: "",
+        nextText: "",
+        // useCSS: false,
+        // controlNav: "thumbnails"
+    });
+	if ($(".openLink").length > 0)
+	{
+	    $(".openLink").on('click', function (e) {
+	        e.preventDefault();
+	        var self = $(this);
+	        if ($(self).attr("data-target") != null && $(self).attr("data-target") == "_blank") {
+	            window.open($(self).attr("data-href"));
+	            
+	        }
+	        else {
+	            location = $(self).attr("data-href");
+	        }
+	        
+	    });
+
+	}
+</script>
+<script type="text/javascript">
+    function onYouTubeIframeAPIReady() {
+        var outerElm = $('#mainVision_@Model.First().CardNo');
+        
+        outerElm.find('li.openVideoImg').on('click', function (e) {
+            e.preventDefault();            
+            var video = '<div class="videoCurrentBox"><a href="javascriot:"><i class="cc cc-close"></i></a><div data-videoId=\"' + $(this).data('video') + '\"></div></div>';
+            var $video = $(this).find('.videoCurrentBox')[0];
+            var flexsliderElm = outerElm.data('flexslider');
+
+            if ($(this).find('.videoCurrentBox').length) {
+                $video.remove();
+                $('.header').removeClass('playVideo');
+                $(this).parents('.card-mainVision[data-style="2"]').removeClass('playVideo');//carrie 201803231921
+            } else {
+                $('.videoCurrentBox').remove();
+                video = $(video);
+                $(this).prepend(video);
+
+                setTimeout(function () {
+                    video.find('[data-videoId]').each(function () {
+                        var liElm = $(this).closest('li');                    
+                        var videoId = $(this).attr('data-videoId');
+                        var youtube = new YT.Player(this, {
+                            playerVars: { 'controls': 1 },
+                            videoId: videoId,
+                            width: video.width(),
+                            height: video.height(),
+                            events: {
+                                'onStateChange': function (e) {
+                                    if (e.data == YT.PlayerState.PLAYING) {
+                                        flexsliderElm.flexslider('stop');
+                                    } else if (e.data == YT.PlayerState.ENDED) {
+                                        if (outerElm.find('ul.slides > li').length == 3) {
+                                            youtube.loadVideoById(videoId);
+                                        } else {
+                                            flexsliderElm.flexslider('play');
+                                        }
+                                    } else if (e.data == YT.PlayerState.CUED) {
+                                        if (liElm.prev().length == 0) {
+                                            youtube.playVideo();
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        liElm.data('youtube', youtube);
+                        if (liElm.hasClass('flex-active-slide')) {
+                            flexsliderElm.flexslider('stop');
+                            var timer = setInterval(function () {
+                                if (youtube.getPlayerState) {
+                                    var state = youtube.getPlayerState();
+                                    if (state != -1 && state != 3) {
+                                        clearInterval(timer);
+                                        youtube.playVideo();
+                                    }
+                                }
+                            }, 500);
+                        }
+                    });
+                }, 100);
+                
+                $('.header').addClass('playVideo');
+                $(this).parents('.card-mainVision[data-style="2"]').addClass('playVideo');//carrie 201803231921
+            }
+        });        
+    }
+
+    (function () {
+        var outerElm = $('#mainVision_@Model.First().CardNo');
+
+        var flexslider = outerElm.parent().flexslider({
+            animation: "fade",
+            animationLoop: true,
+            smoothHeight: false,
+            slideshow: true,
+            prevText: "",
+            nextText: "",            
+            // useCSS: false,
+            // controlNav: "thumbnails",
+            before : function(slider) {
+                if ($('#mainVision_@Model.First().CardNo').find('.videoCurrentBox').length) {
+                    $('.videoCurrentBox').remove();
+                    $('.header').removeClass('playVideo');
+                    $(this).parents('.card-mainVision[data-style="2"]').removeClass('playVideo');//carrie 201803231921
+                }
+            },
+        });
+        outerElm.data('flexslider', flexslider);
+        
+        outerElm.find('li[data-id]').click(function () {
+            $.get('@Url.Action("Click", "MainVision")/' + $(this).attr('data-id'));
+        });
+
+        $(window).resize(function() {
+            if($(window).width() > 801) {
+                $('.card-mainVision[data-style="2"]').each(function(){
+                    $(this).find('.slides').children('li').css({
+                        'height': $(this).innerHeight()
+                    });
+                });
+            }
+        }).trigger('resize');
+
+    })();
+</script>
+}

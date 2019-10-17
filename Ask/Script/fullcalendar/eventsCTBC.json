@@ -1,0 +1,54 @@
+[
+  {
+    "title": "四季未央(單日活動)",
+    "description": "史上最具風采的弦樂天才丹尼爾．霍普，領軍蘇黎世室內樂團首度登臺，演繹《丹尼爾．霍普：四季神采》以及馬克斯．李希特《重譜韋瓦第四季》專輯中的經典曲目 ",
+    "images": "IMG_1375.jpg",
+    "location": "紅磚六合院-西5棟",
+    "googlemap": "台北市中正區八德路一段1號",
+    "organizer": "Restaurant ANDRÉ",
+    "status": "備取",
+    "start": "2019-02-01T09:30",
+    "end": "2019-02-01T12:00",
+    "oneday": true,
+    "color": "#94b3df"
+  },
+  {
+    "title": "多日活動",
+    "description": "史上最具風采的弦樂天才丹尼爾．霍普，領軍蘇黎世室內樂團首度登臺，演繹《丹尼爾．霍普：四季神采》以及馬克斯．李希特《重譜韋瓦第四季》專輯中的經典曲目 ",
+    "images": "IMG_1375.jpg",
+    "location": "紅磚六合院-西5棟",
+    "googlemap": "台北市中正區八德路一段1號",
+    "organizer": "Restaurant ANDRÉ",
+    "status": "正取",
+    "start": "2019-02-07",
+    "end": "2019-02-10",
+    "oneday": false,
+    "color": "#027c7d"
+  },
+  {
+    "id": "999",
+    "title": "單日時間活動",
+    "description": "史上最具風采的弦樂天才丹尼爾．霍普，領軍蘇黎世室內樂團首度登臺，演繹《丹尼爾．霍普：四季神采》以及馬克斯．李希特《重譜韋瓦第四季》專輯中的經典曲目 ",
+    "images": "IMG_1375.jpg",
+    "location": "紅磚六合院-西5棟",
+    "googlemap": "台北市中正區八德路一段1號",
+    "organizer": "Restaurant ANDRÉ",
+    "status": "正取",
+    "start": "2019-02-13T14:30",
+    "end": "2019-02-13T18:00",
+    "oneday": true,
+    "color": "#a6a6a6"
+  },
+  {
+    "title": "星夢想‧伊甸象圈工程計畫-4",
+    "images": "IMG_1375.jpg",
+    "location": "紅磚六合院-西5棟",
+    "googlemap": "台北市中正區八德路一段1號",
+    "organizer": "Restaurant ANDRÉ",
+    "status": "備取",
+    "start": "2019-02-24",
+    "end": "2019-02-26",
+    "oneday": false,
+    "color": "#027c7d"
+  }
+]

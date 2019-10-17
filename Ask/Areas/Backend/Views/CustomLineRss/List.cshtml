@@ -1,0 +1,132 @@
+﻿@model IEnumerable<CustomLineNewsModels>
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    long siteId = ViewBag.SiteID;
+    Pagination pagination = ViewBag.Pagination;
+    CustomLineNewsSearchModels search = ViewBag.Search;
+    var siteQuery = new { siteId = siteId };
+
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+        });
+
+        $(window).on('load', function () {
+            if ($('#SearchBox').length) {
+                var $SearchBoxH = $('#SearchBox').outerHeight();
+                if ($('#SearchBox').hasClass('pushup')) {
+                    // $('.fixTable, .pagination').css({
+                    //     top: $SearchBoxH
+                    // });
+                } else {
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                }
+
+                $('#closeSerach').on('click', function () {
+                    $('#SearchBox').removeClass('pushup');
+                    // $('.fixTable, .pagination').css({
+                    //     top: 0
+                    // });
+                });
+
+                $('#openSearch').on('click', function () {
+                    $('#SearchBox').toggleClass('pushup');
+                    if ($('#SearchBox').hasClass('pushup')) {
+                        // $('.fixTable, .pagination').css({
+                        //     top: $SearchBoxH
+                        // });
+                    } else {
+                        // $('.fixTable, .pagination').css({
+                        //     top: 0
+                        // });
+                    }
+                });
+            }
+        });
+
+
+        var listObj = Component.dataList('listTable');
+
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+        listObj.statusChange = function (id) {
+            @*var url = '@Url.Action("EpaperToggleIssue")';
+            $.get(url+ '/' + id + '?siteId=@siteId&menuId=@menuId');*@
+        }
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <form id="searchForm" method="post" action="@Url.Action("List", siteQuery)">
+            <table class="fixTable">
+                <caption>
+                    LINE NEWS RSS列表
+                    <span class="info">@*共選了<span>1</span>筆*@</span>
+                    <div class="float-R">
+
+                        <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" href="@Url.Action("AddData","CustomLineRss",new { siteId= siteId })" title="新增"><i class="cc cc-plus"></i></a>
+
+
+                        <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" title="移除"data-action="del" ><i class="cc cc-trash-o"></i></a>
+
+                        <!-- 刪除的確定 -->  
+                        <span data-for="del" style="display:none;">
+                            <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                            <a class="btn-grey-darken-4-o yes　data-del" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        </span>
+                        <!-- 刪除的確定END -->
+                    </div>
+                </caption>
+                <thead>
+                    <tr>
+                        <th>序</th>
+                        <th>推播日期</th>
+                        <th>文章篇數</th>
+                        <th>編輯</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0, len = Model.Count(); i < len; ++i)
+                    {
+                        CustomLineNewsModels item = Model.ElementAt(i);
+                        <tr data-id="@item.ID">
+                            <td class="sort">@pagination.GetItemIndex(i)</td>
+                            <td>@item.SelectDate</td>
+                            <td class="">@item.Total</td>
+                            <td class="icon"><a class="btn-grey-darken-4-o transparent square openCenterEdit-m" href="@Url.Action("EditList", "CustomLineRss", new { id = item.ID, siteId = siteId })"><i class="cc cc-edit-o"></i></a></td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </form>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>

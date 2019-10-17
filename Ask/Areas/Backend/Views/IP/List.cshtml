@@ -1,0 +1,126 @@
+﻿@model IEnumerable<IntraIPlimitModel>
+@{
+    ViewBag.Title = "後台限定開放IP";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    DateTime now = DateTime.Now;
+    Pagination pagination = ViewBag.Pagination;
+
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        //Component.searchBox('#searchBox', '#openSearch');
+
+        var listObj = Component.dataList('listTable');
+        
+        listObj.sorted = function (sortItems) {
+            $.post('IPSort', { 'items': sortItems }, function () {
+                location.replace(location.href);
+            });
+        }
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    var action = "del";
+                    $.post('IPDel', { 'ids': delIds }, function () {
+                        location.replace(location.href);
+                    });
+                        
+                }
+            }, 'warning');
+        }
+        listObj.canceled = function (action) {
+            if (action == "del" || $('a[data-action="' + action + '"]').attr('data-select') == 'true') {
+                    $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+        listObj.actioned = function (action) {
+            $("td[data-system-set=True]").children("input[type=checkbox]").attr("disabled", true);
+        }
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+        function refreshList() {
+            location.replace(location.href);
+        }
+</script>
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <table class="fixTable" id="listTable">
+            <caption>
+                後台限定開放IP
+                <span class="info"></span>
+                <div class="float-R">
+                    <a data-width="600" class="btn-grey-darken-4-o square tooltip-info openEdit-c" href="@Html.Raw(Url.Action("Edit"))" title="新增IP區間" ><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>限定方式</th>
+                    <th>IP區間設定</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @for (int i = 0, len = Model.Count(); i < len; ++i)
+                {
+                    <tr data-id="@Model.ElementAt(i).ID">
+                        <td class="sort">@(i+1)</td>
+                        <td class="">@(Model.ElementAt(i).OpenStatus ==  OpenStatus.Open?"開啟": "拒絕")</td>
+                        <td class="text-L">
+                        @if (Model.ElementAt(i).IP_Begin == "*")
+                        {
+                            <text>
+                            全部IP區間
+                            </text>
+                         }
+                         else
+                                {
+                                <text>
+                                    @Model.ElementAt(i).IP_Begin
+                                </text>
+                            if (!string.IsNullOrEmpty(Model.ElementAt(i).IP_End))
+                            {
+                                <text>
+                                   ~ @Model.ElementAt(i).IP_End
+                                </text>
+    }
+}
+</td>
+                        <td class="icon edit" data-system-set="@Model.ElementAt(i).IsSystemSet.ToString()"><a data-width="600" class="btn-grey-darken-4-o transparent square openEdit-c" href="@Url.Action("Edit", new { ID=Model.ElementAt(i).ID})"><i class="cc cc-edit-o"></i></a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

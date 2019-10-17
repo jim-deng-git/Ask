@@ -1,0 +1,103 @@
+.card-mainVision[data-style="7"] {
+  position: relative; }
+  .card-mainVision[data-style="7"] .mainVisionImg {
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat; }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="7"] .mainVisionImg {
+        height: 0 !important;
+        padding-bottom: 75%; } }
+  @media only screen and (max-width: 580px) {
+    .card-mainVision[data-style="7"] .mainVisionVideo {
+      height: 0 !important;
+      padding-bottom: 75%; } }
+  .card-mainVision[data-style="7"] .mainVision-text {
+    position: absolute;
+    left: 7%;
+    bottom: 15%;
+    max-width: 500px;
+    width: 100%; }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="7"] .mainVision-text {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        max-width: inherit;
+        width: 100%;
+        padding: 20px 60px; } }
+    .card-mainVision[data-style="7"] .mainVision-text .title {
+      color: #000;
+      font-size: 72px;
+      font-weight: 600;
+      line-height: 1; }
+      @media only screen and (max-width: 800px) {
+        .card-mainVision[data-style="7"] .mainVision-text .title {
+          font-size: 50px; } }
+      @media only screen and (max-width: 420px) {
+        .card-mainVision[data-style="7"] .mainVision-text .title {
+          font-size: 13vw; } }
+      .card-mainVision[data-style="7"] .mainVision-text .title + .info {
+        margin-top: 30px; }
+    .card-mainVision[data-style="7"] .mainVision-text .info {
+      color: #4A4B4D;
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1; }
+      @media only screen and (max-width: 800px) {
+        .card-mainVision[data-style="7"] .mainVision-text .info {
+          font-size: 20px; } }
+  .card-mainVision[data-style="7"] .GeometryColor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-transform: translateX(-8%);
+        -ms-transform: translateX(-8%);
+            transform: translateX(-8%);
+    width: 100%;
+    height: 100%;
+    z-index: 1; }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="7"] .GeometryColor {
+        display: none; } }
+    .card-mainVision[data-style="7"] .GeometryColor img {
+      height: 100%; }
+  .card-mainVision[data-style="7"] .swiper-containerText {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%; }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="7"] .swiper-containerText {
+        position: relative; } }
+  .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-prev, .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-next {
+    width: auto; }
+    .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-prev::after, .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-next::after {
+      font-family: "FontCCwork";
+      font-size: 60px;
+      line-height: 100px;
+      display: inline-block;
+      content: "\e905";
+      color: rgba(0, 0, 0, 0.8);
+      text-shadow: 1px 0px 8px rgba(255, 255, 255, 0.3); }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-prev, .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-next {
+        margin-top: 0;
+        top: 60%; } }
+  @media only screen and (max-width: 580px) {
+    .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-prev {
+      left: 0; } }
+  .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-next::after {
+    content: "\e907"; }
+  @media only screen and (max-width: 580px) {
+    .card-mainVision[data-style="7"] .swiper-containerImg .swiper-button-next {
+      right: 0; } }
+  @media only screen and (max-width: 580px) {
+    .card-mainVision[data-style="7"] .mbYTP_wrapper iframe {
+      height: 100% !important;
+      width: 100% !important;
+      left: 0 !important;
+      top: 0 !important;
+      margin-left: 0 !important;
+      margin-top: 0 !important; } }

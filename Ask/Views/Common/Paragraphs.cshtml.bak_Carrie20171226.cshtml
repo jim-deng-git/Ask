@@ -1,0 +1,539 @@
+﻿@model IEnumerable<ParagraphModels>
+@{ 
+    string uploadUrl = ViewBag.UploadUrl;
+    bool hasFlexslider = false;    
+}
+
+@helper ImageFlexSlider(IEnumerable<ResourceImagesModels> images, string uploadUrl) {
+    <div class="flexslider">
+        <ul class="slides" data-colorboxGroup="@images.First().SourceNo">
+            @foreach (ResourceImagesModels img in images) {
+            <li>
+                <a class="openImg" href="@(uploadUrl + img.Img)" rel="@img.SourceNo"><img src="@(uploadUrl + img.Img)" alt=""></a>
+                @if (!string.IsNullOrWhiteSpace(img.SpecDetail) || !string.IsNullOrWhiteSpace(img.Link)) {
+                <div class="imgInfo">
+                    <span class="imgIntro">@Html.Raw(img.SpecDetail)</span>
+                    @if (!string.IsNullOrWhiteSpace(img.Link)) {
+                        <a class="btn-black-o square transparent btn-mini imgLink" href="@img.Link" @(img.IsOpenNew == true ? "target=\"_blank\"" : string.Empty)><i class="cc cc-link-variant"></i></a>
+                    }
+                </div>
+                }
+            </li>
+            }
+        </ul>
+    </div>
+}
+
+@helper ImageCardShow(IEnumerable<ResourceImagesModels> images, string uploadUrl, bool? isTop = null) {
+    string topClass = string.Empty;
+    if(isTop != null) {
+        topClass = isTop == true ? "top" : "bottom";
+    }
+    <div class="card-img flex @topClass border-T" data-colorboxGroup="@images.First().SourceNo">
+    @foreach (ResourceImagesModels img in images) {
+        <div class="card-img-box">
+            <a class="openImg" href="@(uploadUrl + img.Img)" rel="@img.SourceNo"><img src="@(uploadUrl + img.Img)" alt=""></a>
+            @if (!string.IsNullOrWhiteSpace(img.SpecDetail) || !string.IsNullOrWhiteSpace(img.Link)) {
+            <div class="imgInfo">
+                <span class="imgIntro">
+                    @Html.Raw(img.SpecDetail)
+                    @if (!string.IsNullOrWhiteSpace(img.Link)) {
+                        <a class="btn-black-o square transparent btn-mini imgLink" href="@img.Link" @(img.IsOpenNew == true ? "target=\"_blank\"" : string.Empty)><i class="cc cc-link-variant"></i></a>
+                    }                    
+                </span>
+            </div>
+            }
+        </div>
+    }
+    </div>
+}
+
+@functions {
+    public string GetVideoUrl(ResourceVideosModels video, string uploadUrl) {
+        string videoUrl = string.Empty;
+        if (video.Type == "youtube") {
+            videoUrl = $"https://www.youtube.com/embed/{ video.Link }?rel=0&amp;showinfo=0";
+            if (video.IsAuto)
+                videoUrl += "&amp;autoplay=1";
+            if (video.IsRepeat)
+                videoUrl += $"&amp;playlist={ video.Link }&amp;loop=1";
+        } else if (video.Type == "vimeo") {
+            videoUrl = $"https://player.vimeo.com/video/{ video.Link }?title=0";
+            if (video.IsAuto)
+                videoUrl += "&amp;autoplay=1";
+            if (video.IsRepeat)
+                videoUrl += "&amp;loop=1";
+        } else if (video.Type == "tudou") {
+            videoUrl = $"http://www.tudou.com/programs/view/html5embed.action?code={ video.Link }";            
+        } else if(video.Type == "custom") {
+            videoUrl = uploadUrl + video.Link;
+        }
+
+        return videoUrl;
+    }
+}
+
+@helper VideoEmbedInfo(ResourceVideosModels video, string alignClass, string uploadUrl) {
+    if (video != null && !string.IsNullOrWhiteSpace(video.Link)) {
+        string videoUrl = GetVideoUrl(video, uploadUrl);
+        <div class="card-img wide @alignClass">
+            <div class="videoIframe">
+                @if (video.Type == "custom") {
+                    string shotUrl = string.Empty;
+                    if (!string.IsNullOrWhiteSpace(video.Screenshot)) {
+                        ResourceImagesModels img = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(video.Screenshot);
+                        shotUrl = uploadUrl + "/" + img.Img;
+                    }
+                    <div class="video-mp4" data-video="@(uploadUrl + "/" + video.Link)" data-shot="@Html.Raw(shotUrl)" data-autoplay="@(video.IsAuto ? 1 : 0)" data-repeat="@(video.IsRepeat ? 1 : 0)"></div>
+                } else {
+                    @*<iframe width="1280" height="720" src="@(videoUrl)" frameborder="0" allowfullscreen></iframe>*@
+                    <div id="@(video.Link)"></div>
+                    <script>
+                        window.ytPlayerList.push({ Id: '@(video.Link)', DivId: '@(video.Link)', VideoId: '@(video.Link)'});
+                    </script>
+                }
+            </div>            
+            <div class="imgInfo">
+                @if (video.ShowSpec && !string.IsNullOrWhiteSpace(video.Spec)) {
+                    <div class="imgIntro">@video.Spec</div>
+                }
+                @if (video.ShowDuration && !string.IsNullOrWhiteSpace(video.Duration)) {
+                    <div class="datetime"><i class="cc cc-clock"></i>@video.Duration</div>
+                }
+                @if (video.ShowViews) {
+                    <div class="count"><i class="cc cc-eye"></i><span>2,065,753,116</span></div>
+                }
+            </div>
+        </div>
+    }
+}
+
+@helper VideoNotEmbedInfo(ResourceVideosModels video, string alignClass, string uploadUrl) {
+    if (video != null && !string.IsNullOrWhiteSpace(video.Link)) {
+        string videoUrl = GetVideoUrl(video, uploadUrl);
+        string openClass = video.Type == "custom" ? "openJWPlayer" : "openVideo";
+        string playModeAttr = video.PlayMode == "另開視窗" ? "target=\"_blank\"" : $"class=\"{ openClass }\"";
+
+        string shotUrl = video.Screenshot;
+        if (video.ScreenshotIsCustom && !string.IsNullOrWhiteSpace(shotUrl)) {
+            ResourceImagesModels img = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(shotUrl);
+            shotUrl = uploadUrl + "/" + img.Img;
+        }
+        <div class="card-img wide @alignClass">
+            <a href="@Html.Raw(videoUrl)" @Html.Raw(playModeAttr) data-autoplay="@(video.IsAuto ? 1 : 0)" data-repeat="@(video.IsRepeat ? 1 : 0)"> <!-- 影片種類選擇 自行上傳 class要改用 openJWPlayer -->
+                <!-- 播放方式 若選擇 另開視窗 上面的請拿掉a tag上面的class 並加上 target="_blank" -->
+                <img src="@shotUrl" alt="" />
+                <div class="card-img-content flex bg-transparent active">
+                    <div>
+                        <span class="btn-white-o rounded rounded-huge right">Play Video<i class="cc cc-play"></i></span>
+                    </div>
+                </div>
+            </a>
+            <div class="imgInfo">
+                @if (video.ShowSpec && !string.IsNullOrWhiteSpace(video.Spec)) {
+                    <div class="imgIntro">@video.Spec</div>
+                }
+                @if (video.ShowDuration && !string.IsNullOrWhiteSpace(video.Duration)) {
+                    <div class="datetime"><i class="cc cc-clock"></i>@video.Duration</div>
+                }
+                @if (video.ShowViews) {
+                    <div class="count"><i class="cc cc-eye"></i><span>2,065,753,116</span></div>
+                }
+            </div>
+        </div>
+    }
+}
+
+@helper ParagraphShow(ParagraphModels paragraph) {
+    <div class="card-text">
+        @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+        <div class="card-text-name">@paragraph.Title</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+        <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+        }
+    </div>
+}
+
+@foreach (ParagraphModels paragraph in Model) {
+    string alignClass = string.Empty;
+    if (paragraph.ImgAlign == "圖片置右") {
+        alignClass = "text-R";
+    } else if (paragraph.ImgAlign == "圖片置中") {
+        alignClass = "text-C";
+    }
+
+    if (paragraph.MatchType == "img") {
+        IEnumerable<ResourceImagesModels> images = paragraph.GetImages().Where(m => m.IsShow);
+        if (images != null && images.Count() > 0) {
+            ResourceImagesModels firstImg = images.First();
+            if (firstImg.MultiImgStyle == "輪播") {
+                hasFlexslider = true;
+            }
+
+            string containClass = string.Empty;
+            if (firstImg.IsOriginalSize) {
+                containClass = "original";
+            } else if (firstImg.SizeType == 0) {
+                containClass = "imgWidth-small";
+            } else if (firstImg.SizeType == 1) {
+                containClass = "imgWidth-middle";
+            } else if (firstImg.SizeType == 2) {
+                containClass = "imgWidth-large";
+            }
+
+            if (paragraph.ImgPos == "圖片在上" && firstImg.MultiImgStyle == "輪播") {
+                <div class="card shadow-none @containClass">
+                    <div class="card-box">
+                        @if (images?.Count() > 0) {
+                        <div class="card-img @alignClass">
+                            @ImageFlexSlider(images, uploadUrl)
+                        </div>
+                        }
+                        @ParagraphShow(paragraph)
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "圖片在下" && firstImg.MultiImgStyle == "輪播") {
+                <div class="card shadow-none @containClass">
+                    <div class="card-box">
+                        @ParagraphShow(paragraph)
+                        @if (images?.Count() > 0) {
+                        <div class="card-img @alignClass">                            
+                            @ImageFlexSlider(images, uploadUrl)
+                        </div>
+                        }
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "圖片在標題下方" && firstImg.MultiImgStyle == "輪播") {
+                <div class="card shadow-none @containClass">
+                    <div class="card-box">
+                        @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+                        <div class="card-text-name">@paragraph.Title</div>
+                        }
+                        @if (images?.Count() > 0) {
+                        <div class="card-img @alignClass">                            
+                            @ImageFlexSlider(images, uploadUrl)
+                        </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+                        <div class="card-text">
+                            <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "文繞圖" && firstImg.MultiImgStyle == "輪播") {
+                alignClass = paragraph.ImgAlign == "圖片置右" ? "float-R" : "float-L";
+                <div class="card shadow-none imgWidth-small">
+                    <div class="card-box">
+                        @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+                        <div class="card-text-name">@paragraph.Title</div>
+                        }
+                        @if (images?.Count() > 0) {
+                        <div class="card-img @alignClass">                            
+                            @ImageFlexSlider(images, uploadUrl)
+                        </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+                        <div class="card-text">
+                            <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "圖片在上" && firstImg.MultiImgStyle == "齊頂") {
+                <div class="card shadow-none imgWidth-small">
+                    <div class="card-box">
+                        @if (images?.Count() > 0) {
+                        @:@ImageCardShow(images, uploadUrl)                        
+                        }
+                        @ParagraphShow(paragraph)
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "圖片在下" && firstImg.MultiImgStyle == "齊頂") {
+                <div class="card shadow-none imgWidth-small">
+                    @ParagraphShow(paragraph)
+                    <div class="card-box">
+                        @if (images?.Count() > 0) {
+                        @:@ImageCardShow(images, uploadUrl)                        
+                        }                        
+                    </div>
+                </div>                
+            } else if (paragraph.ImgPos == "圖片在標題下方" && firstImg.MultiImgStyle == "齊頂") {
+                <div class="card-box">
+                    @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+                    <div class="card-text-name">@paragraph.Title</div>
+                    }
+                    @if (images?.Count() > 0) {
+                    @:@ImageCardShow(images, uploadUrl)                    
+                    }
+                    @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+                    <div class="card-text">
+                        <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+                    </div>
+                    }
+                </div>
+            } else if (paragraph.ImgPos == "圖片在上" && firstImg.MultiImgStyle == "齊底") {
+                <div class="card shadow-none imgWidth-small">
+                    <div class="card-box">
+                        @if (images?.Count() > 0) {
+                        @:@ImageCardShow(images, uploadUrl)                        
+                        }
+                        @ParagraphShow(paragraph)
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "圖片在下" && firstImg.MultiImgStyle == "齊底") {
+                <div class="card shadow-none imgWidth-small">
+                    @ParagraphShow(paragraph)
+                    <div class="card-box">
+                        @if (images?.Count() > 0) {
+                        @:@ImageCardShow(images, uploadUrl)                        
+                        }
+                    </div>
+                </div>
+            } else if (paragraph.ImgPos == "圖片在標題下方" && firstImg.MultiImgStyle == "齊底") {
+                <div class="card shadow-none imgWidth-small">
+                    <div class="card-box">
+                        @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+                        <div class="card-text-name">@paragraph.Title</div>
+                        }
+                        @if (images?.Count() > 0) {
+                        @:@ImageCardShow(images, uploadUrl)                        
+                        }
+                        @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+                        <div class="card-text">
+                            <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    } else if (paragraph.MatchType == "video") {
+        ResourceVideosModels video = paragraph.GetVideo();
+        if (!string.IsNullOrWhiteSpace(video.Link)) {
+            string containClass = "imgWidth-small";
+            if (video.SizeType == 1) {
+                containClass = "imgWidth-middle";
+            } else if (video.SizeType == 2) {
+                containClass = "imgWidth-large";
+            }
+            if (video.PlayMode == "直接嵌入") {
+                if (paragraph.ImgPos == "圖片在上") {
+            <div class="card shadow-none @containClass video">
+                <div class="card-box">
+                    @VideoEmbedInfo(video, alignClass, uploadUrl)                    
+                    @ParagraphShow(paragraph)
+                </div>
+            </div>
+                } else if (paragraph.ImgPos == "圖片在下") {
+            <div class="card shadow-none @containClass video">
+                <div class="card-box">
+                    @ParagraphShow(paragraph)
+                    @VideoEmbedInfo(video, alignClass, uploadUrl)
+                </div>
+            </div>
+                } else if (paragraph.ImgPos == "圖片在標題下方") {
+            <div class="card shadow-none imgWidth-small video">
+                <div class="card-box">
+                    @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+                    <div class="card-text-name">@paragraph.Title</div>
+                    }
+                    @VideoEmbedInfo(video, alignClass, uploadUrl)
+                    @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+                    <div class="card-text">
+                        <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+                    </div>
+                    }
+                </div>
+            </div>
+                }
+            } else { // 燈箱播放、另開視窗
+                if (paragraph.ImgPos == "圖片在上") {
+            <div class="card shadow-none @containClass video">
+                <div class="card-box">
+                    @VideoNotEmbedInfo(video, alignClass, uploadUrl)
+                    @ParagraphShow(paragraph)
+                </div>
+            </div>
+                } else if (paragraph.ImgPos == "圖片在下") {
+            <div class="card shadow-none @containClass video">
+                <div class="card-box">
+                    @ParagraphShow(paragraph)
+                    @VideoNotEmbedInfo(video, alignClass, uploadUrl)                
+                </div>
+            </div>
+                } else if(paragraph.ImgPos == "圖片在標題下方") {
+            <div class="card shadow-none @containClass video">
+                <div class="card-box">
+                    @if (!string.IsNullOrWhiteSpace(paragraph.Title)) {
+                    <div class="card-text-name">@paragraph.Title</div>
+                    }
+                    @VideoNotEmbedInfo(video, alignClass, uploadUrl)
+                    @if (!string.IsNullOrWhiteSpace(paragraph.Contents)) {
+                    <div class="card-text">
+                        <div class="card-text-info">@Html.Raw(paragraph.Contents)</div>
+                    </div>
+                    }
+                </div>
+            </div>
+                }
+            }
+        }
+    } else if (paragraph.MatchType == "file") {
+        IEnumerable<ResourceFilesModels> files = paragraph.GetFiles();
+        <div class="card-box">
+            @ParagraphShow(paragraph)
+            @if(files?.Count() > 0) {
+                <div class="card-file">
+                    <ul class="download">
+                        @foreach (ResourceFilesModels file in files) {
+                        <li><i class="cc cc-file-o"></i><a href="@(uploadUrl + file.FileInfo)" target="_blank">@(string.IsNullOrWhiteSpace(file.ShowName) ? System.Text.RegularExpressions.Regex.Replace(file.FileInfo, @"\.[^\.]*$", string.Empty) : file.ShowName)</a></li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    } else {
+        <div class="card-box">
+            @ParagraphShow(paragraph)
+        </div>
+    }
+
+    //else if (paragraph.MatchType == "voice") {
+        
+    //} else if (paragraph.MatchType == "link") {
+
+    //}
+}
+
+@BundleConfig.Colorbox()
+@BundleConfig.Component()
+
+<script type="text/javascript">
+    (function () {        
+        $('[data-colorboxGroup]').each(function () {
+            var group = 'group_' + $(this).attr('data-colorboxGroup');
+            $(this).find('.openImg').colorbox({
+                rel: group,
+                maxWidth: "90%",
+                maxHeight: "90%"
+            });
+        });
+        
+        $('.article-center .card').each(function () {
+            var $this = $(this),
+                $pWidth = $this.parents('.groove').outerWidth(),
+                $winWidth = $(window).width(),
+                $imgBox = $this.find('.card-img'),
+                $slider = $this.find('.flexslider');
+
+            if ($this.hasClass('imgWidth-large')) {
+                if ($slider.length) {
+                    $slider.css({
+                        width: $pWidth
+                    });
+                } else {
+                    $imgBox.css({
+                        width: $pWidth
+                    });
+                }
+            }
+            if ($this.hasClass('original')) {
+                if ($slider.length) {
+                    $slider.css({
+                        width: $winWidth
+                    });
+                }
+                if ($imgBox.hasClass('text-C')) {
+                    if ($slider.length) {
+                        $slider.css({
+                            'margin-left': -(($winWidth / 2) + 20)
+                        });
+                    }
+                }
+            }
+        });
+
+        $('div.video-mp4').each(function () {
+            this.id = Component.guid();            
+            jwplayer(this.id).setup({
+                width: "100%",
+                height: "100%",
+                type: "mp4",
+                file: $(this).attr('data-video'),
+                image: $(this).attr('data-shot'),
+                autostart: $(this).attr('data-autoplay') == '1',
+                repeat: $(this).attr('data-repeat') == '1',
+                skin: {
+                    name: "default",//選擇主題
+                    active: "#2e2e2e",//選擇主色
+                    inactive: "#ffffff",
+                    background: "rgba(255,255,255,0)"//選擇背景
+                },
+                showdownload: false,
+                aspectratio: "16:9"//影片比例                
+            });
+        });
+
+        // 搭配影片(播放方式 燈箱)
+        $(".openVideo").colorbox({
+            iframe: true,
+            width: "1408px",
+            height: "792px",
+            maxWidth: "90%",
+            maxHeight: "90%",
+        });
+
+        // 搭配影片(播放方式 燈箱 / 自行上傳)
+        $(".openJWPlayer").on('click', function (e) {
+            e.preventDefault();
+            var $this = $(this);            
+            var id = Component.guid();
+            $.colorbox({
+                html: '<div id="' + id + '"></div>',
+                width: "1408px",
+                height: "792px",
+                maxWidth: "90%",
+                maxHeight: "90%",
+                scrolling: false,
+                fixed: true,
+                onComplete: function () {
+                    jwplayer(id).setup({
+                        file: $this.prop('href'),
+                        image: $this.children('img').prop('src'),
+                        width: "auto",
+                        height: "100%",
+                        type: "mp4",
+                        skin: {
+                            name: "default",//選擇主題
+                            active: "#2e2e2e",//選擇主色
+                            inactive: "#ffffff",
+                            background: "rgba(255,255,255,0)"//選擇背景
+                        },
+                        showdownload: false,
+                        aspectratio: "16:9",//影片比例
+                        autostart: $this.attr('data-autoplay') == '1', //自動播放
+                        repeat: $this.attr('data-repeat') == '1'
+                    });
+                }
+            });
+        });
+    })();
+</script>
+@if(hasFlexslider) {
+    @BundleConfig.Flexslider()
+    <script type="text/javascript">
+        (function () {
+            setTimeout(function(){
+                $('.flexslider').flexslider({
+                    animation: "slide",
+                    smoothHeight: true,
+                    slideshow: false,
+                    controlNav: true,
+                    touch: $(this).children('ul.slides > li').length > 1 //只有一則行動裝置 停止輪播
+                }); 
+            }, 300);
+        })();
+    </script>
+}

@@ -1,0 +1,67 @@
+﻿@{
+    ViewBag.Title = "新增欄位";
+    ViewBag.BodyClass = "body-lightBox";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var query = new { formId = ViewBag.FormID };
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <div class="col-1 border-B m-B-8">
+                <div class="title">新增欄位</div>
+            </div>
+            <div>
+                <div id="divFieldGroup" class="btnGroup">
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("QuickChoose", query)"><i class="cc cc-file-o cc-rotate-270"></i>快速選擇</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=radio"><i class="cc cc-file-o cc-rotate-270"></i>單選</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=checkbox"><i class="cc cc-file-o cc-rotate-270"></i>多選</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=select"><i class="cc cc-file-o cc-rotate-270"></i>下拉</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=input"><i class="cc cc-file-o cc-rotate-270"></i>單行輸入框</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=textarea"><i class="cc cc-file-o cc-rotate-270"></i>多行填寫框</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=datetime"><i class="cc cc-file-o cc-rotate-270"></i>日期 / 時間</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=address"><i class="cc cc-file-o cc-rotate-270"></i>行政區 / 地址</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=file"><i class="cc cc-file-o cc-rotate-270"></i>上傳檔案</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=image"><i class="cc cc-file-o cc-rotate-270"></i>上傳圖片</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=video"><i class="cc cc-file-o cc-rotate-270"></i>上傳影片</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=voice"><i class="cc cc-file-o cc-rotate-270"></i>上傳聲音</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=hr"><i class="cc cc-file-o cc-rotate-270"></i>分隔線</a>
+                    <a class="btn-with-item bg-grey-lighten-2 square openLeftEdit" href="@Url.Action("FieldSetting", query)&type=text"><i class="cc cc-file-o cc-rotate-270"></i>靜態文字</a>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        //function openLeftEdit(src) {
+        //    var formBox = window.parent.$("#leftEditBox");
+
+        //    if (formBox.is(':visible')) {
+        //        formBox.hide();
+        //    }
+
+        //    var iframe = formBox.find('.iframe');
+
+        //    iframe.prop('src', src);
+        //    iframe.on('load', function () {
+
+        //        formBox.css({
+        //            'height': '50%',
+        //            'top': '25%'
+        //        });
+
+        //        formBox.fadeIn(300).addClass('active');
+        //    });
+        //}
+
+        $('.openLeftEdit').on('click', function (e) {
+            Component.openLeft(this.href);
+        });
+    </script>
+}
+
+

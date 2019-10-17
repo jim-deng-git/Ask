@@ -1,0 +1,171 @@
+﻿@model IEnumerable<WorkV3.Models.FieldModel>
+
+@{
+    string[] widthClassList = { "", "col-4", "col-2", "col-1" };
+    string uploadDesignUrl = ViewBag.UploadDesignUrl;
+}
+
+@helper ShowAlertText(WorkV3.Models.FieldModel item) {
+    if (!string.IsNullOrWhiteSpace(item.Hint)) {
+        <div class="alert transparent">
+            <i class="cc cc-attention"></i>
+            <div>@item.Hint</div>
+        </div>
+    }
+}
+
+@foreach(WorkV3.Models.FieldModel item in Model) { 
+    <div class="@widthClassList[item.Width] items-list field-outer">
+        <div class="actions-holder">
+            <a class="btn-white-o square transparent fileuploader-action-text tooltip tooltipstered fieldEdit" title="編輯" href="@Url.Action("FieldSetting", "Form", new { formId = item.ParentID, id = item.ID, type = item.TypeID })">
+                <i class="cc cc-edit-o"></i>
+            </a>
+            <a class="btn-white-o square transparent fileuploader-action-show tooltip tooltipstered fieldCopy" title="複製" href="javascript:">
+                <i class="cc cc-content-copy"></i>
+            </a>
+            <a class="btn-white-o square transparent fileuploader-action-show tooltip tooltipstered fieldShow" title="顯示" href="javascript:">
+                <i class="cc @(item.Enable ? "cc-eye" : "cc-eye-off")"></i>
+            </a>
+            @if (item.IsRemove) {
+            <a class="btn-del btn-white-o square transparent fileuploader-action-remove tooltip tooltipstered fieldDel" title="刪除" href="javascript:">
+                <i class="cc cc-trash-o"></i>
+            </a>
+            }
+            <input type="hidden" value='@Newtonsoft.Json.JsonConvert.SerializeObject(new WorkV3.Models.FieldDesignItem { ID = item.ID.ToString(), Enable = item.Enable })' />
+        </div>
+        <div class="title no-label">
+            @item.Title
+            @if(item.Requied) {
+                <span class="font-red">*</span>
+            }
+        </div>        
+        @if (item.IsDescription && !string.IsNullOrWhiteSpace(item.Description)) {
+        <div>@Html.Raw(item.Description.ReplaceEnterToBr())</div>
+        }
+        @if (item.TypeID == "radio") {            
+            if (!string.IsNullOrWhiteSpace(item.Options)) {
+                string[] options = item.Options.Split(';');
+                <div id="@item.ID" class="radio-box full @(item.OptionArray ? "inline" : string.Empty) @(item.Requied ? "validate[funcCall[checkRadioBox]]" : string.Empty)">
+                    @foreach(string option in options) {
+                        <div>
+                            <input type="radio" value="@option" />
+                            <label>@option</label>
+                        </div>          
+                    }
+                    @if (item.OtherOprion) {
+                        <div>
+                            <input type="radio" value="其它" />
+                            <label>其它</label>
+                        </div>
+                    }               
+                </div>
+                @ShowAlertText(item)
+            }
+        } else if (item.TypeID == "checkbox") {
+            if (!string.IsNullOrWhiteSpace(item.Options)) {
+                string[] options = item.Options.Split(';');
+                <div id="@item.ID" class="radio-box full @(item.OptionArray ? "inline" : string.Empty) @(item.Requied ? "validate[funcCall[checkCheckBox]]" : string.Empty)">
+                    @foreach (string option in options) {
+                        <div>
+                            <input type="checkbox" value="@option" />
+                            <label>@option</label>
+                        </div>
+                    }
+                    @if (item.OtherOprion) {
+                        <div>
+                            <input type="checkbox" value="其它" />
+                            <label>其它</label>
+                        </div>
+                    }                
+                </div>
+                @ShowAlertText(item)
+            }
+        } else if (item.TypeID == "select") {
+            if (!string.IsNullOrWhiteSpace(item.Options)) {
+                string[] options = item.Options.Split(';');
+                <div id="@item.ID" class="input-field inline full no-label">
+                    <select class="@(item.Requied ? "validate[required]" : string.Empty)">
+                        <option value="">請選擇</option>
+                        @foreach (string option in options) {
+                            <option value="@option">@option</option>
+                        }
+                        @if (item.OtherOprion) {
+                            <option value="其它">其它</option>
+                        }
+                    </select>                
+                </div>
+                @ShowAlertText(item)
+            }
+        } else if (item.TypeID == "input") {
+            string flag = string.Empty;
+            if(item.DefaultType != null) {
+                FieldDefaultType defaultType = (FieldDefaultType)(int)item.DefaultType;
+                if (defaultType == FieldDefaultType.Email || defaultType == FieldDefaultType.手機) {
+                    flag = "flag";
+                } else if (defaultType == FieldDefaultType.身份證字號 && (item.RepeatLimit == (byte)FieldRepeatLimit.不可重複 || item.RepeatLimit == (byte)FieldRepeatLimit.可重複數次)) {
+                    flag = "flag";
+                } else if (defaultType == FieldDefaultType.姓名) {
+                    flag = "flagOption";
+                }
+            }
+            <div id="@item.ID" class="input-field inline full no-label @flag">
+                <input type="text" />
+                @ShowAlertText(item)
+            </div>
+        } else if (item.TypeID == "textarea") {
+            <div id="@item.ID" class="input-field inline full no-label">
+                @{ 
+                    string highClass = "lineHeight-middle";
+                    if(item.High == 3) {
+                        highClass = "lineHeight-small";
+                    } else if(item.High == 10) {
+                        highClass = "lineHeight-large";
+                    }
+                }
+                <textarea class="@highClass"></textarea>
+                @ShowAlertText(item)
+            </div>
+        } else if (item.TypeID == "datetime") {
+            <div id="@item.ID" class="input-field inline full no-label">
+                <input type="text" class="datepicker" />
+                @ShowAlertText(item)
+            </div>
+        } else if (item.TypeID == "file") {
+            <div id="@item.ID" class="input-field inline full no-label">
+                <input type="file" id="f@(item.ID)" name="f@(item.ID)" data-field="file_@item.ID" class="fieldFile" />
+                @ShowAlertText(item)
+                @if (item.HasTemplate && !string.IsNullOrWhiteSpace(item.Template)) {
+                    <div class="alert transparent">
+                        <i class="cc cc-file-o"></i>
+                        <div><a href="@(uploadDesignUrl + "/" + item.Template)" download>範本下載</a></div>
+                    </div>
+                }
+            </div>
+        } else if (item.TypeID == "image" || item.TypeID == "video" || item.TypeID == "voice") {
+            <div id="@item.ID" class="input-field inline full no-label">
+                <input type="file" id="f@(item.ID)" name="f@(item.ID)" class="fieldImage" />
+                <input type="hidden" id="img_@(item.ID)" name="img_@(item.ID)" />
+                @ShowAlertText(item)
+            </div>
+        } else if (item.TypeID == "hr") {
+            <hr class="hr @item.Description" data-label="@item.Hint" />
+        } else if (item.TypeID == "text") {
+            <div class="full inline">
+                @if (!string.IsNullOrWhiteSpace(item.Description)) {
+                    <div class="float-L">@Html.Raw(item.Description.ReplaceEnterToBr())</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(item.Image)) {
+                    <div class="float-R"><img src="@(uploadDesignUrl + "/" + item.Image)" class="float-R img" /></div>
+                }            
+            </div>
+        } else if (item.TypeID == "address") {           
+            int[] ranges = item.GetRangeHierarchy();
+            <div class="input-field inline full no-label">
+                <input type="hidden" id="@item.ID" class="fieldRegion" value='@(ranges?.Length > 0 ? Newtonsoft.Json.JsonConvert.SerializeObject(ranges) : string.Empty)' />
+                <div class="col-4">
+                    <input placeholder="請填入地址" type="text" />
+                </div>
+            </div>
+        }
+    </div>
+}

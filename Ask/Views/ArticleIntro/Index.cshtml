@@ -1,0 +1,21 @@
+﻿@model WorkV3.Models.ArticleIntroModels
+@{
+    int style = ViewBag.Style;    
+}
+
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleIntro/style@(style).css" rel="stylesheet" />
+
+@BundleConfig.Component()
+@BundleConfig.JWPlayer()
+<div class="card-common card-article" data-style="@style">
+    <div class="article-main">
+        <div class="article-center">
+            @if (Model != null) { 
+            var query = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = Model.ID };
+            <div class="article-title page">@Model.Title</div>
+            @Html.Action("Paragraphs", "Common", query)
+            }
+        </div>
+    </div>
+</div>

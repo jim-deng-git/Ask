@@ -1,0 +1,25 @@
+﻿@model List<WorkV3.Areas.Backend.Models.SocialRelationModels>
+@{
+    if (Model != null && Model.Count() > 0 && Model.First() != null)
+    {
+        var openList = Model.Where(p => p.IsOpen);
+        if (openList != null && openList.Count() > 0)
+        {
+
+            string RootUrl = string.Format("{0}://{1}{2}{3}/images/icon/", HttpContext.Current.Request.Url.Scheme,
+                HttpContext.Current.Request.Url.DnsSafeHost,
+                HttpContext.Current.Request.Url.Port == 80 ? "" : ":" + HttpContext.Current.Request.Url.Port.ToString(),
+                HttpContext.Current.Request.ApplicationPath == "/" ? "" : "/" + HttpContext.Current.Request.ApplicationPath.Trim('/'));
+            foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in openList)
+            {
+                string iconEDMIconName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeEDMImage(item.SocialType);
+                if (!string.IsNullOrEmpty(iconEDMIconName))
+                {
+                    <a href="@item.LinkUrl" target="_blank" style="text-decoration: none; display: inline-block; vertical-align: middle;">
+                        <img width="28" src="@(RootUrl + iconEDMIconName)" alt="@item.LinkTitle" />
+                    </a>
+                    }
+                }
+            }
+        }
+    }

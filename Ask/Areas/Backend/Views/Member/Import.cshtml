@@ -1,0 +1,102 @@
+﻿@{
+    ViewBag.Title = "匯入名單";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID};
+    string uploadUrl = ViewBag.UploadUrl;    
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("Import", siteQuery))" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">批次匯入名單</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div>
+                                    <input type="file" id="fFile" name="fFile" class="validate[funcCall[checkXlsx]]" />
+                                </div>
+                                <div>
+                                    <a href="@Url.Action("ImportTmpl", siteQuery)" class="tooltip-info tooltipstered" style="opacity: 1;">
+                                        <i class="cc cc-file-o"></i> 匯入範本
+                                    </a>
+                                    <div class="float-R">
+                                        <div>請下載範本修改再上傳，格式：xls。</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">            
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>    
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        Component.singleFileUpload('#fFile', '@(Href("~/"))', '@uploadUrl', null, true);
+
+        function checkXlsx(field) {
+            var v = $.trim(field.val());
+            if (!v)
+                return '* 必填欄位';
+
+            if (!/\.xls$/i.test(v))
+                return '* 必須為 xls 檔案';
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+        @if (!string.IsNullOrEmpty(ViewBag.Message))
+        {
+            if ((ViewBag.Exit as bool?) == true)
+            {
+                <text>
+        Component.alert('@ViewBag.Message', function () {
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+        });
+        </text>
+            }
+            else
+            {
+                <text>
+                myAlert('@Html.Raw(ViewBag.Message)');
+                </text>
+            }
+        }
+        function myAlert(msg)
+        {
+            var mainWin = window;
+            if (mainWin.parent != null) {
+                while (mainWin.parent != mainWin)
+                    mainWin = mainWin.parent;
+            }
+            mainWin.swal({
+                html: '<p>'+msg+'</p>',
+                customClass: 'animated fadeIn',
+            });
+        }
+    </script>
+}

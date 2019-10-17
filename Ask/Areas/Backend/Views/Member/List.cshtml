@@ -1,0 +1,770 @@
+﻿@model IEnumerable<WorkV3.Models.MemberShipModels>
+@{
+    ViewBag.Title = "會員名單";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+    var IdentityType = ViewBag.IdentityType;
+    var FavorityType = ViewBag.FavorityType;
+    var ListIdentityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.IdentityCategories;
+    var ListFavorityCategories = (List<WorkV3.Areas.Backend.Models.CategoryModels>)ViewBag.FavorityCategories;
+    WorkV3.Models.MemberShipSearchModels search = ViewBag.Search;
+    var MemberSetModel = (WorkV3.Areas.Backend.Models.MemberShipRegSetModels)ViewBag.MemberSetModel;
+    Pagination pagination = ViewBag.Pagination;
+    var currentSearchCond = new { siteId = siteId, menuId = menuId, StartRegTime = search.StartRegTime, EndRegTime = search.EndRegTime, FavorityList = (search.FavorityList == null ? "" : string.Join(",", search.FavorityList)), IdenityList = (search.IdenityList == null ? "" : string.Join(",", search.IdenityList)), StartLoginTime = search.StartLoginTime, EndLoginTime = search.EndLoginTime };
+}
+
+@functions {
+    public IHtmlString GetDateString(DateTime? date)
+    {
+        if (date == null)
+        {
+            return null;
+        }
+
+        DateTime dateTime = (DateTime)date;
+        string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+        return Html.Raw(dateTime.ToString("MM/dd") + $"({ weeks[(int)dateTime.DayOfWeek] })<br />" + date.ToString("HH:mm"));
+    }
+    public string GetMemberTypeName(WorkV3.Models.MemberType memberType)
+    {
+        switch (memberType)
+        {
+            case WorkV3.Models.MemberType.FB:
+                return "FB";
+            case WorkV3.Models.MemberType.Web:
+                return "網站";
+            default:
+                return "undefined";
+        }
+    }
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        $('#ddlSort').change(function () {
+            $('#Sort').val($(this).val());
+            $('#btnSearch').click();
+        });
+        $('#ddlSort').val($('#Sort').val());
+
+        Component.searchBox('#searchBox', '#openSearch');
+
+        var getSelectedUrl = '@Html.Raw(Url.Action("GetClientSelectList", "Common"))';
+        var setSelectedUrl = '@Html.Raw(Url.Action("SetClientSelectList", "Common"))';
+        var removeSelectedUrl = '@Html.Raw(Url.Action("RemoveClientSelectList", "Common"))';
+        var cancelSelectedUrl = '@Html.Raw(Url.Action("CancelClientSelectList", "Common"))';
+        var isSelectedUrl = '@Html.Raw(Url.Action("IsClientSelectList", "Common"))';
+        var allSelectedUrl = '@Html.Raw(Url.Action("AllClientSelectList", currentSearchCond))';
+        var listObj = Component.dataList('listTable', '@menuId', getSelectedUrl, setSelectedUrl, removeSelectedUrl, cancelSelectedUrl, isSelectedUrl);
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    var action = "del";
+                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        if (data != null) {
+                            $.post('MemberShipDel?siteId=@siteId&menuId=@menuId', { 'ids': data }, function () {
+                                $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                    location.replace($("#searchForm").attr("action"));
+                                });
+                            });
+                        }
+                    });
+                }
+            }, 'warning');
+        }
+        listObj.canceled = function (action) {
+            if (action == "del" || $('a[data-action="' + action + '"]').attr('data-select') == 'true') {
+
+                $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                    $('#listTable').find('span.info').html('');
+                });
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+        listObj.selected = function (action, selectedIds) {
+            if (action == 'email') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+
+
+                var mainWin = Component.openRight('@Html.Raw(Url.Action("MemberSendMail", new { siteId = siteId, menuId = menuId }))');
+                mainWin.getSelectIds = function () {
+                    return selectedIds;
+                };
+                mainWin.sendComplete = function () {
+                    $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        location.replace($("#searchForm").attr("action"));
+                    });
+                };
+            }
+            else if (action == 'flag') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+                var mainWin = Component.iframe('@Url.Action("AddFlag", new { siteId = siteId })');
+                mainWin.getSelectIds = function () {
+                    return selectedIds;
+                };
+                mainWin.refreshList = function () {
+                    $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        location.replace($("#searchForm").attr("action"));
+                    });
+                };
+            }
+
+            else if (action == 'bat') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+                var mainWin = Component.iframe('@Url.Action("ModifyStatus", new { siteId = siteId })');
+                mainWin.getSelectIds = function () {
+                    return selectedIds;
+                };
+                mainWin.refreshList = function () {
+                    $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        location.replace($("#searchForm").attr("action"));
+                    });
+                };
+            }
+            else if (action == 'batdropdown') {
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+                window.open('@Url.Action("BatExportZip", "Member", new { siteId = siteId })' + '&menuId=@menuId&idsStr=' + selectedIds, '_blank');
+
+                $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                    location.replace($("#searchForm").attr("action"));
+                });
+            }
+        };
+
+        listObj.selectAll = function (action) {
+            if (action == 'del') {
+                Component.confirm('確定選擇全部，刪除後將無法復原，確定全部選取？', function (isConfirm) {
+                    if (!isConfirm) {
+                        return;
+                    }
+
+                    $.getJSON(allSelectedUrl, { menuId: "@menuId", actionType: action}, function (data) {
+                        //selectedNum = data.length;
+                        //tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+                        var tableElm = $('#listTable');
+                        list_loaded(tableElm);
+                    });
+                });
+            }
+            if (action == 'email') {
+                Component.confirm('確定選擇全部為寄通知信對象？', function (isConfirm) {
+                    if (!isConfirm) {
+                        return;
+                    }
+
+                    $.getJSON(allSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        //selectedNum = data.length;
+                        //tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+                        var tableElm = $('#listTable');
+                        list_loaded(tableElm);
+                    });
+                });
+            }
+
+            if (action == 'batdropdown') {
+                $.getJSON(allSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                    var tableElm = $('#listTable');
+                    list_loaded(tableElm);
+                });
+            }
+        }
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            //var tbodyElm = $(this).closest('tbody');
+            //var selectedNum = tbodyElm.find(':checked').length;
+            //tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            var action = $(this).attr("action");
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            var actionName = action;
+            var actionButton = $("a[data-action="+action+"]");
+            if(actionButton != null)
+            {
+                actionName = $(actionButton).html();
+            }
+
+            var data_id = $(this).closest('tr').attr('data-id');
+            var selectIDs = data_id;
+            if ($(this).prop("checked")) {
+
+                $.getJSON(setSelectedUrl, {menuId: "@menuId",actionType: action,ids: selectIDs}, function (data) {
+                    selectedNum = data.length;
+                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+                });
+            }
+            else {
+
+                $.getJSON(removeSelectedUrl, { menuId: "@menuId", actionType: action, ids: selectIDs }, function (data) {
+                    selectedNum = data.length;
+                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+                });
+            }
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+
+        $("#IdentityListAll").click(function () {
+            if ($(this).prop("checked")) {
+                $("input[id^=identity_").prop("checked", true);
+            }
+        });
+
+        $("#FavorityListAll").click(function () {
+            if ($(this).prop("checked")) {
+                $("input[id^=favority_]").prop("checked", true);
+            }
+        });
+        var IsSelectIdentityListAll = true;
+        $("input[id^=identity_]").each(function () {
+            if (!$(this).prop("checked"))
+            {
+                IsSelectIdentityListAll = false;
+            }
+        });
+        if (IsSelectIdentityListAll)
+        {
+            $("#IdentityListAll").prop("checked", true);
+        }
+
+        var IsSelectFavorityListAll = true;
+        $("input[id^=favority_]").each(function () {
+            if (!$(this).prop("checked")) {
+                IsSelectFavorityListAll = false;
+            }
+        });
+        if (IsSelectFavorityListAll) {
+            $("#FavorityListAll").prop("checked", true);
+        }
+        @{
+            bool IsSearched = false;
+            if (search != null)
+            {
+                if (!string.IsNullOrEmpty(search.Key))
+                {
+                    IsSearched = true;
+                }
+                if (search.StartLoginTime.HasValue || search.EndLoginTime.HasValue ||
+                    search.StartRegTime.HasValue || search.EndRegTime.HasValue)
+                {
+                    IsSearched = true;
+                }
+                if (search.IdenityList != null || search.FavorityList != null)
+                {
+                    IsSearched = true;
+                }
+            }
+            if (IsSearched)
+            {
+                <text>
+        $("#openSearch").trigger("click");
+        </text>
+            }
+        }
+        function list_loaded(tableElm) {
+            var action = "del";
+            var actionName = action;
+            var actionButton = $("a[data-action=" + action + "]");
+            if (actionButton != null) {
+                actionName = $(actionButton).html();
+            }
+            $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                //console.log(data);
+                if (data == "true") {
+                    $("a[data-action=" + action + "]").trigger("click");
+                    var tbodyElm = tableElm.children('tbody');
+
+                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        if (data != null) {
+                            selectedNum = data.length;
+                            var actionName = action;
+                            var actionButton = $("a[data-action=" + action + "]");
+                            if (actionButton != null) {
+                                actionName = $(actionButton).html();
+                            }
+                            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+
+                        }
+                    });
+                }
+                else {
+                    action = "bat";
+                    actionName = action;
+                    actionButton = $("a[data-action=" + action + "]");
+                    if (actionButton != null) {
+                        actionName = $(actionButton).html();
+                    }
+                    $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        //console.log(data);
+                        if (data == "true") {
+                            $("a[data-action=" + action + "]").trigger("click");
+                            var tbodyElm = tableElm.children('tbody');
+
+                            $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                if (data != null) {
+                                    selectedNum = data.length;
+                                    var actionName = action;
+                                    var actionButton = $("a[data-action=" + action + "]");
+                                    if (actionButton != null) {
+                                        actionName = $(actionButton).html();
+                                    }
+                                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+                                }
+                            });
+                        }
+                        else {
+                            action = "email";
+                            actionName = action;
+                            actionButton = $("a[data-action=" + action + "]");
+                            if (actionButton != null) {
+                                actionName = $(actionButton).html();
+                            }
+                            $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                //console.log(data);
+                                if (data == "true") {
+                                    $("a[data-action=" + action + "]").trigger("click");
+                                    var tbodyElm = tableElm.children('tbody');
+
+                                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                        if (data != null) {
+                                            selectedNum = data.length;
+                                            var actionName = action;
+                                            var actionButton = $("a[data-action=" + action + "]");
+                                            if (actionButton != null) {
+                                                actionName = $(actionButton).html();
+                                            }
+                                            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+                                        }
+                                    });
+                                }
+                                else {
+                                    action = "flag";
+                                    actionName = action;
+                                    actionButton = $("a[data-action=" + action + "]");
+                                    if (actionButton != null) {
+                                        actionName = $(actionButton).html();
+                                    }
+                                    $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                        //console.log(data);
+                                        if (data == "true") {
+                                            $("a[data-action=" + action + "]").trigger("click");
+                                            var tbodyElm = tableElm.children('tbody');
+
+                                            $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                                if (data != null) {
+                                                    selectedNum = data.length;
+                                                    var actionName = action;
+                                                    var actionButton = $("a[data-action=" + action + "]");
+                                                    if (actionButton != null) {
+                                                        actionName = $(actionButton).html();
+                                                    }
+                                                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            action = "batdropdown";
+                                            actionName = action;
+                                            actionButton = $("a[data-action=" + action + "]");
+                                            if (actionButton != null) {
+                                                actionName = $(actionButton).html();
+                                            }
+                                            $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                                //console.log(data);
+                                                if (data == "true") {
+                                                    $("a[data-action=" + action + "]").trigger("click");
+                                                    var tbodyElm = tableElm.children('tbody');
+
+                                                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                                        if (data != null) {
+                                                            selectedNum = data.length;
+                                                            var actionName = action;
+                                                            var actionButton = $("a[data-action=" + action + "]");
+                                                            if (actionButton != null) {
+                                                                actionName = $(actionButton).html();
+                                                            }
+                                                            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        parent.refreshList = function refreshList() {
+            location.replace(location.href);
+        }
+    </script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="searchBox" class="search-box">
+            <a class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+            <form id="searchForm" method="post" action="@Url.Action("List", siteQuery)">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input type="text" id="Key" name="Key" placeholder="請輸入會員帳號、姓名、Email、手機、電話、身分證字號等關鍵字" value="@search.Key" />
+                            </div>
+                        </div>
+                    </li>
+                    @{
+                        var identitySetting = MemberSetModel.RegColumnSets.Where(p => p.ColumnName == "Identity");
+                        if (identitySetting != null && identitySetting.First().IsOpen)
+                        {
+                            <li>
+                                <div class="col-1">
+                                    <div class="title inline">會員身份</div>
+                                    <div class="radio-box inline">
+                                        <div>
+                                            <input class="select-all" type="checkbox" id="IdentityListAll">
+                                            <label for="IdentityListAll">全選</label>
+                                        </div>
+                                        @if (ListIdentityCategories != null)
+                                        {
+                                            foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListIdentityCategories)
+                                            {
+                                                if (cate.ShowStatus)
+                                                {
+                                                    string isChecked = "";
+                                                    if (search.IdenityList != null && search.IdenityList.Length > 0)
+                                                    {
+                                                        if (search.IdenityList.Contains(cate.ID.ToString()))
+                                                        {
+                                                            isChecked = "checked";
+                                                        }
+                                                    }
+                                                    <div>
+                                                        <input type="checkbox" name="IdenityList" value="@cate.ID" id="identity_@cate.ID" @isChecked>
+                                                        <label for="identity_@cate.ID">@cate.Title</label>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    }
+                    @{
+                        var favoritySetting = MemberSetModel.RegColumnSets.Where(p => p.ColumnName == "Favority");
+                        if (favoritySetting != null && favoritySetting.First().IsOpen)
+                        {
+                            <li>
+                                <div class="col-1">
+                                    <div class="title inline">會員喜好</div>
+                                    <div class="radio-box inline">
+                                        <div>
+                                            <input class="select-all" type="checkbox" id="FavorityListAll">
+                                            <label for="FavorityListAll">全選</label>
+                                        </div>
+                                        @if (ListIdentityCategories != null)
+                                        {
+                                            foreach (WorkV3.Areas.Backend.Models.CategoryModels cate in ListFavorityCategories)
+                                            {
+                                                if (cate.ShowStatus)
+                                                {
+                                                    string isChecked = "";
+                                                    if (search.FavorityList != null && search.FavorityList.Length > 0)
+                                                    {
+                                                        if (search.FavorityList.Contains(cate.ID.ToString()))
+                                                        {
+                                                            isChecked = "checked";
+                                                        }
+                                                    }
+                                                    <div>
+                                                        <input type="checkbox" name="FavorityList" value="@cate.ID" id="favority_@cate.ID" @isChecked>
+                                                        <label for="favority_@cate.ID">@cate.Title</label>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    }
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">註冊期間</div>
+                            <div class="input-field inline full">
+                                <div class="input-field inline">
+                                    <input type="text" id="StartRegTime" name="StartRegTime" class="input-cal datetimepicker" value="@search.StartRegTime.ToString("yyyy.MM.dd HH:mm")" />
+                                </div>
+                                <span style="vertical-align: bottom;">-</span>
+                                <div class="input-field inline">
+                                    <input type="text" id="EndRegTime" name="EndRegTime" class="input-cal datetimepicker" value="@search.EndRegTime.ToString("yyyy.MM.dd HH:mm")" />
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">最後登入</div>
+                            <div class="input-field inline full">
+                                <div class="input-field inline">
+                                    <input type="text" id="StartLoginTime" name="StartLoginTime" class="input-cal datetimepicker" value="@search.StartLoginTime.ToString("yyyy.MM.dd HH:mm")" />
+                                </div>
+                                <span style="vertical-align: bottom;">-</span>
+                                <div class="input-field inline">
+                                    <input type="text" id="EndLoginTime" name="EndLoginTime" class="input-cal datetimepicker" value="@search.EndLoginTime.ToString("yyyy.MM.dd HH:mm")" />
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+
+
+                </ul>
+                <input type="hidden" id="Sort" name="Sort" value="@search.Sort" />
+                <div class="float-R m-L-4"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+            </form>
+        </div>
+        <table id="listTable" class="fixTable">
+            <caption>
+                會員名單
+                <span class="info"></span>
+                <div class="inline col-5 m-L-4">
+                    <select id="ddlSort">
+                        <option value="CreateTime Desc">依註冊時間逆排</option>
+                        <option value="Create">依註冊時間順排</option>
+                        <option value="LastLoginTime Desc">依最後登入時間逆排</option>
+                        <option value="LastLoginTime">依最後登入時間順排</option>
+                        @*<option>待審核者</option>
+                            <option>Email尚未驗證者</option>*@
+                        <option value="Status">停權者</option>
+                        @*<option>未通過註冊申請者</option>*@
+                    </select>
+                </div>
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square tooltip-info openCenterEdit-m" href="@Html.Raw(Url.Action("Edit", siteQuery))" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info openRight tooltipstered" href="@Url.Action("Import", "Member", siteQuery)" title="匯入名單"><i class="cc cc-list"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info tooltipstered" data-action="bat" data-select="true" href="javascript:" title="批次處理"><i class="cc cc-format-list-checks"></i></a>
+                    <a class="btn-grey-o square tooltip-info dropdown-button tooltipstered" href="javascript:" data-activates="btnMail" title="寄通知信"><i class="cc cc-email"></i></a>
+                    <ul id="btnMail" class="dropdown-content btnStyle">
+                        <li><a class="btn-grey-darken-4-o transparent" data-action="email" title="開始寄信" data-select="true"><i class="cc cc-grid-list"></i>開始寄信</a></li>
+                        <li><a class="btn-grey-darken-4-o transparent openEdit-c cboxElement" href="@Url.Action("MailLog", "Member", new { siteId = siteId, menuId = menuId })" title="寄信歷程"><i class="cc cc-email"></i>寄信歷程</a></li>
+                    </ul>
+                    <a class="btn-grey-o square tooltip-info dropdown-button tooltipstered" href="javascript:" data-activates="dropdown2" title="匯出名單"><i class="cc cc-playlist-play"></i></a><ul id="dropdown2" class="dropdown-content btnStyle">
+                        <li><a class="btn-grey-darken-4-o transparent" href="@Url.Action("BatExportZip", "Member", new { siteId = siteId, menuId = menuId })" target="_blank"><i class="cc cc-file-o"></i>詳細清單</a></li>
+                        <li><a class="btn-grey-darken-4-o transparent" href="@Url.Action("BatExportZip", "Member", new { siteId = siteId, menuId = menuId, IsPrivate = true })" target="_blank"><i class="cc cc-file-o"></i>詳細清單(隱藏個資)</a></li>
+                        <li><a class="btn-grey-darken-4-o transparent" href="javascript:" data-action="batdropdown" data-select="true"><i class="cc cc-file-o"></i>批次匯出</a></li>
+                    </ul>
+                    <a class="btn-grey-o square tooltip-info tooltipstered" data-action="flag" data-select="true" title="追蹤標記"><i class="cc cc-playlist-play"></i></a>
+                    @*<a class="btn-grey-o square tooltip-info openEdit-c cboxElement tooltipstered" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Member/BackEnd/addTrack.aspx" title="追踪標記"><i class="cc cc-playlist-play"></i></a>*@
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    <span data-for="email" style="display:none;">
+                        <a id="btnEmailCancel" class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>寄信</a>
+                        <a class="btn-grey-darken-4-o all" href="javascript:"><i class="cc cc-check"></i>全選</a>
+                    </span>
+                    <span data-for="bat" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        <a class="btn-grey-darken-4-o all" href="javascript:"><i class="cc cc-check"></i>全選</a>
+                    </span>
+                    <span data-for="flag" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        <a class="btn-grey-darken-4-o all" href="javascript:"><i class="cc cc-check"></i>全選</a>
+                    </span>
+                    <span data-for="batdropdown" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        <a class="btn-grey-darken-4-o all" href="javascript:"><i class="cc cc-check"></i>全選</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>帳號</th>
+                    @*<th>暱稱</th>Ben edit 1070307*@
+                    <th>姓名</th>
+                    <th>Email</th>
+                    @*<th>手機</th>*@
+                    @if (identitySetting != null && identitySetting.First().IsOpen)
+                    {
+                        <th>身分別</th>
+                    }
+                    @if (favoritySetting != null && favoritySetting.First().IsOpen)
+                    {
+                        <th>喜好</th>
+                    }
+                    @*<th>點數</th>*@
+                    <th>會員狀態</th>
+                    <th>類型</th>
+                    <th>追蹤標記</th>
+                    @*<th>註冊時間</th>*@
+                    @*<th>最後登入</th>*@
+                    <th>編輯</th>
+                    <th>傳訊</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0, len = Model.Count(); i < len; ++i)
+                {
+                    WorkV3.Models.MemberShipModels item = Model.ElementAt(i);
+                    IEnumerable<string> flags = item.GetFlags(siteId);
+                    item.IdenityTypeList = WorkV3.Areas.Backend.Models.DataAccess.MemberShipSettingDAO.GetSelectedItems(item.ID, IdentityType);
+                    string IdenityType = "";
+                    if (item.IdenityTypeList != null && item.IdenityTypeList.Count() > 0)
+                    {
+                        int j = 0;
+                        foreach (var Idenity in item.IdenityTypeList)
+                        {
+                            if (j == 0)
+                            {
+                                IdenityType = Idenity.Title;
+                                break;
+                            }
+                        }
+                    }
+                    <tr data-id="@item.ID">
+                        <td class="sort">@pagination.GetItemIndex(i)</td>
+                        <td>@((item.MemberType == WorkV3.Models.MemberType.Web) ? item.Account : item.MemberType.ToString())</td>
+                        <td>@item.Name</td>
+                        <td>@item.Email</td>
+                        @*<td>@item.Mobile</td>*@
+                        @if (identitySetting != null && identitySetting.First().IsOpen)
+                        {
+                            <td>@IdenityType</td>
+                        }
+                        @*<td>
+                                @{
+                                    var points = WorkV3.Models.DataAccess.PointsDAO.GetPointsTotal(siteId, item.ID);
+                                }
+                                <a class="openCenterEdit-m" href="@Url.Action("List","Points",new { siteId = siteId,menuId = menuId,memberID = item.ID})">@points</a>
+                            </td>*@
+
+                        @*多個喜好*@
+                        @if (favoritySetting != null && favoritySetting.First().IsOpen)
+                        {
+                            <td>
+                                @{
+                                    WorkV3.Models.MemberShipModels item2 = Model.ElementAt(i);
+                                    item.FavorityList = WorkV3.Areas.Backend.Models.DataAccess.MemberShipSettingDAO.GetSelectedItems(item.ID, FavorityType);
+                                    if (item2.FavorityList != null && item2.FavorityList.Count() > 0)
+                                    {
+                                        var favorityItem = "";
+                                        foreach (var favoritys in item2.FavorityList)
+                                        {
+                                            favorityItem += favoritys.Title + "、";
+                                        }
+                                        @favorityItem.TrimEnd('、');
+                                    }
+                                }
+                            </td>
+                        }
+
+                        @if (MemberSetModel.VerifyType == MemberShipVerifyType.Email)
+                        {
+                            <td>@Html.Raw(item.Status ? (string.IsNullOrEmpty(item.VerifyTime) ? "未驗證" : "正常") : "<span class=\"red\">停權</span>")</td>
+                        }
+                        else
+                        {
+                            <td>@Html.Raw(item.Status ? "正常" : "<span class=\"red\">停權</span>")</td>
+                        }
+                        <td>@GetMemberTypeName(item.MemberType)</td>
+                        <td><a href="@Url.Action("ModifyFlag", new { siteId = siteId, MemberShipId = item.ID })" class="openEdit-c">@string.Join(", ", flags)</a></td>
+                        @*<td>@GetDateString(item.CreateTime)</td>*@
+                        @*<td>@GetDateString(item.LastLoginTime)</td>*@
+
+                        <td class="icon edit">
+                            <a class="btn-grey-darken-4-o transparent square tooltip-info openCenterEdit-m" href="@Html.Raw(Url.Action("Edit", new { id = item.ID, siteId = siteId, menuId = menuId }))"><i class="cc cc-edit-o"></i></a>
+                        </td>
+                        <td class="icon">
+                            @{
+                                MemberModels curUser = Session[WebInfo.SysMemSkey] == null ? null : (Request.Cookies["sessionId"] != null ? WorkV3.Areas.Backend.Models.DataAccess.MemberDAO.Current(Request.Cookies["sessionId"].Value) : null);
+                            }
+                            <a id="Chat-@item.ID" class="btn-grey-darken-4-o transparent square btn-message openEdit-m" href="" target="_blank">
+                                <i class="cc cc-comment-o"></i>
+                            </a>
+                            <script src="~/Script/jquery.signalR-2.4.1.js"></script>
+                            <script src="~/Signalr/hubs"></script>
+                            <script>
+                                var chat = $.connection.chatHub;
+                                $.connection.hub.start();
+                                $('#Chat-@item.ID').on('click', function () {
+                                    var formData = new FormData();
+                                    formData.append("MemberShipID", "@item.ID");
+                                    formData.append("MemberID", "@curUser.Id");
+                                    formData.append("SiteID", "@siteId");
+                                    $.ajax({
+                                        url: "@Url.Action("CheckOneByOneChatRoom", "Chat")",
+                                        data: formData,
+                                        type: "POST",
+                                        dataType: 'json',
+                                        processData: false,
+                                        contentType: false,
+                                        async: false,
+                                        success: function (result) {
+                                            if (result[1] == 'isNewChat') {
+                                                chat.server.newChatCreat(result[0], '', '@item.ID');
+                                            }
+                                            $('#Chat-@item.ID').attr('href', '@Html.Raw(Url.Action("ChatRoom", "Chat", new { SiteID = siteId }))' + '&RoomID=' + result[0]);
+                                        }
+                                    });
+                                });
+                            </script>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>

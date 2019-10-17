@@ -1,0 +1,258 @@
+﻿@using WorkV3.Areas.Backend.ViewModels.CustomCompany
+@model CustomCompanyAddViewModel
+@{
+    ViewBag.Title = "新增客戶資料";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+<div class="groove groove-1">
+    <form action="@Url.Action("Add")" method="post" id="addForm">
+        <input type="hidden" value="@Model.ID" name="ID" />
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">客戶資料編輯</div>
+        </div>
+        <input type="hidden" value="@Model.SiteID" name="siteId" />
+        <ul class="forms">
+            <li>
+                <div class="col-2">
+                    <div class="title inline">公司名稱</div>
+                    <div class="input-field inline longer">
+                        <input id="name" name="name" type="text" class="validate[required]">
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="title inline">統一編號</div>
+                    <div class="input-field inline longer">
+                        <input placeholder="" id="TaxIdNumber" name="TaxIdNumber" type="text">
+                    </div>
+                </div>
+            </li>
+            <li class="paragraph">
+                <div class="col-1 border">
+                    <ul class="forms m-T-5 contacts">
+                        <li class="paragraph bg-border-B item">
+                            <div class="item-box">
+                                <div class="item-listBox">
+                                    <div class="d-inline-block">
+                                        聯絡人
+                                        <div class="input-field inline">
+                                            <input id="" type="text" data-name="Name">
+                                        </div>
+                                    </div>
+                                    <div class="d-inline-block">
+                                        聯絡電話
+                                        <div class="input-field inline">
+                                            <input id="" type="text" data-name="Phone">
+                                        </div>
+                                    </div>
+                                    <div class="item-allPrice float-R">
+                                        聯絡信箱
+                                        <div class="input-field inline mini">
+                                            <input id="" type="text" data-name="Email">
+                                        </div>
+                                        <a class="btn-del square transparent paragraph-del tooltip" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="paragraph bg-border-B item">
+                            <div class="item-box">
+                                <div class="item-listBox">
+                                    <div class="d-inline-block">
+                                        聯絡人
+                                        <div class="input-field inline">
+                                            <input id="" type="text" data-name="Name">
+                                        </div>
+                                    </div>
+                                    <div class="d-inline-block">
+                                        聯絡電話
+                                        <div class="input-field inline">
+                                            <input id="" type="text" data-name="Phone">
+                                        </div>
+                                    </div>
+                                    <div class="item-allPrice float-R">
+                                        聯絡信箱
+                                        <div class="input-field inline mini">
+                                            <input id="" type="text" data-name="Email">
+                                        </div>
+                                        <a class="btn-del square transparent paragraph-del tooltip" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="bg-border-B m-B-5">
+                        <a id="addContact" class="btn-grey-darken-4-o" href="javascript:;"><i class="cc cc-plus"></i> 新增聯絡人</a>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">關帳時間</div>
+                    <div class="input-field inline full">
+                        <div class="input-field inline middle">
+                            <input type='text' class="input-cal datepicker" name="AccountCloseDateStart" id="AccountCloseDateStart">
+                        </div>
+                        <span style="vertical-align: bottom;">-</span>
+                        <div class="input-field inline middle">
+                            <input type='text' class="input-cal datepicker" name="AccountCloseDateEnd" id="AccountCloseDateEnd">
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">付款週期</div>
+                    <div class="input-field inline longer">
+                        <input placeholder="" id="PayingPeriod" name="PayingPeriod" type="text">
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">付款舉例說明</div>
+                    <div class="input-field inline longer">
+                        <input placeholder="" id="PayDescription" name="PayDescription" type="text">
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">收件地址</div>
+                    <div class="input-field inline full">
+                        <div class="inline-box-solve">
+                            <div class="col-ms-4">
+                                <select>
+                                    <option value="" selected>國家</option>
+                                    <option value="1">Option 1</option>
+                                    <option value="2">Option 2</option>
+                                    <option value="3">Option 3</option>
+                                </select>
+                            </div>
+                            <div class="col-ms-4 p-L-3">
+                                <select>
+                                    <option value="" selected>省/州</option>
+                                    <option value="1">Option 1</option>
+                                    <option value="2">Option 2</option>
+                                    <option value="3">Option 3</option>
+                                </select>
+                            </div>
+                            <div class="col-ms-4 p-L-3">
+                                <select>
+                                    <option value="" selected>縣/市</option>
+                                    <option value="1">Option 1</option>
+                                    <option value="2">Option 2</option>
+                                    <option value="3">Option 3</option>
+                                </select>
+                            </div>
+                            <div class="col-ms-4 p-L-3">
+                                <select>
+                                    <option value="" selected>行政區</option>
+                                    <option value="1">Option 1</option>
+                                    <option value="2">Option 2</option>
+                                    <option value="3">Option 3</option>
+                                </select>
+                            </div>
+                            <div class="col-1 m-T-5">
+                                <div class="marker-group">
+                                    <input id="Address" name="Address" type="text" placeholder="地址">
+                                    <a class="btn-grey-darken-3-o btn-small openLeftEdit m-T-2" href="http://demo.kidtech.com.tw/Demo/CCWorkV3/Views/Share/BackEnd/mapMarker.aspx"><i class="cc cc-map-marker"></i>定位</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1 multiple full">
+                    <div class="title">負責業務</div>
+                    <div class="chips">
+                        <div class="chip">
+                            <span>賴小甫</span>ulyan_lai@kidtech.com.tw
+                            <a href="javascript:;" class="m-L-2">
+                                <i class="cc cc-close"></i>
+                            </a>
+                        </div>
+                        <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="chooseProject" title="選擇專案負責人"><i class="cc cc-plus"></i></a>
+                        <ul id="chooseProject" class="dropdown-content customContent large closeOnClick">
+                            <li>
+                                <iframe class="dropdownIframe" src="principalContactEdit.aspx" frameborder="0"></iframe>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="window.parent.closeCenterEdit()"><i class="cc cc-close"></i>取消</a>
+            <a id="saveBtn" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>
+
+<div class="template" style="display:none;">
+    <li class="paragraph bg-border-B item contactItem">
+        <div class="item-box">
+            <div class="item-listBox">
+                <div class="d-inline-block">
+                    聯絡人
+                    <div class="input-field inline">
+                        <input id="" type="text" data-name="Name">
+                    </div>
+                </div>
+                <div class="d-inline-block">
+                    聯絡電話
+                    <div class="input-field inline">
+                        <input id="" type="text" data-name="Phone">
+                    </div>
+                </div>
+                <div class="item-allPrice float-R">
+                    聯絡信箱
+                    <div class="input-field inline mini">
+                        <input id="" type="text" data-name="Email">
+                    </div>
+                    <a class="btn-del square transparent paragraph-del tooltip" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+                </div>
+            </div>
+        </div>
+    </li>
+</div>
+
+<link href="~/css/card.css" />
+
+@BundleConfig.Validate()
+<script>
+    $(function () {
+        var form = $("#addForm");
+        $("#saveBtn").on('click', function () {
+            if (form.validationEngine('validate')) {
+
+                $(".contacts li.item").each(function (index, item) {
+                    var nameIpt = $(item).find("[data-name='Name']");
+                    var emailIpt = $(item).find("[data-name='Email']");
+                    var phoneIpt = $(item).find("[data-name='Phone']");
+                    
+                    nameIpt.attr("name", "[" + index + "].Name");
+                    emailIpt.attr("name", "[" + index + "].Email");
+                    phoneIpt.attr("name", "[" + index + "].Phone");
+                });
+
+                form.submit();
+            }
+        });
+
+        $("#addContact").on('click', function () {
+            var templateElement = $(".template li.contactItem");
+            var template = templateElement[0].outerHTML;
+            $(".contacts").append(template);
+
+            $(".btn-del").on('click', function () {
+                $(this).closest("li").remove();
+            });
+        });
+
+        $(".btn-del").on('click', function () {
+            $(this).closest("li").remove();
+        });
+    });
+</script>

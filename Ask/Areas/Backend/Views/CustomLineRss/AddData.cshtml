@@ -1,0 +1,263 @@
+﻿@model IEnumerable<CustomLineNewsDataModels>
+@{
+    ViewBag.Title = "AddData";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    Pagination pagination = ViewBag.Pagination;
+    CustomLineNewsSearchModels search = ViewBag.Search;
+    var siteQuery = new { siteId = ViewBag.SiteID };
+
+    List<MenusModels> VMenuList = ViewBag.MenuList;
+
+}
+@section HArea{
+<title>@ViewBag.Title</title>
+@Styles.Render("~/Css/Card")
+
+    }
+@section FArea {
+@BundleConfig.StickyTableHeaders()
+@BundleConfig.Validate()
+@BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+        if ($("#SourceID").val() != "" && $("#SourceID").val() != "0") {
+            $("#divSelectDate").hide();
+        }
+
+        var listObj = Component.dataList('listTable');
+        @*listObj.sorted = function (sortItems) {
+            $.post('ArticleSort?siteId=@siteId&menuId=@menuId', { 'items': sortItems }, function () {
+                location.replace(location.href);
+            });
+        }*@
+        @*listObj.deleted = function (delIds) {
+            $.post('ArticleDel?siteId=@siteId&menuId=@menuId', { 'ids': delIds }, function () {
+                location.replace(location.href);
+            });
+        }*@
+        @*listObj.statusChange = function (id) {
+            $.get('ArticleToggleIssue/' + id + '?siteId=@siteId&menuId=@menuId');
+        }*@
+        //listObj.canceled = function (action) {
+        //    if (action == "del") {
+        //        $('#listTable').find('span.info').html('');
+        //    }
+        //}
+        //listObj.opened = function (mainWin, action) {
+        //    mainWin.refreshList = function () {
+        //        location.replace(location.href);
+        //    }
+        //}
+
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            console.log("Select");
+
+            var selectedNum = 0;
+            var tbodyElm = $('#listTable');
+            tbodyElm.find('td.edit').each(function () {
+                if ($(this).find('input').prop('checked')) {
+                    selectedNum++;
+                }
+            });
+
+            $('span.infoNum').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+
+        $('#txtSelectDate').on('dp.change', function (e) {
+            //console.log(e.date);
+            var formatedValue = e.date.format("YYYY.MM.DD");
+            if ($("#SourceID").val() == "" | $("#SourceID").val() == "0") {
+
+                $("#SelectDate").val(formatedValue);
+                checkDate($("#SelectDate"));
+            }
+
+
+        });
+
+        function checkDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var date = Component.parseDate(v);
+                if (!date)
+                    Component.alert("日期格式錯誤");
+            }
+            $.ajax({
+                type: "post",
+                url: '@Url.Action("GetSelectDateIsExists")?SiteID=@PageCache.SiteID&SelectDate='+field.val() ,
+                contentType: false,
+                processData: false,
+                success: function (result) {
+                    console.log('result'+result);
+                    if(result ==true){
+                        Component.alert("此日期已存在");
+                    }
+                }
+            });
+            return;
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                var Cks = [];
+                var tbodyElm = $('#listTable');
+                tbodyElm.find('td.edit').each(function () {
+                    if ($(this).find('input').prop('checked')) {
+                        var id = $(this).closest('tr').attr('data-id');
+                        Cks.push(id);
+                    }
+                });
+
+                $('#SelectIDs').val(JSON.stringify(Cks));
+
+                if ($("#SourceID").val() == "" | $("#SourceID").val() == "0") {
+                    if ($("#SelectDate").val() != "") {
+                        form.submit();
+                    } else {
+                        Component.alert("請先選擇日期");
+                    }
+                } else {
+                    form.submit();
+                }
+
+            }
+
+        });
+
+        $('#btnCancel').click(function () {
+            Component.closeLeft();
+            Component.closeCenter();
+        });
+          @if (ViewBag.Exit as bool? == true)
+          {
+        <text>
+            Component.alert('資料已儲存', function () {
+                //parent.refreshList();
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+        </text>
+          }
+    </script>
+}
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">挑選RSS文章</div>
+        </div>
+    </div>
+
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+
+                <ul class="forms">
+                    <form id="searchForm" method="post" action="@Url.Action("AddData", siteQuery)">
+                        <li>
+                            <div class="col-2" id="divSelectDate">
+                                <div class="title inline">選擇日期</div>
+                                <div class="input-field inline full">
+                                    <input placeholder="" id="txtSelectDate" name="txtSelectDate" type="text" class="datepicker validate[funcCall[checkDate]]" value="@ViewBag.SelectDate">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+
+
+                            <div class="col-2">
+                                <div class="title inline">搜尋文章</div>
+                                <div class="input-field inline full">
+                                    <select name="SelectMenuID" id="SelectMenuID">
+                                        <option value="" disabled selected>選單名稱</option>
+                                        @if (VMenuList.Count > 0)
+                                        {
+                                            for (int i = 0, len = VMenuList.Count(); i < len; ++i)
+                                            {
+                                                MenusModels MT = VMenuList[i];
+                                                <option value="@MT.Id" @(search?.SelectMenuID == MT.Id ? " Selected" : string.Empty)>@MT.Title</option>
+                                            }
+
+                                        }
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="col-2">
+                                <div class="input-field marker-group">
+                                    <input id="Key" name="Key" type="text" placeholder="請輸入文章標題、內文等關鍵字搜尋" value="@search.Key">
+                                    <a id="btnSearch" class="btn-grey-darken-3-o btn-small square" href="javascript:"><i class="cc cc-search"></i></a>
+                                </div>
+                            </div>
+
+                        </li>
+                    </form>
+                    <li>
+                        <div class="col-1">
+                            <form id="editForm" method="post" action="@Url.Action("AddDataInsert", siteQuery)" enctype="multipart/form-data">
+                                <input type="hidden" id="SourceID" name="SourceID" value="@ViewBag.SourceID" />
+                                <input type="hidden" id="SelectMenuID" name="SelectMenuID" value="@search.SelectMenuID" />
+                                <input type="hidden" id="SelectDate" name="SelectDate" value="@ViewBag.SelectDate"/>
+                                <div class="card shadow-none">
+                                    <table id="listTable" class="fixTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>序</th>
+                                                    <th>標題</th>
+                                                    <th>選單</th>
+                                                    <th>預覽</th>
+                                                    <th>選擇</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0, len = Model.Count(); i < len; ++i)
+                                                {
+                                                    CustomLineNewsDataModels item = Model.ElementAt(i);
+                                                    <tr data-id="@item.SelectID">
+                                                        <td class="sort">@pagination.GetItemIndex(i)</td>
+                                                        <td class="text-L">@item.Title</td>
+                                                        <td>@item.MenuTitle</td>
+                                                        <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="#"><i class="cc cc-cellphone-link"></i></a></td>
+                                                        <td class="icon edit">
+                                                            <input type="checkbox" id="@item.SelectID" />
+                                                            <label for="@item.SelectID"></label>
+                                                        </td>
+                                                    </tr>
+
+                                                }
+
+
+                                            </tbody>
+</table>
+                                    <input type="hidden" id="SelectIDs" name="SelectIDs" value="" />
+                                    <div class="pagination text-L">
+                                        @Html.Action("Pager", "Common", pagination)
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <div class="control-bar">
+        <a id="btnCancel" class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>導入</a>
+    </div>
+
+</div>
+

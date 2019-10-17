@@ -1,0 +1,204 @@
+﻿@model List<MenusModels>
+    @{ 
+        PageCache pageCache = PageCache.GetTempDataPageCache(TempData);
+        IEnumerable<WorkV3.Areas.Backend.Models.SocialRelationModels> ChannelList=null;
+        if (ViewBag.Channels != null)
+        {
+            ChannelList = (IEnumerable<WorkV3.Areas.Backend.Models.SocialRelationModels>)ViewBag.Channels;
+        }
+        SitesModels SiteItem = ViewBag.SitesInfo;
+    }
+<div id="footer" class="footer card-footer" data-style="1">
+    <div class="footer-main">
+        @if (Model != null)
+        {            
+            <div class="footer-nav">
+                @{
+                    List<MenusModels> MenuU = Model.Where(dr => dr.AreaID == 3).ToList();
+                    string URL = "";
+                    string RLClickType = "";
+                }
+                <ul class="nav-menu">
+                    @{
+                        List<MenusModels> MenuUlvl1 = MenuU.Where(dr => dr.ParentID == 0).ToList();
+                        if (MenuUlvl1.Count > 0)
+                        {
+                            for (int i = 0; i < MenuUlvl1.Count(); i++)
+                            {
+                                RLClickType = "";
+                                MenusModels MTLvl1 = MenuUlvl1[i];
+                                List<MenusModels> Menulvl2 = MenuU.Where(dr => dr.ParentID == MTLvl1.Id).ToList();
+
+                                <li @Html.Raw(MTLvl1.Id == pageCache.MenuID ? " class=\"current-menu\"" : "")>
+                                    @if (MTLvl1.MenuCode == "SingleLink")
+                                    {
+                                        if (MTLvl1.RLClickType == 2)
+                                        {
+                                            RLClickType = "target=\"_blank\"";
+                                        }
+                                        URL = @MTLvl1.LinkInfo;
+                                    }
+                                    else
+                                    {
+                                        URL = @MTLvl1.PageSN;
+                                    }
+                                    <a href="@URL" @RLClickType>@MTLvl1.Title</a>
+                                    @{  //第二階層
+                                        if (Menulvl2.Count > 0)
+                                        {
+                                            <ul class="sub-menu">
+                                                @for (int j = 0; j < Menulvl2.Count(); j++)
+                                                {
+                                                    RLClickType = "";
+                                                    MenusModels MTLvl2 = Menulvl2[j];
+                                                    //預先讀取第三階
+                                                    List<MenusModels> Menulvl3 = MenuU.Where(dr => dr.ParentID == MTLvl2.Id).ToList();
+                                                    <li @Html.Raw(MTLvl2.Id == pageCache.MenuID ? " class=\"current-menu\"" : "")>
+                                                        @if (MTLvl2.MenuCode == "SingleLink")
+                                                        {
+                                                            if (MTLvl2.RLClickType == 2)
+                                                            {
+                                                                RLClickType = "target=\"_blank\"";
+                                                            }
+                                                            URL = @MTLvl2.LinkInfo;
+                                                        }
+                                                        else
+                                                        {
+                                                            URL = @MTLvl2.PageSN;
+                                                        }
+                                                        <a href="@URL" @RLClickType>@MTLvl2.Title</a>
+
+
+
+                                                        @{ //第三階層
+                                                            if (Menulvl3.Count > 0)
+                                                            {
+                                                                <ul class="sub-menu">
+                                                                    @for (int k = 0; k < Menulvl3.Count(); k++)
+                                                                    {
+                                                                        RLClickType = "";
+                                                                        MenusModels MTLvl3 = Menulvl3[k];
+                                                                        //預先讀取第四階
+                                                                        List<MenusModels> Menulvl4 = MenuU.Where(dr => dr.ParentID == MTLvl3.Id).ToList();
+                                                                        <li @Html.Raw(MTLvl3.Id == pageCache.MenuID ? " class=\"current-menu\"" : "")>
+                                                                            @if (MTLvl3.MenuCode == "SingleLink")
+                                                                            {
+                                                                                if (MTLvl3.RLClickType == 2)
+                                                                                {
+                                                                                    RLClickType = "target=\"_blank\"";
+                                                                                }
+                                                                                URL = @MTLvl3.LinkInfo;
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                URL = @MTLvl3.PageSN;
+                                                                            }
+                                                                            <a href="@URL" @RLClickType>@MTLvl3.Title</a>
+
+
+
+                                                                            @{ //第四階層
+                                                                                if (Menulvl4.Count > 0)
+                                                                                {
+                                                                                    <ul class="sub-menu">
+                                                                                        @for (int L = 0; L < Menulvl4.Count(); L++)
+                                                                                        {
+                                                                                            RLClickType = "";
+                                                                                            MenusModels MTLvl4 = Menulvl4[L];
+                                                                                            //預先讀取第五階
+                                                                                            List<MenusModels> Menulvl5 = MenuU.Where(dr => dr.ParentID == MTLvl4.Id).ToList();
+                                                                                            <li @Html.Raw(MTLvl4.Id == pageCache.MenuID ? " class=\"current-menu\"" : "")>
+                                                                                                @if (MTLvl4.MenuCode == "SingleLink")
+                                                                                                {
+                                                                                                    if (MTLvl4.RLClickType == 2)
+                                                                                                    {
+                                                                                                        RLClickType = "target=\"_blank\"";
+                                                                                                    }
+                                                                                                    URL = @MTLvl4.LinkInfo;
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    URL = @MTLvl4.PageSN;
+                                                                                                }
+                                                                                                <a href="@URL" @RLClickType>@MTLvl4.Title</a>
+
+                                                                                                @{ //第五階層
+                                                                                                    if (Menulvl5.Count > 0)
+                                                                                                    {
+                                                                                                        for (int m = 0; m < Menulvl5.Count(); m++)
+                                                                                                        {
+                                                                                                            RLClickType = "";
+                                                                                                            MenusModels MTLvl5 = Menulvl5[m];
+                                                                                                            if (MTLvl5.MenuCode == "SingleLink")
+                                                                                                            {
+                                                                                                                if (MTLvl5.RLClickType == 2)
+                                                                                                                {
+                                                                                                                    RLClickType = "target=\"_blank\"";
+                                                                                                                }
+                                                                                                                URL = @MTLvl5.LinkInfo;
+                                                                                                            }
+                                                                                                            else
+                                                                                                            {
+                                                                                                                URL = @MTLvl5.PageSN;
+                                                                                                            }
+                                                                                                        <li @Html.Raw(MTLvl5.Id == pageCache.MenuID ? " class=\"current-menu\"" : "")><a href="@URL" @RLClickType>@MTLvl5.Title</a></li>
+
+                                                                                                        }
+                                                                                                    }
+                                                                                                    //第五階層End
+                                                                                                }
+                                                                                        </li>
+                                                                                                    }
+                                                                                    </ul>
+                                                                                                    }
+                                                                                                    //第四階層End
+                                                                            }
+                                                                        </li>
+                                                                                                    }
+                                                                </ul>
+                                                                                                    }
+                                                                                                    //第三階層End
+                                                        }
+                                                    </li>
+                                                                                                    }
+                                            </ul>
+                                                                                                    }
+                                                                                                    //第二階層End
+                                    }
+                                    </li>
+
+                                                                                                        }
+                                                                                                    }
+                    }
+
+
+                </div>
+
+
+                                                                                                    if (ChannelList != null && ChannelList.Count() > 0)
+                                                                                                    {
+                                                                                                        var openList = ChannelList.Where(p => p.IsOpen);
+                    <div class="footer-nav">
+                        <ul class="nav-menu">
+                            @foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in openList)
+                            {
+                                string iconClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeStyle(item.SocialType);
+                                <li><a href="@item.LinkUrl" target="_blank"><i class="cc @iconClassName"></i></a></li>
+                            }
+                            </ul>
+                            </div>
+                            }
+                            }
+        @if (SiteItem.FooterCustomized)
+        {
+                            <div class="footer-wrapper">
+                                @Html.Raw(ViewBag.FooterCont)
+                            </div>
+        }
+</div>
+    <div class="footer-copyright">
+        <div class="footer-wrapper">@Html.Raw(ViewBag.Copyright)</div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/Cards/Footer/style1.css" type="text/css" />

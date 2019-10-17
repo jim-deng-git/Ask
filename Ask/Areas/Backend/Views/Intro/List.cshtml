@@ -1,0 +1,161 @@
+﻿@using WorkV3.Areas.Backend.ViewModels.Intro
+@model IntroListVIewModel
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    int index = 0;
+
+    long SiteID = Model.SiteID;
+    long MenuID = Model.MenuID;
+    long PageNo = Model.PageNo;
+    var siteQuery = new { SiteID = SiteID, MenuID = MenuID, PageNo = PageNo };
+    IEnumerable<WorkV3.Models.FormModel> forms = Model.Forms;
+}
+@section HArea{
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            var listObj = Component.dataList('listTable');
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace(location.href);
+                }
+            }
+            listObj.deleted = function (delIds) {
+                Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                    if (isConfirm) {
+                        var action = "del";
+                        $.post('Del?siteId=@SiteID&menuId=@MenuID', { 'ids': delIds }, function () {
+                            location = location.href;
+                        });
+                    }
+                }, 'warning');
+            }
+            listObj.sorted = function (sortItems) {
+                $.post("Sort", { "items": sortItems }, function () {
+                    location.replace(location.href);
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+
+                    $('#listTable').find('span.info').html('');
+                }
+            }
+        });
+
+        function ChangeStatus(src) {
+            src = $(src);
+            var no = src.attr("data-no");
+            var status = src.attr("data-value");
+            if (status == 1) {
+                $.post("@Url.Action("ChangeStatus")", { no: no, status: 2 }, function (reuslt) {
+                    if (reuslt == 1) {
+                        src.attr("data-value", 2);
+                        src.html("<i class=\"cc cc-eye-off font-red\"></i>");
+                    }
+                });
+            } else if (status == 2) {
+                $.post("@Url.Action("ChangeStatus")", { no: no, status: 1 }, function (reuslt) {
+                    if (reuslt == 1) {
+                        src.attr("data-value", 1);
+                        src.html("<i class=\"cc cc-eye\"></i>");
+                    }
+                });
+            }
+        }
+
+        parent.reloadList = function reloadIntroList() {
+            location = location.href;
+        }
+
+        $('#FormSet').on('click', function () {
+            if ('@forms.Count()' == '0') {
+                Component.alert('目前尚無表單，請建立後再進行編輯');
+                $(this).attr('href', '#');
+            }
+        })
+    </script>
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <table id="listTable" class="fixTable">
+            <caption>
+                @Model.FormTitle
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square tooltip-info iframe" href="@Html.Raw(Url.Action("AddMode", siteQuery))" title="新增" data-height="340"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>  
+                    <a class="btn-grey-o square tooltip-info btn-del" data-action="del" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>                     
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>區塊標題</th>
+                    <th>功能模組</th>                  
+                    <th>刊登</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ long? currentZoneNo = null; }
+                @foreach (var item in Model.Cards)
+                {
+                    bool isSameZoneWithPreviousCard = item.ZoneNo == currentZoneNo;
+                    int currentIdx = isSameZoneWithPreviousCard ? index : ++index;
+                    <tr data-id="@item.ZoneNo">
+                        <td class="@(isSameZoneWithPreviousCard? "": "sort")">@if (!isSameZoneWithPreviousCard) { @currentIdx }</td>
+                        <td class="row">
+                            <div class="col-3"></div>
+                            <div class="col-3">
+                                <i class="@item.TypeIcon"></i>@item.Title
+                            </div>
+                            <div class="col-3 text-L">
+                                <a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("Edit", new { No = item.No })">
+                                    <i class="cc cc-edit-o"></i>
+                                </a>
+                            </div>
+                        </td>                        
+                        <td class="">@item.TypeTitle</td>
+                        <td class="icon">
+                            <a class="btn-grey-darken-4-o transparent square" data-no="@item.No" data-value="@item.Status" onclick="ChangeStatus(this);">
+                                <i class="@(item.Status == 1 ? "cc cc-eye" : "cc cc-eye-off font-red" )"></i>
+                            </a>
+                        </td>
+                        @if (item.Title == "Header" || item.Title == "Footer")
+                        {
+                            <td class="icon"></td>
+                        }
+                        else
+                        {
+                            <td class="icon edit">
+                                <a class="btn-grey-darken-4-o transparent square @(((item.CardsType == "PlainText") || (item.CardsType == "Html")) ? "openRight" : "")" href="@Url.Action(item.TypeEditURLAction, item.CardsType, new { SiteID = Model.SiteID, MenuID = Model.MenuID, CardNo = item.No })" id="@item.CardsType">
+                                    <i class="cc cc-edit-o"></i>
+                                </a>
+                            </td>
+                        }
+                    </tr>
+                    currentZoneNo = item.ZoneNo;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

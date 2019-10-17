@@ -1,0 +1,152 @@
+﻿@helper ShowDate(DateTime? StartDate, DateTime? EndDate, string startTime = "", string endTime = "")
+{
+string presentDate = "";
+bool isSameDate = false;
+
+if (StartDate != null)
+{
+    DateTime startDate = (DateTime)StartDate;
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+    presentDate += $"{ startDate.ToString("MM/dd") }({ weeks[(int)startDate.DayOfWeek] })";
+
+    if (EndDate != null)
+    {
+        var tempStartDate = (DateTime)StartDate;
+        var tempEndDate = (DateTime)EndDate;
+        var startDay = new DateTime(tempStartDate.Year, tempStartDate.Month, tempStartDate.Day);
+        var endDay = new DateTime(tempEndDate.Year, tempEndDate.Month, tempEndDate.Day);
+
+        if (DateTime.Compare(startDay, endDay) == 0)
+        {
+            isSameDate = true;
+        }
+
+        if (!isSameDate)
+        {
+            DateTime endDate = (DateTime)EndDate;
+            presentDate += $" ~ { endDate.ToString("MM /dd") }({ weeks[(int)endDate.DayOfWeek] })";
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(startTime))
+    {
+        presentDate += $" { startTime }";
+        if (!string.IsNullOrWhiteSpace(endTime))
+        {
+            presentDate += $"-{ endTime }";
+        }
+    }
+}
+@presentDate
+}
+
+@helper ShowReportDate(DateTime? StartDate, DateTime? EndDate)
+{
+    @ShowDate(StartDate, EndDate, StartDate == null ? "" : ((DateTime)StartDate).ToString("HH:mm"), EndDate == null ? "" : ((DateTime)EndDate).ToString("HH:mm"))
+}
+
+@helper MyArtShowDate(DateTime? StartDate, DateTime? EndDate, string startTime = "", string endTime = "")
+{
+string presentDate = "";
+bool isSameDate = false;
+
+if (StartDate != null)
+{
+    DateTime startDate = (DateTime)StartDate;
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+
+    <span>@($"{ startDate.ToString("yyyy.MM.dd") }")</span>
+
+    if (EndDate != null)
+    {
+        var tempStartDate = (DateTime)StartDate;
+        var tempEndDate = (DateTime)EndDate;
+        var startDay = new DateTime(tempStartDate.Year, tempStartDate.Month, tempStartDate.Day);
+        var endDay = new DateTime(tempEndDate.Year, tempEndDate.Month, tempEndDate.Day);
+
+        if (DateTime.Compare(startDay, endDay) == 0)
+        {
+            isSameDate = true;
+        }
+
+        if (!isSameDate)
+        {
+            DateTime endDate = (DateTime)EndDate;
+
+            <span>@($"- { endDate.ToString("MM.dd") }")</span>
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(startTime))
+    {
+        <span class="event-time">
+            <span>@startTime</span>
+
+            @if (!string.IsNullOrWhiteSpace(endTime))
+            {
+                @(" - ")
+                <span>@endTime</span>
+            }
+        </span>
+        }
+    }
+}
+
+@helper ListTableFunctionButtons(List<WorkV3.Common.BackSiteListButton> buttons)
+{
+    foreach (var button in buttons)
+    {
+        <a class="@button.Classes" id="@button.IdAttribute" href="@button.Href" @if (!string.IsNullOrEmpty(button.Target)) { <text>target="@button.Target"</text> } @if (button.ShowDataAction) { <text>data-action="@button.ActionName"</text> }@if (button.DropDownList != null) { <text> data-activates="@button.DropDownList.IdAttribute"</text> }@if (button.DataSelect) { <text>data-select="true"</text> } title="@button.Title"><i class="@button.IconClasses"></i></a>
+
+    if (button.DropDownList != null)
+    {
+        if (button.DropDownList.Links.Count > 0)
+        {
+                <ul id="@button.DropDownList.IdAttribute" class="dropdown-content btnStyle">
+                    @foreach (var link in button.DropDownList.Links)
+                {
+                        <li>
+                            <a class="@link.Classes" id="@link.IdAttribute" href="@link.Href"@if (link.ShowDataAction){ <text> data-action="@link.ActionName"</text>  }@if (link.DataSelect) { <text> data-select="true"</text>  }@if (!string.IsNullOrEmpty(link.Target)) { <text> target="@link.Target"</text>  } title="@link.Title"><i class="@link.IconClasses"></i>@link.Title</a>
+                        </li>
+                }
+                </ul>
+        }
+            <script>
+                $(function () {
+                    $('.dropdown-btn').dropdown({
+                        constrainWidth: false,
+                        stopPropagation: true
+                    });
+                });
+            </script>
+    }
+
+    if (button.DataSelect)
+    {
+            @ListTableConfirmButton(button.ActionName)
+        }
+    }
+}
+
+@helper ListTableConfirmButton(string dataActionName)
+{
+    <span data-for="@dataActionName" style="display:none;">
+        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+    </span>
+}
+
+@helper CreateListTable(string caption, List<WorkV3.Common.BackSiteListButton> buttons, HelperResult tableContent)
+{
+    <table id="listTable" class="fixTable data">
+        <caption>
+            @caption
+            <span class="info"></span>
+            <div class="float-R">
+                @ListTableFunctionButtons(buttons)
+                <!-- 複製的確定END -->
+            </div>
+        </caption>
+        @tableContent
+    </table>
+}

@@ -1,0 +1,40 @@
+﻿
+@{
+    Layout = @ViewBag.lay;
+}
+@section HArea {
+    <script type="text/javascript">
+        var cookieDomain = "@WorkLib.uUrl.GetURL()";
+    </script>
+
+    @Scripts.Render("~/JS/TrnTCSC")
+    @{
+        List<SitesModels.GAInfoCont> GA = ViewBag.GA;
+        if (GA.Count > 0)
+        {
+            @Html.Raw(WorkLib.GoogleF.RTGoogleAnalytics(GA[0].GAKey, GA[0].DominName));
+        }
+
+    }
+
+       
+
+}
+<!--
+    SiteSN: @ViewBag.SiteSN <br />
+    PageSN: @ViewBag.PageSN <br />
+    ID: @ViewBag.Id <br />
+-->
+
+
+
+@{ Html.RenderAction("Page", "Pages", new { SiteID = ViewBag.SiteID, PageNo = ViewBag.PageNo, ID = ViewBag.Id });}
+
+
+
+
+@section FArea {
+
+    @Html.Raw(ViewBag.CustomCont)
+
+}

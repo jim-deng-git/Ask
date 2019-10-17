@@ -1,0 +1,32 @@
+﻿@each $name, $size in $fonts
+    .font-#{$name}
+        font-size: map-get($fonts-px, $name) !important
+        font-size: $size !important
+
+@each $name, $size in $line-heights
+    .line-height-#{$name}
+        line-height: $size !important
+
+h1
+    font-size: map-get($fonts-px, ms)
+    font-size: map-get($fonts, ms)
+
+h2
+    font-size: map-get($fonts-px, hg)
+    font-size: map-get($fonts, hg)
+
+h3
+    font-size: map-get($fonts-px, lg)
+    font-size: map-get($fonts, lg)
+
+h4
+    font-size: map-get($fonts-px, mm)
+    font-size: map-get($fonts, mm)
+
+h5
+    font-size: map-get($fonts-px, base)
+    font-size: map-get($fonts, base)
+
+h6
+    font-size: map-get($fonts-px, ss)
+    font-size: map-get($fonts, ss)

@@ -1,0 +1,248 @@
+﻿@{ 
+    WorkV3.Areas.Backend.Models.MemberShipRegSetModels regSetModel = (WorkV3.Areas.Backend.Models.MemberShipRegSetModels)ViewBag.MemberSetModel;
+    List<WorkV3.Areas.Backend.Models.MemberShipRegSocialSetModels> SocialSet = null;
+    if(ViewBag.SocialSet != null)
+    {
+        SocialSet = (List<WorkV3.Areas.Backend.Models.MemberShipRegSocialSetModels>)ViewBag.SocialSet;
+    }
+}
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/vendor/colorbox/colorbox.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<div class="card-member loginPage loginArea" data-style="1">
+    <div class="login">
+        <div class="login-logo">會員登入</div>
+        <div class="login-box small">
+            <div class="left-box">
+                <form id="editForm" action="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = ViewBag.PageSN, prev=ViewBag.PrevUrl })" method="post">
+                    <ul class="forms">
+                        @if (regSetModel.RegType != WorkV3.Areas.Backend.Models.MemberShipRegType.Social)
+                        {
+                            if (TempData["Message"] != null && !string.IsNullOrEmpty(TempData["Message"].ToString()))
+                            {
+                                <text>
+                                    <li>
+                                        <div class="col-1">
+                                            <div class="title">@TempData["Message"]</div>
+                                        </div>
+                                    </li>
+                                </text>
+                            }
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    <input id="account" name="account" type="text" placeholder="@ViewBag.LoginPlaceHolder " class="validate[required]" value="@ViewBag.Account" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field">
+                                    <input id="password" name="password" type="password" placeholder="密碼" class="validate[required]" value="@ViewBag.Password" />
+                                </div>
+                            </div>
+                        </li>
+                        <li class="relative">
+                            <div class="col-1">
+                                @Html.Captcha("captcha")
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="radio-box inline">
+                                    <div>
+                                        @Html.CheckBox("rememberMe", (bool)ViewBag.RememberMe, new { @class = "" })
+                                        <label for="rememberMe">記住我</label>
+                                    </div>
+                                </div>
+                                <div class="forgetPW">
+                                	@* 忘記密碼改位置 carrie 20171226 *@
+                                    <a class="underline font-xs openPW" href="Forget" class="forgetPassword">忘記密碼？</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="btnBox">
+                                    <a id="btnLogin" class="btn-custom btn-large block" href="javascript:">Login</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="text-C">
+                                    <div class="font-black font-xs m-T-6">還沒有帳號嗎？</div>
+                                    <div class="m-T-2">
+                                        <a class="underline font-xs" href="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Register" })" id="">註冊</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                            }
+@if (regSetModel.RegType != WorkV3.Areas.Backend.Models.MemberShipRegType.WebAccount)
+{
+    if(SocialSet != null && SocialSet.Count() > 0)
+    {
+        <li>
+            <div class="col-1">
+                <div class="text-C m-B-3">
+                    <div class="social-title"><span>社群登入</span></div>
+                    <div>
+                        @foreach(var socialItem in SocialSet)
+                        {
+                            string iClass = "", Url = "";
+                            if(socialItem.IsOpen == true)
+                            {
+                                if(socialItem.SocialType == MemberType.FB)
+                                {
+                                    iClass = "cc-facebook";
+                                    Url = ViewBag.FBUrl;
+                                }
+                                <a class="btn-black-o circle btn-large trasperent" href="@Url" id=""><i class="cc @iClass"></i></a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </li>
+    }
+                        @*<li>
+                            <div class="col-1">
+                                <div class="text-C m-B-3">
+                                    <div class="social-title"><span>社群登入</span></div>
+                                    <div>
+                                        <a class="btn-black-o circle btn-large trasperent" href="@ViewBag.FBUrl" id=""><i class="cc cc-facebook"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>*@
+}
+                    </ul>
+                </form>
+            </div>
+            <!-- <div class="right-box">
+                <ul class="forms">
+                    <li>
+                        <div class="socialLoginTitle">使用社群網站登入</div>
+                        <p>內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文內文</p>
+                    </li>
+                    <li class="m-T-8">
+                        <a class="btn-white-o circle btn-huge" href="javascript:"><i class="cc cc-facebook"></i></a>
+                        <a class="btn-white-o circle btn-huge" href="javascript:"><i class="cc cc-twitter"></i></a>
+                        <a class="btn-white-o circle btn-huge" href="javascript:"><i class="cc cc-google-plus"></i></a>
+                    </li>
+                </ul>
+            </div> -->
+        </div>
+    </div>
+</div>
+<!-- carrie 20171226 <div id="centerEditBox-middle" style="width:500px;height:500px;">
+    <iframe class="iframe" scrolling="scroll" style="width:500px;height:500px;"></iframe>
+</div> -->
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/script/colorbox/jquery.colorbox.js"></script>
+<script type="text/javascript">
+    var isShowForget = false;
+    $(function () {
+        @Html.Raw(ViewBag.Script)
+
+        $('#btnLogin').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                form.submit();
+            }
+        });
+
+        // carrie 20171226
+        // $('.openCenter').click(function (e) {
+        //     e.preventDefault();
+        //     isShowForget = !isShowForget;
+        //     ShowOrHideForget();
+        //     if (isShowForget)
+        //         Component.openCenter(this.href);
+        // });
+
+        $(".openPW").colorbox({
+            width: "500",
+            height: "420",
+            maxWidth: "90%",
+            maxHeight: "90%",
+            iframe: true,
+            fadeOut: 100,
+
+            // carrie 20180131
+            onOpen: function() {
+                var offset = document.body.scrollTop;
+                $('body').css({
+                    'position': 'fixed',
+                    'left': 0,
+                    'right': 0,
+                    'top': (offset * -1),
+                    'width': '100%',
+                    'height': '100%'
+                });
+            },
+            onClosed: function() {
+                var offset = parseInt(document.body.style.top, 10);
+                document.body.scrollTop = (offset * -1);
+                $('body').removeAttr('style');
+            },
+        });
+
+        // carrie 20171226
+        // $('div[data-cardtype=Member]').click(function () {
+        //     isShowForget = false;
+        //     ShowOrHideForget();
+        // });
+        // $('.login').click(function () {
+        //     isShowForget = false;
+        //     ShowOrHideForget();
+        // });
+        // ShowOrHideForget();
+    });
+    // carrie 20171226
+    // function ShowOrHideForget()
+    // {
+    //     if (isShowForget) {
+    //         $("#centerEditBox-middle").show();
+    //     }
+    //     else {
+    //         $("#centerEditBox-middle").hide();
+    //     }
+    // }
+    function ResetFormData()
+    {
+        location.href = location.href;
+    }
+    function ShowConfirmMessage(prevUrl) {
+        swal({
+            customClass: 'animated fadeIn',
+            type: 'warning',
+            html:
+              '<div><span>您尚未進行E-Mail驗證</span></div><br/><a class=\'m-R-4 btn-custom-o ResentMail\' href=\'MyInfo?Resent=1\'>重發驗證信</a>' +
+              'OR' +
+              '<a class=\'m-L-4 btn-custom MyInfo\' href=\'MyInfo#Email\'>修改Email</a>',
+            confirmButtonText: '確定',
+            showConfirmButton: false
+        }).then(function (isConfirm) {
+            location.href = prevUrl;
+        });
+    }
+
+    function ShowMobileConfirmMessage(prevUrl) {
+        swal({
+            customClass: 'animated fadeIn',
+            type: 'warning',
+            html:
+              '<div><span>您尚未進行手機驗證</span></div><br/><a class=\'m-R-4 btn-custom-o ResentMail\' href=\' ' + prevUrl + '\'>手機驗證</a>' +
+              'OR' +
+              '<a class=\'m-L-4 btn-custom MyInfo\' href=\'MyInfo#Mobile\'>修改手機</a>',
+            confirmButtonText: '確定',
+            showConfirmButton: false
+        }).then(function (isConfirm) {
+            location.href = prevUrl;
+        });
+    }
+</script>

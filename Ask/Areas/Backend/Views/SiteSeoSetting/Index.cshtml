@@ -1,0 +1,401 @@
+﻿@model SiteSeoSettingModels
+@{
+    ViewBag.Title = "全站 SEO 設定";
+
+    long siteId = ViewBag.SiteID;
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    var siteQuery = new { SiteID = ViewBag.SiteID };
+    string baseUrl = Url.Action("Index", "SiteSeoSetting", new { siteId = siteId });
+    IEnumerable<string> allKeywords = ViewBag.Keywords;
+
+}
+
+@section Script {
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    @*if((bool)ViewBag.IsExit)
+    {
+        <text>
+            <script>
+                location = location.href;
+            </script>
+        </text>
+    }*@
+}
+<form action="@Url.Action("Index")" id="editForm" method="post">
+    <div class="groove groove-1">
+        <h1 class="title-admin-page border-B p-B-5">全站 SEO 設定</h1>
+        <div class="card shadow-none">
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">搜尋引擎</div>
+                        <div class="radio-box inline">
+                            是否讓搜尋引擎機器人主動找到本站呢？
+                            <div>
+                                <input class="with-gap" name="Robot" type="radio" id="Robot_1" @(Model!=null?(Model.Robot? "checked":""): "checked") value="True" />
+                                <label for="Robot_1">開放</label>
+                            </div>
+                            <div>
+                                <input class="with-gap" name="Robot" type="radio" id="Robot_0" @(Model!=null?(Model.Robot? "": "checked") : "") value="False" />
+                                <label for="Robot_0">拒絕</label>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline no-label">標題</div>
+                        <div class="input-field inline full no-label">
+                            <input placeholder="" id="Title" type="text" name="Title" value="@Model.Title" />
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline no-label">描述</div>
+                        <div class="input-field inline full no-label">
+                            <textarea class="seo-textaarea border text-L" id="Description" name="Description">@Model.Description</textarea>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline no-label">作者</div>
+                        <div class="input-field inline no-label">
+                            <input placeholder="" id="Author" name="Author" type="text" value="@Model.Author"/>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline no-label">版權</div>
+                        <div class="input-field inline full no-label">
+                            <input placeholder="" id="Copyright" type="text" name="Copyright" value="@Model.Copyright"/>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="col-1 multiple full">
+                        <div class="title inline">關鍵字</div>
+                        <div class="inline constant">
+                            <textarea id="Keywords" name="Keywords" class="tagEditor">@Model.Keywords</textarea>
+                            <div class="input-field inline full">
+                                <a class="btn-grey-darken-4-o m-T-4 dropdown-button" href="javascript:" data-activates="keywordsSearch" title=""><i class="cc cc-plus"></i>快選</a>
+                                <ul id="keywordsSearch" class="dropdown-content customContent large closeOnClick">
+                                    <li>
+                                        <iframe class="dropdownIframe" src="@Url.Action("SEOKeyword", new { siteId = ViewBag.SiteID})" frameborder="0"></iframe>
+                                    </li>
+                                </ul>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>請在上方輸入框中輸入關鍵字，輸入後，按下 , 或 ; 或 空一格 或 Enter，即可完成一筆關鍵字的建立。</div>
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>除了本站各頁面會自動抓取當頁的資料作為 title 和 metadata 外，缺乏內容或沒有自行設定的部分，會預設抓此處的SEO設定。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1 multiple full">
+                        <div class="title inline">追蹤碼(ID)</div>
+                        <ul class="tracking-list constant">
+                            <li>
+                                <div class="p-T-2">
+                                    <img src="~/images/temp/logo_googleAnalytics.png" alt="">
+                                </div>
+                                <div class="brand_name">
+                                    Google Analytics<br><span class="font-grey">( GA code )</span>
+                                </div>
+                                <div class="input-field full no-label">
+                                    <input id="GA" type="text" name="GA" value="@Model.GA"/>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="p-T-2">
+                                    <img src="~/images/temp/logo_tagmanager.png" alt="">
+                                </div>
+                                <div class="brand_name">
+                                    Google Tag Manager<br><span class="font-grey">( GTM code )&nbsp;</span>
+                                </div>
+                                <div class="input-field full no-label">
+                                    <input id="GTM" type="text" name="GTM" value="@Model.GTM"/>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="p-T-2">
+                                    <img src="~/images/temp/logo_baidu.png" alt="">
+                                </div>
+                                <div class="brand_name p-T-4">
+                                    百度統計 追蹤碼
+                                </div>
+                                <div class="input-field full no-label">
+                                    <input id="Baidu" type="text" name="Baidu" value="@Model.Baidu"/>
+                                </div>
+                            </li>
+                            <li style="display:none"> 
+                                <div class="p-T-2">
+                                    <img src="~/images/temp/logo_Alexa.png" alt="">
+                                </div>
+                                <div class="brand_name p-T-4">
+                                    Alexa 追蹤碼
+                                </div>
+                                <div class="input-field full no-label">
+                                    <input id="Alexa" type="text" name="Alexa" value="@Model.Alexa"/>
+                                </div>
+                            </li>
+                            <li class="col-1">
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>以上只需貼入「追蹤碼 ID」即可，並不需要貼入整段「嵌入碼」。</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1 multiple full">
+                        <div class="title inline">驗證碼</div>
+                        <ul class="code_list constant">
+                            <li>
+                                <div class="p-T-2">
+                                    <img src="~/images/temp/logo_google.png" alt="">
+                                </div>
+                                <div class="brand_name">
+                                    Google Search Console<br>網站管理員
+                                </div>
+                                <div class="input-field full no-label">
+                                    <input placeholder="請貼上Google Search Console 的 HTML標記。" id="GoogleSearch" type="text" name="GoogleSearch" value="@Model.GoogleSearch"/>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="col-">
+                                    <img src="~/images/temp/logo_baidu.png" alt="">
+                                </div>
+                                <div class="brand_name">
+                                    百度站長工具
+                                </div>
+                                <div class="input-field no-label">
+                                    <input placeholder="請貼上百度站長工具的html标签验证。" id="BaiduMA" type="text" name="BaiduMA" value="@Model.BaiduMA"/>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="col-">
+                                    <img src="~/images/temp/logo_bing.png" alt="">
+                                </div>
+                                <div class="brand_name">
+                                    Bing ( Yahoo ) 網站管理員
+                                </div>
+                                <div class="input-field no-label">
+                                    <input placeholder="請貼上Bing網站管理員的驗證碼 <meta> 標籤。" id="Bing" type="text" name="Bing" value="@Model.Bing"/>
+                                </div>
+                            </li>
+                            <li class="col-1">
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>以上需要貼入「整段驗證碼」，並非只貼入驗證碼 ID。</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="title inline m-T-1">Sitemap</div>
+                        <div class="inline">
+                            <span id="spSitemapUrl" class="font-grey font-xs ">@ViewBag.SitemapUrl</span>
+                            <a class="btn-bulid m-h-3" href="javascript:" id="btnReCreateSitemap"><i class="cc cc-reload2"></i>重新產生 Sitemap.xml</a>
+                            <span class="font-grey font-xs ">最近產生時間： </span><span id="spSitemapLastModifyTime" class="font-grey font-xs ">@ViewBag.SitemapLastModifyTime</span>
+                        </div>
+                    </div>
+                </li>
+                @*客製 YuMing 20190722 隱藏 額外嵌入*@
+                @*<li>
+                    <div class="col-1">
+                        <div class="title inline m-T-10">額外嵌入</div>
+                        <div class="radio-box inline full">
+                            <div>
+                                <input type="checkbox" name="IsExtraCode" id="IsExtraCode" value="True" @(Model!= null?(Model.IsExtraCode?"checked":""):"")>
+                            <label for="IsExtraCode">在 head 區內，額外增加嵌入碼</label>
+                            </div>
+                        </div>
+                        <div class="EmbedCode-Box m-T-5" style="display: none">
+                            <textarea class="seo-textaarea border text-L" id="ExtraCode" name="ExtraCode">@Model.ExtraCode</textarea>
+                            <div class="alert transparent">
+                                <i class="cc cc-attention"></i>
+                                <div>以上輸入框的內容，可直接嵌入&lt; head &gt;中了，方便使用者嵌入其他嵌入碼。並請留意嵌入格式，避免造成程式錯誤。</div>
+                            </div>
+                        </div>
+                    </div>
+                </li>*@
+            </ul>
+
+        </div>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+            <input type="hidden" id="SiteID" name="SiteID" value="@Model.SiteID" />
+        </div>
+    </div>
+</form>
+
+
+<link href="~/css/vendor/tagEditor/tagEditor.css" type="text/css" rel="stylesheet" />
+@BundleConfig.FileUploader()
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+<script type="text/javascript" src="~/script/tagEditor/jquery.caret.min.js"></script>
+<script type="text/javascript" src="~/script/tagEditor/jquery.tag-editor.js"></script>
+<script type="text/javascript" src="~/script/tagEditor/jquery.ui.autocomplete.html.js"></script>
+<link href="~/css/card.css" rel="stylesheet" />
+<script type="text/javascript">
+    $(function () {
+        $("#btnCancel").on("click", function () {
+            Component.confirm('確定取消不儲存？', function (isOk) {
+                if (isOk) {
+                    location = location.href;
+                }
+            });
+        });
+        $("#btnSave").on("click", function () {
+            var IsAllSuccess = true;
+            if ($("#GA").val() != "") {
+                if (!isAnalyticsCode($("#GA").val()))
+                {
+                    Component.alert("GA Code 請輸入正確格式");
+                    IsAllSuccess = false;
+                }
+            }
+            if ($("#GTM").val() != "") {
+                if (!isTagManagerCode($("#GTM").val())) {
+                    Component.alert("Google Tag Manager 請輸入正確格式");
+                    IsAllSuccess = false;
+                }
+            }
+            if ($("#Baidu").val() != "") {
+                if (!isBaiduCode($("#Baidu").val())) {
+                    Component.alert("百度統計 追蹤碼 請輸入正確格式");
+                    IsAllSuccess = false;
+                }
+            }
+            if (IsAllSuccess) {
+                $("#editForm").submit();
+            }
+        });
+        $("#btnReCreateSitemap").on("click", function () {
+            
+            $.ajax({
+                url: "@Url.Action("ReCreateSitemap")?SiteID=@siteId",
+                type: "GET",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data != "")
+                    {
+                        $("#spSitemapUrl").html(data.FilePath);
+                        $("#spSitemapLastModifyTime").html(data.LastModifyDate);
+                        Component.alert('重新產生成功!');
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        });
+        $("input[name='IsExtraCode']").on('change', function () {
+                var target = $(".EmbedCode-Box");
+                if (!this.checked)
+                    target.slideUp();
+                else
+                    target.slideDown() ;
+        });
+        
+        $("input[name='IsExtraCode']").trigger("change");
+        $("input[name='Robot']").on('change', function () {
+            if ($(this).val() == "False") {
+                swal({
+                    text: '確定要阻止搜尋機器人找到本站嗎？',
+                    type: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: '確定',
+                    cancelButtonText: '取消',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                }).then(function () {
+                    SetRobot('@siteId', false);
+                }, function (dismiss) {
+                    if (dismiss == 'cancel') {
+                        $("#Robot_1").attr("checked", true);
+                        $("#Robot_1").trigger("click");
+                    }
+                });
+            }
+            else {
+                SetRobot('@siteId', true);
+            }
+        });
+
+            $('#Keywords').tagEditor({
+                delimiter: ';, ',
+                placeholder: 'keywords',
+                autocomplete: {
+                    delay: 0,
+                    position: {
+                        collision: 'flip'
+                    },
+                    source: '@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(allKeywords))'
+                },
+                forceLowercase: false
+            });
+    });
+        function setKeywords(keywords) {
+            if (!keywords || keywords.length == 0)
+                return;
+
+            var elm = $('#Keywords');
+            var v = $.trim(elm.val());
+            var words = v ? v.split(';') : [];
+
+            for (var i = 0, len = keywords.length; i < len; ++i) {
+                if ($.inArray(keywords[i], words) == -1)
+                    elm.tagEditor('addTag', keywords[i]);
+            }
+        }
+    
+        function SetRobot(SiteID, Robot) {
+            var formData = new FormData();
+            formData.append("SiteID", SiteID);
+            formData.append("Robot", Robot);
+            $.ajax({
+                url: "@Url.Action("ChangeStatus")",
+                data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+                
+            },
+            fail: function () {
+                console.log("refresh fail ");
+            }
+        });
+        }
+        function isAnalyticsCode(str) {
+            return (/^ua-\d{4,9}-\d{1,4}$/i).test(str.toString());
+        }
+        function isTagManagerCode(str) {
+            return (/^gtm-[a-zA-Z0-9]{5,11}$/i).test(str.toString());
+        }
+        function isBaiduCode(str) {
+            return (/([a-zA-Z0-9]{31})\w+/g).test(str.toString());
+        }
+</script>

@@ -1,0 +1,29 @@
+﻿
+@{
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<script type="text/javascript">
+    $(function () {
+        var url = '@Html.Raw(Url.Action("Index", "SinglePage", new { SiteSN = ViewBag.SiteSN, PageSN = ViewBag.PageSN, type = ViewBag.type, area = string.Empty }, Request.Url.Scheme))';
+        var qrcode = "http://chart.apis.google.com/chart?cht=qr&chl=" + url + "&chs=132x132";
+        $("#qrcode").attr("src", qrcode);
+        $(".btn-qrcode").attr("href", qrcode);
+    });
+</script>
+
+<div class="groove groove-1">
+    <div class="lightbox-top-bar">
+        <div class="lightbox-top-bar-title"><i class="cc cc-desktop-message"></i> 獨立活動頁網址</div>
+    </div>
+    <ul class="forms">
+        <li>
+            <div class="col-1 text-C">
+                <img id="qrcode">
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar flex">
+        <a class="btn-qrcode" download=""><i class="cc cc-arrow-down"></i>下載Qrcode</a>
+    </div>
+</div>

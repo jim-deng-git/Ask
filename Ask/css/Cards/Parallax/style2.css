@@ -1,0 +1,66 @@
+.card-Parallax[data-style="2"] .parallax-text {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-Parallax[data-style="2"] .parallax-text, .card-Parallax[data-style="2"] .parallax-img, .card-Parallax[data-style="2"] .parallax-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0; }
+
+.card-Parallax[data-style="2"] {
+  height: 400px;
+  overflow: hidden;
+  position: relative; }
+  @media only screen and (max-width: 800px) {
+    .card-Parallax[data-style="2"] {
+      height: 0;
+      padding-bottom: 100%; } }
+  .card-Parallax[data-style="2"] .parallax-text {
+    z-index: 3;
+    padding: 40px 15%;
+    color: #ffffff;
+    text-align: center;
+    overflow: hidden;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column; }
+    .card-Parallax[data-style="2"] .parallax-text .parallax-text-title {
+      font-size: 3rem;
+      text-shadow: -1px 1px 10px #212121; }
+    .card-Parallax[data-style="2"] .parallax-text .parallax-text-content {
+      text-shadow: -1px 1px 6px #424242; }
+  .card-Parallax[data-style="2"] .parallax-img {
+    z-index: -1; }
+    .card-Parallax[data-style="2"] .parallax-img img {
+      display: none;
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translateX(-50%);
+      -ms-transform: translateX(-50%);
+          transform: translateX(-50%); }
+      @media only screen and (max-width: 800px) {
+        .card-Parallax[data-style="2"] .parallax-img img {
+          max-width: 2000%;
+          width: auto;
+          height: 100%; } }
+  .card-Parallax[data-style="2"] .parallax-blur {
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.5); }
+
+html.ie10 .card-Parallax[data-style="1"] .parallax-img img {
+  display: block; }

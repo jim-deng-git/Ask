@@ -1,0 +1,238 @@
+﻿@using WorkV3.Areas.Backend.Models.DataAccess;
+@model AdsDisplayAreaSetIndexModel
+@{
+    ViewBag.Title = "顯示位置管理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    List<AdsDisplayAreaTrees> area1_lv1 = Model.tree.Where(m => m.AreaID == 1).ToList();
+    List<AdsDisplayAreaTrees> area2_lv1 = Model.tree.Where(m => m.AreaID == 2).ToList();
+    List<AdsDisplayAreaTrees> area3_lv1 = Model.tree.Where(m => m.AreaID == 3).ToList();
+}
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Component()
+    <script>
+        jQuery(function ($) {
+            var _heading_menu = $('.section-heading');
+            _heading_menu.each(function () {
+                $(this).addClass('active').find('.toggleBox').on('click', function () {
+                    /*開關*/
+                    $(this).parent('.section-heading').toggleClass('active');
+
+                    /*延遲關閉*/
+                    if (!$(this).parent('.section-heading').hasClass('active')) {
+                        $(this).siblings('.dd-list').delay(800).queue(function (next) {
+                            $(this).hide();
+                            next();
+                        });
+                    } else {
+                        $(this).siblings('.dd-list').show();
+                    }
+                });
+
+                $(this).find('.ad-content').parent('.dd-handle').addClass('has-ad');
+
+            });
+        });
+        function refresh_area_set_index() {
+            location.replace(location.href);
+        }
+
+        //add colorbox setting fay 20180417
+        $(function () {
+            $('.openEdit').colorbox({
+                width: function () {
+                    var NW = "430";
+                    if ($.isNumeric($(this).data("width"))) {
+                        NW = $(this).data("width");
+                    }
+                    return NW;
+                },
+                height: function () {
+                    var NH = "470";
+                    if ($.isNumeric($(this).data("height"))) {
+                        NH = $(this).data("height");
+                    }
+                    return NH;
+                },
+                top: "67",
+                left: "441",
+            });
+        });
+    </script>
+
+}
+
+<div class="groove groove-1">
+    <h1 class="title-admin-page"><a class="btn-grey-darken-4-o transparent goBack" href="@Url.Action("Index", "Advertisement")"><i class="cc cc-arrow-left"></i></a>顯示位置設定</h1>
+    <ul class="forms border-T">
+        <li>
+            <div class="col-1">
+                <div class="title m-T-8">
+                    本廣告區要顯示於那些單元？
+                </div>
+            </div>
+        </li>
+        @*AreaID=1*@
+        <li>
+            <div class="col-1">
+                <div class="section-heading setting-ad">
+                    <div class="toggleBox">
+                        <i class="cc cc-chevron-down"></i>
+                    </div>
+                    <div class="iconMenu-top">
+                        <div></div>
+                    </div>
+                    <div class="section-heading-title">上導覽列</div>
+                    <ol class="dd-list">
+
+                        @foreach (AdsDisplayAreaTrees childItem in area1_lv1)
+                        {
+                            @RenderMenuWithChildren(childItem);
+                        }
+
+                    </ol>
+                </div>
+            </div>
+        </li>
+        @*AreaID=2*@
+        <li>
+            <div class="col-1">
+                <div class="section-heading setting-ad">
+                    <div class="toggleBox">
+                        <i class="cc cc-chevron-down"></i>
+                    </div>
+                    <div class="iconMenu-main">
+                        <div></div>
+                    </div>
+                    <div class="section-heading-title">主選單</div>
+                    <ol class="dd-list">
+
+                        @foreach (AdsDisplayAreaTrees childItem in area2_lv1)
+                        {
+                            @RenderMenuWithChildren(childItem);
+                        }
+
+                    </ol>
+                </div>
+            </div>
+        </li>
+        @*AreaID=3*@
+        <li>
+            <div class="col-1">
+                <div class="section-heading setting-ad">
+                    <div class="toggleBox">
+                        <i class="cc cc-chevron-down"></i>
+                    </div>
+                    <div class="iconMenu-bottom">
+                        <div></div>
+                    </div>
+                    <div class="section-heading-title">下導覽列</div>
+                    <ol class="dd-list">
+
+                        @foreach (AdsDisplayAreaTrees childItem in area3_lv1)
+                        {
+                            @RenderMenuWithChildren(childItem);
+                        }
+
+                    </ol>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+@helper RenderMenuWithChildren(AdsDisplayAreaTrees menu)
+{
+IEnumerable<AdsDisplayAreaTrees> children = menu.children;
+bool isChildrenExist = children.Any();
+
+    <li class="dd-item">
+        <div class="dd-handle">
+            <i class="cc cc-check"></i>
+            <span class="menu-title">@menu.Title</span>
+            @{
+                IEnumerable<string> listPositionData = AdvertisementDAO.GetDisplayPositionInfo(
+                    menu.SiteID,
+                    menu.ID,
+                    ViewBag.Advertisement_ID,
+                    menu.DataType
+                );
+                IEnumerable<string> insidePositionData = AdvertisementDAO.GetDisplayPositionInfo(
+                    menu.SiteID,
+                    menu.ID,
+                    ViewBag.Advertisement_ID,
+                    menu.DataType,
+                    DisplayAreaType.Inside
+                );
+                IEnumerable<string> loginPositionData = AdvertisementDAO.GetDisplayPositionInfo(
+                    menu.SiteID,
+                    menu.ID,
+                    ViewBag.Advertisement_ID,
+                    menu.DataType,
+                    DisplayAreaType.Login
+                );
+
+                <span class="icons-box">
+                    @if (AdvertisementDAO.CheckIsWork(menu))
+                    {
+                        <a class="openEdit dd-nodrag" href="@Url.Action("AdsDisplayPositionAdd", new
+                                                       {
+                                                           Title = menu.Title,
+                                                           Advertisement_ID = ViewBag.Advertisement_ID,
+                                                           siteId = menu.SiteID,
+                                                           menuId = menu.ID,
+                                                           DataType = menu.DataType,
+                                                           id = menu.AreaSetID
+                                                       })">
+                            <i class="cc cc-settings"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="dd-nodrag" href="#">
+                            <i class="cc cc-settings"></i>
+                        </a>
+                    }
+                </span>
+
+                <div class="ad-content">
+                    <ul>
+                        <li>
+                            @if (listPositionData.Count() > 0)
+                            {
+                                <span class="ad-display-page">@(AdvertisementDAO.GetDataTypeName(menu.DataType))位置：</span>
+                                foreach (var item in listPositionData)
+                                {
+                                    <span class="ad-display-position">@item</span>
+                                }
+                            }
+                            @if (insidePositionData.Count() > 0)
+                            {
+                                <span class="ad-display-page">@(AdvertisementDAO.GetChildTypeName("Inside"))位置：</span>
+                                foreach (var item in insidePositionData)
+                                {
+                                    <span class="ad-display-position">@item</span>
+                                }
+                            }
+                            @if (loginPositionData.Count() > 0)
+                            {
+                                <span class="ad-display-page">@(AdvertisementDAO.GetChildTypeName("Login"))位置：</span>
+                                foreach (var item in loginPositionData)
+                                {
+                                    <span class="ad-display-position">@item</span>
+                                }
+                            }
+                        </li>
+                    </ul>
+                </div>
+                                    }
+        </div>
+
+        <ol class="dd-list">
+            @foreach (AdsDisplayAreaTrees childItem in children)
+            {
+                @RenderMenuWithChildren(childItem);
+            }
+        </ol>
+    </li>
+}

@@ -1,0 +1,174 @@
+﻿@model WorkV3.Models.EventGuestModels
+@{
+    ViewBag.Title = "貴賓編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+}
+
+<form id="editForm" method="post" action="@Html.Raw(Url.Action("ParaGuestEdit", siteQuery))" enctype="multipart/form-data">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">貴賓編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">貴賓名稱</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Name" name="Name" value="@Model.Name" class="validate[required]" maxlength="50" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">頭銜</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Title" name="Title" value="@Model.Title" maxlength="30" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">照片</div>
+                                <div class="input-field">
+                                    <input type="file" id="fPhoto" name="fPhoto" />
+                                    <input type="hidden" id="Photo" name="Photo" value='@Model.Photo' />
+                                    <input type="hidden" id="fPhotoBase64" name="fPhotoBase64" />
+                                    <input type="hidden" id="fPhotoBase64_Resize" name="fPhotoBase64_Resize" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">簡介</div>
+                                <div class="input-field">
+                                    <textarea id="BriefIntro" name="BriefIntro" class="materialize-textarea">@Model.BriefIntro</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">聯絡電話</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Phone" name="Phone" value="@Model.Phone" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">傳真</div>
+                                <div class="input-field inline">
+                                    <input type="text" id="Fax" name="Fax" value="@Model.Fax" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">Email</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Email" name="Email" value="@Model.Email" class="validate[funcCall[checkEmail]]" />
+                                    <div class="alert transparent m-T-none">
+                                        <i class="cc cc-attention"></i>
+                                        <div>有多筆Email時，請用分號 ; 隔開。</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">介紹</div>
+                                <div class="input-field img-text-height">
+                                    <textarea contenteditable="true" id="Intro" name="Intro">@(string.IsNullOrWhiteSpace(Model.Intro) ? "人物介紹" : Model.Intro)</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">資歷</div>
+                                <div class="input-field img-text-height">
+                                    <textarea contenteditable="true" id="Resume" name="Resume">@(string.IsNullOrWhiteSpace(Model.Resume) ? "人物資歷" : Model.Resume)</textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">網址</div>
+                                <div class="input-field inline full">
+                                    <input type="text" id="Website" name="Website" placeholder="http://" value="@Model.Website" class="validate[funcCall[checkLink]]" />
+                                    <div class="alert transparent m-T-none">
+                                        <i class="cc cc-attention"></i>
+                                        <div>請以 http:// 或 https:// 開頭</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>                    
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft(); parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+    <input type="hidden" name="Sort" value="@Model.Sort" />
+</form>
+
+@section FArea {
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.singleImageUpload('#fPhoto', '@(Href("~/"))', '@ViewBag.UploadUrl');
+        Component.editor('Intro');
+        Component.editor('Resume');
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (v && !/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+
+        function checkEmail(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var emails = v.split(';');
+                for (var i = 0, len = emails.length; i < len; ++i) {
+                    var email = $.trim(emails[i]);
+                    if (email && !/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(email))
+                        return '* Email 格式不正確';
+                }
+            }
+        }
+
+        $('#btnSave').click(function () {
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'topLeft' })) {
+                form.submit();
+            }
+        });
+
+        @if ((ViewBag.Exit as bool?) == true) {
+            <text>
+            if (parent.refreshList)
+                parent.refreshList();
+            parent.$.colorbox.close();
+            </text>
+        }
+    </script>
+}

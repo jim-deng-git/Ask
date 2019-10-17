@@ -1,0 +1,188 @@
+﻿@using WorkV3.Models.Repository
+@model WorkV3.Models.MemberShipModels
+
+@{ 
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+
+    List<WorkV3.ViewModels.MemberCollectionViewModel> recruitCollections =
+        (List<WorkV3.ViewModels.MemberCollectionViewModel>)ViewBag.RecruitCollectionList;
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+
+<div class="card-member mainPage" data-style="1" id="divCollection">
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+
+    <div class="filters-bar">
+            <div class="bs-js-navbar-scrollspy">
+                <ul class="nav navbar-nav" id="filter-bar">
+                    @foreach (WorkV3.ViewModels.MemberCollectionMenuViewModel item in Model.CollectionMenuList)
+                    {
+                        <li data-id="@item.MenuID" >
+                            <a href="">@item.Title<span id="spMenuCount_@item.MenuID">(@Model.CollectionList.Where(p=>p.SN.StartsWith(item.SN)).Count())</span></a>
+                        </li>
+                    }
+                    @if(recruitCollections != null && recruitCollections.Count() > 0)
+                    {
+                        <li data-id="@ViewBag.MenuID" >
+                            <a href="">我的收藏<span id="spMenuCount_@ViewBag.MenuID">(@recruitCollections.Count())</span></a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    <div class="article-wrap">
+        @foreach (WorkV3.ViewModels.MemberCollectionMenuViewModel item in Model.CollectionMenuList)
+        {
+            <div id="@item.MenuID" class="article-list" data-menu="@item.MenuID">
+                <div class="article-title">@item.Title</div>
+                <ul id="ul_@item.MenuID">
+                    @if (Model.CollectionList != null)
+                    {
+                        var collectionList = Model.CollectionList.Where(p=>p.SN.StartsWith(item.SN));
+                        foreach (WorkV3.ViewModels.MemberCollectionViewModel collectionItem in collectionList)
+                        {
+                            <li class="@collectionItem.No">
+                                <a href="@Html.Raw(collectionItem.LinkUrl)">
+                                    <div class="article-img" style="background-image: url('@collectionItem.ImgSrc');" alt="@collectionItem.ImgAlt"></div>
+                                    <div class="article-list-title">@collectionItem.Title</div>
+                                    <div class="article-list-info">@collectionItem.Summary</div>
+                                </a>
+                                <a class="delete" href="#delete" data-page-id="@collectionItem.No"></a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+        @if(recruitCollections != null && recruitCollections.Count() > 0)
+        {
+            <div id="@ViewBag.MenuID" class="article-list" data-menu="@ViewBag.MenuID">
+                <div class="article-title">我的收藏</div>
+                <ul id="ul_@ViewBag.MenuID">
+                    @foreach(var item in recruitCollections)
+                    {
+                        <li class="@item.No">
+                            <a href="@Html.Raw(item.LinkUrl)">
+                                <div class="article-img" style="background-image: url('@item.ImgSrc');" alt="@item.ImgAlt"></div>
+                                <div class="article-list-title">@item.Title</div>
+                               
+                            </a>
+                            <a class="delete" href="#delete" data-page-id="@item.No"></a>          
+                        </li>
+                    }
+                </ul>
+            </div>
+        }        
+    </div>
+</div>
+
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript" src="~/script/forms/forms.js"></script>
+<script type="text/javascript" src="~/script/forms/dropdown.js"></script>
+<script type="text/javascript" src="~/script/forms/moment-with-locales.js"></script>
+<script type="text/javascript" src="~/script/forms/datetimepicker.js"></script>
+<script src="~/script/stickyKit/sticky-kit.js"></script>
+<script src="~/script/scrollspy/scrollspy.js"></script>
+<script>
+jQuery(function($) {
+    var outerElm = $('#divCollection');
+    outerElm.find('div[data-menu]').waypoint({
+        handler: function (direction) {
+            var curMenuDiv = $(this.element);
+            if (direction == 'up') {
+                var previous = this.previous();
+                if (previous)
+                    curMenuDiv = $(previous.element);
+            }
+
+            if (curMenuDiv.length) {
+                var menuId = curMenuDiv.attr('data-menu');
+                outerElm.find('#filter-bar > li').each(function () {
+                    var $this = $(this);
+                    var id = $this.attr('data-id');
+                    if (id == menuId) {
+                        if (!$this.hasClass('active'))
+                            $this.addClass('active');
+                    } else {
+                        if ($this.hasClass('active'))
+                            $this.removeClass('active');
+                    }
+                });
+            }
+        }
+    });
+    outerElm.find('#filter-bar > li').click(function () {
+        var $this = $(this);
+        var id = $this.attr('data-id');
+        var top = outerElm.find('div[data-menu="' + id + '"]').offset().top;
+        $('html,body').animate({ scrollTop: top }, 800);
+    });
+
+    $(".filters-bar").stick_in_parent({
+        offset_top: 100
+    });
+
+    $('body').scrollspy({ target: '.filters-bar', offset: filtersbar_top() });
+
+    $('.filters-bar a').each(function() {
+
+        var _this = $(this);
+
+        _this.on('click', function() {
+            event.preventDefault();
+            var _spacing = 32,
+                _right_position = $('#header').outerHeight() + _spacing;
+            $($(this).attr('href'))[0].scrollIntoView();
+            scrollBy(0, -_right_position);
+        });
+    });
+
+    $('.delete').click(function () {
+        var pageID = $(this).attr("data-page-id");
+        Component.confirm('確定刪除嗎？', function (isOk) {
+            if (isOk) {
+                var collectionUrl = '@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Collection"})' + '?PageID=' + pageID;
+                
+                $.get(collectionUrl, function (rs) {
+
+                    swal({
+                        customClass: 'animated fadeIn',
+                        type: 'warning',
+                        html:
+                          '<div><span>取消收藏成功!</span></div>',
+                        confirmButtonText: '確定',
+                        showConfirmButton: true
+                    }).then(function (isConfirm) {
+                        $("." + pageID).remove();
+                        ReloadMenuCount();
+                    });
+                });
+            }
+        });
+    });
+    /**重新計算Top**/
+    function filtersbar_top() {
+        var _spacing = 60,
+            filtersbar_top = $('.article-wrap').offset().top + _spacing;
+        return filtersbar_top;
+    }
+    function ReloadMenuCount()
+    {
+        $("#filter-bar").children("li").each(function () {
+            var menuID = $(this).attr("data-id");
+            var itemCount = $("#ul_" + menuID).children("li").length;
+            $("#spMenuCount_" + menuID).html("(" + itemCount + ")");
+            if (itemCount <= 0)
+            {
+                $(this).remove();
+                $("div[data-menu="+menuID+"]").remove();
+            }
+        });
+    }
+});
+</script>

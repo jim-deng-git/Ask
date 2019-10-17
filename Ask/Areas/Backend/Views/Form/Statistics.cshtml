@@ -1,0 +1,161 @@
+﻿@model IEnumerable<WorkV3.Models.FieldModel>
+@{    
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    ViewBag.Title = "填表統計";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    IEnumerable<WorkV3.Models.FieldValue> fieldValues = ViewBag.Values;
+    bool hasValues = ViewBag.hasValues;
+    string[] barColors = { "#FF6384", "#36A2EB", "#FFCE56", "#6ABD45", "#55C3C4", "#7F69AF", "#BD7CB3", "#BD7CB3" };
+}
+
+@section FArea {
+    <link href="~/css/Cards/Form/style1.css" rel="stylesheet" />
+    <link href="~/css/Cards/Form/style2.css" rel="stylesheet" />
+    <link href="~/css/vendor/tagEditor/tagEditor.css" rel="stylesheet" />
+
+    <script src="~/script/tagEditor/jquery.caret.min.js"></script>
+    <script src="~/script/tagEditor/jquery.tag-editor.js"></script>
+    <script src="~/script/tagEditor/jquery.ui.autocomplete.html.js"></script>
+
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.5/Chart.min.js"></script>       
+    
+    @BundleConfig.Component()
+
+    <script type="text/javascript">
+        var outerElm = $('#liCustomField');
+        outerElm.children().each(function () {
+            var that = $(this);
+            if (that.find('div.chart-wrap').length == 0)
+                return true;
+
+            var values = [], colors = [], names = [];
+            that.find('div.bar').each(function () {
+                var bar = $(this);
+                var val = bar.data('value'), color = bar.data('color'), name = bar.data('name');
+                values.push(val), colors.push(color), names.push(name);
+                bar.addClass('in').width(val + '%').css("background-color", color);
+            });
+
+            var canvasElm = that.find('canvas');
+            if (canvasElm.length == 0)
+                return true;
+
+            var formatData = {
+                labels: names,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors
+                }]
+            };
+
+            new Chart(that.find('canvas'), {
+                type: 'pie',
+                data: formatData,
+                options: {
+                    legend: {
+                        display: false
+                    }
+                }
+            });
+        });
+    </script>
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">填表統計</div>
+        </div>
+        <ul class="forms">
+            <li id="liCustomField">
+                @foreach (WorkV3.Models.FieldModel field in Model) {
+                    if (!hasValues)
+                    {
+                        <div>無填表資料</div>
+                        break;
+                    }
+                <div class="col-1">
+                    @if(field.TypeID == "hr") {                
+                    <hr class="hr @field.Description view-form" data-label="@field.Hint" />
+                    } else if(field.TypeID != "text") {
+                    <div class="title">@field.Title</div>                    
+                        if (field.IsDescription && !string.IsNullOrWhiteSpace(field.Description)) {
+                    <div>@Html.Raw(field.Description.ReplaceEnterToBr())</div>
+                        }
+
+                        IEnumerable<WorkV3.Models.FieldValue> values = fieldValues.Where(v => v.FieldID == field.ID);
+                        int total = values.Count();
+                        if(total > 0) { 
+                    <div class="col-4-partner">
+                        <div class="chart-wrap">
+                            <div id="dashboard-stats" class="chart bars-horizontal brand-primary">
+                                @{                                
+                                    Dictionary<string, int> valueCounts = new Dictionary<string, int>();
+                                    if (field.TypeID == "checkbox" || field.TypeID == "radio" || field.TypeID == "select") {
+                                        string[] options = field.Options.Split(';');
+                                        foreach(string option in options) {
+                                            valueCounts.Add(option, 0);
+                                        }
+                                        if(field.OtherOprion) {
+                                            valueCounts.Add("其它", 0);
+                                        }
+                                        valueCounts.Add("未填", 0);
+                                        foreach (WorkV3.Models.FieldValue v in values) {
+                                            if (string.IsNullOrWhiteSpace(v.Value)) {
+                                                ++valueCounts["未填"];
+                                            } else {
+                                                string[] vals = { v.Value };
+                                                if(v.Value[0] == '[') {
+                                                    vals = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(v.Value);
+                                                }
+                                                foreach(string val in vals) {
+                                                    ++valueCounts[val];
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        valueCounts.Add("已填", 0);
+                                        valueCounts.Add("未填", 0);
+                                        foreach(WorkV3.Models.FieldValue v in values) {
+                                            if(string.IsNullOrWhiteSpace(v.Value)) {
+                                                ++valueCounts["未填"];
+                                            } else {
+                                                ++valueCounts["已填"];
+                                            }
+                                        }
+                                    }
+
+                                    int index = 0;
+                                    foreach (KeyValuePair<string, int> item in valueCounts) {
+                                        decimal percent = Math.Round(item.Value * 100 / (decimal)total, 2);
+                                <div class="row">
+                                    <span class="label">@item.Key</span>
+                                    <div class="bar-wrap">
+                                        <div class="bar" data-value="@percent" data-color="@(barColors[(index++) % barColors.Length])" data-name="@item.Key"></div>
+                                    </div>
+                                    <span class="number">@(item.Value)(@percent%)</span>
+                                </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class="col-4">
+                        @*@if (field.TypeID == "radio" || field.TypeID == "select") {20181210 Nina註解 每個欄位皆需出現圓餅圖*@
+                        <canvas id="chart-name"></canvas>
+                        @*}*@
+                    </div>
+                        }
+                    }
+                </div>
+                }            
+            </li>        
+        </ul>
+        <div class="control-bar">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeCenter();"><i class="cc cc-close"></i>取消</a>        
+        </div>
+    </div>
+</div>
+

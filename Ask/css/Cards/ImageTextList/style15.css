@@ -1,0 +1,96 @@
+.card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.img .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.video .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.audio .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.img:nth-of-type(4n + 1) .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.video:nth-of-type(4n + 1) .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.audio:nth-of-type(4n + 1) .card-text-info {
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  -webkit-line-clamp: auto;
+  line-height: 1.2;
+  height: auto; }
+  @media only screen and (max-width: 800px) {
+    .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.img .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.video .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.audio .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.img:nth-of-type(4n + 1) .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.video:nth-of-type(4n + 1) .card-text-info, .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .activeWrap.audio:nth-of-type(4n + 1) .card-text-info {
+      line-height: 1.2;
+      height: auto; } }
+
+.card-imageTextList[data-style="15"] {
+  position: relative; }
+  .card-imageTextList[data-style="15"] .card-Masonry {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 10px; }
+    .card-imageTextList[data-style="15"] .card-Masonry::-webkit-scrollbar {
+      height: 12px;
+      -webkit-border-radius: 10px; }
+    .card-imageTextList[data-style="15"] .card-Masonry::-webkit-scrollbar-track {
+      -webkit-border-radius: 10px; }
+    .card-imageTextList[data-style="15"] .card-Masonry::-webkit-scrollbar-track:hover {
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }
+    .card-imageTextList[data-style="15"] .card-Masonry::-webkit-scrollbar-thumb {
+      -webkit-border-radius: 10px;
+      background: #ccc; }
+    .card-imageTextList[data-style="15"] .card-Masonry .flex-container {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-orient: horizontal;
+      -webkit-box-direction: normal;
+          -ms-flex-direction: row;
+              flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden; }
+      .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText {
+        -webkit-box-flex: 0;
+            -ms-flex: 0 0 33%;
+                flex: 0 0 33%;
+        margin-right: 10px; }
+        .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText img {
+          height: 0;
+          padding-top: 60%; }
+        .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .card-img-content {
+          opacity: 1; }
+        .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .card-text-info {
+          overflow: hidden;
+          -o-text-overflow: ellipsis;
+             text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+          line-height: 1.5em;
+          height: 4.5em; }
+          @media only screen and (max-width: 800px) {
+            .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText .card-text-info {
+              overflow: hidden;
+              -o-text-overflow: ellipsis;
+                 text-overflow: ellipsis;
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 2;
+              line-height: 1.5em;
+              height: 3em; } }
+        .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText:nth-of-type(4n + 1) .card-text-info {
+          overflow: hidden;
+          -o-text-overflow: ellipsis;
+             text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 6;
+          line-height: 1.5em;
+          height: 9em; }
+          @media only screen and (max-width: 800px) {
+            .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText:nth-of-type(4n + 1) .card-text-info {
+              overflow: hidden;
+              -o-text-overflow: ellipsis;
+                 text-overflow: ellipsis;
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 4;
+              line-height: 1.5em;
+              height: 6em; } }
+        .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText:nth-of-type(4n + 1) img {
+          padding-top: 133%; }
+        .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText:nth-of-type(4n + 4) {
+          -webkit-box-flex: 0;
+              -ms-flex: 0 0 calc(66% + 10px);
+                  flex: 0 0 calc(66% + 10px);
+          -ms-flex-item-align: end;
+              align-self: flex-end;
+          margin-left: calc(-66% - 20px); }
+          .card-imageTextList[data-style="15"] .card-Masonry .flex-container div.card-imageText:nth-of-type(4n + 4) img {
+            padding-top: calc(36% - 10px); }

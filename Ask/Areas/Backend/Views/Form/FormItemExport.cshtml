@@ -1,0 +1,140 @@
+﻿@{
+    Layout = null;
+        
+    IEnumerable< WorkV3.Models.FormItem> formItems = ViewData["FormItems"] as IEnumerable<WorkV3.Models.FormItem>;
+    List<WorkV3.Models.FieldModel> fields = ViewData["Fields"] as List<WorkV3.Models.FieldModel>;
+
+    bool privacy = (bool)ViewData["Privacy"];
+    bool isEvent = (bool)ViewData["IsEvent"];
+    string[] weeks = { "日", "一", "二", "三", "四", "五", "六" };
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+    table {
+        width:95%;
+        margin:0px auto;
+        text-align:center;
+        border-style:solid;
+    }
+
+    table th {
+        border:1px black solid;
+        padding:3px;
+        font-size: 12pt;
+        text-align: center;
+    }
+
+    table td {
+        border:1px black solid;
+        padding:3px;
+        font-size: 11pt;
+        text-align: center;
+        mso-number-format:"\@@";
+    }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                @foreach (WorkV3.Models.FieldModel item in fields) {
+                    if (item.TypeID != "hr" && item.TypeID != "text") {
+                    <th>@item.Title</th>
+                    }
+                }
+                @if (isEvent) {
+                <th>報名時間</th>
+                <th>報名狀態</th>
+                <th>報到</th>
+                <th>備註</th>
+                <th>後台報名</th>
+                } else {
+                <th>填表時間</th>
+                <th>備註</th>
+                <th>處理狀態</th>
+                <th>後台填寫</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(WorkV3.Models.FormItem item in formItems) {                
+                List<WorkV3.Models.FieldValue> values = item.GetValues().ToList();
+                FormCheckStatus checkStatus = (FormCheckStatus)item.CheckStatus;
+                string checkStatusStyle = string.Empty;
+                if (checkStatus == FormCheckStatus.待審核) {
+                    checkStatusStyle = "color:red;";
+                } else if (checkStatus == FormCheckStatus.正取 || checkStatus == FormCheckStatus.備取) {
+                    checkStatusStyle = "color:green";
+                }
+                <tr>
+                    @foreach (WorkV3.Models.FieldModel field in fields) {
+                        if (field.TypeID != "hr" && field.TypeID != "text") {
+                            WorkV3.Models.FieldValue val = values.FirstOrDefault(v => v.FieldID == field.ID);
+                            string[] leftTypes = { "address", "file", "image", "video", "voice" };
+                            string dir = leftTypes.Contains(field.TypeID) ? "text-align:left" : string.Empty;
+                        <td style="@dir">
+                            @if (!string.IsNullOrWhiteSpace(val?.Value)) {
+                                if (field.TypeID == "checkbox") {
+                                    string[] options = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(val.Value);
+                                    @:@string.Join(", ", options)
+                                } else if (field.TypeID == "address") {
+                                    WorkV3.Models.FieldAddress address = Newtonsoft.Json.JsonConvert.DeserializeObject<WorkV3.Models.FieldAddress>(val.Value);
+                                    @:@address.GetAddress()
+                                } else {
+                                    if (privacy && field.DefaultType != null) {
+                                        FieldDefaultType defaultType = (FieldDefaultType)(byte)field.DefaultType;
+                                        string value = val.Value;
+                                        if (defaultType == FieldDefaultType.姓名) {
+                                            @:@($"*{ value.Substring(1) }")
+                                        } else if (defaultType == FieldDefaultType.Email) {
+                                            @:@($"*****@{ value.Substring(value.IndexOf('@') + 1) }")
+                                        } else if (defaultType == FieldDefaultType.手機 || defaultType == FieldDefaultType.身份證字號 || defaultType == FieldDefaultType.電話) {
+                                            if (value.Length < 5) {
+                                                @:@value
+                                            } else {
+                                                @:@($"{ value.Substring(0, 5) }*********")
+                                            }
+                                        } else {
+                                            @:@value
+                                        }
+                                    } else if (field.TypeID == "file" || field.TypeID == "voice" || field.TypeID == "image") {
+                                        string[] valueList = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(val.Value);
+                                        @:@Html.Raw(string.Join("<br />", valueList))
+                                    } else {
+                                        @:@val.Value                                        
+                                    }
+                                }
+                            }
+                        </td>
+                        }
+                    }
+                    <td>@($"{ item.CreateDate.ToString("MM/dd") }({ weeks[(int)((DateTime)item.CreateDate).DayOfWeek] }) { item.CreateDate.ToString("HH:mm") }")</td>
+                    @if (isEvent) {
+                    <td style="@checkStatusStyle">
+                        @checkStatus<br />
+                        @if (item.CheckDate != null) {
+                            @:@($"{ item.CheckDate.ToString("MM/dd") }({ weeks[(int)((DateTime)item.CheckDate).DayOfWeek] }) { item.CheckDate.ToString("HH:mm") }")
+                        }
+                    </td>
+                    <td>@item.CheckInDate.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td class="text-L">@item.Remark.ReplaceEnterToBr()</td>                    
+                    } else {
+                    <td class="text-L">@item.Remark.ReplaceEnterToBr()</td>
+                    <td style="@checkStatusStyle">
+                        @(checkStatus == FormCheckStatus.待審核 ? "尚未處理" : "已處理")<br />
+                        @if (item.CheckDate != null) {
+                            @:@($"{ item.CheckDate.ToString("MM/dd") }({ weeks[(int)((DateTime)item.CheckDate).DayOfWeek] }) { item.CheckDate.ToString("HH:mm") }")
+                        }
+                    </td>
+                    }
+                    <td>@(item.IsBack ? "是" : string.Empty)</td>                    
+                </tr>
+            } 
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,125 @@
+﻿@model IEnumerable<WorkV3.Models.CustomArticleListItemModel>
+
+@{
+    ViewBag.Title = "挑選置頂文章";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+    Dictionary<long, List<WorkV3.Models.ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+    Dictionary<long, string[]> itemMenus = ViewBag.ItemMenus;
+
+    Pagination pagination = ViewBag.Pagination;
+}
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        var selected = [];
+
+        $('#divList').on('click', 'div.pagination a:not(.active)', function (e) {
+            e.preventDefault();
+            $.get(this.href, function (html) {
+                html = $(html).find('#divList').html();
+                $('#divList').html(html);
+
+                $('#dataBody').find('input').each(function () {
+                    if ($.inArray(this.id, selected) != -1) {
+                        this.checked = true;
+                    }
+                });
+            });            
+        });
+
+        $('#divList').on('click', '#dataBody input', function () {
+            selected.push(this.id);
+        });
+
+        $('#btnAdd').click(function () {
+            if (selected.length == 0) {
+                Component.alert('請至少選擇一項');
+                return;
+            }
+
+            $.post('@Html.Raw(Url.Action("AddTopArticles", siteQuery))', { articleIds: selected }, function () {
+                parent.refreshList();
+                Component.closeRight();
+            });
+        });
+    </script> 
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">挑選置頂文章</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <ul class="forms">
+                    <li>
+                        <form id="searchForm" action="@Url.Action("Edit", siteQuery)" method="post">
+                            <div class="col-1">
+                                <div class="title inline">搜尋文章</div>
+                                <div class="input-field marker-group">
+                                    <input id="Key" name="Key" type="text" placeholder="請輸入文章標題、內文等關鍵字搜尋" value="@ViewBag.Key" />
+                                    <a class="btn-grey-darken-3-o btn-small square" href="javascript:$('#searchForm').submit();"><i class="cc cc-search"></i></a>
+                                </div>
+                            </div>
+                        </form>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div id="divList" class="card shadow-none">
+                                <table class="fixTable">
+                                    <thead>
+                                        <tr>
+                                            <th>序</th>
+                                            <th>標題</th>
+                                            <th>選單</th>
+                                            <th>類別</th>
+                                            <th>預覽</th>
+                                            <th>選擇</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dataBody">
+                                        @for (int i = 0, len = Model.Count(); i < len; ++i) {
+                                            WorkV3.Models.CustomArticleListItemModel item = Model.ElementAt(i);
+                                            List<WorkV3.Models.ArticleTypesModels> types = itemTypes.GetValue(item.ArticleID);
+                                            string[] menus = itemMenus.GetValue(item.ArticleID);
+                                        <tr>
+                                            <td class="sort">@pagination.GetItemIndex(i)</td>
+                                            <td class="text-L">@item.Title</td>
+                                            <td class="text-L">@string.Join(" > ", menus.Where(m => !string.IsNullOrWhiteSpace(m)))</td>
+                                            <td>
+                                                @if (types?.Count() > 0) {
+                                                    @:@string.Join("、", types.Select(t => t.Name))
+                                                }
+                                            </td>
+                                            <td class="icon"><a class="btn-grey-darken-4-o transparent square openRight" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = item.SiteSN, PageSN = item.PageSN, area = string.Empty }))" target="_blank"><i class="cc cc-cellphone-link"></i></a></td>
+                                            <td class="icon">
+                                                <input type="checkbox" id="@item.ArticleID" />
+                                                <label for="@item.ArticleID"></label>
+                                            </td>
+                                        </tr>
+                                        }                                        
+                                    </tbody>
+                                </table>
+                                <div class="pagination text-L">
+                                    @Html.Action("Pager", "Common", pagination)
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="control-bar">
+        <a class="btn-cancel" href="javascript:Component.closeRight();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnAdd" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>導入</a>
+    </div>
+</div>

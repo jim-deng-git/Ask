@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "測試發送";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";    
+}
+
+<div class="groove groove-1">
+    <ul id="ulForm" class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title">請輸入測試用信箱，多筆時請用分號 ; 分隔<span class="required">*</span></div>
+                <div class="input-field">
+                    <textarea id="txtEmails" class="materialize-textarea height-lg validate[funcCall[checkEmails]]"></textarea>
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar flex">
+        <a class="btn btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+        <a class="btn-bulid" href="javascript:checkForm();"><i class="cc cc-email"></i>測試發送</a>
+    </div>
+</div>
+
+@section FArea {
+    @BundleConfig.Validate()    
+    <script type="text/javascript">
+        function checkEmails(field) {
+            var v = $.trim(field.val());
+            if (!v)
+                return '* 必填欄位';
+
+            v = v.replace(/\s/g, '').split(';');
+            for (var i = 0, len = v.length; i < len; ++i) {
+                var email = v[i];
+                if (!/^([a-zA-Z0-9_-])+@@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(email))
+                    return '* Email 格式不正確';
+            }
+        }
+
+        function checkForm() {
+            if ($('#ulForm').validationEngine('validate', { promptPosition: 'bottomLeft' })) {
+                parent.checkForm(true, $('#txtEmails').val());                
+            }
+        }
+    </script>
+}

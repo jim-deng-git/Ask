@@ -1,0 +1,159 @@
+﻿@model IEnumerable<ResourceLinksModels>
+@{
+    ViewBag.Title = "設定連結";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo };
+}
+
+<form id="linkEditForm" method="post" action="@Html.Raw(Url.Action("LinkEdit", siteQuery))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">設定連結</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="fileuploader-items link">
+                                    <ul id="ulLinks" class="fileuploader-items-list">
+                                        @foreach (ResourceLinksModels item in Model) {
+                                        <li class="fileuploader-item">
+                                            <div class="columns">
+                                                <div class="column-title">
+                                                    <div class="title-name"><a href="@item.GetLink()" target="_blank">@item.Descriptions</a></div>
+                                                </div>
+                                                <div class="column-actions">
+                                                    <a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip"><i class="cc cc-drag"></i></a>
+                                                    <a href="LinkTextEdit" class="btn-grey-o square transparent fileuploader-action-rename tooltip edit"><i class="cc cc-edit-o"></i></a>
+                                                    <a href="javascript:" class="btn-del square transparent fileuploader-action-remove tooltip"><i class="cc cc-close"></i></a>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" value='@Newtonsoft.Json.JsonConvert.SerializeObject(item).Replace(item.SourceNo.ToString(), "\""+item.SourceNo.ToString()+"\"")' />
+                                        </li>
+                                        }                                        
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <a id="btnAdd" class="btn-grey-darken-4-o transparent link-add" href="LinkTextEdit"><i class="cc cc-plus"></i>增加連結</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar flex">            
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+</form>
+
+@section FArea {    
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        function linkHandle() {
+            var ulElm = $('#ulLinks');
+
+            $('#btnAdd').click(function (e) {
+                e.preventDefault();
+
+                var mainWin = Component.openLeft(this.href, '50%', '25%');
+
+                mainWin.getLinkItem = function () {
+                    return { Id: 0, IsOpenNew: true };
+                };
+
+                mainWin.setLinkItem = function (item) {
+                    var html =
+                        '<li class="fileuploader-item">' +
+                        '   <div class="columns">' +
+                        '       <div class="column-title">' +
+                        '           <div class="title-name"><a href="' + item.LinkInfo + '" target="_blank">' + item.Descriptions + '</a></div>' +
+                        '       </div>' +
+                        '       <div class="column-actions">' +
+                        '           <a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip"><i class="cc cc-drag"></i></a>' +
+                        '           <a href="LinkTextEdit" class="btn-grey-o square transparent fileuploader-action-rename tooltip edit"><i class="cc cc-edit-o"></i></a>' +
+                        '           <a href="javascript:" class="btn-del square transparent fileuploader-action-remove tooltip"><i class="cc cc-close"></i></a>' +
+                        '       </div>' +
+                        '   </div>' +
+                        '   <input type="hidden"  />' +
+                        '</li>';
+                    html = $(html);
+                    html.find('input').val(JSON.stringify(item));
+
+                    ulElm.append(html);
+                }
+            });
+
+            ulElm.on('click', 'a.edit', function (e) {
+                e.preventDefault();
+                var liElm = $(this).closest('li');
+                
+                var mainWin = Component.openLeft(this.href, '80%', '25%');
+
+                mainWin.getLinkItem = function () {
+                    return $.parseJSON(liElm.find('input').val());
+                }
+
+                mainWin.setLinkItem = function (item) {
+                    var aElm = liElm.find('div.title-name > a');
+                    aElm.prop('href', item.LinkInfo);
+                    aElm.html(item.Descriptions);
+
+                    liElm.find('input').val(JSON.stringify(item));
+                }
+            });
+
+            ulElm.on('click', 'a.btn-del', function () {
+                var liElm = $(this).closest('li');
+                Component.confirm('連結刪除後將不可恢復，確定刪除?', function (result) {
+                    if (result)
+                        liElm.remove();
+                }, 'warning');
+            });
+
+            ulElm.sortable({
+                items: 'li',
+                handle: ".btn-sort",
+                helper: "clone",
+                appendTo: "body"
+            });
+            ulElm.disableSelection();
+        }
+
+        (function () {
+            linkHandle();
+
+            $('#btnSave').click(function () {
+                var form = $('#linkEditForm');
+
+                $('#ulLinks').children().each(function (n) {
+                    $(this).find('input:hidden').attr('name', 'links[' + n + ']');
+                    
+                });
+
+                form.submit();                                
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                if (parent.refreshResourceItems)
+                    parent.refreshResourceItems();
+                Component.closeLeft();
+                parent.$.colorbox.close();
+                </text>
+            }
+        })();
+    </script>
+}

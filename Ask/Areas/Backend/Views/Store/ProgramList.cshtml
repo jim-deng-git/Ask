@@ -1,0 +1,119 @@
+﻿@model IEnumerable<WorkV3.Areas.Backend.ViewModels.StoreToPlanViewModel>
+@{
+    ViewBag.Title = "商店方案";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script src="~/Script/StickyTableHeaders/jquery.stickytableheaders.js"></script>
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            window.parent.refreshList = function refreshList() {
+                location.replace(location.href);
+            }
+
+            var tableElm = $("#programTableTable");
+
+            var listObj = Component.dataList('programTableTable');
+            listObj.sorted = function (sortItems) {
+                $.post('Sort?siteId=@(ViewBag.SiteID)' + type, { 'items': sortItems }, function () {
+                    location.replace('@Html.Raw(Url.Action("List"))&type=' + type);
+                });
+            }
+            listObj.deleted = function (delIds) {
+                $.post('Del?siteId=@(ViewBag.SiteID)&type=' + type, { 'ids': delIds }, function () {
+                    location.replace('@Html.Raw(Url.Action("List"))&type=' + type);
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    tableElm.find('span.info').html('');
+                }
+            }
+            listObj.statusChange = function (id) {
+                $.post('ChangeStatus/' + id + '?siteId=@(ViewBag.SiteID)&type=' + type);
+            }
+
+            tableElm.on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tableElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+        });
+
+        
+
+    </script>
+
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <table class="fixTable" id="programTable">
+            <caption>
+                <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;">
+                    <i class="cc cc-arrow-left"></i>
+                </a>
+                @ViewBag.StoreName 商店方案
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square openEdit-m" data-action="add" href="@Url.Action("StoreProgramEdit", new { siteId = ViewBag.SiteID, storeId = ViewBag.StoreID})" title="新增"><i class="cc cc-plus"></i></a>
+
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>方案選擇</th>
+                    <th>方案期間</th>
+                    <th>合約狀態</th>
+                    <th>編輯方案</th>
+                    <th>編輯/列印合約</th>
+                    @*<th>服務紀錄</th>*@
+                </tr>
+            </thead>
+            <tbody class="font-sm">
+                @{ int idx = 1;}
+                @foreach (var item in Model)
+                {
+                    <tr data-id="@item.ID">
+                        <td class="sort">@idx</td>
+                        <td class="text-L font-grey">@item.PlanName</td>
+                        <td class="font-grey">@item.ContractDateStart.ToString("yyyy.MM.dd")~@item.ContractDateEnd.ToString("yyyy.MM.dd")</td>
+                        <td class="font-grey">新約未開始</td>
+                        <td class="icon edit"><a class="btn-grey-darken-4-o transparent square p-h-none openEdit-m" href="@Url.Action("ProgramEdit", new { siteId = ViewBag.SiteID, storeId = ViewBag.StoreID, id = item.ID})"><i class="cc cc-edit-o"></i></a></td>
+                        <td class="icon"><a class="btn-grey-darken-4-o transparent p-h-none openEdit-m" href="@Url.Action("ProgramContract", new { siteId = ViewBag.SiteID, id = item.ID })"><i class="cc cc-file-edit"></i>@(item.IsContractSave ? "" : "尚未訂約")</a></td>
+                        @*<td class="">
+                            <a href="<%= SysHelp.GetURL() %>Views/Cards/Mall/BackEnd/store-service.aspx" class="btn-grey-darken-4-o transparent p-h-none openEdit-m">
+                                <i class="cc cc-list font-lg align-v-bottom"></i><br>
+                                <span class="font-xxs">0/15</span>
+                            </a>
+                        </td>*@
+                    </tr>
+                    idx++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+

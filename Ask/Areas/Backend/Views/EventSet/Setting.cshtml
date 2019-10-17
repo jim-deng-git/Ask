@@ -1,0 +1,340 @@
+﻿@model WorkV3.Models.EventSetModels
+@{
+    ViewBag.Title = "集合卡設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    
+    long cardNo = ViewBag.CardNo;
+    WorkV3.Common.SitePage page = ViewBag.Page;
+    string uploadUrl = ViewBag.UploadUrl;
+    IEnumerable<WorkV3.Common.IDValue> listCardMenus = ViewBag.ListCardMenus;
+    Dictionary<long, IEnumerable<WorkV3.Common.IDValue>> listCardTypes = ViewBag.ListCardTypes;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+}
+
+@section Script {
+    @BundleConfig.Component()  
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    <script type="text/javascript">
+        $(".fixTable").stickyTableHeaders();
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function(e){
+            e.stopPropagation();
+        });
+
+        $("input[name='groupComment']").each(function(){
+            var $this = $(this),
+                $box = $('#comment-All-box');
+
+            $this.on('change', function(){
+                if(this.checked) {
+
+                    if ($this.attr('id') === 'comment-Close') {
+                        $box.slideUp();
+                    } else {
+                        $box.slideDown();
+
+                        if($this.attr('id') === 'comment-FB') {
+                            $box.children('div').eq(1).slideUp();
+                            $box.children('div').eq(2).slideDown();
+                        } else {
+                            $box.children('div').eq(2).slideUp();
+                            $box.children('div').eq(1).slideDown();
+                        }
+                    }
+                }
+            }).change();
+        });
+                
+        // 頁面程式
+        $('#Types').each(function () {
+            var typeElm = $(this);
+            var typeOuter = typeElm.prev();
+
+            var types = this.value.split(',');
+            var menus = $(this).next().val().split(',');
+            typeOuter.find('input').each(function () {
+                if ($(this).hasClass('Type')) {
+                    if ($.inArray(this.value, types) != -1)
+                        this.checked = true;
+                } else if ($(this).hasClass('Menu')) {
+                    if ($.inArray(this.value, menus) != -1)
+                        this.checked = true;
+                }
+            });
+
+            $('#settingForm').submit(function () {
+                var types = [];
+                var menus = [];
+                typeOuter.find('input').each(function () {
+                    if (this.checked) {
+                        if ($(this).hasClass('Type'))
+                            types.push(this.value);
+                        else if ($(this).hasClass('Menu')) {
+                            if ($(this).nextAll('ol').length == 0) {
+                                menus.push(this.value);
+                            }
+                        }
+                    }
+                });
+                typeElm.val(types.join());
+                typeElm.next().val(menus.join());
+            });
+        });
+
+        $('[data-radioGroup]').each(function () {
+            var $this = $(this);
+            Component.radioList($this);
+
+            var groupName = $this.attr('data-radioGroup');
+            if (groupName == 'SortMode') {
+                $this.find(':radio').click(function () {
+                    if (this.value == '時間排序')
+                        $('#sort-Time-box').slideDown();
+                    else
+                        $('#sort-Time-box').slideUp();
+
+                    if (this.value == '熱門排序')
+                        $('#sort-Hot-box').slideDown();
+                    else
+                        $('#sort-Hot-box').slideUp();
+
+                    if (this.value == '手動排序')
+                        $('#sort-Custom-box').slideDown();
+                    else
+                        $('#sort-Custom-box').slideUp();
+                }).filter(':checked').triggerHandler('click');
+            } else if (groupName == 'PagingMode') {
+                $this.find(':radio').click(function () {
+                    if (this.value == '全部列出') {
+                        $this.closest('li').next().slideUp();
+                    } else {
+                        $this.closest('li').next().slideDown();
+                    }
+                });
+            }
+        });
+
+        $('[data-checkGroup]').each(function () {
+            var $this = $(this);
+            Component.checkList($this);
+        });
+
+        $('#SortField').each(function () {
+            var v = this.value;
+            if (!v)
+                return;
+
+            $('div.sortField:visible').find(':radio[value="' + v + '"]').click();
+        });
+
+        Component.singleImageUpload('#fDefaultImg', '@(Href("~/"))', '@uploadUrl');
+
+        $('#btnCancel').click(function () {
+            Component.confirm('取消後你當前編輯的頁面將不會儲存，確定取消嗎？', function (isOK) {
+                if (isOK) {
+                    Component.closeLeft();
+                    location.href = '@Html.Raw(Url.Action("List", "Intro", new { siteId = page.SiteID, menuId = page.MenuID }))';
+                }
+            }, 'warning');
+        });
+
+        $('#btnSave').click(function () {            
+            var form = $('#settingForm');
+            if (form.validationEngine('validate')) {
+                var issueSettings = [];
+                $('[data-checkGroup="IssueSettingGroup"]').find(':checkbox').each(function () {
+                    if (this.checked)
+                        issueSettings.push(this.value);
+                });
+                $('#IssueSetting').val(issueSettings.join());
+
+                var sortField = $('div.sortField:visible').find('input[type="hidden"]').val();
+                $('#SortField').val(sortField);
+
+                form.submit();
+            }
+        });
+
+        @if(ViewBag.Success as bool? == true) {
+            <text>            
+        Component.alert('設置已儲存', function () {
+            location.href = '@Html.Raw(Url.Action("List", "Intro", new { siteId = page.SiteID, menuId = page.MenuID }))';
+        });
+            </text>
+        }
+    </script>
+}
+
+<div class="groove groove-1">
+    <form id="settingForm" method="post" action="@Url.Action("Setting", new { cardNo = cardNo })" enctype="multipart/form-data">
+        <h1 class="title-admin-page">集合卡設定</h1>
+        <div class="col-4 border-T">
+            <ul class="forms">
+                <li>
+                    <div class="title">哪個是你想顯示的項目？</div>
+                    <ol class="dd-list checkStyle">
+                        @if (listCardMenus?.Count() > 0) {
+                            foreach (WorkV3.Common.IDValue menu in listCardMenus) {
+                                IEnumerable<WorkV3.Common.IDValue> cardTypes;
+                                listCardTypes.TryGetValue(menu.ID, out cardTypes);
+                            <li class="dd-item">
+                                <input type="checkbox" id="@menu.ID" value="@menu.ID" class="Menu" />
+                                <label for="@menu.ID">@menu.Value</label>
+                                @if (cardTypes?.Count() > 0) {
+                                    int index = 0;
+                                    <ol class="dd-list show">
+                                        @foreach (WorkV3.Common.IDValue type in cardTypes) {
+                                            <li class="dd-item">
+                                                <div class="dd-handle">
+                                                    <input type="checkbox" id="type_@(++index)" value="@type.ID" class="Type" />
+                                                    <label for="type_@index">@type.Value</label>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ol>
+                                }
+                            </li>
+                            }
+                        }
+                    </ol>
+                    <input type="hidden" id="Types" name="Types" value="@Model.Types" />
+                    <input type="hidden" id="Menus" name="Menus" value="@Model.Menus" />
+                </li>
+            </ul>
+        </div>
+        <div class="col-4-partner border-T border-L">
+            <ul class="forms">
+                <li style="display:none;">
+                    <div class="title">分頁方式</div>
+                    <div class="radio-box inline" data-radioGroup="PagingMode">
+                        @{ string[] pagingModeList = { "點擊看更多", "全部列出" }; }
+                        @foreach (string mode in pagingModeList) {
+                            <div>
+                                <input type="radio" class="with-item" value="@mode" />
+                                <i class="cc cc-file-o cc-rotate-270"></i>
+                                <label>@mode</label>
+                            </div>
+                        }
+                        <input type="hidden" id="PagingMode" name="PagingMode" value="@Model.PagingMode" />
+                    </div>
+                </li>
+                <li>
+                    <div class="title">列表筆數</div>
+                    <div class="input-field inline mini">
+                        <span class="info">每頁(次)載入</span>
+                        <input typeof="text" id="PageSize" name="PageSize" class="text-C validate[required,custom[positive]]" value="@Model.PageSize" />
+                        <span class="info">筆資料</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="title">顯示設定</div>
+                    <div class="radio-box inline" data-checkGroup="IssueSettingGroup">
+                        @{ string[] issueSettings = string.IsNullOrWhiteSpace(Model.IssueSetting) ? new string[] { } : Model.IssueSetting.Split(','); }
+                        <div>
+                            <input type="checkbox" value="0" @(issueSettings.Contains("0") ? "checked=\"checked\"" : string.Empty) />
+                            <label>刊登期間內的當期資料</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" value="1" @(issueSettings.Contains("1") ? "checked=\"checked\"" : string.Empty) />
+                            <label>已逾期的歷史資料</label>
+                        </div>
+                    </div>
+                    <div class="alert transparent">
+                        <i class="cc cc-attention"></i>
+                        <div>
+                            此處根據「刊登期間」的前後時間，勾選決定是否在前台顯示，前提是該筆資料必須勾選「刊登」。<br />
+                            如果該筆資料在內容編輯時，並未勾選「刊登」，那無論此處設定為何，前台都不會顯示。
+                        </div>
+                    </div>
+                    <input type="hidden" id="IssueSetting" name="IssueSetting" />
+                </li>
+                <li>
+                    <div class="title">排序設定</div>
+                    <div class="radio-box inline full" data-radioGroup="SortMode">
+                        @{ string[] sortModes = { "時間排序", "熱門排序", "隨機排序", "手動排序" }; }
+                        @foreach (string mode in sortModes) {
+                            <div>
+                                <input type="radio" class="with-gap" value="@mode" />
+                                <label>@mode</label>
+                            </div>
+                        }
+                        <input type="hidden" id="SortMode" name="SortMode" value="@Model.SortMode" />
+                    </div>
+                    <input type="hidden" id="SortField" name="SortField" value="@Model.SortField" />
+                    <div id="sort-Time-box" class="radio-box inline full sortField" data-radioGroup="SortTime">
+                        @{
+                            string[][] sortTimeFields = {
+                                new string[] { "IsNull(DateStart, '1900/01/01') Desc", "依活動時間（新 → 舊）" },
+                                new string[] { "DateStart", "依活動時間（舊 → 新）" },
+                                new string[] { "IsNull(IssueDate, CreateTime) Desc", "依發文時間（新 → 舊）" },
+                                new string[] { "IsNull(IssueDate, CreateTime)", "依發文時間（舊 → 新）" },
+                                new string[] { "CreateTime Desc", "依建立時間（新 → 舊）" },
+                                new string[] { "CreateTime", "依建立時間（舊 → 新）" },
+                                new string[] { "IsNull(ModifyTime, CreateTime) Desc", "依修改時間（新 → 舊）" },
+                                new string[] { "IsNull(ModifyTime, CreateTime)", "依修改時間（舊 → 新）" },
+                                new string[] { "CASE DateKind WHEN '單日' THEN DateStart ELSE ISNULL(DateEnd, DateStart) END DESC, TimeEnd DESC", "依結束時間（新 → 舊）" },
+                                new string[] { "CASE DateKind WHEN '單日' THEN DateStart ELSE ISNULL(DateEnd, DateStart) END, TimeEnd", "依結束時間（舊 → 新）" },
+                                new string[] { "CASE WHEN DayDiff >=0 THEN 1 ELSE 2 END, ABS(DayDiff)", "依結束時間與當前時間差值(近 → 遠)" }
+                            };
+                        }
+                        @foreach (string[] item in sortTimeFields) {
+                            <div>
+                                <input type="radio" class="with-gap" value="@item[0]" />
+                                <label>@item[1]</label>
+                            </div>
+                        }
+                        <input type="hidden" value="DateStart" />
+                    </div>
+                    <div id="sort-Hot-box" class="radio-box inline full sortField" data-radioGroup="SortHot" style="display:none;">
+                        @{
+                            // 前端尚未處理熱門排序
+                            string[][] sortHotFields = {
+                                new string[] { "Clicks DESC", "熱門優先" },
+                                new string[] { "Clicks", "冷門優先" }
+                            };
+                        }
+                        @foreach (string[] item in sortHotFields) {
+                            <div>
+                                <input type="radio" class="with-gap" value="@item[0]" />
+                                <label>@item[1]</label>
+                            </div>
+                        }
+                        <input type="hidden" value="Clicks DESC" />
+                    </div>
+                    <div id="sort-Custom-box" class="radio-box inline full sortField" style="display: none;">
+                        <div class="alert transparent">
+                            <i class="cc cc-attention"></i>
+                            <div>您可以自行去列表上拖移每筆的順序。</div>
+                        </div>
+                        <input type="hidden" value="Sort" />
+                    </div>
+                </li>
+                <li>
+                    <div class="col-2">
+                        <div class="title">預設圖<a class="tooltip m-h-2" title="如果該筆資料沒上圖，列表上會預設帶出此處設定的圖片。"><i class="cc cc-attention"></i></a></div>
+                        <div class="input-field m-T-none">
+                            <input type="file" id="fDefaultImg" name="fDefaultImg" />
+                            <input type="hidden" id="DefaultImg" name="DefaultImg" value='@Model.DefaultImg' />
+                            <input type="hidden" id="fDefaultImgBase64" name="fDefaultImgBase64" />
+                            <input type="hidden" id="fDefaultImgBase64_Resize" name="fDefaultImgBase64_Resize" />
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </form>
+    <div class="control-bar">
+        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>

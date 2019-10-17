@@ -1,0 +1,219 @@
+﻿@{
+    Layout = null;
+    string uploadUrl = ViewBag.UploadUrl;
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, SourceNo = ViewBag.ParagraphID };
+
+    string matchType = ViewBag.MatchType;
+}
+
+@if (ViewBag.Items != null || ViewBag.Item != null)
+{
+    if (matchType == "img" && !ViewBag.IsSingleImgUpload)
+    {
+        <!-- 選擇搭配圖片 -->
+        IEnumerable<ResourceImagesModels> items = ViewBag.Items;
+        <div class="col-1">
+            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                <div class="fileuploader-items">
+                    <ul class="fileuploader-items-list">
+                        @foreach (ResourceImagesModels item in items)
+                        {
+                            <li class="fileuploader-item file-type-image file-ext-jpg">
+                                <div class="fileuploader-item-inner">
+                                    <div class="thumbnail-holder">
+                                        <div class="fileuploader-item-image">
+                                            <img src="@(uploadUrl + item.Img+"?t="+DateTime.Now.ToString("yyyyMMddhhmmss"))" alt="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        <div class="actions-holder" data-match="img">
+                            <div class="click-bg openEdit-m"></div>
+                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("ImgEdit", "Common", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    else if (matchType == "video")
+    {
+        <!-- 選擇搭配影片 -->
+        ResourceVideosModels item = ViewBag.Item;
+        <div class="col-2">
+            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                <div class="fileuploader-items video">
+                    <ul class="fileuploader-items-list">
+                        <li>
+                            @if (item.Type == "custom")
+                            {
+                                if (!string.IsNullOrWhiteSpace(item.Link))
+                                {
+                                    string shotUrl = string.Empty;
+                                    if (!string.IsNullOrWhiteSpace(item.Screenshot))
+                                    {
+                                        ResourceImagesModels img = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Screenshot);
+                                        shotUrl = uploadUrl + img.Img;
+                                    }
+                                    <div data-video="@(uploadUrl + "/" + item.Link)" data-shot="@shotUrl"></div>
+                                }
+                            }
+                            else
+                            {
+                                string link = string.Empty;
+                                if (item.Type == "youtube")
+                                {
+                                    link = "https://www.youtube.com/embed/" + item.Link;
+                                }
+                                else if (item.Type == "tudou")
+                                {
+                                    link = "http://www.tudou.com/programs/view/html5embed.action?code=" + item.Link;
+                                }
+                                else if (item.Type == "vimeo")
+                                {
+                                    link = "http://player.vimeo.com/video/" + item.Link;
+                                }
+                                if (link != string.Empty)
+                                {
+                                    <div class="preview">
+                                        <iframe width="560" height="315" src="@link" frameborder="0" allowfullscreen></iframe>
+                                    </div>
+                                }
+                            }
+                        </li>
+                        <div class="actions-holder" data-match="video">
+                            <div class="click-bg openEdit-m"></div>
+                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("VideoEdit", "Common", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    else if (matchType == "voice")
+    {
+        <!-- 選擇搭配聲音 -->
+        IEnumerable<ResourceVoicesModels> items = ViewBag.Items;
+        <div class="col-2">
+            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                <div class="fileuploader-items voice">
+                    <ul class="fileuploader-items-list">
+                        @foreach (ResourceVoicesModels item in items)
+                        {
+                            string name = string.IsNullOrWhiteSpace(item.ShowName) ? item.Path : item.ShowName;
+                            <li class="fileuploader-item">
+                                <div class="columns">
+                                    <div class="column-title">
+                                        <div class="title-name" title="name">@name</div>
+                                        <div data-voice="@(uploadUrl + "/" + item.Path)"></div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        <div class="actions-holder" data-match="voice">
+                            <div class="click-bg openEdit-m"></div>
+                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("VoiceEdit", "Common", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    else if (matchType == "file")
+    {
+        <!-- 選擇搭配檔案 -->
+        IEnumerable<ResourceFilesModels> items = ViewBag.Items;
+        <div class="col-2">
+            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                <div class="fileuploader-items file">
+                    <ul class="fileuploader-items-list">
+                        @foreach (ResourceFilesModels item in items)
+                        {
+                            int index = item.FileInfo.LastIndexOf('.');
+                            string extension = index == -1 ? string.Empty : item.FileInfo.Substring(index + 1);
+                            string name = string.IsNullOrWhiteSpace(item.ShowName) ? item.FileInfo : item.ShowName;
+                            <li class="fileuploader-item">
+                                <div class="columns">
+                                    <div class="column-thumbnail">
+                                        <div class="fileuploader-item-image fileupload-no-thumbnail">
+                                            <div style="background-color: #f23c0f" class="fileuploader-item-icon">
+                                                <i>@extension</i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column-title">
+                                        <div class="title-name" title="@name">@name</div>
+                                        <span>@item.GetSizeDesc()</span>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        <div class="actions-holder" data-match="file">
+                            <div class="click-bg openEdit-m"></div>
+                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("FileEdit", "Common", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    else if (matchType == "link")
+    {
+        <!-- 選擇搭配連結 -->
+        IEnumerable<ResourceLinksModels> items = ViewBag.Items;
+        <div class="col-2">
+            <div class="fileuploader fileuploader-theme-thumbnails normal">
+                <div class="fileuploader-items link">
+                    <ul class="fileuploader-items-list">
+                        @foreach (ResourceLinksModels item in items)
+                        {
+                            <li class="fileuploader-item">
+                                <div class="columns">
+                                    <div class="column-title">
+                                        <div class="title-name"><a href="@item.GetLink()" @(item.IsOpenNew == true ? "target=\"_blank\"" : string.Empty)>@item.Descriptions</a></div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                        <div class="actions-holder" data-match="link">
+                            <div class="click-bg openEdit-m"></div>
+                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("LinkEdit", "Common", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    else if (matchType == "lightbox")
+    {
+        ResourceLightBoxModels item = ViewBag.Item;
+        <div class="col-2">
+           <div class="fileuploader fileuploader-theme-thumbnails normal">
+               <div class="fileuploader-items button">
+                   <ul class="fileuploader-items-list">
+                       <li class="fileuploader-item">
+                           <div class="columns">
+                               <div class="column-title">
+                                   <div class="title-name"><a href="#" target="_blank" class="btn-@item.BtnColor-o">@item.BtnName</a></div>
+                               </div>
+                           </div>
+                       </li>
+                       <div class="actions-holder">
+                           <div class="click-bg openEdit-m" href="@Url.Action("LightBoxEdit","Common",siteQuery)"></div>
+                           <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("LightBoxEdit","Common",siteQuery)"><i class="cc cc-edit-o"></i></a>
+                           <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                       </div>
+                   </ul>
+               </div>
+           </div>
+       </div>
+
+
+    }
+}

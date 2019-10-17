@@ -1,0 +1,1963 @@
+﻿
+@{
+    ViewBag.Title = "註冊設定";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    IEnumerable<CategoryModels> cateListIdentity = null;
+    IEnumerable<CategoryModels> cateListFavoity = null;
+    if (ViewBag.ListIdentity != null)
+    {
+        cateListIdentity = (IEnumerable<CategoryModels>)ViewBag.ListIdentity;
+    }
+    if (ViewBag.ListFavoity != null)
+    {
+        cateListFavoity = (IEnumerable<CategoryModels>)ViewBag.ListFavoity;
+    }
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID };
+    string uploadUrl = ViewBag.UploadVPath;
+    string selectIndex = "1";
+    if (!string.IsNullOrEmpty(Request.QueryString["s"]))
+    {
+        selectIndex = Request.QueryString["s"];
+    }
+    string baseUrl = Url.Action("List", "MemberShipSetting", new { siteId = siteId, menuId = menuId });
+    string listPageUrl1 = baseUrl + "&s=1";
+    string listPageUrl2 = baseUrl + "&s=2";
+    string listPageUrl3 = baseUrl + "&s=3";
+    string listPageUrl4 = baseUrl + "&s=4";
+
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+<script src="~/script/base/admin-slideTabs.js"></script>
+@section Script {
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    <script>
+
+        var successUploadFiles = [];
+
+        var selectIndex = @selectIndex;
+        var listPageUrl1 = '@Html.Raw(listPageUrl1)';
+        var listPageUrl2 = '@Html.Raw(listPageUrl2)';
+        var listPageUrl3 = '@Html.Raw(listPageUrl3)';
+        var listPageUrl4 = '@Html.Raw(listPageUrl4)';
+        Component.checkList('[data-checkGroup]');
+        var uploadFileControllerUrl = '@Html.Raw(Url.Action("FileUpload", "MemberShipSetting", new { siteId = siteId, menuId = menuId }))';
+        var editFileTextControllerUrl = '@Html.Raw(Url.Action("FileUploadEditText", "MemberShipSetting", new { siteId = siteId, menuId = menuId }))';
+        var editSuccessFileTextControllerUrl = '@Html.Raw(Url.Action("FileUploadSuccessEditText", "MemberShipSetting", new { siteId = siteId, menuId = menuId }))';
+    Component.custom_multiFileUpload('#fFile', '#mailTemplateName', '@(Href("~/"))', uploadFileControllerUrl, '@uploadUrl', true, editFileTextControllerUrl);
+
+    //selectIndex=1在註冊資訊
+    if (selectIndex == 1) {
+        setTimeout(function () {
+            $(".swiper-slide-active").click();//載入時再點一次以展開Scrollbar完整內容
+        }, 999);
+    }
+        $(".fixTable").stickyTableHeaders();
+
+        $('#ddlSort').change(function () {
+            $('#Sort').val($(this).val());
+            $('#btnSearch').click();
+        });
+        $('#ddlSort').val($('#Sort').val());
+        $("input[name=IsOpenReg]").bind("click", function(){
+            saveMemberShipSet("IsOpenReg", $(this).val());
+            if($(this).val() == "true")
+                $(".OpenReg").show();
+            else
+                $(".OpenReg").hide();
+        });
+        $("input[name=RegType]").bind("click", function(){
+            saveMemberShipSet("RegType", $(this).val());
+            setRegTypeForms($(this).val());
+        });
+        $("input[name=VerifyType]").bind("click", function(){
+            saveMemberShipSet("VerifyType", $(this).val());
+            setVerifyTypeForms($(this).val());
+            if($(this).val() == "@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.Email)")
+            {
+                saveMemberShipColumnSet("Email", true, true );
+            }
+            if($(this).val() == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile)")
+            {
+                saveMemberShipColumnSet("Mobile", true, true );
+            }
+        });
+        $("input[name=AddFriend]").bind("click", function () {
+            var addFriend = "";
+            $("input[name=AddFriend]").each(function () {
+                if ($(this).prop("checked")) {
+                    if (addFriend != "")
+                        addFriend += ";";
+                    addFriend += $(this).val();
+                }
+            });
+            console.log(addFriend);
+            saveMemberShipSet("AddFriend", addFriend);
+        });
+        $("input[name=LoginType]").bind("click", function(){
+            var LoginType = "";
+            $("input[name=LoginType]").each(function(){
+                if($(this).prop("checked")){
+                    if(LoginType != "")
+                        LoginType += ";";
+                    LoginType += $(this).val();
+                }
+            });
+            saveMemberShipSet("LoginType",LoginType);
+
+            if($(this).val() == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Email)")
+            {
+                if($("input[name=VerifyType]:checked").val() != "@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.Email)")
+                {
+                    saveMemberShipColumnSet("Email", true, true );
+                }
+            }
+            if($(this).val() == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.ID)")
+            {
+                saveMemberShipColumnSet("IDCard", true, true );
+            }
+            if($(this).val() == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile)")
+            {
+                saveMemberShipColumnSet("Mobile", true, true );
+            }
+            setLoginTypeForms($(this).val());
+        });
+        $("input[name=IsNeedAgreeMemberDesc]").bind("click", function(){
+            if ($(this).prop("checked"))
+            {
+                saveMemberShipSet("IsNeedAgreeMemberDesc", "true");
+                $("#IsNeedAgree").prop("checked", true);
+            }
+            else
+            {
+                saveMemberShipSet("IsNeedAgreeMemberDesc", "false");
+                $("#IsNeedAgree").prop("checked", false);
+            }
+        });
+        $("input[name=IsNeedVerifyCode]").bind("click", function(){
+            if ($(this).prop("checked"))
+                saveMemberShipSet("IsNeedVerifyCode", "true");
+            else
+                saveMemberShipSet("IsNeedVerifyCode", "false");
+        });
+        $("input[name=IsAutoEmail]").bind("click", function(){
+            if ($(this).prop("checked"))
+                saveMemberShipSet("IsAutoEmail", "true");
+            else
+                saveMemberShipSet("IsAutoEmail", "false");
+        });
+
+        var listObj = Component.dataList('listTable');
+        var listObj2 = Component.dataList('listTable2');
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    $.post('MemberShipSettingDel', { 'ids': delIds }, function () {
+                        location.href = listPageUrl2;
+
+                    });
+                }
+            }, 'warning');
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.href = listPageUrl2;
+            }
+        }
+        listObj2.deleted = function (delIds) {
+
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    $.post('MemberShipSettingDel', { 'ids': delIds }, function () {
+                        location.href = listPageUrl3;
+                    });
+                }
+            }, 'warning');
+        }
+        listObj2.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable2').find('span.info').html('');
+            }
+        }
+        listObj2.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.href = listPageUrl3;
+            }
+        }
+        $(".showStatus").on("click", function(){
+            var dataID = $(this).parent().parent().attr("data-id");
+            //console.log(dataID);
+            $.post('MemberShipSettingChangeStatus', { 'id': dataID }, function () {
+                //location.href = listPageUrl2; //取消導向
+            });
+        });
+        $(".showStatus2").on("click", function () {
+            var dataID = $(this).parent().parent().attr("data-id");
+            // console.log(dataID);
+            $.post('MemberShipSettingChangeStatus', { 'id': dataID }, function () {
+                //location.href = listPageUrl3; //取消導向
+            });
+        });
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+        $('#listTable2').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+        $(function(){
+            loadMemberShipPageSet()
+            loadMemberShipColumnSet();
+            loadMemberShipSocialSet();
+            loadSelectManagers();
+            var isRegOpen = loadMemberShipSet();
+
+            if(isRegOpen){
+                $("#IsOpenReg_True").prop("checked", true);
+                $("#IsOpenReg_False").prop("checked", false);
+                $(".OpenReg").show();
+            } else {
+                $("#IsOpenReg_True").prop("checked", false);
+                $("#IsOpenReg_False").prop("checked", true);
+                $(".OpenReg").hide();
+            }
+        });
+
+
+        function refreshList(sindex)
+        {
+            if (sindex == "2")
+                location.href = listPageUrl2;
+            if (sindex == "3")
+                location.href = listPageUrl3;
+        }
+        function saveStatement()
+        {
+            var statement = CKEDITOR.instances['StatementContent'].getData();
+            if($("#IsNeedAgree").prop("checked"))
+            {
+                if(statement == "")
+                {
+                    Component.alert('請填寫會員條款', function () {
+                    });
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("StatementContent",  CKEDITOR.instances['StatementContent'].getData());
+            formData.append("IsNeedAgree",  $("#IsNeedAgree").prop("checked"));
+
+            $("#IsNeedAgreeMemberDesc").prop("checked", $("#IsNeedAgree").prop("checked") );
+            $.ajax({
+                url: "@Url.Action("SetAgreeStatement", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        Component.alert('資料已儲存', function () {
+                            loadStatement();
+                        });
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function loadStatement()
+        {
+            $.ajax({
+                url: "@Url.Action("GetAgreeStatement", "MemberShipSetting")",
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    // console.log(data);
+                    if (data != null ) {
+                        var statement = data.StatementContent;
+                        $("#StatementContent").html(statement);
+                        // console.log(statement);
+                        CKEDITOR.instances['StatementContent'].setData(statement);
+                        $("#IsNeedAgree").prop("checked", data.IsNeedAgree);
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function saveMailTemplate()
+        {
+            var form = $('#editMailTemplate');
+            if (form.validationEngine('validate')) {
+                var mailContent = CKEDITOR.instances['mailContent'].getData();
+                if(mailContent == "")
+                {
+                    Component.alert('請輸入內文', function () {
+
+                    });
+                    return false;
+                }
+                var attFiles = "";
+                $(".upload-successful input[type='hidden']").each(function(){
+                    if(attFiles!="")
+                        attFiles+=",";
+                    attFiles += $(this).val();
+                });
+                if(attFiles!= "")
+                    attFiles = "["+attFiles+"]";
+                //console.log(attFiles);
+                var TemplateName = $("#mailTemplateName").val();
+                //if($("#IsNeedAgree").prop("checked"))
+                //{
+                //    if(statement == "")
+                //    {
+                //        Component.alert('請填寫會員條款', function () {
+                //        });
+                //        return false;
+                //    }
+                //}
+                var formData = new FormData();
+                formData.append("TemplateName",  TemplateName);
+                formData.append("MailTitle",  $('#mailTitle').val());
+                formData.append("MailContent",  mailContent);
+                formData.append("MailFromName",  $('#mailFromName').val());
+                formData.append("MailFromAddress",  $('#mailFromAddress').val());
+                formData.append("AttFiles",  attFiles);
+                $.ajax({
+                    url: "@Url.Action("SetMailTemplate", "MemberShipSetting")",
+                    data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        if (data!= null) {
+                            Component.alert('資料已儲存', function () {
+                                loadMailTemplate(TemplateName);
+                            });
+                        }
+                    },
+                    fail: function () {
+                        console.log("refresh fail ");
+                    }
+                });
+
+            }
+        }
+        function cleanMailTemplate()
+        {
+            $("#mailContent").html("");
+            $("#mailTitle").val("");
+            CKEDITOR.instances['mailContent'].setData("");
+            $("#mailFromName").val("");
+            $("#mailFromAddress").val("");
+        }
+        function loadMailTemplate(TemplateName)
+        {
+            var formData = new FormData();
+            formData.append("TemplateName",  TemplateName);
+            $.ajax({
+                url: "@Url.Action("GetMailTemplate", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+
+                    if (data != null ) {
+                        var MailContent = data.MailContent;
+                        $("#mailContent").html(MailContent);
+                        $("#mailTitle").val(data.MailTitle);
+                        CKEDITOR.instances['mailContent'].setData(MailContent);
+                        $("#mailFromName").val(data.MailFromName);
+                        $("#mailFromAddress").val(data.MailFromAddress);
+                        $("#aTryMail").attr("href", "@Html.Raw(Url.Action("TryToMail", "MemberShipSetting", new { siteId = siteId, menuId = menuId }))"+"&TemplateName="+TemplateName);
+                        var files = [];
+                        if(data.AttFiles != "")
+                            files = JSON.parse(data.AttFiles);
+                        ShowFileList(files);
+                        $("div[id*=divCode").hide();
+                        $("#divCode"+TemplateName).show();
+                        //$("#fFile").fileuploader('destroy');
+                    }
+                    else
+                    {
+                        cleanMailTemplate();
+                    }
+                },
+                fail: function () {
+                    cleanMailTemplate();
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function saveMemberShipSet(columnName, columnValue)
+        {
+            var formData = new FormData();
+            formData.append("SiteID",  "@siteId");
+            formData.append("ColumnName",  columnName);
+            formData.append("ColumnValue",  columnValue);
+            $.ajax({
+                url: "@Url.Action("UpdateMemberShipSet", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        //Component.alert('資料已儲存', function () {
+                        //});
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function loadMemberShipSet()
+        {
+            var isRegOpen;
+            var formData = new FormData();
+            formData.append("SiteID",  "@siteId");
+            $.ajax({
+                url: "@Url.Action("GetMemberShipSet", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        isRegOpen = data.IsOpenReg;
+
+                        $("input[name=RegType]").prop("checked", false);
+                        $("input[name=RegType][value="+data.RegType+"]").prop("checked", true);
+                        setRegTypeForms(data.RegType);
+                        $("input[name=VerifyType]").prop("checked", false);
+                        $("input[name=VerifyType][value="+data.VerifyType+"]").prop("checked", true);
+                        $("input[name=LoginType]").each(function(){
+                            if(data.LoginType.indexOf($(this).val()) >=0){
+                                $(this).prop("checked", true);
+                            }
+                            else{
+                                $(this).prop("checked", false);
+                            }
+                        });
+                        $("input[name=AddFriend]").each(function () {
+                            if (data.AddFriend.indexOf($(this).val()) >= 0) {
+                                $(this).prop("checked", true);
+                            }
+                            else {
+                                $(this).prop("checked", false);
+                            }
+                        });
+                        if(data.IsNeedAgreeMemberDesc)
+                            $("#IsNeedAgreeMemberDesc").prop("checked", true);
+                        else
+                            $("#IsNeedAgreeMemberDesc").prop("checked", false);
+                        if(data.IsNeedVerifyCode)
+                            $("#IsNeedVerifyCode").prop("checked", true);
+                        else
+                            $("#IsNeedVerifyCode").prop("checked", false);
+                        if(data.IsAutoEmail)
+                            $("#IsAutoEmail").prop("checked", true);
+                        else
+                            $("#IsAutoEmail").prop("checked", false);
+                        //                    console.log(data);
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+
+            return isRegOpen;
+        }
+        function loadMemberShipPageSet()
+        {
+            var formData = new FormData();
+            formData.append("SiteID",  "@siteId");
+            $.ajax({
+                url: "@Url.Action("GetMemberShipPageSetItems", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    var htmlRowSample = "<div class=\"btn-grey bg-grey-lighten-2 d-block text-L ui-sortable-handle \" data-column=\"{Name}\" >"+
+                                            "<div class=\"float-L\">"+
+                                                "<input name=\"{Name}IsOpen_Desktop\" type=\"checkbox\" id=\"{Name}IsOpen_Desktop\" {IsOpen_DesktopChecked}>"+
+                                                "<label for=\"{Name}IsOpen_Desktop\">{Title}</label>"+
+                                            "</div>"+
+                                        "</div>";
+                    var htmlContent = '';
+                    for(var i = 0; i < data.length; i++)
+                    {
+                        var setIsOpen_Desktop = "";
+                        if(data[i].IsOpen)
+                            setIsOpen_Desktop= "checked";
+
+                        htmlContent = htmlRowSample.replace(/\{Name}/g, data[i].PageSN)
+                                .replace(/\{Title}/g, data[i].Title)
+                                .replace(/\{IsOpen_DesktopChecked}/g, setIsOpen_Desktop);
+
+                        if(data[i].IsSubMenu)
+                        {
+                            $(".memberSubMenu").append(htmlContent);
+                        }
+                        else if(data[i].IsDesktopCard)
+                        {
+                            $(".DesktopCard").append(htmlContent);
+                        }
+                        else
+                        {
+                            $(".memberMenu").append(htmlContent);
+                        }
+                    }
+
+                    $("input[id$=IsOpen_Desktop]").bind("click", function(){
+                        var name = $(this).attr("id").replace("IsOpen_Desktop", "");
+                        saveMemberShipPageSet(name, $("#" + name + "IsOpen_Desktop").prop("checked"));
+                    });
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function saveMemberShipColumnSet(columnName, isOpen, isNeedValue)
+        {
+            var formData = new FormData();
+            //            console.log(columnName);
+            formData.append("SiteID",  "@siteId");
+            formData.append("ColumnName",  columnName);
+            formData.append("IsOpen",  isOpen);
+            formData.append("IsNeedValue",  isNeedValue);
+            $.ajax({
+                url: "@Url.Action("UpdateMemberShipColumnSet", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        //Component.alert('資料已儲存', function () {
+                        //});
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function saveMemberShipPageSet(pageSN, IsOpen_Desktop)
+        {
+            $.post('@Url.Action("UpdateMemberShipPageSet", "MemberShipSetting")', { 'SiteID': '@siteId', 'PageSN': pageSN , 'IsOpen': IsOpen_Desktop });
+        }
+        function saveMemberShipColumnOptionSet(columnName, optionValue)
+        {
+            var formData = new FormData();
+            //            console.log(columnName);
+            formData.append("SiteID",  "@siteId");
+            formData.append("ColumnName",  columnName);
+            formData.append("OptionValue",  optionValue);
+            $.ajax({
+                url: "@Url.Action("UpdateMemberShipColumnOptionSet", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        //Component.alert('資料已儲存', function () {
+                        //});
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function saveMemberShipSocialSet(socialType, isOpen)
+        {
+            var formData = new FormData();
+            //            console.log(columnName);
+            formData.append("SiteID",  "@siteId");
+            formData.append("SocialType",  socialType);
+            formData.append("IsOpen",  isOpen);
+            $.ajax({
+                url: "@Url.Action("UpdateMemberShipSocialSet", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        //Component.alert('資料已儲存', function () {
+                        //});
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function loadMemberShipColumnSet()
+        {
+            var formData = new FormData();
+            formData.append("SiteID",  "@siteId");
+            $.ajax({
+                url: "@Url.Action("GetMemberShipColumnSetItems", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        var htmlOptionSample = "<div  class=\"float-L m-L-4\">"+
+                                                    "<input class=\"with-gap\" name=\"{OptionName}\" type=\"radio\" id=\"{OptionValue}\" {IsSelected} value=\"{OptionValue}\">"+
+                                                    "<label for=\"{OptionValue}\">{OptionText}</label>"+
+                                                "</div>";
+                        var htmlLinkManage =  "<a class=\"m-R-4 slideto\" data-slideto=\"{ActIndex}\" href=\"{LinkUrl}\">管理</a>";
+                        var htmlRowSample = "<div class=\"btn-grey bg-grey-lighten-2 d-block text-L ui-sortable-handle {AppendClassName}\" data-column=\"{ColumnName}\" {Style}>"+
+                                            "<div class=\"float-L\">"+
+                                            "<input name=\"{ColumnName}IsOpen\" type=\"checkbox\" id=\"{ColumnName}IsOpen\" {IsOpenChecked}>"+
+                                            "<label for=\"{ColumnName}IsOpen\">{ColumnTitle}</label>"+
+                                            "</div>"+
+                                            "{OptionTag}"+
+                                            "<div class=\"float-R\">"+
+                                            "{LinkTag}"+
+                                            "<input name=\"{ColumnName}IsNeedValue\" type=\"checkbox\" id=\"{ColumnName}IsNeedValue\" {IsNeedValueChecked}>"+
+                                            "<label for=\"{ColumnName}IsNeedValue\">必填</label>"+
+                                            "</div>"+
+                                            "</div>";
+                        for(var i=0;i<data.length; i++)
+                        {
+                            var Style = "";
+                            var optionAddClassName = " d-block ";
+                            var colName = data[i].ColumnName;
+                            var colTitle = data[i].ColumnTitle;
+                            var colIsOpen = "";
+                            if(data[i].IsOpen)
+                                colIsOpen= "checked";
+                            var colIsNeedValue =  "";
+                            if(data[i].IsNeedValue)
+                                colIsNeedValue= "checked";
+                            var htmlContent = "", htmlLinkContent = "", htmlOptions = "";
+                            if(colName == "Identity" || colName == "Favority" || colName == "OrderEpaper")
+                            {
+                                var ActIndex= "", LinkUrl = "";
+                                if(colName == "Identity" )
+                                {
+                                    ActIndex = "2";
+                                    LinkUrl = listPageUrl3;
+                                }
+                                if(colName == "Favority" )
+                                {
+                                    ActIndex = "3";
+                                    LinkUrl = listPageUrl4;
+                                }
+                                htmlLinkContent =  htmlLinkManage.replace(/\{ActIndex}/g, ActIndex)
+                                    .replace(/\{LinkUrl}/g, LinkUrl);
+                            }
+                            if(data[i].OtherOptionList!= null && data[i].OtherOptionList.length > 0)
+                            {
+                                optionAddClassName += " d-flex justify-space-between ";
+                                for(var m=0;m<data[i].OtherOptionList.length;m++)
+                                {
+                                    var OptionText = data[i].OtherOptionList[m].Text;
+                                    var OptionName = colName+"_Options";
+                                    var OptionValue = colName+"_"+data[i].OtherOptionList[m].Value;
+                                    var IsSelected = "";
+                                    if(data[i].OtherOptionList[m].Selected)
+                                        IsSelected = "checked";
+                                    htmlOptions +=  htmlOptionSample.replace(/\{OptionText}/g, OptionText)
+                                      .replace(/\{OptionValue}/g, OptionValue)
+                                      .replace(/\{OptionName}/g, OptionName)
+                                      .replace(/\{IsSelected}/g, IsSelected);
+                                }
+                            }
+                            htmlContent =  htmlRowSample.replace(/\{ColumnName}/g, colName)
+                                .replace(/\{ColumnTitle}/g, colTitle)
+                                .replace(/\{IsOpenChecked}/g, colIsOpen)
+                                .replace(/\{AppendClassName}/g, optionAddClassName)
+                                .replace(/\{OptionTag}/g, htmlOptions)
+                                .replace(/\{LinkTag}/g, htmlLinkContent)
+                                .replace(/\{IsNeedValueChecked}/g, colIsNeedValue)
+                                .replace(/\{Style}/g, Style);
+
+                            $(".member-info").append(htmlContent);
+                        }
+
+                        $("input[id$=IsOpen]").bind("click", function(){
+                            var col_name = $(this).attr("id").replace("IsOpen", "");
+                            if (col_name == "PushRecommandMobile") {
+                                if ($("#" + col_name + "IsOpen").prop("checked")) {
+                                    if (!$("#PushRecommandIsOpen").prop("checked")) {
+                                        Component.alert('將一併勾選「推薦人」欄位。', function () {
+                                        });
+                                        $("#PushRecommandIsOpen").prop("checked",true);
+                                        saveMemberShipColumnSet("PushRecommand", true, $("#PushRecommandIsNeedValue").prop("checked"));
+                                    }
+                                }
+                            }
+                            if (col_name == "PushRecommandCode") {
+                                if (!$("#" + col_name + "IsOpen").prop("checked")) {
+                                    $("#PushRecommandMobileIsOpen").prop("checked", false);
+                                    saveMemberShipColumnSet("PushRecommandMobile", false, $("#PushRecommandMobileIsNeedValue").prop("checked"));
+                                }
+                            }
+                            if (col_name == "LegalPersonMobile") {
+                                if ($("#" + col_name + "IsOpen").prop("checked")) {
+                                    if (!$("#LegalPersonNameIsOpen").prop("checked")) {
+                                        Component.alert('將一併勾選「法定代理人姓名」欄位。', function () {
+                                        });
+                                        $("#LegalPersonNameIsOpen").prop("checked", true);
+                                        saveMemberShipColumnSet("LegalPersonName", true, $("#LegalPersonNameIsNeedValue").prop("checked"));
+                                    }
+                                }
+                            }
+                            if (col_name == "LegalPersonName") {
+                                if (!$("#" + col_name + "IsOpen").prop("checked")) {
+                                    $("#LegalPersonMobileIsOpen").prop("checked", false);
+                                    saveMemberShipColumnSet("LegalPersonMobile", false, $("#LegalPersonMobileIsNeedValue").prop("checked"));
+                                }
+                            }
+                            if(col_name == "Email")
+                            {
+                                if(!$("#"+col_name+"IsOpen").prop("checked"))
+                                {
+                                    if($("#LoginType_Email").prop("checked"))
+                                    {
+                                        Component.alert('登入時可使用Email，不可勾除', function () {
+                                        });
+                                        return false;
+                                    }
+                                }
+                            }
+                            if(col_name == "IDCard")
+                            {
+                                if(!$("#"+col_name+"IsOpen").prop("checked"))
+                                {
+                                    if($("#LoginType_ID").prop("checked"))
+                                    {
+                                        Component.alert('登入時可使用身分證字號，不可勾除。', function () {
+                                        });
+                                        return false;
+                                    }
+                                }
+                            }
+
+                            if(col_name == "Mobile")
+                            {
+                                if(!$("#"+col_name+"IsOpen").prop("checked"))
+                                {
+                                    if($("#LoginType_Mobile").prop("checked"))
+                                    {
+                                        Component.alert('登入時可使用手機，不可勾除。', function () {
+                                        });
+                                        return false;
+                                    }
+                                    if($("#VerifyType_Mobile").prop("checked"))
+                                    {
+                                        Component.alert('驗證方式為手機驗證，不可勾除。', function () {
+                                        });
+                                        return false;
+                                    }
+                                }
+                            }
+                            saveMemberShipColumnSet(col_name, $("#"+col_name+"IsOpen").prop("checked"), $("#"+col_name+"IsNeedValue").prop("checked"));
+                        });
+                        $("input[id$=IsNeedValue]").bind("click", function(){
+                            var col_name = $(this).attr("id").replace("IsNeedValue", "");
+                            if(col_name == "Email")
+                            {
+                                if(!$("#"+col_name+"IsNeedValue").prop("checked"))
+                                {
+                                    if($("#LoginType_Email").prop("checked"))
+                                    {
+                                        Component.alert('登入時可使用Email，不可勾除', function () {
+                                        });
+                                        return false;
+                                    }
+                                }
+                            }
+
+                            if(col_name == "IDCard")
+                            {
+                                if(!$("#"+col_name+"IsNeedValue").prop("checked"))
+                                {
+                                    if($("#LoginType_ID").prop("checked"))
+                                    {
+                                        Component.alert('登入時可使用身分證字號，不可勾除。', function () {
+                                        });
+                                        return false;
+                                    }
+                                }
+                            }
+
+                            if(col_name == "Mobile")
+                            {
+                                if(!$("#"+col_name+"IsNeedValue").prop("checked"))
+                                {
+                                    if($("#LoginType_Mobile").prop("checked"))
+                                    {
+                                        Component.alert('登入時可使用手機，不可勾除。', function () {
+                                        });
+                                        return false;
+                                    }
+                                    if($("#VerifyType_Mobile").prop("checked"))
+                                    {
+                                        Component.alert('驗證方式為手機驗證，不可勾除。', function () {
+                                        });
+                                        return false;
+                                    }
+                                }
+                            }
+                            saveMemberShipColumnSet(col_name, $("#"+col_name+"IsOpen").prop("checked"), $("#"+col_name+"IsNeedValue").prop("checked"));
+                        });
+
+                        $("input[name$=_Options]").bind("click", function(){
+                            var col_name = $(this).attr("name").replace("_Options", "");
+                            var option_value = $(this).val();
+                            saveMemberShipColumnOptionSet(col_name, option_value);
+                        });
+                    }
+                    setVerifyTypeForms( $("input[name=VerifyType]:checked").val());
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function loadMemberShipSocialSet()
+        {
+            var formData = new FormData();
+            formData.append("SiteID",  "@siteId");
+            $.ajax({
+                url: "@Url.Action("GetMemberShipSocialSetItems", "MemberShipSetting")",
+                data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        //                    console.log(data);
+                        var htmlRowSample =     "<div class=\"btn-grey textC bg-grey-lighten-2 ui-sortable-handle\" data-column=\"{SocialType}\">"+
+                                                "<a class=\"d-inline-block\" href=\"javascript:;\">"+
+                                                "<input name=\"SocialType_{SocialType}\" type=\"checkbox\" id=\"{SocialType}\" value=\"{SocialType}\" {IsSelected} />"+
+                                                "<label for=\"{SocialType}\"><i class=\"cc {SocialTypeClass}\"></i> {SocialTitle}</label>"+
+                                                "</a>"+
+                                                "<a class=\"d-inline-block m-L-2 openEdit-m font-black\" href=\"{EditUrl}\"><i class=\"cc cc-settings\"></i></a>"+
+                                                "</div>";
+                        for(var i=0;i<data.length; i++)
+                        {
+                            var IsSelected = "";
+                            var SocialTypeClass = "";
+                            var SocialType = data[i].SocialType;
+                            var EditUrl = "@Url.Action("SetSocial", "MemberShipSetting", new { SiteID = siteId })"+"&SocialType="+SocialType;
+                            var SocialTitle = data[i].SocialTitle;
+                            switch(SocialType)
+                            {
+                                case @((int)WorkV3.Models.MemberType.FB):
+                                    SocialTypeClass = "cc-facebook";
+                                    break;
+                                case @((int)WorkV3.Models.MemberType.Google):
+                                    SocialTypeClass = "cc-google-plus";
+                                    break;
+                                case @((int)WorkV3.Models.MemberType.QQ):
+                                    SocialTypeClass = "cc-qqchat";
+                                    break;
+                                case @((int)WorkV3.Models.MemberType.Twitter):
+                                    SocialTypeClass = "cc-twitter";
+                                    break;
+                                case @((int)WorkV3.Models.MemberType.Weibo):
+                                    SocialTypeClass = "cc-sina-weibo";
+                                    break;
+                                case @((int)WorkV3.Models.MemberType.Yahoo):
+                                    SocialTypeClass = "";
+                                    break;
+                                case @((int)WorkV3.Models.MemberType.Baidu):
+                                    SocialTypeClass = "";
+                                    break;
+                            }
+                            if(data[i].IsOpen)
+                            {
+                                IsSelected = "checked";
+                            }
+                            htmlContent =  htmlRowSample.replace(/\{SocialType}/g, SocialType)
+                                .replace(/\{SocialTypeClass}/g, SocialTypeClass)
+                                .replace(/\{SocialTitle}/g, SocialTitle)
+                                .replace(/\{EditUrl}/g, EditUrl)
+                                .replace(/\{IsSelected}/g, IsSelected);
+
+                            $("#sortable").append(htmlContent);
+                        }
+
+                        $("input[name^=SocialType_]").bind("click", function(){
+                            var socialType = $(this).attr("name").replace("SocialType_", "");
+                            saveMemberShipSocialSet(socialType,  $(this).prop("checked"));
+                        });
+                        //$("input[id$=IsNeedValue]").bind("click", function(){
+                        //    var col_name = $(this).attr("id").replace("IsNeedValue", "");
+                        //    saveMemberShipColumnSet(col_name, $("#"+col_name+"IsOpen").prop("checked"), $("#"+col_name+"IsNeedValue").prop("checked"));
+                        //});
+
+                        //$("input[name$=_Options]").bind("click", function(){
+                        //    var col_name = $(this).attr("name").replace("_Options", "");
+                        //    var option_value = $(this).val();
+                        //    saveMemberShipColumnOptionSet(col_name, option_value);
+                        //});
+                    }
+                },
+                fail: function () {
+                    console.log("refresh fail ");
+                }
+            });
+        }
+        function setRegTypeForms(regType)
+        {
+            if(regType == "@((int)WorkV3.Areas.Backend.Models.MemberShipRegType.All)")
+            {
+                $(".Social").show();
+                $(".WebAccount").show();
+            }
+            else if(regType == "@((int)WorkV3.Areas.Backend.Models.MemberShipRegType.Social)")
+            {
+                $(".Social").show();
+                $(".WebAccount").hide();
+            }
+            else
+            {
+                $(".Social").hide();
+                $(".WebAccount").show();
+            }
+    }
+        function setVerifyTypeForms(verifyType)
+        {
+            if(verifyType == "@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.Email)")
+            {
+                $("#EmailIsOpen").prop("checked", true);
+                $("#EmailIsNeedValue").prop("checked", true);
+            }
+            if(verifyType == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile)")
+            {
+                $("#MobileIsOpen").prop("checked", true);
+                $("#MobileIsNeedValue").prop("checked", true);
+            }
+        }
+        function setLoginTypeForms(loginType)
+        {
+            if(loginType == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Email)")
+            {
+                $("#EmailIsOpen").prop("checked", true);
+                $("#EmailIsNeedValue").prop("checked", true);
+            }
+            if(loginType == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile)")
+            {
+                $("#MobileIsOpen").prop("checked", true);
+                $("#MobileIsNeedValue").prop("checked", true);
+            }
+            if(loginType == "@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.ID)")
+            {
+                $("#IDCardIsOpen").prop("checked", true);
+                $("#IDCardIsNeedValue").prop("checked", true);
+            }
+        }
+    </script>
+}
+
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide @(selectIndex == "1"?"selected":"")"><i class="cc cc-clipboard-outline"></i>註冊資訊</div>
+            <div class="swiper-slide @(selectIndex == "2"?"selected":"")"><i class="cc cc-user-o"></i>主頁設定</div>
+            <div class="swiper-slide @(selectIndex == "3"?"selected":"")"><i class="cc cc-business-users"></i>身分</div>
+            <div class="swiper-slide @(selectIndex == "4"?"selected":"")"><i class="cc cc-star-circle"></i>喜好</div>
+            <div class="swiper-slide @(selectIndex == "5"?"selected":"")"><i class="cc cc-tutorial-o"></i>會員條款</div>
+            <div class="swiper-slide @(selectIndex == "6"?"selected":"")"><i class="cc cc-email"></i>通知信</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content" onload="$('#onload').click()">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide p-T-10">
+                <h2 class="title-admin-page p-B-6 m-B-6 border-B">註冊資訊</h2>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">註冊開放</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input class="with-gap" name="IsOpenReg" type="radio" id="IsOpenReg_True" checked="checked" value="true">
+                                    <label for="IsOpenReg_True">開放註冊</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="IsOpenReg" type="radio" id="IsOpenReg_False" value="false">
+                                    <label for="IsOpenReg_False">禁止註冊(關閉會員模組)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="OpenReg">
+                        <div class="col-1">
+                            <div class="title inline">註冊方式</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input class="with-gap" name="RegType" type="radio" id="RegType_@WorkV3.Areas.Backend.Models.MemberShipRegType.All" value="@((int)WorkV3.Areas.Backend.Models.MemberShipRegType.All)">
+                                    <label for="RegType_@WorkV3.Areas.Backend.Models.MemberShipRegType.All">社群登入+帳密註冊</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="RegType" type="radio" id="RegType_@WorkV3.Areas.Backend.Models.MemberShipRegType.Social" value="@((int)WorkV3.Areas.Backend.Models.MemberShipRegType.Social)">
+                                    <label for="RegType_@WorkV3.Areas.Backend.Models.MemberShipRegType.Social">僅以社群登入</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="RegType" type="radio" id="RegType_@WorkV3.Areas.Backend.Models.MemberShipRegType.WebAccount" value="@((int)WorkV3.Areas.Backend.Models.MemberShipRegType.WebAccount)">
+                                    <label for="RegType_@WorkV3.Areas.Backend.Models.MemberShipRegType.WebAccount">僅以帳密註冊</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="OpenReg">
+                        <div class="col-1">
+                            <div class="title inline">驗證方式</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input class="with-gap" name="VerifyType" type="radio" id="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.Email" value="@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.Email)">
+                                    <label for="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.Email">Email 驗證</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="VerifyType" type="radio" id="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.Mobile" value="@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.Mobile)">
+                                    <label for="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.Mobile">手機驗證</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="VerifyType" type="radio" id="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.AdminReview" value="@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.AdminReview)">
+                                    <label for="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.AdminReview">後台審核驗證</label>
+                                </div>
+                                <div>
+                                    <input class="with-gap" name="VerifyType" type="radio" id="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.None" value="@((int)WorkV3.Areas.Backend.Models.MemberShipVerifyType.None)">
+                                    <label for="VerifyType_@WorkV3.Areas.Backend.Models.MemberShipVerifyType.None">無須驗證</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="OpenReg Social">
+                        <div class="col-1">
+                            <div class="title inline">社群登入</div>
+                            <div id="sortable" class="radio-box inline full"></div>
+                        </div>
+                    </li>
+                    <li class="OpenReg WebAccount">
+                        <div class="col-1">
+                            <div class="title inline">登入方式</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input name="LoginType" type="checkbox" id="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.InputAccount" value="@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.InputAccount)">
+                                    <label for="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.InputAccount">可自行輸入帳號登入</label>
+                                </div>
+                                <div>
+                                    <input name="LoginType" type="checkbox" id="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.Email" value="@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Email)">
+                                    <label for="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.Email">可以Email登入</label>
+                                </div>
+                                <div>
+                                    <input name="LoginType" type="checkbox" id="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile" value="@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile)">
+                                    <label for="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.Mobile">可以手機登入</label>
+                                </div>
+                                <div>
+                                    <input name="LoginType" type="checkbox" id="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.ID" value="@((int)WorkV3.Areas.Backend.Models.MemberShipLoginType.ID)">
+                                    <label for="LoginType_@WorkV3.Areas.Backend.Models.MemberShipLoginType.ID">可以身份證字號登入</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="OpenReg WebAccount">
+                        <div class="col-2">
+                            <div class="title inline">會員欄位</div>
+                            <div class="radio-box inline full member-info"></div>
+                        </div>
+                    </li>
+                    <li class="OpenReg WebAccount">
+                        <div class="col-1">
+                            <div class="title inline">註冊頁設定</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input type="checkbox" id="IsNeedAgreeMemberDesc" name="IsNeedAgreeMemberDesc" />
+                                    <label for="IsNeedAgreeMemberDesc">須同意會員條款</label>
+                                    <a class="btn-grey-darken-4-o transparent square slideto tooltip-info" data-slideto="4" title="編輯會員條款" href="#會員條款"><i class="cc cc-edit-o"></i></a>
+                                    <div class="alert inline transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            若此項不勾選，使用者在前台註冊時，不顯示也不用同意會員條款，即可送出申請。
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="IsNeedVerifyCode" name="IsNeedVerifyCode" />
+                                    <label for="IsNeedVerifyCode">使用驗證碼</label>
+                                    <div class="alert inline transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            為了防範駭客機器人攻擊，填表時必須輸入正確驗證碼，才能提交本表單。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="OpenReg WebAccount">
+                        <div class="col-1">
+                            <div class="title inline">通知管理員</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input type="checkbox" id="IsAutoEmail" name="IsAutoEmail" />
+                                    <label for="IsAutoEmail">註冊時自動通知</label>
+                                    <div class="alert inline transparent">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            有人送出會員註冊申請時，會自動通知以下管理員的Email信箱。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="chips inline">
+                                    <div id="divManagers"></div>
+                                    <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choicePoster" title="選擇管理員"><i class="cc cc-plus"></i></a>
+                                    <ul id="choicePoster" class="dropdown-content customContent large closeOnClick">
+                                        <li>
+                                            <iframe class="dropdownIframe" src="@Url.Action("SetEmailManagers", "MemberShipSetting", new { SiteID=siteId})" frameborder="0"></iframe>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">加入好友設定</div>
+                            <div class="radio-box inline full">
+                                <div>
+                                    <input type="checkbox" id="AddFriend-qrCode" name="AddFriend" value="@((int)WorkV3.Areas.Backend.Models.MemberShipAddFriend.QRcode)">
+                                    <label for="AddFriend-qrCode">APP 開放 QRcode掃描加好友</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="AddFriend-invite" name="AddFriend" value="@((int)WorkV3.Areas.Backend.Models.MemberShipAddFriend.Invite)">
+                                    <label for="AddFriend-invite">開放線上邀請加好友</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="AddFriend-system" name="AddFriend" value="@((int)WorkV3.Areas.Backend.Models.MemberShipAddFriend.System)">
+                                    <label for="AddFriend-system">開放系統推薦加好友</label>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="swiper-slide p-T-10">
+                <h2 class="title-admin-page p-B-6 m-B-6 border-B">主頁設定</h2>
+                <ul class="forms">
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">主選單</div>
+                            <div class="radio-box inline full memberMenu"></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">次選單</div>
+                            <div class="radio-box inline full memberSubMenu"></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">主頁區塊</div>
+                            <div class="radio-box inline full DesktopCard"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="swiper-slide p-T-10">
+                <table class="fixTable" style="padding: 0px;" id="listTable">
+                    <caption>
+                        身分
+                        <div class="float-R">
+                            <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Html.Raw(Url.Action("Edit", "MemberShipSetting", new { siteId = siteId, menuId = menuId }))" title="新增"><i class="cc cc-plus"></i></a>
+                            @*<a class="btn-grey-o square tooltip-info tooltipstered" href="javascript:"><i class="cc cc-sort"></i></a>*@
+                            @*<a class="btn-grey-darken-4-o square tooltip-info openEdit-m tooltipstered" href="<%= SysHelp.GetURL() %>Views/Cards/Member/BackEnd/member-edit.aspx"><i class="cc cc-plus"></i></a>*@
+                            @*<a class="btn-grey-o square tooltip-info btn-del tooltipstered" href="javascript:"><i class="cc cc-trash-o"></i></a>*@
+                            <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                            @*<a class="btn-grey-o" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o data-del" href="javascript:"><i class="cc cc-check"></i>確定</a>*@
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>代表圖</th>
+                            <th>身份名稱</th>
+                            <th>說明</th>
+                            <th>會期長度</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (cateListIdentity != null)
+                        {
+                            for (int i = 0, len = cateListIdentity.Count(); i < len; ++i)
+                            {
+                                CategoryModels item = cateListIdentity.ElementAt(i);
+                                <tr data-id="@item.ID">
+                                    <td class="sort">@(i + 1)</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.Image))
+                                        {
+                                            <img src="@(uploadUrl + Server.UrlPathEncode(item.Image))" />
+                                        }
+                                    </td>
+                                    <td class="text-L">@item.Title</td>
+                                    <td class="description text-L">@Html.Raw(item.RemarkText)</td>
+                                    <td>
+                                        @switch (item.MemberSession)
+                                        {
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.一日期:
+                                                @:一日期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.一週期:
+                                                @:一週期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.雙週期:
+                                                @:雙週期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.一月期:
+                                                @:一月期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.雙月期:
+                                                @:雙月期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.一季期:
+                                                @:一季期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.四月期:
+                                                @:四月期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.半年期:
+                                                @:半年期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.一年期:
+                                                @:一年期
+                                                break;
+                                            case (int)WorkV3.Areas.Backend.Models.DataAccess.MemberSession.不限制:
+                                                @:不限制
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="icon">
+                                        <a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.ShowStatus ? "cc-eye" : "cc-eye-off font-red")"></i></a>
+                                    </td>
+                                    <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("Edit", "MemberShipSetting", new { ID = item.ID , siteId = siteId, menuId = menuId })"><i class="cc cc-edit-o"></i></a></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+                @*<div class="control-bar absolute">
+                        <div class="bar-item float-L">
+                            <div class="">
+                                <input type="checkbox" id="published" />
+                                <label for="published">加入其他選項</label>
+                            </div>
+                        </div>
+                        <a class="btn-none" href="javascript:">&nbsp;</a>
+                    </div>*@
+            </div>
+            <div class="swiper-slide p-T-10 ">
+                <table class="fixTable" style="padding: 0px;" id="listTable2">
+                    <caption>
+                        喜好
+                        <div class="float-R">
+                            <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Html.Raw(Url.Action("FavorityEdit", "MemberShipSetting", new { siteId = siteId, menuId = menuId }))" title="新增"><i class="cc cc-plus"></i></a>
+                            @*<a class="btn-grey-o square tooltip-info tooltipstered" href="javascript:"><i class="cc cc-sort"></i></a>*@
+                            @*<a class="btn-grey-darken-4-o square tooltip-info openEdit-m tooltipstered" href="<%= SysHelp.GetURL() %>Views/Cards/Member/BackEnd/member-edit.aspx"><i class="cc cc-plus"></i></a>*@
+                            @*<a class="btn-grey-o square tooltip-info btn-del tooltipstered" href="javascript:"><i class="cc cc-trash-o"></i></a>*@
+                            <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                            @*<a class="btn-grey-o" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o data-del" href="javascript:"><i class="cc cc-check"></i>確定</a>*@
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>代表圖</th>
+                            <th>喜好名稱</th>
+                            <th>說明</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (cateListFavoity != null)
+                        {
+                            for (int i = 0, len = cateListFavoity.Count(); i < len; ++i)
+                            {
+                                CategoryModels item = cateListFavoity.ElementAt(i);
+                                <tr data-id="@item.ID">
+                                    <td class="sort">@(i + 1)</td>
+                                    <td>
+                                        <div>
+                                            @if (!string.IsNullOrEmpty(item.Icon))
+                                            {
+                                                <img src="@(ViewBag.UploadVPath + Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Icon).Img)" />
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-L">@item.Title</td>
+                                    <td class="description text-L">@Html.Raw(item.RemarkText)</td>
+                                    <td class="icon">
+                                        <a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.ShowStatus ? "cc-eye" : "cc-eye-off font-red")"></i></a>
+                                    </td>
+
+                                    <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openRight" href="@Url.Action("FavorityEdit", "MemberShipSetting", new { ID = item.ID , siteId = siteId, menuId = menuId })"><i class="cc cc-edit-o"></i></a></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="swiper-slide p-T-10">
+                <h2 class="title-admin-page bg-transparent p-B-8 m-B-8 border-B">會員條款</h2>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="line">
+                                <div class="input-field">
+                                    <textarea class=" editor-txt" contenteditable="true" id="StatementContent" name="StatementContent">
+                                        請填入會員條款
+                                    </textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="control-bar absolute">
+                    <form action="@Url.Action("SetAgreeStatement", "MemberShipSet")" id="formEdit">
+                        <div class="bar-item float-L">
+                            <div>
+                                <div class="d-inline-block">
+                                    <input name="IsNeedAgree" type="checkbox" id="IsNeedAgree" checked="checked" value="true" />
+                                    <label for="IsNeedAgree">須同意會員條款</label>
+                                </div>
+                                <span class="alert inline transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>若此項不勾選，使用者在前台註冊時，不顯示也不用同意會員條款，即可送出申請。</div>
+                                </span>
+                            </div>
+                        </div>
+                        @*<a class="btn-cancel" href="javascript:" id="btnCancelStatement"><i class="cc cc-close"></i>取消</a>*@
+                        <a class="btn-bulid" href="javascript:" id="btnSaveStatement"><i class="cc cc-check"></i>儲存</a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="swiper-slide p-T-10">
+                <!--<h2 class="title-admin-page bg-transparent p-B-8 m-B-8 border-B">註冊通知信</h2>-->
+                <form id="editMailTemplate">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">範本<span class="required">*</span></div>
+                                <div class="input-field select_letter_type inline">
+                                    <select id="mailTemplateName" name="mailTemplateName">
+                                        <option value="Notice">會員通知信</option>
+                                        <option value="Regist">註冊啟用驗證信</option>
+                                        <option value="RegistResult">註冊結果通知信</option>
+                                        <option value="Forget">忘記密碼通知信</option>
+                                        <option value="ChangeEmail">Email變更通知信</option>
+                                        <option value="ChangePWD">密碼變更通知信</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <ul class="forms letter-forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">主旨<span class="required">*</span></div>
+                                <div class="input-field inline full">
+                                    <input id="mailTitle" name="mailTitle" type="text" value="" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">內文<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <textarea class=" editor-txt validate[required]" contenteditable="true" id="mailContent" name="mailContent"></textarea>
+                                </div>
+                            </div>
+                        </li>
+                        <li style="display:none">
+                            <div class="col-1">
+                                <div class="title inline">寄件人<span class="required"></span></div>
+                                <div class="input-field inline">
+                                    <input type="text" value="" id="mailFromName" name="mailFromName">
+                                </div>
+                            </div>
+                        </li>
+                        <li style="display:none">
+                            <div class="col-1">
+                                <div class="title inline">寄件人Email<span class="required"></span></div>
+                                <div class="input-field inline full">
+                                    <input type="text" value="" id="mailFromAddress" name="mailFromAddress" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">附件<span class="required">*</span></div>
+                                @*<div class="input-field inline full multiple no-label">
+                                                            <div class="fileuploader fileuploader-theme-dragdrop"><input type="hidden" name="fileuploader-list-FilesMultiple" value="[&quot;0:/1380353325-1461427765.jpg&quot;,&quot;0:/a6.jpg&quot;,&quot;0:/article-58bcbbe.jpg&quot;,&quot;0:/DSC03608-1-1170x781.jpg&quot;]"><input type="file" name="FilesMultiple[]" multiple="multiple" style="position: absolute; z-index: -9999; height: 0px; width: 0px; padding: 0px; margin: 0px; line-height: 0; outline: 0px; border: 0px; opacity: 0;"><div class="fileuploader-input"><div class="fileuploader-input-inner"><i class="cc cc-cloud-upload-o"></i><h3 class="fileuploader-input-caption"><span>4  files were chosen</span></h3><p>or</p><div class="fileuploader-input-button"><span>Browse Files</span></div></div></div><div class="fileuploader-items"><ul class="fileuploader-items-list ui-sortable"><li class="fileuploader-item file-type-image file-ext-jpg"><div class="columns"><div class="column-thumbnail"><div class="fileuploader-item-image"><canvas height="36" width="36"></canvas></div></div><div class="column-title"><div class="title-name" title="1380353325-1461427765.jpg">1380353325-1461427765.jpg</div><span>10.5 KB</span></div><div class="column-actions"><a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip tooltipstered ui-sortable-handle"><i class="cc cc-drag"></i></a><a href="[object File]" class="btn-download square transparent fileuploader-action-download tooltip tooltipstered"><i class="cc cc-download"></i></a><a href="&lt;%= SysHelp.GetURL() %&gt;Views/Share/BackEnd/fileTextEdit.aspx" class="btn-grey-o square transparent fileuploader-action-rename tooltip openfileEdit tooltipstered cboxElement"><i class="cc cc-edit-o"></i></a><a class="btn-del square transparent fileuploader-action-remove tooltip tooltipstered" href="javascript:"><i class="cc cc-close"></i></a></div></div><div class="progress-bar2"><span></span></div></li><li class="fileuploader-item file-type-image file-ext-jpg"><div class="columns"><div class="column-thumbnail"><div class="fileuploader-item-image"><canvas height="36" width="36"></canvas></div></div><div class="column-title"><div class="title-name" title="a6.jpg">a6.jpg</div><span>3.74 KB</span></div><div class="column-actions"><a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip tooltipstered"><i class="cc cc-drag"></i></a><a href="[object File]" class="btn-download square transparent fileuploader-action-download tooltip tooltipstered"><i class="cc cc-download"></i></a><a href="&lt;%= SysHelp.GetURL() %&gt;Views/Share/BackEnd/fileTextEdit.aspx" class="btn-grey-o square transparent fileuploader-action-rename tooltip openfileEdit tooltipstered cboxElement"><i class="cc cc-edit-o"></i></a><a class="btn-del square transparent fileuploader-action-remove tooltip tooltipstered" href="javascript:"><i class="cc cc-close"></i></a></div></div><div class="progress-bar2"><span></span></div></li><li class="fileuploader-item file-type-image file-ext-jpg"><div class="columns"><div class="column-thumbnail"><div class="fileuploader-item-image"><canvas height="36" width="36"></canvas></div></div><div class="column-title"><div class="title-name" title="article-58bcbbe.jpg">article-58bcbbe.jpg</div><span>2.51 KB</span></div><div class="column-actions"><a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip tooltipstered"><i class="cc cc-drag"></i></a><a href="[object File]" class="btn-download square transparent fileuploader-action-download tooltip tooltipstered"><i class="cc cc-download"></i></a><a href="&lt;%= SysHelp.GetURL() %&gt;Views/Share/BackEnd/fileTextEdit.aspx" class="btn-grey-o square transparent fileuploader-action-rename tooltip openfileEdit tooltipstered cboxElement"><i class="cc cc-edit-o"></i></a><a class="btn-del square transparent fileuploader-action-remove tooltip tooltipstered" href="javascript:"><i class="cc cc-close"></i></a></div></div><div class="progress-bar2"><span></span></div></li><li class="fileuploader-item file-type-image file-ext-jpg"><div class="columns"><div class="column-thumbnail"><div class="fileuploader-item-image"><canvas height="36" width="36"></canvas></div></div><div class="column-title"><div class="title-name" title="DSC03608-1-1170x781.jpg">DSC03608-1-1170x781.jpg</div><span>57.9 KB</span></div><div class="column-actions"><a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip tooltipstered"><i class="cc cc-drag"></i></a><a href="[object File]" class="btn-download square transparent fileuploader-action-download tooltip tooltipstered"><i class="cc cc-download"></i></a><a href="&lt;%= SysHelp.GetURL() %&gt;Views/Share/BackEnd/fileTextEdit.aspx" class="btn-grey-o square transparent fileuploader-action-rename tooltip openfileEdit tooltipstered cboxElement"><i class="cc cc-edit-o"></i></a><a class="btn-del square transparent fileuploader-action-remove tooltip tooltipstered" href="javascript:"><i class="cc cc-close"></i></a></div></div><div class="progress-bar2"><span></span></div></li></ul></div></div>
+
+                                                            <!-- <script src="http://demo.kidtech.com.tw/demo/CCWorkV3/script/fileuploader/jquery.fileuploader.js"></script> -->
+                                                            <!-- <script type="text/JavaScript">
+                                        $(function(){
+                                            $('input[name="FilesMultiple"]').fileuploader({
+                                            changeInput: '<div class="fileuploader-input">' +
+                                                              '<div class="fileuploader-input-inner">' +
+                                                                  '<i class="cc cc-cloud-upload-o"></i>' +
+                                                                  '<h3 class="fileuploader-input-caption"><span>Drag and drop files here</span></h3>' +
+                                                                  '<p>or</p>' +
+                                                                  '<div class="fileuploader-input-button"><span>Browse Files</span></div>' +
+                                                              '</div>' +
+                                                          '</div>',
+                                                theme: 'dragdrop',
+                                                thumbnails: {
+                                                item: '<li class="fileuploader-item">' +
+                                                           '<div class="columns">' +
+                                                               '<div class="column-thumbnail">${image}</div>' +
+                                                               '<div class="column-title">' +
+                                                                   '<div class="title-name" title="${name}">${name}</div>' +
+                                                                   '<span>${size2}</span>' +
+                                                               '</div>' +
+                                                               '<div class="column-actions">' +
+                                                                    '<a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip" title="排序"><i class="cc cc-drag"></i></a>' +
+                                                                    '<a href="${file}" class="btn-download square transparent fileuploader-action-download tooltip" title="下載"><i class="cc cc-download"></i></a>' +
+                                                                    '<a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Share/BackEnd/fileTextEdit.aspx" class="btn-grey-o square transparent fileuploader-action-rename tooltip openfileEdit" title="重新命名"><i class="cc cc-edit-o"></i></a>' +
+                                                                    '<a class="btn-del square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                                                               '</div>' +
+                                                           '</div>' +
+                                                           '<div class="progress-bar2">${progressBar}<span></span></div>' +
+                                                       '</li>',
+                                                    item2: '<li class="fileuploader-item">' +
+                                                                '<div class="columns">' +
+                                                                    '<a href="${file}" target="_blank">' +
+                                                                        '<div class="column-thumbnail">${image}</div>' +
+                                                                        '<div class="column-title">' +
+                                                                            '<div class="title-name" title="${name}">${name}</div>' +
+                                                                            '<span>${size2}</span>' +
+                                                                        '</div>' +
+                                                                    '</a>' +
+                                                                    '<div class="column-actions">' +
+                                                                        '<a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip" title="排序"><i class="cc cc-drag"></i></a>' +
+                                                                        '<a href="${file}" class="btn-download square transparent fileuploader-action-download tooltip" title="下載"><i class="cc cc-download"></i></a>' +
+                                                                        '<a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Share/BackEnd/fileTextEdit.aspx" class="btn-grey-o square transparent fileuploader-action-rename tooltip openfileEdit" title="重新命名"><i class="cc cc-edit-o"></i></a>' +
+                                                                        '<a class="btn-del square transparent fileuploader-action-remove tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>' +
+                                                                    '</div>' +
+                                                                '</div>' +
+                                                            '</li>',
+                                                    onItemShow: function(item, listEl) {
+                                                        $('.tooltip').tooltipster({
+                                                        maxWidth: 100,
+                                                        });
+                                                        $('.openfileEdit').colorbox({
+                                                        width: "70%",
+                                                            height: "160",
+                                                            transition: false,
+                                                            maxWidth: "70%",
+                                                            maxHeight: "50%",
+                                                            opacity: 0,
+                                                            right: "20",
+                                                            bottom: "100",
+                                                            iframe: true,
+                                                            // speed: 0,
+                                                            fadeOut: 300,
+                                                            fixed: true
+                                                        });
+                                                        $( ".fileuploader-items-list" ).sortable({
+                                                        handle: ".btn-sort",
+                                                            helper: "clone",
+                                                            appendTo: "body"
+                                                        });
+                                                        $( ".fileuploader-items-list" ).disableSelection();
+                                                }
+                                            }
+                                        });
+                                        });
+                                    </script> -->
+
+                                                        </div>*@
+                                <div class="input-field inline full multiple">
+                                    <input type="file" id="fFile" name="fFile" data-field="FileList" />
+                                    <div class="fileuploader-items">
+                                        <ul class="fileuploader-items-list" id="FileUploadList"></ul>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1" id="divCodeNotice" style="display:none">
+                                <div class="title">代碼說明</div>
+                                <div class="input-field font-grey font-xs">
+                                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱
+                                    <br />
+                                    <span class="font-grey font-darken-3">GetEmail：</span>我已收到通知信
+                                    <br />
+                                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                                    <br />
+                                </div>
+                            </div>
+                            <div class="col-1" id="divCodeRegist" style="display:none">
+                                <div class="title">代碼說明</div>
+                                <div class="input-field font-grey font-xs">
+                                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱
+                                    <br />
+                                    <span class="font-grey font-darken-3">StartLink：</span>點擊啟用帳號的連結
+                                    <br />
+                                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                                    <br />
+                                </div>
+                            </div>
+                            <div class="col-1" id="divCodeRegistResult" style="display:none">
+                                <div class="title">代碼說明</div>
+                                <div class="input-field font-grey font-xs">
+                                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱
+                                    <br />
+                                    <span class="font-grey font-darken-3">RegStatus：</span>申請狀態 (待審核、通過、退回、停權)
+                                    <br />
+                                    <span class="font-grey font-darken-3">RegReason：</span>審核說明、備註、退回或停權原因
+                                    <br />
+                                    <span class="font-grey font-darken-3">GetEmail：</span>我已收到通知信
+                                    <br />
+                                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                                    <br />
+                                </div>
+                            </div>
+                            <div class="col-1" id="divCodeForget" style="display:none">
+                                <div class="title">代碼說明</div>
+                                <div class="input-field font-grey font-xs">
+                                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱
+                                    <br />
+                                    <span class="font-grey font-darken-3">ChangeLink：</span>點擊連結回到網站，修改資料
+                                    <br />
+                                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                                    <br />
+                                </div>
+                            </div>
+                            <div class="col-1" id="divCodeForget" style="display:none">
+                                <div class="title">代碼說明</div>
+                                <div class="input-field font-grey font-xs">
+                                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱
+                                    <br />
+                                    <span class="font-grey font-darken-3">ChangeEmail：</span>點擊連結回到網站，修改資料
+                                    <br />
+                                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                                    <br />
+                                </div>
+                            </div>
+                            <div class="col-1" id="divCodeChangePWD" style="display:none">
+                                <div class="title">代碼說明</div>
+                                <div class="input-field font-grey font-xs">
+                                    <span class="font-grey font-darken-3">WebsiteName：</span>網站名稱
+                                    <br />
+                                    <span class="font-grey font-darken-3">ChangeEmail：</span>點擊連結回到網站，修改資料
+                                    <br />
+                                    <span class="font-grey font-darken-3">SendDate：</span>通知信寄送日期
+                                    <br />
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div class="control-bar absolute">
+                        <a class="btn-grey openEdit" href="" id="aTryMail"><i class="cc cc-email"></i>測試發送</a>
+                        @*<a class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>*@
+                        <a class="btn-bulid" href="javascript:" id="btnSaveTemplate"><i class="cc cc-check"></i>儲存</a>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+    .justify-space-between {
+        justify-content: space-between;
+    }
+
+        .justify-space-between:after {
+            display: none;
+        }
+</style>
+<script type="text/javascript">
+
+
+    $(function() {
+        $('.dropdown-button').dropdown({
+            constrainWidth: false,
+            stopPropagation: true
+        });
+        $('.dropdown-content.closeOnClick').on('click', function(e) {
+            e.stopPropagation();
+        });
+        loadStatement();
+        $('#btnSaveStatement').on('click', function(e) {
+            saveStatement();
+        });
+        //loadMailTemplate();
+        //console.log($("#mailTemplateName").val());
+        loadMailTemplate($("#mailTemplateName").val());
+        $('#btnSaveTemplate').on('click', function(e) {
+            saveMailTemplate();
+        });
+        $("#sortable").sortable({
+            stop: function( event, ui ) {
+                var formData = new FormData();
+                formData.append("SiteID",  "@siteId");
+                formData.append("SocialType", $(ui.item).attr("data-column"));
+                formData.append("newSortIndex", ($(ui.item).index()+1));
+                $.ajax({
+                    url: "@Url.Action("UpdateMemberShipSocialSort", "MemberShipSetting")",
+                    data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        if (data!= null) {
+                            //Component.alert('資料已儲存', function () {
+                            //});
+                        }
+                    },
+                    fail: function () {
+                        console.log("save fail ");
+                    }
+               });
+            }
+        });
+        $("#sortable").disableSelection();
+        $(".member-info").sortable({
+            stop: function( event, ui ) {
+                var formData = new FormData();
+                formData.append("SiteID",  "@siteId");
+                formData.append("ColumnName", $(ui.item).attr("data-column"));
+                formData.append("newSortIndex", ($(ui.item).index()+1));
+                $.ajax({
+                    url: "@Url.Action("UpdateMemberShipColumnSort", "MemberShipSetting")",
+                    data: formData,
+                type: "POST",
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                async: false,
+                success: function (data) {
+                    if (data!= null) {
+                        //Component.alert('資料已儲存', function () {
+                        //});
+                    }
+                },
+                fail: function () {
+                    console.log("save fail ");
+                }
+            });
+            }
+        });
+        $(".member-info").disableSelection();
+
+        $('.memberMenu').sortable({
+            stop: function( event, ui ) {
+                $.post('@Url.Action("UpdateMemberShipPageSort", "MemberShipSetting")', { 'SiteID': '@siteId', 'PageSN': $(ui.item).attr("data-column"), 'Type': 'memberMenu' , 'newSortIndex': ($(ui.item).index()+1) });
+            }
+        });
+        $(".memberMenu").disableSelection();
+
+        $('.memberSubMenu').sortable({
+            stop: function( event, ui ) {
+                $.post('@Url.Action("UpdateMemberShipPageSort", "MemberShipSetting")', { 'SiteID': '@siteId', 'PageSN': $(ui.item).attr("data-column"), 'Type': 'memberSubMenu' , 'newSortIndex': ($(ui.item).index()+1) });
+            }
+        });
+        $(".memberSubMenu").disableSelection();
+
+        $('.DesktopCard').sortable({
+            stop: function( event, ui ) {
+                $.post('@Url.Action("UpdateMemberShipPageSort", "MemberShipSetting")', { 'SiteID': '@siteId', 'PageSN': $(ui.item).attr("data-column"), 'Type': 'DesktopCard' , 'newSortIndex': ($(ui.item).index()+1) });
+            }
+        });
+        $(".DesktopCard").disableSelection();
+
+
+        /*select mail*/
+        var _seletc_mail = $('.select_letter_type input.select-dropdown');
+        if (_seletc_mail.length > 0) {
+            _seletc_mail.siblings('select').change(function() {
+                //$('.letter-forms').stop().hide();
+                //$("#" + $(this).val()).fadeIn();
+                //console.log(_seletc_mail);
+                //console.log($("#mailTemplateName").val());
+                loadMailTemplate($("#mailTemplateName").val());
+            });
+        }
+        //$('.letter-forms').hide().eq(0).show();
+        if(selectIndex == 4)
+        {
+            $(".swiper-tab-bar").children("div").children(".swiper-slide").eq(3).trigger("click");
+        }
+        if(selectIndex == 3)
+        {
+            $(".swiper-tab-bar").children("div").children(".swiper-slide").eq(2).trigger("click");
+        }
+
+    });
+    function checkEmail(field) {
+        var v = $.trim(field.val());
+        if (v) {
+            var emails = v.split(';');
+            for (var i = 0, len = emails.length; i < len; ++i) {
+                var email = $.trim(emails[i]);
+                if (email && !/^(\w)+(\.\w+)*@@(\w)+((\.\w+)+)$/.test(email))
+                    return '* Email 格式不正確';
+            }
+        }
+    }
+    function ShowFileList(files)
+    {
+        var fileUploadList = $("#FileUploadList");
+        $(fileUploadList).html("");
+        if (files && files.length) {
+            for (var i = 0, len = files.length; i < len; ++i) {
+                var f = files[i];
+                //console.log(f);
+                var index = f.FileInfo.indexOf('.');
+                var m = f.FileInfo.match(/\.([^\.]+)$/);
+                var extension = (m ? m[1] : '');
+                var filename = f.ShowName;
+                if(filename == null || filename == "")
+                    filename = f.FileInfo.Substring(index + 1);
+                var htmlContent = '<li class="fileuploader-item file-type-application file-ext-'+extension+' upload-successful" >'+
+                                    '<div class="columns">'+
+                                    '<div class="column-thumbnail">'+
+                                    '<div class="fileuploader-item-image fileupload-no-thumbnail">'+
+                                    '<div style="background-color: #f23c0f" class="fileuploader-item-icon">'+
+                                    '<i>'+extension+'</i></div></div></div>'+
+                                    '<div class="column-title">'+
+                                    '<div class="title-name" title="'+filename+'" id="success_file_title_'+i.toString()+'">'+filename+
+                                    '</div>'+
+                                    '<span>'+f.FileSizeDesc+'</span></div>'+
+                                    '<div class="column-actions">'+
+                                    '<a href="javascript:" class="btn-sort square transparent fileuploader-action-sort tooltip tooltipstered ui-sortable-handle"><i class="cc cc-drag"></i></a>'+
+                                    '<a target="_blank" href="@uploadUrl'+f.FileInfo+'" class="btn-download square transparent fileuploader-action-download tooltip tooltipstered"><i class="cc cc-download"></i></a>'+
+                                    '<a href="'+editSuccessFileTextControllerUrl+"&index="+i.toString()+'" class="btn-grey-o square transparent fileuploader-action-rename tooltip custom_openfileEdit tooltipstered"><i class="cc cc-edit-o"></i></a>'+
+                                    '<a class="btn-del square transparent fileuploader-action-remove tooltip tooltipstered" href="javascript:"><i class="cc cc-close"></i></a>'+
+                                    '</div><input type="hidden" value=\''+JSON.stringify(f)+'\' id="success_file_'+i.toString()+'"/></li>';
+                $(fileUploadList).append(htmlContent);
+                successUploadFiles.push(f);
+                //fileList.push({ name: f.ShowName ? f.ShowName + '.' + extension : f.FileInfo, file: browserUrl + '/' + f.FileInfo, type: f.FileMimeType, size: f.FileSize || 0 });
+
+            }
+            $(".custom_openfileEdit").click(function (e) {
+                e.preventDefault();
+                $.colorbox({
+                    href: this.href,
+                    width: "70%",
+                    height: "160",
+                    transition: false,
+                    maxWidth: "70%",
+                    maxHeight: "50%",
+                    opacity: 0,
+                    right: "20",
+                    bottom: "100",
+                    iframe: true,
+                    fadeOut: 300,
+                    fixed: true
+                });
+            });
+        }
+        @*<ul class="fileuploader-items-list">
+                        @foreach (ResourceFilesModels item in items) {
+                            int index = item.FileInfo.LastIndexOf('.');
+                            string extension = index == -1 ? string.Empty : item.FileInfo.Substring(index + 1);
+                            string name = string.IsNullOrWhiteSpace(item.ShowName) ? item.FileInfo : item.ShowName;
+                        <li class="fileuploader-item">
+                            <div class="columns">
+                                <div class="column-thumbnail">
+                                    <div class="fileuploader-item-image fileupload-no-thumbnail">
+                                        <div style="background-color: #f23c0f" class="fileuploader-item-icon">
+                                            <i>@extension</i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column-title">
+                                    <div class="title-name" title="@name">@name</div>
+                                    <span>@item.GetSizeDesc()</span>
+                                </div>
+                            </div>
+                        </li>
+        }
+                        <div class="actions-holder" data-match="file">
+                            <div class="click-bg openEdit-m"></div>
+                            <a class="btn-white-o square transparent fileuploader-action-text tooltip openEdit-m matchItem" title="編輯" href="@Url.Action("FileEdit", "Common", siteQuery)"><i class="cc cc-edit-o"></i></a>
+                            <a class="btn-del btn-white-o square transparent fileuploader-action-remove img-del delMatch tooltip" title="刪除" href="javascript:"><i class="cc cc-close"></i></a>
+                        </div>
+                    </ul>*@
+    }
+    function getSuccessFileItem(i) {
+        return $.parseJSON($("input[type=hidden][id=success_file_"+i+"]").val());
+    }
+    function setSuccessFileItem(fileItem, i) {
+        $("#success_file_title_"+i ).html(fileItem.ShowName);
+        $("input[type=hidden][id=success_file_"+i+"]").val(JSON.stringify(fileItem));
+    }
+    function loadSelectManagers()
+    {
+        var formData = new FormData();
+        formData.append("SiteID",  "@siteId");
+        $.ajax({
+            url: "@Url.Action("GetSelectManagers", "MemberShipSetting")",
+            data: formData,
+            type: "POST",
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            async: false,
+            success: function (data) {
+//                console.log(data);
+                if (data!= null) {
+                    $("#divManagers").html("");
+                    var html="";
+                    var htmlSample = "<div class=\"chip\">"+
+                    " {MemberName} {Email}"+
+                    "<a href=\"javascript:;\" class=\"tooltip delete\" title=\"刪除\" data-value=\"{ID}\">"+
+                    "<i class=\"cc cc-close\"></i>"+
+                    "</a>"+
+                    "</div>";
+                    for(var i=0;i<data.length;i++)
+                    {
+                        var managerName = "";
+                        if(data[i].ManagerName!= null)
+                            managerName = data[i].ManagerName;
+                        html+= htmlSample.replace(/\{MemberName}/g, managerName)
+                            .replace(/\{Email}/g, data[i].Email)
+                            .replace(/\{ID}/g, data[i].ID);
+                    }
+                    $("#divManagers").append(html);
+                    $(".delete").bind("click", function(){
+                        var delID = $(this).attr("data-value");
+                        Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                            if (isConfirm) {
+                                deleteSelectManager(delID);
+                            }
+                        }, 'warning');
+                    });
+                }
+            },
+            fail: function () {
+                console.log("save fail ");
+            }
+        });
+
+    }
+    function deleteSelectManager(id)
+    {
+        var formData = new FormData();
+        formData.append("ID", id);
+        $.ajax({
+            url: "@Url.Action("DeleteManagers", "MemberShipSetting")",
+            data: formData,
+        type: "POST",
+        dataType: 'json',
+        processData: false,
+        contentType: false,
+        async: false,
+        success: function (data) {
+            loadSelectManagers();
+        },
+        fail: function () {
+            console.log("save fail ");
+        }
+    });
+
+    }
+
+
+    //$('a.custom_openfileEdit').click(function (e) {
+    //    e.preventDefault();
+
+
+    //    window.getFileItem = function () {
+    //        return $.parseJSON(valElm.val());
+    //    }
+
+    //    window.setFileItem = function (fileItem) {
+    //        item.html.find('.title-name').html(fileItem.ShowName);
+    //        valElm.val(JSON.stringify(fileItem));
+    //    }
+    //});
+</script>

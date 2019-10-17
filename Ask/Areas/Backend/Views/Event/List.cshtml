@@ -1,0 +1,409 @@
+﻿@model IEnumerable<WorkV3.Models.EventModels>
+@{
+    ViewBag.Title = "活動列表";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+    DateTime now = DateTime.Now;
+
+    string uploadUrl = ViewBag.UploadUrl;
+    Dictionary<long, WorkV3.Common.SitePage> sitePages = ViewBag.SitePages;
+    WorkV3.Models.EventSettingModels setting = ViewBag.Setting;
+    WorkV3.Models.EventSearchModels search = ViewBag.Search;
+    IEnumerable<WorkV3.Models.EventTypesModels> types = ViewBag.Types;
+    Pagination pagination = ViewBag.Pagination;
+    string siteName = ViewBag.SiteName.ToLower();
+
+    Dictionary<long, List<WorkV3.Models.EventTypesModels>> itemTypes = ViewBag.ItemTypes;
+    IEnumerable<long> canSignUpEvents = ViewBag.CanSignUpEvents;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+
+        var getSelectedUrl = '@Html.Raw(Url.Action("GetClientSelectList", "Common"))';
+        var setSelectedUrl = '@Html.Raw(Url.Action("SetClientSelectList", "Common"))';
+        var removeSelectedUrl = '@Html.Raw(Url.Action("RemoveClientSelectList", "Common"))';
+        var cancelSelectedUrl = '@Html.Raw(Url.Action("CancelClientSelectList", "Common"))';
+        var isSelectedUrl = '@Html.Raw(Url.Action("IsClientSelectList", "Common"))';
+
+        var listObj = Component.dataList('listTable', '@menuId', getSelectedUrl, setSelectedUrl, removeSelectedUrl, cancelSelectedUrl, isSelectedUrl);
+
+        listObj.sorted = function (sortItems) {
+            $.post('EventSort?siteId=@siteId&menuId=@menuId', { 'items': sortItems }, function () {
+                location.replace($("#searchForm").attr("action"));
+            });
+        }
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                if (isConfirm) {
+                    var action = "del";
+                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        if (data != null) {
+                            $.post('EventDel?siteId=@siteId&menuId=@menuId', { 'ids': delIds }, function () {
+                                $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                    location.replace($("#searchForm").attr("action"));
+                                });
+                            });
+                        }
+                    });
+                }
+            }, 'warning');
+        }
+        listObj.selected = function (action, selectedIds) {
+            if (!selectedIds || selectedIds.length == 0) {
+                Component.alert('請至少選擇一筆資料');
+                return;
+            }
+
+            if ((action == 'copy' || action == 'move') && selectedIds.length) {
+
+                if (!selectedIds || selectedIds.length == 0) {
+                    Component.alert('請至少選擇一筆資料');
+                    return;
+                }
+                var actionName = "";
+                if (action == 'copy')
+                    actionName = "複製";
+                if (action == 'move')
+                    actionName = "移動";
+                Component.confirm('確定' + actionName + '選中的資料？', function (isOK) {
+                    if (isOK) {
+                        var mainWin = Component.openRight('@Html.Raw(Url.Action("SelectNodes", new { siteId = siteId, menuId = menuId}))&act=' + action);
+                        mainWin.getSelectIds = function () {
+                            return selectedIds;
+                        };
+                        mainWin.Complete = function () {
+
+                            $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                location.replace($("#searchForm").attr("action"));
+                            });
+                        };
+                    }
+                });
+            }
+        }
+        listObj.statusChange = function (id) {
+            $.get('EventToggleIssue/' + id + '?siteId=@siteId&menuId=@menuId');
+        }
+        listObj.canceled = function (action) {
+            if (action == "del" || $('a[data-action="' + action + '"]').attr('data-select') == 'true') {
+                $.getJSON(cancelSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                    $('#listTable').find('span.info').html('');
+                });
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            //var tbodyElm = $(this).closest('tbody');
+            //var selectedNum = tbodyElm.find(':checked').length;
+            //tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            var action = $(this).attr("action");
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            var actionName = action;
+            var actionButton = $("a[data-action="+action+"]");
+            if(actionButton != null)
+            {
+                actionName = $(actionButton).html();
+            }
+
+            var data_id = $(this).closest('tr').attr('data-id');
+            var selectIDs = data_id;
+            if ($(this).prop("checked")) {
+
+                $.getJSON(setSelectedUrl, {menuId: "@menuId",actionType: action,ids: selectIDs}, function (data) {
+                    selectedNum = data.length;
+                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+                });
+            }
+            else {
+
+                $.getJSON(removeSelectedUrl, { menuId: "@menuId", actionType: action, ids: selectIDs }, function (data) {
+                    selectedNum = data.length;
+                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+                });
+            }
+        });
+
+        $('#btnAdd').click(function () {
+            @if(ViewBag.HasTemplate) {
+                @:var mainWin = Component.iframe('@Html.Raw(Url.Action("EditMode", siteQuery))');
+            } else {
+                @:var mainWin = Component.openCenter('@Html.Raw(Url.Action("Edit", siteQuery))');
+            }
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+        function list_loaded(tableElm) {
+            var action = "del";
+            var actionName = action;
+            var actionButton = $("a[data-action=" + action + "]");
+            if (actionButton != null) {
+                actionName = $(actionButton).html();
+            }
+            $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                //console.log(data);
+                if (data == "true") {
+                    $("a[data-action=" + action + "]").trigger("click");
+                    var tbodyElm = tableElm.children('tbody');
+
+                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        if (data != null) {
+                            selectedNum = data.length;
+                            var actionName = action;
+                            var actionButton = $("a[data-action=" + action + "]");
+                            if (actionButton != null) {
+                                actionName = $(actionButton).html();
+                            }
+                            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+
+                        }
+                    });
+                }
+                else {
+                    action = "copy";
+                    actionName = action;
+                    actionButton = $("a[data-action=" + action + "]");
+                    if (actionButton != null) {
+                        actionName = $(actionButton).html();
+                    }
+                    $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                        if (data == "true") {
+                            $("a[data-action=" + action + "]").trigger("click");
+                            var tbodyElm = tableElm.children('tbody');
+
+                            $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                if (data != null) {
+                                    selectedNum = data.length;
+                                    var actionName = action;
+                                    var actionButton = $("a[data-action=" + action + "]");
+                                    if (actionButton != null) {
+                                        actionName = $(actionButton).html();
+                                    }
+                                    tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+                                }
+                            });
+                        }
+                        else {
+                            action = "move";
+                            actionName = action;
+                            actionButton = $("a[data-action=" + action + "]");
+                            if (actionButton != null) {
+                                actionName = $(actionButton).html();
+                            }
+                            $.getJSON(isSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                //console.log(data);
+                                if (data == "true") {
+                                    $("a[data-action=" + action + "]").trigger("click");
+                                    var tbodyElm = tableElm.children('tbody');
+
+                                    $.getJSON(getSelectedUrl, { menuId: "@menuId", actionType: action }, function (data) {
+                                        if (data != null) {
+                                            selectedNum = data.length;
+                                            var actionName = action;
+                                            var actionButton = $("a[data-action=" + action + "]");
+                                            if (actionButton != null) {
+                                                actionName = $(actionButton).html();
+                                            }
+                                            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆 [' + actionName + ']');
+
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+</script>
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="searchBox" class="search-box">
+            <a class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+            <form id="searchForm" method="post" action="@Url.Action("List", siteQuery)">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">                            
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input type="text" id="Key" name="Key" placeholder="請輸入標題、內文等關鍵字" value="@search.Key" />
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">活動類別</div>
+                            <div class="radio-box inline" data-checkGroup="Types">
+                                <div>
+                                    <input type="checkbox" id="allTypes" class="select-all" />
+                                    <label for="allTypes">全選</label>
+                                </div>
+                                @foreach (WorkV3.Models.EventTypesModels item in types) {
+                                <div>
+                                    <input type="checkbox" value="@item.ID" @(search?.Types?.Contains(item.ID) == true ? "checked=\"checked\"" : string.Empty) />
+                                    <label>@item.Name</label>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">刊登期間</div>
+                            <div class="input-field inline">
+                                <input type="text" id="IssueStart" name="IssueStart" class="input-cal datetimepicker" value="@search.IssueStart.ToString("yyyy.MM.dd HH:mm")" />
+                            </div>
+                            <div class="input-field inline">
+                                <input type="text" id="IssueEnd" name="IssueEnd" class="input-cal datetimepicker" value="@search.IssueStart.ToString("yyyy.MM.dd HH:mm")" />
+                            </div>
+                        </div>
+                    </li>
+                </ul>                
+                <div class="float-R"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+            </form>
+        </div>
+        <table id="listTable" class="fixTable">
+            <caption>
+                活動列表
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" title="複製" data-action="copy" data-select="true"><i class="cc cc-content-copy"></i></a>
+                    @{
+                        var menuCount = 0;
+                        var eventSites = WorkV3.Models.DataAccess.EventDAO.GetMobuleSites();
+                        if (eventSites != null && eventSites.Count() > 0)
+                        {
+                            foreach (WorkV3.Models.SitesModels eventSite in eventSites)
+                            {
+                                var eventMenus = WorkV3.Models.DataAccess.EventDAO.GetMobuleMenus(eventSite.Id);
+                                if (eventMenus != null && eventMenus.Count() > 0)
+                                {
+                                    menuCount += eventMenus.Count();
+                                }
+                            }
+                        }
+                        if (menuCount > 1)
+                        {
+                            <a class="btn-grey-o square tooltip-info" href="javascript:" title="移動" data-action="move" data-select="true"><i class="cc cc-content-cut"></i></a>
+                        }
+                    }           
+                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                    <a class="btn-grey-darken-4-o square tooltip-info" id="btnAdd" href="javascript:" title="新增"><i class="cc cc-plus"></i></a>
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    <span data-for="sort" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="copy" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                    <span data-for="move" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>標題</th>
+                    <th>圖片</th>
+                    <th>活動日期</th> @*20180110 insert*@
+                    <th>類別</th>
+                    <th>刊登</th>
+                    <th>預覽</th>
+                    <th>概況</th>
+                    <th>報名者</th>
+                    <th>編輯</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0, len = Model.Count(); i < len; ++i) {
+                    WorkV3.Models.EventModels item = Model.ElementAt(i);
+                    List<WorkV3.Models.EventTypesModels> eventTypes = itemTypes.GetValue(item.ID);
+                    string img = item.GetFirstImg(setting);
+                    bool canChangeShowStatus = !((item.IssueStart != null && item.IssueStart > now) || (item.IssueEnd != null && item.IssueEnd < now));
+                    WorkV3.Common.SitePage page = sitePages[item.CardNo];
+                <tr data-id="@item.ID">
+                    <td class="sort">@pagination.GetItemIndex(i)</td>
+                    <td class="text-L">@item.Title</td>
+                    <td>
+                        @if(!string.IsNullOrWhiteSpace(img)) {
+                            <img src="@(uploadUrl + "/" + img)" />
+                        }                        
+                    </td>
+                    <td>
+                        @*活動日期*@
+                        @Convert.ToDateTime(item.DateStart).ToString("yyyy/MM/dd")
+                        @if (item.DateKind == "多日" && item.DateEnd != null) {
+                        <br/>@Convert.ToDateTime(item.DateEnd).ToString("yyyy/MM/dd")                            
+                        }
+                    </td>
+                    <td>@(eventTypes == null ? string.Empty : string.Join("、", eventTypes.Select(t => t.Name)))</td>
+                    <td class="icon">
+                        @if (canChangeShowStatus) {
+                            <a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a>
+                        } else {
+                            <i class="cc cc-eye-off font-red"></i>
+                        }                        
+                    </td>
+
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN, area = string.Empty }))" target="_blank"><i class="cc cc-cellphone-link"></i></a></td>
+                    <td class="icon"><a class="btn-grey-darken-4-o transparent square" href="javascripe:"><i class="cc cc-clipboard-outline"></i></a></td>
+                    <td class="icon">
+                        @if (canSignUpEvents.Contains(item.ID)) {
+                        <a class="btn-grey-darken-4-o transparent square" href="@Html.Raw(Url.Action("SignList", new { id = item.ID, siteId = siteId, menuId = menuId }))"><i class="cc cc-user-o"></i></a>
+                        }
+                    </td>
+                    <td class="icon @(CustomFunc.HaveEditPermission(item.Creator) ? "edit" : string.Empty)">
+                        @if (CustomFunc.HaveEditPermission(item.Creator) == true)
+                        {
+                            <a class="btn-grey-darken-4-o transparent square openCenter" href="@Html.Raw(Url.Action("Edit", new { id = item.ID, siteId = siteId, menuId = menuId }))"><i class="cc cc-edit-o"></i></a>
+                        }
+                    </td>
+                </tr>
+                }                
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>        
+    </div>
+</div>
+

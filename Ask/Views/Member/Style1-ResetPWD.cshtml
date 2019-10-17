@@ -1,0 +1,145 @@
+﻿
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+<div class="card-member loginPage" data-style="1">
+    <div class="login">
+        <div class="login-logo">重設密碼</div>
+        <div class="login-box small">
+            <div class="left-box">
+                <form id="editForm" action="@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = ViewBag.PageSN })" method="post">
+                    <input type="hidden" value="@ViewBag.MemberID" name="ID" />
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title">密碼<span class="required">*</span></div>
+                                <div class="input-field m-T-none">
+                                    <input id="password" name="password" type="password" placeholder="" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title">再次輸入密碼<span class="required">*</span></div>
+                                <div class="input-field">
+                                    <input id="againpassword" name="againpassword" type="password" placeholder="" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li class="">
+                            <div class="col-1 relative">
+                                @Html.Captcha("captcha")
+                            </div>
+                        </li>
+                        <li>
+                            <div class="btnBox">
+                                <a id="btnSent" class="btn-custom btn-large block" href="javascript:">確定送出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@BundleConfig.Validate()
+@BundleConfig.Component()
+<script type="text/javascript">
+    var isShowForget = false;
+    $(function () {
+        @Html.Raw(ViewBag.Script)
+        $("#password").change(function () {
+            CheckPWD();
+        });
+        $("#password").focusout(function () {
+            CheckPWD();
+        });
+        $("#againpassword").change(function () {
+            CheckPWD2();
+        });
+        $("#againpassword").focusout(function () {
+            CheckPWD2();
+        });
+        $("#captcha").change(function () {
+            CheckCaptcha();
+        });
+        $("#captcha").focusout(function () {
+            CheckCaptcha();
+        });
+        $('#btnSent').click(function () {
+            
+            var form = $('#editForm');
+            if (form.validationEngine('validate', { promptPosition: 'bottomRight' })) {
+                form.submit();
+            }
+        });
+
+         @if (ViewBag.Exit != null)
+        {
+            var isActionExit = false;
+            if ((ViewBag.Exit as bool?).HasValue)
+            {
+                isActionExit = (ViewBag.Exit as bool?).Value;
+        }
+        var Message = "";
+        if (!string.IsNullOrEmpty(ViewBag.Message))
+        {
+            Message = ViewBag.Message;
+        }
+        <text>
+    var message = "@Message";
+        var isExit = @isActionExit.ToString().ToLower();
+        if(message != null && message != "")
+        {
+            Component.alert(message, function() {
+                if(isExit)
+                {
+                    location.href = "@Url.Action("Index", "Home", new { SiteSN = ViewBag.SiteSN, PageSN = "Login" })";
+                }
+            });
+        }
+        </text>
+    }
+    });
+    
+    function CheckPWD() {
+        var isClear = true;
+        if ($('#password').val() == "") {
+            Component.showElementError('#password', '* Request field');
+            isClear = false;
+        }
+        else {
+            if ($('#againpassword').val() != "") {
+                if ($('#password').val() != $('#againpassword').val()) {
+                    Component.showElementError('#password', '* 二次密碼輸入不相符');
+                    isClear = false;
+                }
+            }
+        }
+        if (isClear) {
+            HideMessage("password");
+        }
+    }
+    function CheckPWD2() {
+        var isClear = true;
+        if ($('#againpassword').val() == "") {
+            Component.showElementError('#againpassword', '* Request field');
+            isClear = false;
+        }
+        else {
+            if ($('#againpassword').val() != "") {
+                if ($('#password').val() != $('#againpassword').val()) {
+                    Component.showElementError('#password', '* 二次密碼輸入不相符');
+                    isClear = false;
+                }
+                else if($('#password').val()!= "")
+                    HideMessage("password");
+            }
+        }
+        if (isClear) {
+            HideMessage("againpassword");
+        }
+    }
+    function HideMessage(FieldName) {
+        $('.' + FieldName + 'formError').fadeOut('normal', function () { $(this).remove(); });
+    }
+</script>

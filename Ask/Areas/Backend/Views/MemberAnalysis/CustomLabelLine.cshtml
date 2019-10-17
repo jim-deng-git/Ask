@@ -1,0 +1,243 @@
+﻿@model IEnumerable<MemberShipLogStatisticLabelModels>
+@{
+    bool SelectCustomLabel = true;
+    ViewBag.Title = "自訂標線";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    MemberShipLogStatisticLabelSearchModels search = ViewBag.Search;
+    Pagination pagination = ViewBag.Pagination;
+    if (ViewBag.SelectCustomLabel != null)
+    {
+        SelectCustomLabel = (bool)ViewBag.SelectCustomLabel;
+    }
+}
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+       
+    </script>
+}
+
+@section FArea {
+}
+
+            <form id="searchForm" method="post" action="@Url.Action("CustomLabelLine")" style="width:100%">
+                <div class="zone zone-base p-T-8">
+                    <div class="wrapper">
+                        <div class="groove groove-1">
+                            <div class="card shadow-none">
+                                <div id="SearchBox" class="search-box pushup">
+                                    <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+                                    <ul class="forms">
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline">關鍵字</div>
+                                                <div class="input-field inline full">
+                                                    <input id="Keyword" name="Keyword" type="text" placeholder="請輸入標線文字關鍵字" value="@search.Keyword" />
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title">標線期間</div>
+                                                <div class="input-field inline">
+                                                    <input id="StartDate" name="StartDate" type='text' class="datepicker" value="@(search.StartDate.HasValue?search.StartDate.Value.ToString("yyyy/MM/dd"):"")" />
+                                                </div>
+                                                -
+                                                <div class="input-field inline">
+                                                    <input id="EndDate" name="EndDate" type='text' class="datepicker" value="@(search.EndDate.HasValue?search.EndDate.Value.ToString("yyyy/MM/dd"):"")" />
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                    <div class="float-R"><a id="btnSearch" class="btn-grey-darken-4-o btn-small" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+                                </div>
+
+                                <table class="fixTable" id="listTable">
+                                    <caption class="p-h-4">
+                                        <div class="radio-box inline m-T-2">
+                                            <div>
+                                                <input type="checkbox" id="customLabel" @(SelectCustomLabel ? "checked" : string.Empty ) />
+                                                <label for="customLabel">顯示自訂標線</label>
+                                            </div>
+                                        </div>
+                                        <div class="float-R">
+                                            <a class="btn-grey-darken-4-o square tooltip-info" href="@Url.Action("CustomLabelLineEdit")" title="新增"><i class="cc cc-plus"></i></a>
+
+                                            <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" title="刪除" data-action="del"><i class="cc cc-trash-o"></i></a>
+                                            <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                                            <span data-for="del" style="display:none;">
+                                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                            </span>
+                                        </div>
+                                    </caption>
+                                    <thead>
+                                        <tr>
+                                            <th>序</th>
+                                            <th>標線文字</th>
+                                            <th>標線時間</th>
+                                            <th>色調</th>
+                                            <th>顯示</th>
+                                            <th>編輯</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0, len = Model.Count(); i < len; ++i)
+                                        {
+                                            MemberShipLogStatisticLabelModels item = Model.ElementAt(i);
+                                            <tr data-id="@item.ID">
+                                                <td class="sort">@pagination.GetItemIndex(i)</td>
+                                                <td class="">@item.Title</td>
+                                                <td class="date">@item.LabelDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                                <td class=""><i class="btn-default btn-tiny" data-color="@item.LabelColor"></i></td>
+                                                <td class="icon">
+                                                    <a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:UpdateShowStatus(@(item.ID.ToString()), @((!item.ShowStatus).ToString().ToLower()));"><i class="cc @(item.ShowStatus ? "cc-eye" : "cc-eye-off font-red")"></i></a>
+                                                </td>
+                                                <td class="icon edit"><a class="btn-grey-darken-4-o transparent square" href="@Url.Action("CustomLabelLineEdit", new { id = item.ID })"><i class="cc cc-edit-o"></i></a></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                <div class="pagination text-L">
+                                    @Html.Action("Pager", "Common", pagination)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <link href="~/css/Cards/Analytics/style1.css" rel="stylesheet" />
+            <link href="~/css/forms.css" rel="stylesheet" type="text/css" />
+            <script src="~/script/rangeDatePicker/datepicker.js" type="text/javascript"></script>
+
+            <!-- <script src="<%= SysHelp.GetURL() %>script/StickyTableHeaders/jquery.stickytableheaders.js"></script> -->
+            <script type="text/javascript">
+                $(".fixTable").stickyTableHeaders();
+                //Component.searchBox('#searchBox', '#openSearch');
+                $(function () {
+                    $("#customLabel").bind("click", function () {
+                        SetLogShowLabelLine($(this).prop("checked"));
+                    });
+                    var listObj = Component.dataList('listTable');
+                    listObj.sorted = function (sortItems) {
+                        $.post('CustomLabelSort', { 'items': sortItems }, function () {
+                            location.replace(location.href);
+                        });
+                    }
+                    listObj.deleted = function (delIds) {
+                        $.post('CustomLabelLineDel', { 'ids': delIds }, function () {
+                            location.replace(location.href);
+                        });
+                    }
+                    listObj.canceled = function (action) {
+                        if (action == "del") {
+                            $('#listTable').find('span.info').html('');
+                        }
+                    }
+                    listObj.opened = function (mainWin, action) {
+                        mainWin.refreshList = function () {
+                            location.replace(location.href);
+                        }
+                    }
+                    listObj.cloased = function (mainWin, action) {
+                        mainWin.refreshList = function () {
+                            location.replace(location.href);
+                        }
+                    }
+
+                    $('#listTable').on('click', 'tbody :checkbox', function () {
+                        var tbodyElm = $(this).closest('tbody');
+                        var selectedNum = tbodyElm.find(':checked').length;
+                        tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+                    });
+                    $('#btnSearch').click(function () {
+                        var form = $('#searchForm');
+                        form.submit();
+                    });
+                });
+
+                $(window).on('load', function () {
+                    if ($('#SearchBox').length) {
+                        var $SearchBoxH = $('#SearchBox').outerHeight();
+                        if ($('#SearchBox').hasClass('pushup')) {
+                            // $('.fixTable, .pagination').css({
+                            //     top: $SearchBoxH
+                            // });
+
+                            $('#closeSerach').on('click', function () {
+                                $('#SearchBox').removeClass('pushup');
+                                // $('.fixTable, .pagination').css({
+                                //     top: 0
+                                // });
+                            });
+                        } else {
+                            // $('.fixTable, .pagination').css({
+                            //     top: 0
+                            // });
+                        }
+
+                        $('#openSearch').on('click', function () {
+                            $('#SearchBox').toggleClass('pushup');
+                            if ($('#SearchBox').hasClass('pushup')) {
+                                // $('.fixTable, .pagination').css({
+                                //     top: $SearchBoxH
+                                // });
+                            } else {
+                                // $('.fixTable, .pagination').css({
+                                //     top: 0
+                                // });
+                            }
+                        });
+                    }
+                });
+
+                function UpdateShowStatus(ID, ShowStatus) {
+                    var formData = new FormData();
+                    formData.append("ID", ID);
+                    formData.append("ShowStatus", ShowStatus);
+                    $.ajax({
+                        url: "@Url.Action("CustomLabelLineChangeStatus")",
+                        data: formData,
+                        type: "POST",
+                        dataType: 'json',
+                        processData: false,
+                        contentType: false,
+                        async: false,
+                        success: function (data) {
+                            location.href = location.href;
+                        },
+                        fail: function () {
+                            console.log("refresh fail ");
+                        }
+                    });
+                }
+                function SetLogShowLabelLine(ShowStatus) {
+                    var formData = new FormData();
+                    formData.append("ShowStatus", ShowStatus);
+                    $.ajax({
+                        url: "@Url.Action("LogLabelLineChangeStatus")",
+                        data: formData,
+                    type: "POST",
+                    dataType: 'json',
+                    processData: false,
+                    contentType: false,
+                    async: false,
+                    success: function (data) {
+                        
+                    },
+                    fail: function () {
+                        console.log("refresh fail ");
+                    }
+                });
+                }
+                function refreshList()
+                {
+                    location.replace(location.href);
+                }
+
+            </script>
+

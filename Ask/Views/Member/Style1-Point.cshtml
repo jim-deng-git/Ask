@@ -1,0 +1,81 @@
+﻿@model WorkV3.Models.MemberShipModels
+@{
+    string dateTimeFmt = ViewBag.DateTimeFmt;
+    string siteSn = ViewBag.SiteSN;
+    string pageSn = ViewBag.PageSN;
+    long siteID = ViewBag.SiteID;
+    long menuID = ViewBag.MenuID;
+    string uploadUrl = ViewBag.UploadVPath;
+    Pagination pagination = ViewBag.Pagination;
+}
+
+<link href="~/css/Cards/Member/style1.css" rel="stylesheet" />
+<link href="~/css/vendor/sweetalert/sweetalert.css" rel="stylesheet" />
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/script/tooltipster/tooltipster.bundle.min.css" rel="stylesheet" />
+<link href="~/script/tooltipster/themes/tooltipster-sideTip-shadow.min.css" rel="stylesheet" />
+
+<div class="mainPage card-member points" data-style="1">
+
+    @RenderPage("~/Views/Member/Style1-MemberTop.cshtml")
+
+    <div class="article-wrap">
+        <div class="article-list">
+            <div class="article-title">
+                我的點數
+                <div class="float-R">
+                    @{ 
+                        decimal total = Model.PointsRecord.Total;
+                        if (Model.PointsRecord.Total.ToString().StartsWith("-"))
+                        {
+                            total = 0;
+                        }
+                    }
+                    （一點可折抵<span>NT$ 30</span>，相當於可折抵：<span>NT$ @(30 * total)</span>）目前尚餘點數<span class="total-points">@Model.PointsRecord.Total</span>點
+                </div>
+            </div>
+            <ul class="points-list">
+                @if (Model.PointsRecord.Points != null && Model.PointsRecord.Points.Count() > 0)
+                {
+                    foreach (var item in Model.PointsRecord.Points)
+                    {
+                        decimal point = item.Point;
+                        string remark = item.Remark;
+                        if (item.IsManually)
+                        {
+                            if (item.PointType == 0)
+                            {
+                                remark = "平台管理者協助增加點數";
+                            }
+                            else if (item.PointType == 1)
+                            {
+                                remark = "平台管理者主動扣除點數";
+                            }
+                        }
+
+                        if (item.Point.ToString().StartsWith("-"))
+                        {
+                            point = decimal.Parse(item.Point.ToString().Replace("-", ""));
+                        }
+                        <li class="points">
+                            <div class="date">@item.CreateTime.ToString(dateTimeFmt).Replace("-","/")</div>
+                            <div class="title">@remark</div>
+                            <div class="reason">@item.Description</div>
+                            <div class="points"><span class="@(item.Point.ToString().StartsWith("-") ? "minus" : "plus")">@point</span>點</div>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>
+
+
+<script src="~/script/base/sweetalert2.js"></script>
+<script src="~/script/tooltipster/tooltipster.bundle.js"></script>
+<script src="~/script/fullcalendar/moment.min.js"></script>
+<script src="~/script/jquery.preload/jquery.preload.min.js"></script>
+<script type="text/javascript" src="~/script/forms/forms.js"></script>

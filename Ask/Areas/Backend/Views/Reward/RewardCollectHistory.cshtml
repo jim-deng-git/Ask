@@ -1,0 +1,304 @@
+﻿@model WorkV3.Models.RewardCollectInfoModel
+@using Newtonsoft.Json.Linq;
+@using System.Linq;
+@{
+    ViewBag.Title = "集點紀錄";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    RewardModel rewardObj = ViewBag.RewardObj;
+    JArray arrFields = JArray.Parse(rewardObj.Fields);
+    List<JObject> fields = new List<JObject>();
+
+    foreach(JObject item in arrFields)
+    {
+        fields.Add(item);
+    }
+
+    List<WorkV3.Models.RewardCollectModel> collects = Model.GetCollects().ToList();
+    bool isComplete = rewardObj.CompletePlace <= collects.Count();
+    bool isMember = Model.KeyType.ToLower() == "member";
+    WorkV3.Models.MemberShipModels member = isMember? Model.GetMemberData(): new WorkV3.Models.MemberShipModels();
+    JObject completeData = isComplete? JObject.Parse(Model.CompleteData): new JObject();
+}
+<div class="groove groove-1">
+    <h1 class="title-admin-page"><a href="javascript:history.back()" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>檢視集點記錄</h1>
+    <div class="col-2 border-T border-R rw-detail">
+        <ul class="forms">
+    @if (fields.Where(x => x["Name"].ToString() == "姓名" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isMember)
+        {
+            if (member.Name != null)//wei 20180821空值不顯示
+            { 
+            <li>
+                <div class="title">姓名</div>
+                <div class="font-blue">@member.Name</div>
+            </li>
+            }
+        }
+        else
+        {
+            if (isComplete)
+            {
+                if (!String.IsNullOrEmpty(completeData["Name"] == null ? "" : completeData["Name"].ToString()))
+                {
+                    <li>
+                        <div class="title">姓名</div>
+                        <div class="font-blue">@completeData["Name"]</div>
+                    </li>
+                }
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "身份證字號" && (bool)x["IsShow"]).Count() > 0)//wei 20180725 改成"分"改"份"
+    {
+        if (isMember)
+        {
+            if (member.IDCard!=null)//wei 20180821空值不顯示
+            {
+            <li>
+                <div class="title">身分證字號</div>
+                <div class="font-blue">@member.IDCard</div>
+            </li>
+            }
+        }
+        else
+        {
+            if (isComplete)
+            {
+                if (!String.IsNullOrEmpty(completeData["IDCard"] == null ? "" : completeData["IDCard"].ToString()))
+                {
+                    <li>
+                        <div class="title">身分證字號</div>
+                        <div class="font-blue">@completeData["IDCard"]</div>
+                    </li>
+                }
+            }
+            else if(Model.KeyType == "身分證字號")
+            {
+                <li>
+                    <div class="title">@Model.KeyType</div>
+                    <div class="font-blue">@Model.KeyValue</div>
+                </li>
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "出生年月日" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isMember)
+        {
+            if (member.Birthday != null)
+            { 
+            <li>
+                <div class="title">出生年月日</div>
+                <div class="font-blue">@member.Birthday</div>
+            </li>
+            }
+        }
+        else
+        {
+            if (isComplete)
+            {
+                if (!String.IsNullOrEmpty(completeData["Birthday"] == null ? "" : completeData["Birthday"].ToString()))
+                {
+                    <li>
+                        <div class="title">出生年月日</div>
+                        <div class="font-blue">@completeData["Birthday"]</div>
+                    </li>
+                }
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "手機" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isMember)
+        {
+            if (member.Mobile != null)
+            { 
+            <li>
+                <div class="title">手機</div>
+                <div class="font-blue">@member.Mobile</div>
+            </li>
+            }
+        }
+        else
+        {
+            if (isComplete)
+            {
+                if (!String.IsNullOrEmpty(completeData["Mobile"] == null ? "" : completeData["Mobile"].ToString()))
+                {
+                    <li>
+                        <div class="title">手機</div>
+                        <div class="font-blue">@completeData["Mobile"]</div>
+                    </li>
+                }
+            }
+            else if (Model.KeyType == "手機")
+            {
+                <li>
+                    <div class="title">@Model.KeyType</div>
+                    <div class="font-blue">@Model.KeyValue</div>
+                </li>
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "電話" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isMember)
+        {
+            if(member.Phone!=null)
+            { 
+            <li>
+                <div class="title">電話</div>
+                <div class="font-blue">@member.Phone</div>
+            </li>
+            }
+        }
+        else
+        {
+            if (isComplete)
+            {
+                if (!String.IsNullOrEmpty(completeData["Phone"] == null ? "" : completeData["Phone"].ToString()))
+                {
+                    <li>
+                        <div class="title">電話</div>
+                        <div class="font-blue">@completeData["Phone"]</div>
+                    </li>
+                }
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "Email" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isMember)
+        {
+            if(member.Email!=null)
+            {
+            <li>
+                <div class="title">Email</div>
+                <div class="font-blue">@member.Email</div>
+            </li>
+            }
+        }
+        else
+        {
+            if (isComplete)
+            {
+                if (!String.IsNullOrEmpty(completeData["Email"] == null ? "" : completeData["Email"].ToString()))
+                {
+                    <li>
+                        <div class="title">Email</div>
+                        <div class="font-blue">@completeData["Email"]</div>
+                    </li>
+                }
+            }
+            else if (Model.KeyType == "Email")
+            {
+                <li>
+                    <div class="title">@Model.KeyType</div>
+                    <div class="font-blue">@Model.KeyValue</div>
+                </li>
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "地址" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isComplete)
+        {
+            if (!String.IsNullOrEmpty(completeData["Address"] == null ? "" : completeData["Address"].ToString()))
+            {
+                string strRegionText = "";
+                if (!String.IsNullOrEmpty(completeData["Regions"].ToString()))
+                {
+                    string strRegions = completeData["Regions"].ToString().TrimStart('[').TrimEnd(']');
+                    string[] strRegionArr = strRegions.Split(',');
+                    List<int> regions = new List<int>();
+
+                    foreach (string str in strRegionArr)
+                    {
+                        regions.Add(int.Parse(str));
+                    }
+
+                    IEnumerable<WorkV3.Models.WorldRegionModels> wrmRegions = WorkV3.Models.DataAccess.WorldRegionDAO.GetRegions(regions);
+
+                    foreach (WorkV3.Models.WorldRegionModels region in wrmRegions)
+                    {
+                        strRegionText += region.Name + " ";
+                    }
+                }
+                <li>
+                    <div class="title">地址</div>
+                    <div class="font-blue">@strRegionText @completeData["Address"]</div>
+                </li>
+            }
+        }
+    }
+    @if (fields.Where(x => x["Name"].ToString() == "其他說明" && (bool)x["IsShow"]).Count() > 0)
+    {
+        if (isComplete)
+        {
+            if (!String.IsNullOrEmpty(completeData["Remark"] == null ? "" : completeData["Remark"].ToString()))
+            {
+                <li>
+                    <div class="title">其他說明</div>
+                    <div class="font-blue">@completeData["Remark"]</div>
+                </li>
+            }
+        }
+    }
+    </ul>
+
+                    </div>
+                    <div class="col-2 border-T rw-detail">
+                        <ul class="forms border-B m-B-5">
+                            <li><div class="title">已集得：</div></li>
+                            @foreach (WorkV3.Models.RewardCollectModel item in Model.GetCollects())
+                            {
+                                RewardPlaceModel detail = item.GetPlaceDetail();
+                                JObject data = JObject.Parse(detail.Img);
+
+                                <li>
+                                    <div class="inline full">
+                                        <div class="col-5 d.inline-block p-L-none"><img class="rounded-0" src="@(ViewBag.UploadUrl)RewardPlace/@data["Img"].ToString()" alt="@detail.Name"></div>
+                                        <div class="d.inline-block col-5-partner p-L-none">
+                                            <h3>@detail.Name</h3>
+                                            <p class="font-grey">@item.CreateTime </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                        @* 未集滿:顯示為藍色 *@
+        @if (!isComplete)
+        {
+            <div class="m-h-7">已蒐集了 <span class="font-blue font-ms">@collects.Count</span> 個場地！</div>
+        }
+        @* 集滿:顯示為紅色 *@
+        else
+        {
+        <div class="m-h-7">已蒐集了 <span class="font-red font-ms">@collects.Count</span> 個場地！</div>
+        }
+    </div>
+
+    <form method="post" action="@Url.Action("RewardCollectHistory", new { SiteID = ViewBag.SiteID, infoId = Model.ID })" name="process">
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div>
+                    <input type="checkbox" name="isProcess" id="done" value="True" @(Model.IsProcess ? "checked=\"checked\"" : string.Empty) />
+                    <label for="done">已處理</label>
+                </div>
+            </div>
+            <div class="bar-item float-L">
+                <div>
+                    <input type="checkbox" name="isWonPrice" id="tag-win" value="True" @(Model.IsWonPrice ? "checked=\"checked\"" : string.Empty) />
+                    <label for="tag-win">標示中獎</label>
+                </div>
+            </div>
+            <div class="float-L input-field m-1">
+                <input type='text' name="processRemark" class="m-none" placeholder="請填入備註" value="@Model.ProcessRemark">
+            </div>
+            <a class="btn-cancel" href="javascript:history.back()"><i class="cc cc-close"></i>取消</a>
+            <a class="btn-bulid" href="javascript:process.submit()"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>

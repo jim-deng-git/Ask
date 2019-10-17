@@ -1,0 +1,58 @@
+﻿@model GoogleMapViewModel
+
+@{ 
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+}
+
+<div class="zone zone-full">
+    <div class="wrapper">
+        <div class="groove groove-1">
+            <ul class="forms m-none">
+                <li>
+                    <div class="">
+                        <div id="map"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<link href="~/css/forms.css" rel="stylesheet" />
+
+<script type="text/javascript" async defer src="https://maps.googleapis.com/maps/api/js?key=@(WorkLib.GetItem.appSet("GoogleMapKey"))&callback=init"></script>
+<script type="text/javascript">
+    function init() {
+        var address = "@Model.Address";
+        var lat = "@Model.Lat";
+        var lng = "@Model.Lng";
+
+        if (lat != "" && lng != "") {
+            var location = new google.maps.LatLng(parseFloat(lat), parseFloat(lng))
+            GenerateMap(location);
+        } else {
+            geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'address': address
+            }, function (results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    GenerateMap(results[0].geometry.location);
+                }
+            });
+        }
+    }
+
+    function GenerateMap(location) {
+        var mapOptions = {
+            zoom: 19,
+            center: location,
+            //styles: [{ "featureType": "administrative", "elementType": "labels.text.fill", "stylers": [{ "color": "#444444" }] }, { "featureType": "landscape", "elementType": "all", "stylers": [{ "color": "#f2f2f2" }] }, { "featureType": "poi", "elementType": "all", "stylers": [{ "visibility": "off" }] }, { "featureType": "road", "elementType": "all", "stylers": [{ "saturation": -100 }, { "lightness": 45 }] }, { "featureType": "road.highway", "elementType": "all", "stylers": [{ "visibility": "simplified" }] }, { "featureType": "road.arterial", "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] }, { "featureType": "transit", "elementType": "all", "stylers": [{ "visibility": "off" }] }, { "featureType": "water", "elementType": "all", "stylers": [{ "color": "#cae5f0" }, { "visibility": "on" }] }]
+        };
+
+        var mapElement = document.getElementById('map');
+        var map = new google.maps.Map(mapElement, mapOptions);
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+    }
+</script>

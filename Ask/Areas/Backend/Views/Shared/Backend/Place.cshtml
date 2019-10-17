@@ -1,0 +1,76 @@
+﻿
+<div class="input-field inline m-R-8" name="PlaceList">
+    <select name="Place" id="Place">
+        <option value="">請選擇場地</option>
+    </select>
+</div>
+<div class="title inline d-inline-block float-none" name="SpaceTitle"></div>
+<div class="radio-box inline" name="SpaceList"></div>
+
+<!--放頁面上了-->
+@*<script id="PlaceOptionTmpl" type="text/x-jquery-tmpl">
+    <option value="${ID}" SpaceSet="${SpaceSet}">${Name}</option>
+</script>
+<script id="SpaceOptionTmpl" type="text/x-jquery-tmpl">
+    <div>
+        <input class="with-gap" name="Space" id="Space${PlaceID}_${ID}" type="checkbox" value="${ID}" />
+        <label for="Space${PlaceID}_${ID}">${SpaceName}</label>
+    </div>
+</script>
+
+<script type="text/javascript">
+
+    function bindPlace(placeObj) {
+        $.ajax({
+            type: "post",//提交方式
+            async: false,
+            url: "@Url.Action("GetPlaceJson", "CustomApplication", new { area = "Backend" })",//获取数据的函数
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("調用目標發生異常！");
+            },//查询失败
+            success: function (RsData) {//查询成功,data为返回的数据
+                var data = $.parseJSON(RsData);
+                $(placeObj).empty();
+                if (data.length > 0) {
+                    var optionAll = "<option value=''>請選擇場地</option>";
+                    $(optionAll).appendTo(placeObj);
+                    $("#PlaceOptionTmpl").tmpl(data).appendTo(placeObj);
+                }
+            }
+        });
+        BindSpace(placeObj);
+    }
+    function BindSpace(objPlace) {
+        var divSpaceTitle = $(objPlace).parents("div[name=PlaceList]").next();
+        var divSpaceList = $(objPlace).parents("div[name=PlaceList]").next().next();
+        if ($(objPlace).val() != "" && $(objPlace).find("option:selected").attr("SpaceSet") == "2") {
+            $.ajax({
+                type: "post",//提交方式
+                data: "PlaceId=" + $(objPlace).val(),
+                async: false,
+                url: "@Url.Action("GetSpaceJson", "CustomApplication", new { area = "Backend" })",//获取数据的函数
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert("調用目標發生異常！");
+                },//查询失败
+                success: function (RsData) {//查询成功,data为返回的数据
+                    var data = $.parseJSON(RsData);
+                    divSpaceTitle.html('請選擇空間');
+                    divSpaceList.html('');
+                    if (data.length > 0) {
+                        $("#SpaceOptionTmpl").tmpl(data).appendTo(divSpaceList);
+                    }
+                }
+            });
+        }
+        else {
+            divSpaceTitle.html('');
+            divSpaceList.html('');
+        }
+        $('select').material_select();
+    }
+
+    $(function () {
+        bindPlace($("#Place"));
+        $("#Place").change(function () { BindSpace($(this)); });
+    });
+</script>*@

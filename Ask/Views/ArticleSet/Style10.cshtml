@@ -1,0 +1,128 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+<link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleSet/style10.css" rel="stylesheet" />
+
+<div id="card_@setting.CardNo" class="card-articleSet" data-style="10">
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            @foreach (ArticleModels item in Model)
+            {
+                List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                string filterClass = (articleTypes?.Count > 0 ? "all, " + string.Join(", ", articleTypes.Select(t => t.Name)) : "all");
+                SitePage page = itemPages[item.CardNo];
+                string img = item.GetFirstImg(setting);
+                if (!string.IsNullOrEmpty(img))
+                {
+                    string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(page.SiteID, page.MenuID);
+                    if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, img)))
+                    {
+                        img = string.Format("R_{0}", img);
+                    }
+                }
+                string target = "_self";
+                string url = string.Empty;
+                if (item.Type == "page")
+                {
+                    url = Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN });
+                }
+                else if (item.Type == "link")
+                {
+                    url = item.Link;
+                    if (item.IsOpenNew)
+                    {
+                        target = "_blank";
+                    }
+                }
+                else if (item.Type == "archive")
+                {
+                    target = "_blank";
+                    if (!string.IsNullOrWhiteSpace(item.Archive))
+                    {
+                        ResourceFilesModels file = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.Archive);
+                        url = page.GetUploadUrl() + file.FileInfo;
+                    }
+                }
+                <div class="swiper-slide">
+                    <div class="card shadow-none">
+                        <div class="card-box">
+                            <div class="card-img original">
+                                <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))" target="@target">
+                                    @if (!string.IsNullOrWhiteSpace(item.VideoImg))
+                                    {
+                                        ResourceFilesModels imgModel = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceFilesModels>(item.VideoImg);
+                                        url = page.GetUploadUrl() + imgModel.FileInfo;
+                                        if (item.VideoImgIsCustom)
+                                        {
+                                        <img src="@(page.GetUploadUrl() + Server.UrlPathEncode(img))" alt="">
+                                        <div class="card-img-content flex" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')"></div>
+                                         }
+                                        else
+                                        {
+                                        <img src="@(item.VideoImg)" alt="">
+                                        <div class="card-img-content flex" style="background-image:url('@(item.VideoImg)')"></div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(img))
+                                        {
+                                        <img src="@(page.GetUploadUrl() + Server.UrlPathEncode(img))" alt="">
+                                        <div class="card-img-content flex" style="background-image:url('@(page.GetUploadUrl() + Server.UrlPathEncode(img))')"></div>
+                                        }
+                                    }
+
+                                </a>
+                                
+                                <div class="card-text">
+                                    <div class="card-text-name"><a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))" target="@target">@item.Title</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+</div>
+
+<script src="~/script/swiper/swiper.jquery.js"></script>
+<script type="text/javascript">
+  (function($) {
+    $(document).ready(function(){
+        var swiper = new Swiper('#card_@setting.CardNo .swiper-container', {
+            slidesPerView: 'auto',
+            centeredSlides: true,
+            paginationClickable: true,
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev',
+            spaceBetween: 0,
+            initialSlide: 0, 
+            slideToClickedSlide:true,
+            loop: true,
+            speed: 800,
+        });
+    })
+    var windowW = $(window).width();
+    var addHeight = 0
+    if( windowW > 420){
+        addHeight = 50
+    }else{
+        addHeight = 0
+    }
+    $(window).on('load', function(){
+        var outerElm = $('#card_@setting.CardNo');
+        outerElm.each(function () {
+            var $Height = $(this).find('.swiper-container').outerHeight();
+            $(this).find('.swiper-container').css('height', $Height + addHeight);
+        });
+    }).trigger('resize'); 
+  })(jQuery);
+</script>

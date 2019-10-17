@@ -1,0 +1,132 @@
+﻿@model WorkV3.Models.StoreCategoryModel
+@{
+    ViewBag.Title = "商店類型編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<form id="editForm" method="post" enctype="multipart/form-data" action="@Html.Raw(Url.Action("CategoryEdit", new { siteId = ViewBag.SiteID}))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">商店類型編輯</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="input-field inline full">
+                                    <input id="CategoryName" name="CategoryName" type="text" placeholder="商店類型名稱" value="@Model.CategoryName">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">色調</div>
+                                <div class="radio-box inline" data-radioGroup="Color">
+                                    @{ string[] colors = { "red", "orange", "yellow", "green", "light-green", "blue", "teal", "deep-purple", "gold", "light-grey", "grey", "black" }; }
+                                    @foreach (string color in colors)
+                                    {
+                                        <div>
+                                            <input type="radio" class="with-gap" value="@color" />
+                                            <label data-color="@color"></label>
+                                        </div>
+                                    }
+                                    <input type="hidden" id="Color" name="Color" value="@Model.Color" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">圖標</div>
+                                <div class="input-field inline full">
+                                    <div class="input-field m-T-none" data-visual="square">
+                                        <input type="file" id="fCoverImg" name="fCoverImg" />
+                                        <input type="hidden" id="CoverImg" name="CoverImg" value='@Model.CoverImg' />
+                                        <input type="hidden" id="fCoverImgBase64" name="fCoverImgBase64" />
+                                        <input type="hidden" id="fCoverImgBase64_Resize" name="fCoverImgBase64_Resize" />
+                                    </div>
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>建議尺寸：128 x 128 px。</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">主視覺</div>
+                                <div class="input-field inline full">
+                                    <div class="input-field m-T-none">
+                                        <input type="file" id="fMainVision" name="fMainVision" />
+                                        <input type="hidden" id="MainVision" name="MainVision" value='@Model.MainVision' />
+                                        <input type="hidden" id="fMainVisionBase64" name="fMainVisionBase64" />
+                                        <input type="hidden" id="fMainVisionBase64_Resize" name="fMainVisionBase64_Resize" />
+                                    </div>
+                                </div>
+                                <div class="alert transparent">
+                                    <i class="cc cc-attention"></i>
+                                    <div>建議尺寸：1920 x 1080 px(滿版)。</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">說明</div>
+                                <div class="input-field inline full">
+                                    <div class="img-text-height">
+                                        <textarea contenteditable="true" id="Intro" name="Intro">@Model.Intro</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(model => model.IsIssue)
+                    <label for="IsIssue">刊登</label>
+                </div>
+            </div>
+            <a class="btn-cancel" href="javascript:" onclick="parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </div>
+    <input type="hidden" name="ID" value="@Model.ID" />
+</form>
+
+@section FArea {
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+<script type="text/javascript">
+    Component.radioList('div[data-radioGroup]');
+    var editor = Component.editor('Intro');
+    
+    Component.singleImageUpload('#fCoverImg', '@(Href("~/"))', '@ViewBag.UploadUrl', true);
+    Component.singleImageUpload('#fMainVision', '@(Href("~/"))', '@ViewBag.UploadUrl', true);
+    $('#btnSave').click(function () {
+        var form = $('#editForm');
+        if (form.validationEngine('validate')) {
+            form.submit();
+        }
+    });
+
+    @if ((ViewBag.Exit as bool?) == true) {
+        <text>
+        if (parent.refreshList)
+            parent.refreshList();
+        parent.$.colorbox.close();
+        </text>
+    }
+</script>
+}
+

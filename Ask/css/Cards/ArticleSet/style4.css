@@ -1,0 +1,228 @@
+.card-articleSet[data-style="4"] .article-list li {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box; }
+
+.card-articleSet[data-style="4"] .filters-bar li > span, .card-articleSet[data-style="4"] .filters-bar li > span::after {
+  -webkit-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out; }
+
+.card-articleSet[data-style="4"] .filters-bar ol, .card-articleSet[data-style="4"] .filters-bar ul, .card-articleSet[data-style="4"] .filters-bar li, .card-articleSet[data-style="4"] .article-list ol, .card-articleSet[data-style="4"] .article-list ul, .card-articleSet[data-style="4"] .article-list li {
+  list-style: none; }
+
+.card-articleSet[data-style="4"] .article-list ul, .card-articleSet[data-style="4"] .article-list li .card-text {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-articleSet[data-style="4"] .article-list ul {
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap; }
+
+.card-articleSet[data-style="4"] .article-list li .card-text {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column; }
+
+.card-articleSet[data-style="4"] .article-list li .card-text {
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
+
+.card-articleSet[data-style="4"] .article-list li .card-text-name {
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap; }
+
+.card-articleSet[data-style="4"] {
+  position: relative; }
+  .card-articleSet[data-style="4"] .card, .card-articleSet[data-style="4"] .card-box {
+    float: none; }
+  .card-articleSet[data-style="4"] .card-box:hover .card-img-content {
+    background-color: transparent; }
+  .card-articleSet[data-style="4"] .filters-bar ol, .card-articleSet[data-style="4"] .filters-bar ul, .card-articleSet[data-style="4"] .filters-bar li, .card-articleSet[data-style="4"] .article-list ol, .card-articleSet[data-style="4"] .article-list ul, .card-articleSet[data-style="4"] .article-list li {
+    margin: 0;
+    padding: 0; }
+  .card-articleSet[data-style="4"] .filters-bar {
+    padding: 0px 0px 40px; }
+    @media only screen and (max-width: 800px) {
+      .card-articleSet[data-style="4"] .filters-bar {
+        padding-bottom: 0;
+        overflow: hidden;
+        overflow-x: auto; } }
+    .card-articleSet[data-style="4"] .filters-bar ol {
+      text-align: center; }
+      @media only screen and (max-width: 800px) {
+        .card-articleSet[data-style="4"] .filters-bar ol {
+          padding-bottom: 40px;
+          white-space: nowrap; } }
+    .card-articleSet[data-style="4"] .filters-bar li {
+      display: inline-block;
+      padding: 0 20px;
+      line-height: 1;
+      border-right: 1px solid #e0e0e0;
+      margin-bottom: 10px; }
+      @media only screen and (max-width: 580px) {
+        .card-articleSet[data-style="4"] .filters-bar li {
+          padding: 0 10px; } }
+      .card-articleSet[data-style="4"] .filters-bar li:last-child {
+        border-right-color: transparent; }
+        @media only screen and (max-width: 800px) {
+          .card-articleSet[data-style="4"] .filters-bar li:last-child {
+            border-right-color: #e0e0e0; } }
+      @media only screen and (max-width: 800px) {
+        .card-articleSet[data-style="4"] .filters-bar li:first-child {
+          border-left: 1px solid #e0e0e0; } }
+      .card-articleSet[data-style="4"] .filters-bar li .type-img {
+        opacity: 0.5; }
+      .card-articleSet[data-style="4"] .filters-bar li > span {
+        cursor: pointer;
+        position: relative;
+        display: inline-block;
+        font-size: 15px;
+        color: #9e9e9e;
+        vertical-align: text-bottom; }
+        .card-articleSet[data-style="4"] .filters-bar li > span::after {
+          content: "";
+          display: block;
+          position: absolute;
+          left: 49%;
+          bottom: -8px;
+          width: 1%;
+          height: 1px;
+          background-color: #000000;
+          opacity: 0; }
+        .card-articleSet[data-style="4"] .filters-bar li > span:hover {
+          color: #000000; }
+          .card-articleSet[data-style="4"] .filters-bar li > span:hover::after {
+            opacity: 1;
+            width: 100%;
+            left: 0%; }
+      .card-articleSet[data-style="4"] .filters-bar li.active .type-img {
+        opacity: 1; }
+      .card-articleSet[data-style="4"] .filters-bar li.active > span {
+        color: #000000; }
+        .card-articleSet[data-style="4"] .filters-bar li.active > span::after {
+          left: 0%;
+          opacity: 1;
+          width: 100%; }
+  .card-articleSet[data-style="4"] .article-list {
+    position: relative;
+    overflow: hidden; }
+    .card-articleSet[data-style="4"] .article-list ul {
+      margin-bottom: 0;
+      margin-left: -15px;
+      margin-right: -15px; }
+    .card-articleSet[data-style="4"] .article-list li {
+      width: 33.33333%;
+      float: left;
+      background-color: #ffffff;
+      padding: 0px 15px 50px; }
+      @media only screen and (max-width: 800px) {
+        .card-articleSet[data-style="4"] .article-list li {
+          width: 50%; } }
+      @media only screen and (max-width: 420px) {
+        .card-articleSet[data-style="4"] .article-list li {
+          width: 100%; } }
+      .card-articleSet[data-style="4"] .article-list li > a {
+        display: block;
+        text-decoration: none;
+        padding: 0px; }
+        .card-articleSet[data-style="4"] .article-list li > a:hover .card-text {
+          -webkit-transform: scale(1);
+              -ms-transform: scale(1);
+                  transform: scale(1);
+          opacity: 1;
+          -webkit-transition: all .5s ease;
+          -o-transition: all .5s ease;
+          transition: all .5s ease; }
+      .card-articleSet[data-style="4"] .article-list li .card-img > span {
+        font-size: 25px;
+        color: #ffffff;
+        display: inline-block;
+        width: 45px;
+        height: 45px;
+        text-align: center;
+        line-height: 47px;
+        border-radius: 100%;
+        border: 2px solid #ffffff;
+        background-color: rgba(0, 0, 0, 0.5);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -21px;
+        margin-left: -22.5px; }
+        .card-articleSet[data-style="4"] .article-list li .card-img > span > i {
+          margin-left: 2px; }
+      .card-articleSet[data-style="4"] .article-list li .card-text {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        text-align: center;
+        padding: 15px;
+        background-color: rgba(0, 0, 0, 0.7);
+        -webkit-transform: scale(0);
+            -ms-transform: scale(0);
+                transform: scale(0);
+        opacity: 0;
+        -webkit-transition: all .5s ease;
+        -o-transition: all .5s ease;
+        transition: all .5s ease; }
+      .card-articleSet[data-style="4"] .article-list li .article-list-type {
+        font-size: 13px; }
+        .card-articleSet[data-style="4"] .article-list li .article-list-type > span {
+          display: inline-block;
+          position: relative;
+          margin: 0 10px 0 0; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color] {
+            background-color: transparent; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='red'] {
+            color: #FF1744; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='orange'] {
+            color: #ef6c00; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='yellow'] {
+            color: #fdd835; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='green'] {
+            color: #43A047; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='light-green'] {
+            color: #8bc34a; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='blue'] {
+            color: #2196F3; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='teal'] {
+            color: #009688; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='deep-purple'] {
+            color: #673ab7; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='gold'] {
+            color: #ac7224; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='light-grey'] {
+            color: #bdbdbd; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='grey'] {
+            color: #616161; }
+          .card-articleSet[data-style="4"] .article-list li .article-list-type > span[data-color='black'] {
+            color: #000000; }
+      .card-articleSet[data-style="4"] .article-list li .card-text-name {
+        width: 100%;
+        display: block;
+        color: #fff;
+        font-size: 18px; }
+      .card-articleSet[data-style="4"] .article-list li .card-text-info {
+        line-height: 1.4;
+        -webkit-line-clamp: 2;
+        max-height: calc(15px * 1.4 * 2);
+        overflow: hidden; }
+      .card-articleSet[data-style="4"] .article-list li[data-color], .card-articleSet[data-style="4"] .article-list li[data-color] .article-list-type > span {
+        background-color: transparent; }
+      .card-articleSet[data-style="4"] .article-list li[data-filter-class*='-1'] > a {
+        border-color: #999999 !important; }
+      .card-articleSet[data-style="4"] .article-list li[data-filter-class*='-1'] .card-img {
+        -webkit-filter: grayscale(100%);
+        filter: grayscale(100%); }
+      .card-articleSet[data-style="4"] .article-list li[data-filter-class*='-1'] .card-img-content {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        background-blend-mode: color !important; }
+    .card-articleSet[data-style="4"] .article-list .viewmore a {
+      text-decoration: none; }

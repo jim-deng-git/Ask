@@ -1,0 +1,59 @@
+﻿@model IEnumerable<WorkV3.Models.SeekMailModel>
+@{
+    ViewBag.Title = "寄信歷程";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;    
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div class="lightbox-top-bar">
+            <div class="lightbox-top-bar-title">寄信歷程</div>
+        </div>
+        <table class="fixTable">
+            <thead>
+                <tr>
+                    <th>通知時間</th>
+                    <th>信件預覽</th>
+                    <th>名單數</th>
+                    <th>已讀數</th>
+                    <th>名單</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (WorkV3.Models.SeekMailModel item in Model) {
+                    IEnumerable<WorkV3.Models.SeekMailLogModel> logs = item.GetSendLogs();
+                    int logCount = logs.Count();
+                    int readCount = logs.Where(g => g.ReadDate != null).Count();
+                <tr>
+                    <td class="date">@item.SendDate.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td class="">
+                        <a class="btn-grey-darken-4-o transparent square btn-view" href="@Url.Action("MailView", new { siteId = siteId, id = item.ID })" title="信件預覽"><i class="cc cc-email"></i></a>
+                    </td>
+                    <td class="">@logCount</td>
+                    <td class="">@readCount (@(Math.Round((double)readCount * 100 / logCount, 1))%)</td>
+                    <td class="">
+                        <a class="btn-grey-darken-4-o transparent square openCenter" href="@Url.Action("MailLogList", new { siteId = siteId, id = item.ID })" title="名單"><i class="cc cc-user-o"></i></a>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>     
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $('a.btn-view').click(function (e) {
+            e.preventDefault();
+            Component.openLeft(this.href);
+        });
+
+        $('a.openCenter').click(function (e) {
+            e.preventDefault();
+            Component.openCenter(this.href);
+        });
+    </script>
+}

@@ -1,0 +1,285 @@
+﻿
+@{
+    ViewBag.Title = "編輯連結";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string DefaultSite = (ViewBag.DefaultSiteID != null) ? ViewBag.DefaultSiteID.ToString() : "";
+    List<long> DefaultMenus = (List<long>)ViewBag.DefaultMenus;
+    string DefaultPageTitle = ViewBag.DefaultPageTitle;
+}
+
+<div class="groove groove-1">
+    <ul id="ulLink" class="forms">
+        <li>
+            <div class="col-1">
+                <div class="title inline">連結名稱<span class="required">*</span></div>
+                <div class="input-field inline full">
+                    <input type="text" id="Descriptions" class="validate[required]" />
+                </div>
+            </div>
+        </li>        
+        <li>
+            <div class="col-1">
+                <div class="title inline">連結<span class="required">*</span></div>
+                <div id="outsideLink-box" class="input-field inline full">
+                    <input type="text" id="LinkInfo" class="m-B-none validate[funcCall[checkLink]]" placeholder="http://">
+                </div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input type="checkbox" id="IsOpenNew" />
+                        <label for="IsOpenNew">另開</label>
+                    </div>    
+                    <div>
+                        <input type="checkbox" id="LinkType" />
+                        <label for="LinkType">站內連結</label>
+                    </div>                
+                </div>
+            </div>
+            <div id="insideLink-box" class="inline-follow" style="display: none;">
+                <div class="input-field inline col-4">
+                    <select id="Sites" name="Sites">
+                        <option value="" disabled selected>網站</option>
+                    </select>
+                </div>
+                <div id="Menus-box">
+
+                </div>
+
+                <div class="input-field inline col-4" id="divPageName" style="display: none;">
+                    <input type='text' placeholder='單筆' class='flexdatalist' id='PageDetail' name='PageDetail' value="" />
+                    <input type='hidden' id='PageDetailID' name='PageDetailID' value="" />
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="control-bar flex">
+        <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        <input type="hidden" id="InlinkTitle"/>
+    </div>
+</div>
+
+@section FArea {
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    <script type="text/javascript">
+        var menus = [];
+        var item = parent.getLinkItem();
+        var isFirstLoad = true;
+        var defaultTitle = "", defaultValue = "";
+        //console.log(item);
+        $('#Descriptions').val(item.Descriptions);
+        $('#LinkInfo').val(item.LinkInfo);
+        if (item.IsOpenNew)
+            $('#IsOpenNew').prop('checked', true);
+        if (item.LinkType == "@ResourceLinkType.inLink.ToString()") {
+            $('#LinkType').prop("checked", true);
+            menus = item.InLinkPath.split(',');
+        }
+
+        $('input[id=LinkType]').on('click', function () {
+            setLinkBoxDisplay(this.checked);
+        });
+
+        defaultTitle = item.InlinkTitle;
+        defaultValue = item.Detail;
+        LoadSites();
+        setLinkBoxDisplay($("#LinkType").prop("checked"));
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (!v)
+                return '* 必填欄位';
+
+            if (!/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+
+        $('#btnSave').click(function () {
+            if ($('#ulLink').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                var InlinkTitle = "";
+                item.Descriptions = $.trim($('#Descriptions').val());
+                item.LinkInfo = $.trim($('#LinkInfo').val());
+                item.IsOpenNew = $('#IsOpenNew').prop('checked');
+                //item.LinkType = 'outLink'; // 暫時全部為外部連結
+                if ($('#LinkType').prop('checked'))
+                    item.LinkType = "@ResourceLinkType.inLink.ToString()";
+                else
+                    item.LinkType = "@ResourceLinkType.outLink.ToString()";
+                var pageDetailID = "", inlinkPath = "";
+                if ($("#PageDetailID").val() != "") {
+                    pageDetailID = $("#PageDetailID").val();
+                    for (var i = 0; i < $("select[name=Pages]").length; i++) {
+                        if ($("select[name=Pages]").eq(i).val() != "")
+                            inlinkPath += $("select[name=Pages]").eq(i).val() + ",";
+                    }
+                    InlinkTitle = $("#InlinkTitle").val();
+                }
+                else {
+                    for (var i = 0; i < $("select[name=Pages]").length; i++) {
+                        if ($("select[name=Pages]").eq(i).val() != "") {
+                            pageDetailID = $("select[name=Pages]").eq(i).val();
+                            inlinkPath += $("select[name=Pages]").eq(i).val() + ",";
+                        }
+                    }
+                    pageDetailID = pageDetailID;
+                }
+                //console.log(inlinkPath);
+                item.InLinkPath = inlinkPath;
+                item.InlinkTitle = InlinkTitle;
+                var siteID = $("#Sites").val()
+                if (siteID == null)
+                    siteID = 0;
+                //console.log(siteID);
+                item.SiteID = siteID;
+                item.Detail = pageDetailID;
+                parent.setLinkItem(item);
+                Component.closeLeft();
+            }
+        });
+
+        function setLinkBoxDisplay(isInLink) {
+
+            if (isInLink) {
+                $('#insideLink-box').slideDown();
+                $('#outsideLink-box').slideUp();
+            } else {
+                $('#insideLink-box').slideUp();
+                $('#outsideLink-box').slideDown();
+            }
+        }
+        function LoadSites() {
+            var url = "@Url.Action("GetSites", "Common")";
+            $.post(url, '', function (data) {
+                var sel = $("#Sites");
+                $(sel).html("");
+                $(sel).append("<option value='' disabled selected>網站</option>");
+                for (var i = 0; i < data.length; i++) {
+                    $(sel).append("<option value='" + data[i].Id + "'>" + data[i].Title + "</option>");
+                }
+                var defaultValue = item.SiteID;
+                if (defaultValue != "") {
+                    $(sel).val(defaultValue);
+                }
+                $(sel).change(function () {
+                    var v = $(this).val();
+                    if (v && v != "") {
+                        LoadChildMenu(v, "0", 0);
+                    }
+                }).material_select();
+                if (defaultValue != "") {
+                    $(sel).trigger("change");
+                }
+            });
+        }
+        function LoadChildMenu(siteID, parentID, lev) {
+            //console.log(lev);
+            $.post("@Url.Action("SelectMenus", "Statistic")", { SiteId: siteID, parentID: parentID }, function (data) {
+            var container = $("#Menus-box");
+            for (var k = lev; k < $(container).children("div").length; k++) {
+                $(container).children("div").eq((k)).remove();
+            }
+                @*if (parentID != "") {
+                    var chekIsMenuUrl = "@Url.Action("CheckIsMenu", "Common")";
+                    $.post(chekIsMenuUrl, { menuID: parentID }, function (data) {
+                        console.log(data);
+                        if (data == "true") {
+                            $("#divPageName").show();
+                            BindAutoComplete(parentID);
+                        }
+                        else {
+                            $("#divPageName").hide();
+                        }
+                    });
+                }*@
+                if (data.length > 0) {
+                    var defaultValue = "";
+                    if (lev <= menus.length)
+                    {
+                        defaultValue = menus[lev];
+                    }
+                    var IsMenuItem = false;
+                    var divContent2 = $("<div class=\"input-field inline col-4\"></div>");
+                    var sel = $('<select id="ChildRoot_' + parentID + '"  name="Pages" data-level="' + (lev + 1) + '"></select>');
+                    $(sel).append("<option value=''>次選單</option>");
+                    for (var i = 0; i < data.length; i++) {
+                        $(sel).append("<option value='" + data[i].ID + "'>" + data[i].Title + "</option>");
+                        //console.log(data[i].Type);
+                        if (data[i].Type == "@((int)WorkV3.Areas.Backend.ViewModels.StructureType.Menu)")
+                        { IsMenuItem = true; }
+                    }
+                    $(divContent2).append($(sel));
+                    $(container).append($(divContent2));
+                    if (defaultValue != "") {
+                        $(sel).val(defaultValue);
+                    }
+                    $(sel).material_select();
+                    var index = $(container).children("div").length;
+                    $(sel).change(function () {
+                        var v = $(this).val();
+                        if ($(container).children("div").length > 1) {
+                            for (var k = 2; k < $(container).children("div").length; k++) {
+                                $(container).children("div").eq((k)).remove();
+                            }
+                        }
+                        if (v && v != "") {
+                            LoadChildMenu(siteID, v, index);
+                        }
+
+                    }).material_select();
+                    if (defaultValue != "") {
+                        $(sel).trigger("change");
+                    }
+                    if (!IsMenuItem) {
+                        $("#divPageName").show();
+                        $("#PageDetailID").val("");
+                        $("#PageDetail").val("");
+                        BindAutoComplete(parentID);
+                        if (!isFirstLoad) {
+                            defaultTitle = "";
+                            defaultValue = "";
+                        }
+                        else {
+                            isFirstLoad = false;
+                        }
+                        $(divContent2).hide();
+                    }
+                    else {
+                        $("#divPageName").hide();
+                    }
+                    //if (index && isSetDefault && defaultValue != "")
+                    //{
+                    //    LoadChildMenu(defaultValue, index);
+                    //}
+                }
+        else {
+                    $("#divPageName").hide();
+                //$("#divPageName").show();
+                //BindAutoComplete(parentID);
+        }
+        });
+        }
+        function BindAutoComplete(menuID) {
+            var siteID = $("#Sites").val();
+            var menuUrl = "@Url.Action("SelectMenus", "Statistic")";
+            $("#PageDetail").val(defaultTitle);
+            $("#PageDetailID").val(defaultValue);
+            $('#PageDetail').flexdatalist("destroy");
+            var obj =   $('#PageDetail').flexdatalist({
+                selectionRequired: true,
+                minLength: 1,
+                valueProperty: ["ID"],
+                visibleProperties: ["Title"],
+                searchIn: 'Title',
+                focusFirstResult: true,
+                requestContentType: 'json',
+                url: menuUrl,
+                disabled: true,
+                params: { SiteID: siteID, parentID: menuID }
+            });
+            $(obj).on('select:flexdatalist', function (event, item, options) {
+                $("#PageDetailID").val(item.ID);
+                $("#InlinkTitle").val(item.Title);
+            });
+        }
+    </script>
+}
+

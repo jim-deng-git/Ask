@@ -1,0 +1,61 @@
+﻿@model MemberModels
+@{
+    ViewBag.Title = "管理者檢視";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">管理者檢視</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <ul class="forms">
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">帳號</div>
+                            <div class="title inline">@Model.LoginID</div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">名稱</div>
+                            <div class="title inline">@Model.Name</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">Email</div>
+                            <div class="title inline">@Model.Email</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">手機</div>
+                            <div class="title inline">@(string.IsNullOrEmpty(Model.Mobile)? "無資料": Model.Mobile)</div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">電話</div>
+                            <div class="title inline">@(string.IsNullOrEmpty(Model.Phone) ? "無資料" : Model.Phone)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">權限群組</div>
+                            <div class="title inline">@ViewBag.Group.Name</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">狀態</div>
+                            <div class="title inline">@(Model.MStatus == 0? "可正常登入後台": "無法正常登入後台")</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

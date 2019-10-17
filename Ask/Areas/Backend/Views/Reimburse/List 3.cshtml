@@ -1,0 +1,200 @@
+﻿@model IEnumerable<ReimbursesModel>
+@{
+    ViewBag.Title = "報支單";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    Pagination pagination = ViewBag.Pager;
+    ReimburseSearchModel search = ViewBag.Search;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <form id="searchForm" method="post" action="@Url.Action("List", new { siteId = siteId})">
+            <div id="SearchBox" class="search-box pushup">
+                <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">關鍵字</div>
+                            <div class="input-field inline full">
+                                <input type="text" id="Key" name="Key" value="@search.Key" placeholder="請輸入專案編號、專案名稱、聯絡人、等關鍵字">
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="col-2">
+                            <div class="title inline">申請日期</div>
+                            <div class="input-field inline full">
+                                <div class="input-field inline middle">
+                                    <input type='text' id="ApplyDateStart" name="ApplyDateStart" value="@search.ApplyDateStart.ToString("yyyy.MM.dd")" class="input-cal datepicker">
+                                </div>
+                                <span style="vertical-align: bottom;">-</span>
+                                <div class="input-field inline middle">
+                                    <input type='text' id="ApplyDateEnd" name="ApplyDateEnd" value="@search.ApplyDateEnd.ToString("yyyy.MM.dd")" class="input-cal datepicker">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <div class="title inline">申請月份</div>
+                            <div class="input-field inline full">
+                                <div class="input-field inline middle">
+                                    <input type='text' id="ApplyMonthStart" name="ApplyMonthStart" value="@search.ApplyMonthStart" class="input-cal datepickerM">
+                                </div>
+                                <span style="vertical-align: bottom;">-</span>
+                                <div class="input-field inline middle">
+                                    <input type='text' id="ApplyMonthEnd" name="ApplyMonthEnd" value="@search.ApplyMonthEnd" class="input-cal datepickerM">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    @*<li>
+                        <div class="col-1">
+                            <div class="title inline">申請金額</div>
+                            $
+                            <div class="input-field inline short">
+                                <input type='text'>
+                            </div>
+                            <span>~ </span>
+                            $
+                            <div class="input-field inline short">
+                                <input type='text'>
+                            </div>
+                        </div>
+                    </li>*@
+                    <li>
+                        <div class="col-1">
+                            <div class="title inline">單據狀態</div>
+                            <div class="radio-box inline full" data-checkGroup="Status">
+                                <div>
+                                    <input class="select-all" type="checkbox" id="allStatus" />
+                                    <label for="allStatus">全選</label>
+                                </div>
+                                @foreach (ReimburseStatus status in Enum.GetValues(typeof(ReimburseStatus)))
+                                {
+                                    <div>
+                                        <input type="checkbox" id="@status" name="Status" value="@((int)status)" @(search.Status?.Contains((int)status) == true ? "checked=\"checked\"" : "") />
+                                        <label for="@status">@WorkV3.Common.EnumExt.Description(status)</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <input type="hidden" id="ProjectID" name="ProjectID" value="@search.ProjectID" />
+                <div class="float-R"><a id="btnSearch" class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+            </div>
+        </form>
+        
+        <table class="fixTable" id="listTable">
+            <caption>
+                <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;"><i class="cc cc-arrow-left"></i></a>報支單
+                <span class="info"></span>
+                <div class="float-R">
+                    <a class="btn-grey-darken-4-o square tooltip-info openCenterEdit-m" href="@Url.Action("Edit",new { siteId = siteId, projectId = search.ProjectID})" title="新增"><i class="cc cc-plus"></i></a>
+                    @*<a class="btn-grey-o square tooltip-info" href="javascript:" title="複製"><i class="cc cc-content-copy"></i></a>*@
+                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                    <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選"><i class="cc cc-search"></i></a>
+                    
+                    <span data-for="del" style="display:none;">
+                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                    </span>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th>序</th>
+                    <th>專案編號</th>
+                    <th>專案名稱</th>
+                    <th>申請日期</th>
+                    <th>報價日期</th>
+                    <th>申請人</th>
+                    @*<th>申請金額</th>*@
+                    <th>單據狀態</th>
+                    <th>編輯</th>
+                    @*<th>下載</th>*@
+                </tr>
+            </thead>
+            <tbody>
+                @{ int idx = 1;}
+                @foreach(var item in Model)
+                {
+                    <tr data-id="@item.ID">
+                        <td class="sort edit">@idx</td>
+                        <td class="text-L">@item.ProjectNumber</td>
+                        <td class="text-L">@item.ProjectTitle</td>
+                        <td>@item.ApplyMonth.ToString("yyyy/MM")</td>
+                        <td>@item.ApplyDate.ToString("yyyy/MM/dd")</td>
+                        <td>@item.ApplyName</td>
+                        @*<td>@item.Total.ToString("N0")</td>*@
+                        <td>@WorkV3.Common.EnumExt.Description((ReimburseStatus)item.Status)</td>
+                        <td class="icon"><a class="btn-grey-darken-4-o transparent square openCenterEdit-m" href="@Url.Action("Edit",new { siteId = siteId, Id = item.ID})"><i class="cc cc-edit-o"></i></a></td>
+                        @*<td class="icon"><a class="btn-grey-darken-4-o transparent square" href=""><i class="cc cc-print"></i></a></td>*@
+                    </tr>
+                    idx++;
+                }
+            </tbody>
+        </table>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", pagination)
+        </div>
+    </div>
+</div>
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+
+        $(window).on('load',function() {
+            if ($('#SearchBox').length) {
+                var $SearchBoxH = $('#SearchBox').outerHeight();
+                if( $('#SearchBox').hasClass('pushup')) {
+                    $('#closeSerach').on('click', function(){
+                        $('#SearchBox').removeClass('pushup');
+                    });
+                }
+                $('#openSearch').on('click', function() {
+                    $('#SearchBox').toggleClass('pushup');
+                });
+            }
+        });
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+
+        function refreshList() {
+            location.replace(location.href);
+        }
+
+        var listObj = Component.dataList('listTable');
+        listObj.deleted = function (delIds) {
+            Component.confirm('確定棄單？', function (check) {
+                if (check) {
+                    $.post("@Url.Action("ReimburseDel")", { 'ids': delIds }, function () {
+                        location.replace(location.href);
+                    });
+                }
+            });
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+    </script>
+}

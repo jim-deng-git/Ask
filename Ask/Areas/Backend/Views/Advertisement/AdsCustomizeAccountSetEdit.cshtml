@@ -1,0 +1,181 @@
+﻿@model AdsCustomizeAccountSet
+@{
+    ViewBag.Title = "刊登時間和費用設定";
+    ViewBag.BodyClass = "body-lightBox Edit";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    Model.IssueSetType = string.IsNullOrEmpty(Model.IssueSetType) ? IssueSetType.IssueTime : Model.IssueSetType ;
+}
+
+<div class="groove groove-1">
+    <form id="editForm" action="@Url.Action("AdsCustomizeAccountSetEdit")" method="post" enctype="multipart/form-data">
+        <ul class="forms">
+            <li>
+                <div class="col-1">
+                    <div class="title-admin-page bg-transparent">
+                        刊登時間和費用設定
+                    </div>
+                </div>
+            </li>
+            @*<li>
+                <div class="col-1">
+                    <div class="title inline">企業名稱</div>
+                    <div class="input-field inline full">
+                        <input id="" type="text">
+                    </div>
+                </div>
+            </li>*@
+            <li>
+                <div class="col-1">
+                    <div class="title inline">刊登期間</div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.IssueStart, "{0:yyyy/MM/dd HH:mm}", new { @Class = "input-cal datetimepicker", required = string.Empty })
+                    </div>~
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.IssueEnd, "{0:yyyy/MM/dd HH:mm}", new { @Class = "input-cal datetimepicker", required = string.Empty })
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">計價方式</div>
+                    <div class="radio-box inline">
+                        @for (int i = 0; i < Model.IssueSetTypeVM.Count; i++)
+                        {
+                            <div>
+                                <input class="with-gap pricing_method" name="IssueSetType" type="radio" value="@Model.IssueSetTypeVM[i].Value" id="@Model.IssueSetTypeVM[i].Value" @(Model.IssueSetType == Model.IssueSetTypeVM[i].Value ? "checked='checked'" : "")>
+                                <label for="@Model.IssueSetTypeVM[i].Value">@Model.IssueSetTypeVM[i].Text.Replace("<br />", "")</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </li>
+            <li class="pricing_method_content @(IssueSetType.IssueTime)">
+                <div class="col-1">
+                    <div class="title inline">期間總額</div>
+                    <div class="input-field inline mini">
+                        <select name="CostOfPeriodCurrency" id="">
+                            @for (int i = 0; i < Model.CurrencyItemVM.Count; i++)
+                        {
+                                <option value="@Model.CurrencyItemVM[i].Value" @(Model.CostOfPeriodCurrency ==Model.CurrencyItemVM[i].Value? "checked":"" )>@Model.CurrencyItemVM[i].Text</option>
+                        }
+                        </select>
+                    </div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.CostOfPeriod)
+                    </div>
+                </div>
+            </li>
+            <li class="pricing_method_content @(IssueSetType.Click)">
+                <div class="col-1">
+                    <div class="title inline">點擊計價</div>
+                    <div class="input-field inline mini">
+                        <select name="BillingByClickCurrency" id="">
+                            @for (int i = 0; i < Model.CurrencyItemVM.Count; i++)
+                            {
+                                    <option value="@Model.CurrencyItemVM[i].Value" @(Model.BillingByClickCurrency == Model.CurrencyItemVM[i].Value? "checked":"" )>@Model.CurrencyItemVM[i].Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m=>m.BillingByClick)
+                    </div>
+                    <span>/ 次</span>
+                </div>
+            </li>
+            <li class=" pricing_method_content @(IssueSetType.Click)">
+                <div class="col-1">
+                    <div class="title inline">瀏覽計價</div>
+                    <div class="input-field inline mini">
+                        <select name="BillingByBrowseCurrency" id="">
+                            @for (int i = 0; i < Model.CurrencyItemVM.Count; i++)
+                        {
+                                <option value="@Model.CurrencyItemVM[i].Value" @(Model.BillingByBrowseCurrency == Model.CurrencyItemVM[i].Value? "checked":"" )>@Model.CurrencyItemVM[i].Text</option>
+                        }
+                        </select>
+                    </div>
+                    <div class="input-field inline">
+                        @Html.TextBoxFor(m => m.BillingByBrowse)
+                    </div>
+                    <span>/ 次</span>
+                    <div class="alert inline transparent">
+                        <i class="cc cc-attention"></i>
+                        <div>如不計價，請設為 0。</div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="col-1">
+                    <div class="title inline">備註</div>
+                    <div class="input-field inline full">
+                        @Html.TextBoxFor(m => m.Remark)
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="control-bar">
+            <div class="bar-item float-L">
+                <div class="">
+                    @Html.CheckBoxFor(m => m.IsIssue, new { @Id = "published", @checked = Model.IsIssue })
+                    <label for="published">刊登</label>
+                </div>
+            </div>
+            @Html.HiddenFor(m => m.ID)
+            @Html.HiddenFor(m => m.AdsCustomize_ID)
+            <a class="btn-cancel" onclick="parent.$.colorbox.close();" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="Savebtn" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+        </div>
+    </form>
+</div>
+
+@BundleConfig.Component()
+<script type="text/javascript">
+        $(function() {
+            $('.pricing_method').change(function(){
+                if($(this).val()){
+                    $('.pricing_method_content').hide();
+                    $('.'+$(this).attr('id')).show();
+                }
+            });
+            $('.pricing_method_content').hide();
+            $('.' + $('.pricing_method:checked').attr('id')).show();
+
+            $("#Savebtn").click(function () {
+                if ($('#IssueStart').val() != '' && $('#IssueEnd').val() != '') {
+                    var form = $('#editForm');
+
+                    $.ajax({
+                        url: '@Url.Action("IsDurationOverlapped", "Advertisement")',
+                        data: {
+                            ID: '@Model.ID',
+                            AdsCustomize_ID: '@Model.AdsCustomize_ID',
+                            startTime: $('#IssueStart').val().replace('.', '/'),
+                            endTime: $('#IssueEnd').val().replace('.', '/'),
+                        },
+                        method: 'GET',
+                        success: function (response) {
+                            if (response == '1') {
+                                Component.alert('刊登期間重複');
+                            } else {
+                                form.submit();
+                                return
+                            }
+                        }
+                    });
+
+                } else {
+                    Component.alert('刊登期間為必填');
+                }
+
+            });
+        });
+
+        @if ((ViewBag.Exit as bool?) == true)
+        {
+        <text>
+            Component.alert('刊登時間和費用設定已儲存', function () {
+            top.mainWebContent.refresh_custom_detail();
+            parent.$.colorbox.close();
+        });
+        </text>
+        }
+</script>

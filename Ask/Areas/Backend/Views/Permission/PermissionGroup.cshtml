@@ -1,0 +1,122 @@
+﻿@model IEnumerable<GroupModels>
+@{
+    ViewBag.Title = "權限群組";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    string webUrl = ViewBag.WebUrl;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+
+    <link rel="stylesheet" href="~/css/Cards/Cooperation/style1.css" />
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        var listObj = Component.dataList('listTable');
+
+        listObj.sorted = function (sortItems) {
+            $.post("Sort", { "items": sortItems }, function () {
+                location.replace(location.href);
+            });
+        }
+
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (check) {
+                if (!check)
+                    return;
+
+                $.post('@Url.Action("DeletePermission", "Permission")', { 'ids': delIds });
+                location.replace(location.href);
+            });
+
+        }
+
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+
+    </script>
+}
+
+    <div class="groove groove-1">
+        <div class="card shadow-none">
+            <table id="listTable" class="fixTable">
+                <caption>
+                    權限群組
+                    <span class="info"></span>
+                    <div class="float-R">
+                        <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                        <a class="btn-grey-darken-4-o square tooltip-info openRight" href="@Url.Action("GroupSetting","Permission")" title="新增"><i class="cc cc-plus"></i></a>
+                        <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                        <span data-for="del" style="display:none;">
+                            <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                            <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        </span>
+                        <span data-for="sort" style="display:none;">
+                            <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                            <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        </span>
+                    </div>
+                </caption>
+                <thead>
+                    <tr>
+                        @*<th>選</th>*@
+                        <th>序</th>
+                        <th>標示</th>
+                        <th>群組名稱</th>
+                        <th>說明</th>
+                        <th>狀態</th>
+                        <th>編輯</th>
+                        <th>開放單元</th>
+                        <th>管理者</th>
+                    </tr>
+                </thead>
+                <tbody>
+@for (int i = 0, len = Model.Count(); i < len; ++i)
+{
+    GroupModels item = Model.ElementAt(i);
+                    <tr  data-id="@item.Id">
+                        @*<td class="icon edit"></td>*@
+                        <td class="sort">@(i+1)</td>
+                        <td class="">
+                            <a href="javascript:;" class="@(String.IsNullOrEmpty(item.Color)? "": $"bg-{item.Color}") cc-custom-group-icon">
+                                @if (String.IsNullOrEmpty(item.Icon))
+                                {
+                            <img src="~/images/cooperation/01.png" >
+                                }
+                                else
+                                {
+                            <img src="~/images/cooperation/@(item.Icon).png">
+                                }
+                            </a>
+                        </td>
+
+                        <td class="">@item.Name</td>
+                        <td class="">@item.Desc</td>
+                        <td class="">@Html.Raw(((item.Status)?"正常":"<span  class=\"font-red\">停權</span>"))</td>
+                        <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openCenter" href="@Url.Action("GroupSetting", "Permission", new { ID = item.Id })"><i class="cc cc-edit-o"></i></a></td>
+                        <td class="icon"><a class="btn-grey-darken-4-o transparent square openCenter" href="@Url.Action("PermissionSetting", "Permission", new { ID = item.Id })"><i class="cc cc-list"></i></a></td>
+                        <td class="icon"><a class="btn-grey-darken-4-o transparent square openCenter" href="@Url.Action("PermissionGroup_User", "Permission", new { ID = item.Id })"><i class="cc cc-user-o"></i>@item.MemberCount</a></td>
+                    </tr>
+}
+                </tbody>
+            </table>
+        </div>
+    </div>

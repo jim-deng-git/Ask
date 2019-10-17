@@ -1,0 +1,9 @@
+h1.card-titlebar[data-style="1"] {
+  font-size: 28px;
+  letter-spacing: 2px;
+  text-align: center; }
+  h1.card-titlebar[data-style="1"] .titlebar-sub {
+    margin-top: 5px;
+    font-size: 16px;
+    letter-spacing: 0px;
+    color: #999999; }

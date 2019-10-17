@@ -1,0 +1,66 @@
+.card-Parallax[data-style="1"] .parallax-text {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+
+.card-Parallax[data-style="1"] .parallax-text, .card-Parallax[data-style="1"] .parallax-img, .card-Parallax[data-style="1"] .parallax-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0; }
+
+.card-Parallax[data-style="1"] {
+  height: 240px;
+  overflow: hidden;
+  position: relative; }
+  @media only screen and (max-width: 800px) {
+    .card-Parallax[data-style="1"] {
+      height: 0;
+      padding-bottom: 56.25%; } }
+  .card-Parallax[data-style="1"] .parallax-text {
+    z-index: 3;
+    padding: 40px 15%;
+    color: #ffffff;
+    text-align: right;
+    overflow: hidden;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-box-align: end;
+        -ms-flex-align: end;
+            align-items: flex-end;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column; }
+    .card-Parallax[data-style="1"] .parallax-text .parallax-text-title {
+      font-size: 2.6rem;
+      margin-bottom: 5px;
+      text-shadow: -1px 1px 10px #616161; }
+    .card-Parallax[data-style="1"] .parallax-text .parallax-text-content {
+      text-shadow: -1px 1px 6px #757575; }
+  .card-Parallax[data-style="1"] .parallax-img {
+    z-index: -1; }
+    .card-Parallax[data-style="1"] .parallax-img img {
+      display: none;
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      -webkit-transform: translate3d(0, 0, 0);
+              transform: translate3d(0, 0, 0);
+      -webkit-transform: translateX(-50%);
+          -ms-transform: translateX(-50%);
+              transform: translateX(-50%); }
+      @media only screen and (max-width: 800px) {
+        .card-Parallax[data-style="1"] .parallax-img img {
+          min-height: 100%;
+          max-width: inherit; } }
+  .card-Parallax[data-style="1"] .parallax-blur {
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.5); }
+
+html.ie10 .card-Parallax[data-style="1"] .parallax-img img {
+  display: block; }

@@ -1,0 +1,1987 @@
+﻿@model WorkV3.Models.EventModels
+
+@{
+    ViewBag.Title = "活動編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    WorkV3.Common.SitePage page = null;
+
+    if (Model.CardNo != 0)
+    {
+        page = WorkV3.Models.DataAccess.CardsDAO.GetPage(Model.CardNo);
+    }
+
+    WorkV3.Common.SitePage signUpPage = null;
+
+    if (Model.SignUp.CardNo.HasValue && Model.SignUp.CardNo != 0)
+    {
+        signUpPage = WorkV3.Models.DataAccess.CardsDAO.GetPage(Model.SignUp.CardNo.Value);
+    }
+
+    string uploadUrl = ViewBag.UploadUrl;
+    IEnumerable<WorkV3.Models.EventTypesModels> types = ViewBag.Types;
+    IEnumerable<CategoryModels> categories = ViewBag.Categories;
+    IEnumerable<long> eventCategories = ViewBag.EventCategories;
+    string siteName = ViewBag.SiteName.ToLower();
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = siteId, menuId = menuId };
+    var chipQuery = new { siteId = siteId, menuId = menuId, eventId = Model.ID };
+
+    long templateId = (ViewBag.TemplateID as long?) ?? 0;
+
+    WorkV3.Models.FormModel form = ViewBag.Form;
+    string formUploadUrl = ViewBag.FormUploadUrl;
+
+    IEnumerable<WorkV3.Models.MenusModels> formAndQuestionnaireMenus = ViewBag.FormAndQuestionnaireMenus;
+    IEnumerable<RewardModel> rewards = ViewBag.Rewards;
+}
+
+@section FArea {
+    <link href="~/css/Cards/Form/style1.css" rel="stylesheet" />
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.JWPlayer()
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.Validate()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        (function () {
+            var editUrl = '@Html.Raw(Url.Action("ParagraphEdit", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID }))';
+            var matchUrl = '@Html.Raw(Url.Action("ParagraphMatch", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.menuId }))';
+            var matchDelUrl = '@Html.Raw(Url.Action("ParagraphMatchDel", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.menuId }))';
+            Component.paragraph('#ulParagraphs', editUrl, matchUrl, matchDelUrl, '@Model.ID');
+
+            $('.btn-openDetail').on('click', function () {
+                var $this = $(this),
+                    SettingBox = $this.closest('.detailSetting').children('ul.forms');
+                if (SettingBox.is(':visible')) {
+                    SettingBox.slideUp();
+                    $this.html('<i class="cc cc-settings"></i>' + $this.attr('data-text'));
+                } else {
+                    SettingBox.slideDown();
+                    $this.html('<i class="cc cc-close"></i>收合');
+                }
+            })@((siteId == 1 && menuId == 17080218385442832)? "" : ".click()" );
+
+            $('.btn-openEventDetail').on('click', function () {
+                var $this = $(this),
+                    SettingBox = $this.closest('.detailSetting').children('ul.forms');
+                if (SettingBox.is(':visible')) {
+                    SettingBox.slideUp();
+                    $this.html('<i class="cc cc-settings"></i>' + $this.attr('data-text'));
+                } else {
+                    SettingBox.slideDown();
+                    $this.html('<i class="cc cc-close"></i>收合');
+                }
+            });
+
+            $('#CustomIcon').change(function () {
+                if (this.checked) {
+                    $('#imgSetting-box').slideDown();
+                } else {
+                    $('#imgSetting-box').slideUp();
+                }
+            }).change();
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+
+            $('#DateKind').change(function () {
+                var v = $(this).val();
+                var startElm = $(this).closest('div.input-field').next();
+                var endElm = startElm.next();
+                if (v == '單日') {
+                    startElm.children('input').prop('placeholder', '活動日期');
+                    endElm.fadeOut();
+                } else {
+                    startElm.children('input').prop('placeholder', '開始日期');
+                    endElm.fadeIn();
+                }
+            }).triggerHandler('change');
+
+            $('#timeInfo').each(function () {
+                var descOuterElm = $(this).closest('div.radio-box').next();
+
+                $(this).click(function () {
+                    if (this.checked) {
+                        descOuterElm.slideDown();
+                    } else {
+                        descOuterElm.slideUp();
+                        descOuterElm.find('input').val('');
+                    }
+                });
+
+                if (descOuterElm.find('input').val())
+                    $(this).click();
+            });
+            
+            $('#IsIssue').click(function () {
+                if (this.checked)
+                    $('#divIssueRange').fadeIn();
+                else
+                    $('#divIssueRange').fadeOut();
+            }).triggerHandler('click');
+
+            $('#dropdown-store').each(function () {
+                if ($(this).find('input:not(:checked)').length == 0)
+                    $('#indeterminate-checkbox').prop('checked', true);
+            });
+
+            if ($('#CustomIcon').prop('checked'))
+                $('#CustomIcon').triggerHandler('click');
+
+            $('#divGuest').on('change', 'select', function () {
+                var v = $(this).val();
+                if (v) {
+                    $(this).closest('div.input-field').next().fadeOut();
+                } else {
+                    $(this).closest('div.input-field').next().fadeIn();
+                }
+            }).find('select').change();
+
+            Component.singleImageUpload('#fIcon', '@(Href("~/"))', '@uploadUrl');
+        })();
+
+        function setKindItems(kindType, items) {
+            items = items || [];
+
+            var outerElm = $('#div' + kindType);
+            outerElm.children('div.chip').each(function () {
+                var id = $(this).attr('data-id');
+                var index = 0, len = items.length;
+                for (; index < len; ++index) {
+                    if (items[index].ID == id)
+                        break;
+                }
+                if (index < len)
+                    items.splice(index, 1);
+                else
+                    $(this).fadeOut(function () {
+                        $(this).remove();
+                    });
+            });
+
+            var html = '';
+            for (var i = 0, len = items.length; i < len; ++i) {
+                var item = items[i];
+                html += '<div class="chip" data-id="' + item.ID + '">';
+                if (item.Photo)
+                    html += '<img src="' + item.Photo + '" alt="' + item.Name + '" /> ';
+                html += item.Name;
+
+                if (kindType == 'Guest') {
+                    html +=
+                        '<div class="input-field inline short m-T-none m-L-4">' +
+                        '   <select>' +
+                        '       <option>講師</option>' +
+                        '       <option>貴賓</option>' +
+                        '       <option>主講人</option>' +
+                        '       <option>主持人</option>' +
+                        '       <option>座長</option>' +
+                        '       <option>表演者</option>' +
+                        '       <option value="">自行填寫</option>' +
+                        '   </select>' +
+                        '</div>' +
+                        '<div class="input-field inline short m-T-none" style="display: none;">' +
+                        '   <input type="text" />' +
+                        '</div>' +
+                        '<input type="hidden" data-field="Kind" />';
+                }
+
+                html += '</div>';
+            }
+
+            html = $(html);
+            var lastItem = outerElm.children('div.chip:last');
+            if (lastItem.length)
+                lastItem.after(html);
+            else
+                outerElm.prepend(html);
+
+            html.find('select').material_select();
+        }
+
+        function checkLink(field) {
+            var v = $.trim(field.val());
+            if (v && !/^https?:\/\//i.test(v))
+                return '* 連結格式必須以 http:// 或 https:// 開頭';
+        }
+
+        @if (ViewBag.IsNew) {
+            <text>
+            $('#divSignUpTab').click(function () {
+                $('div.formError').remove();
+                $('#btnPrev').show();
+                if ($('#divSignUpForm').is(':visible')) {
+                    $('#btnNext').show();
+                    $('#btnSave').hide();
+                } else {
+                    $('#btnNext').hide();
+                    $('#btnSave').show();
+                }
+            });
+
+            $('#divInfoTab').click(function () {
+                $('div.formError').remove();
+                $('#btnNext').show();
+                $('#btnPrev,#btnSave').hide();
+            });
+
+            $('#divSignUpForm').click(function () {
+                $('div.formError').remove();
+                $('#btnNext').hide();
+                $('#btnSave').show();
+            });
+
+            $('#btnPrev').click(function () {
+                $('#divSwiperWrapper').children('.selected').prev().click();
+            });
+
+            $('#btnNext').click(function () {
+                $('#divSwiperWrapper').children('.selected').next().click();
+            });
+            </text>
+        }
+
+        function checkDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var date = Component.parseDate(v);
+                if (!date)
+                    return '* 日期格式錯誤';
+            }
+        }
+
+        function checkRequiredDate(field) {
+            var v = $.trim(field.val());
+            if (!v)
+                return '* 必填欄位';
+
+            var date = Component.parseDate(v);
+            if (!date)
+                return '* 日期格式錯誤';
+        }
+
+        function checkEndDate(field) {
+            var v = $.trim(field.val());
+            if (v) {
+                var endDate = Component.parseDate(v);
+                if (!endDate)
+                    return '* 日期格式錯誤';
+
+                var startDate = $.trim(field.prevAll('input:first').val());
+                if (startDate) {
+                    startDate = Component.parseDate(startDate);
+                    if (startDate && startDate > endDate)
+                        return '* 結束日期不能小於開始日期';
+                }
+            }
+        }
+
+        $('#btnSave').click(function () {
+            $('#divInfoTab').click();
+            setTimeout(function () {
+                if ($('#divInfoContent').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                    $('#divSignUpTab').click();
+
+                    setTimeout(function () {
+                        if ($('#divSignUpContent').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                            window.scrollTo(0, document.body.scrollHeight);
+                            if ($('#divControlBar').validationEngine('validate', { promptPosition: 'topLeft' })) {
+                                $('div.chips').each(function () {
+                                    var id = this.id;
+                                    var vals = [];
+                                    $(this).find('div[data-id]').each(function () {
+                                        var chipId = $(this).attr('data-id');
+                                        if (id == 'divGuest') {
+                                            var selectElm = $(this).find('select');
+                                            var kind = selectElm.val();
+                                            if (!kind)
+                                                kind = $.trim(selectElm.closest('div.input-field').next().find('input').val());
+                                            vals.push({ ID: chipId, Kind: kind });
+                                        } else {
+                                            vals.push(chipId);
+                                        }
+                                    });
+
+                                    if (vals.length > 0) {
+                                        $(this).children('input').val(JSON.stringify(vals));
+                                    }
+                                });
+
+                                var fields = [];
+                                $('#liCustomField').children('div.field-outer').each(function () {
+                                    var item = $.parseJSON($(this).find('input[type="hidden"]').val());
+                                    fields.push(item);
+                                });
+                                if (fields.length)
+                                    $(document.getElementsByName('formFields')).val(JSON.stringify(fields));
+
+                                var admins = [];
+                                $('#divAdmins').find('div.chip').each(function () {
+                                    admins.push($(this).data('val'));
+                                });
+                                if (admins.length)
+                                    $('#formAdmins').val(JSON.stringify(admins));
+
+                                $('#editForm').submit();
+                            }
+                        }
+                    }, 600);
+                }
+            }, 600);
+        });
+
+        $('#btnTemplate').click(function () {
+            var src = $(this);
+            if (!src.hasClass('openEdit')) {
+                Component.confirm('存成範本前會將當前頁面儲存，確定要繼續嗎？', function (isOk) {
+                    if (isOk) {
+                        src.next().val('true');
+                        $('#btnSave').click();
+                    }
+                });
+            }
+        });
+
+        $('#btnCancel').click(function () {
+            @if(ViewBag.FromTemplate as bool? == true) {
+            <text>
+            $.post('EventDel?siteId=@ViewBag.SiteID&menuId=@ViewBag.MenuID', { 'ids': [ '@Model.ID' ] }, function () {
+                Component.closeLeft();
+                Component.closeCenter();
+            });
+            </text>
+            } else {
+            <text>
+            Component.closeLeft();
+            Component.closeCenter();
+            </text>
+            }
+        });
+
+        @if(ViewBag.Exit as bool? == true) {
+        <text>
+        Component.alert('活動已儲存', function () {
+            parent.refreshList();
+            Component.closeCenter();
+        });
+        </text>
+        } else if(templateId > 0) {
+        <text>
+        setTimeout(function () {
+            $('#btnTemplate').click();
+        }, 500);
+        </text>
+        }
+    </script>
+
+    <script type="text/javascript">
+        function changeSignFormVisible(isShow) {
+            var isNew = @(ViewBag.IsNew ? "true" : "false");
+
+            if (isShow) {
+                $('#divSignUpForm').show();
+                if (isNew) {
+                    $('#btnNext').show();
+                    $('#btnSave').hide();
+                }
+            } else {
+                $('#divSignUpForm').hide();
+                if (isNew) {
+                    if ($('#divSignUpTab').hasClass('selected')) {
+                        $('#btnNext').hide();
+                        $('#btnSave').show();
+                    }
+                }
+            }
+        }
+
+        $(function () {
+
+            // 報名方式
+            $("input[name='SignUp.Type']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "rbSignUpType1":
+                        $("#signUpOutside").slideUp();
+                        $("#signUpInfo").slideDown();
+                        $('#signUpSingle').slideDown();
+                        changeSignFormVisible(true);
+                        break;
+                    case "rbSignUpType2":
+                        $("#signUpOutside").slideDown();
+                        $("#signUpInfo").slideDown();
+                        $('#signUpSingle').slideUp();
+                        changeSignFormVisible(false);
+                        break;
+                    case "rbSignUpType3":
+                        $("#signUpInfo").slideUp();
+                        $("#signUpOutside").slideUp();
+                        changeSignFormVisible(false);
+                        break;
+                }
+            }).filter(":checked").trigger("change");
+
+            // 錄取方式
+            $("input[name='SignUp.AdmissionMethod']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "rbAdmissionMethod1":
+                        $(".remainingText1").slideDown();
+                        $(".remainingText2").slideUp();
+                        $("#containerPublicRemainingQuota").slideDown();
+                        break;
+                    case "rbAdmissionMethod2":
+                        $(".remainingText1").slideUp();
+                        $(".remainingText2").slideDown();
+                        $("#containerPublicRemainingQuota").slideUp();
+                        break;
+                    case "rbAdmissionMethod3":
+                        $(".remainingText1").slideUp();
+                        $(".remainingText2").slideDown();
+                        $("#containerPublicRemainingQuota").slideUp();
+                        break;
+                }
+            }).filter(":checked").trigger("change");
+
+            // 備取名額
+            $("input[name='SignUp.IsWaitingQuota']").on('change', function () {
+                if (this.checked) {
+                    $("#containerWaitingQuota").slideDown();
+                } else {
+                    $("#containerWaitingQuota").slideUp();
+                }
+            });
+
+            // 備取名額 初始
+            if ($("input[name='SignUp.IsWaitingQuota']").prop("checked")) {
+                $("#containerWaitingQuota").slideDown();
+            } else {
+                $("#containerWaitingQuota").slideUp();
+            }
+
+            // 保留名額
+            $("input[name='SignUp.IsReserveQuota']").on('change', function () {
+                if (this.checked) {
+                    $("#containerReserveQuota").slideDown();
+                } else {
+                    $("#containerReserveQuota").slideUp();
+                }
+            });
+
+            // 保留名額 初始
+            if ($("input[name='SignUp.IsReserveQuota']").prop("checked")) {
+                $("#containerReserveQuota").slideDown();
+            } else {
+                $("#containerReserveQuota").slideUp();
+            }
+
+            // 公開剩餘人數
+            $("input[name='SignUp.IsPublicRemainingQuota']").on('change', function () {
+                if (this.id == "rbIsPublicRemainingQuotaTrue") {
+                    $("#containerRemainingText").slideUp();
+                } else {
+                    $("#containerRemainingText").slideDown();
+                }
+            }).filter(":checked").trigger("change");
+
+            // 取消報名
+            $("input[name='SignUp.IsClientCancel']").on('change', function () {
+                if (this.id == "rbIsClientCancelTrue") {
+                    $(".containerIsClientCancel").slideDown();
+                } else {
+                    $(".containerIsClientCancel").slideUp();
+                }
+            }).filter(":checked").trigger("change");
+
+            // 現場報到注意事項
+            $("input[name='SignUp.IsReportConsiderations']").on('change', function () {
+                if (this.checked) {
+                    $("#containerReportConsiderations").slideDown();
+                } else {
+                    $("#containerReportConsiderations").slideUp();
+                }
+            });
+
+            // 現場報到注意事項 初始
+            if ($("input[name='SignUp.IsReportConsiderations']").prop("checked")) {
+                $("#containerReportConsiderations").slideDown();
+            } else {
+                $("#containerReportConsiderations").slideUp();
+            }
+
+            // 現場報到注意事項
+            Component.editor("SignUp_ReportConsiderations");
+
+            // 機台底圖
+            Component.singleImageUpload('#ReportBackgroundFile', '@(Href("~/"))', '@uploadUrl');
+
+            // 報到地點是否同活動地點
+            $("input[name='SignUp.IsReportPlace']").on('change', function () {
+                if (this.id == "rbIsReportPlaceFalse") {
+                    $(".containerReportPlace").slideDown();
+                } else {
+                    $(".containerReportPlace").slideUp();
+                }
+            }).filter(":checked").trigger("change");
+
+            // 問卷類型
+            $("input[name='SignUp.QuestionnairesType']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "rbQuestionnairesType1":
+                        $(".containerQuestionnaires").slideUp();
+                        $(".containerQuestionnairesType2").slideUp();
+                        $(".containerQuestionnairesType3").slideUp();
+                        break;
+                    case "rbQuestionnairesType2":
+                        $(".containerQuestionnaires").slideDown();
+                        $(".containerQuestionnairesType2").slideDown();
+                        $(".containerQuestionnairesType3").slideUp();
+                        break;
+                    case "rbQuestionnairesType3":
+                        $(".containerQuestionnaires").slideDown();
+                        $(".containerQuestionnairesType2").slideUp();
+                        $(".containerQuestionnairesType3").slideDown();
+                        break;
+                }
+            }).filter(":checked").trigger("change");
+
+            @* neil 2018/04/18 集點活動新增 start *@
+            // 集點活動類型
+            $("input[name='SignUp.RewardType']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "rbRewardType1":
+                        $(".containerReward").slideUp();
+                        $(".containerRewardType2").slideUp();
+                        $(".containerRewardType3").slideUp();
+                        break;
+                    case "rbRewardType2":
+                        $(".containerReward").slideDown();
+                        $(".containerRewardType2").slideDown();
+                        $(".containerRewardType3").slideUp();
+                        break;
+                    case "rbRewardType3":
+                        $(".containerReward").slideDown();
+                        $(".containerRewardType2").slideUp();
+                        $(".containerRewardType3").slideDown();
+                        break;
+                }
+            }).filter(":checked").trigger("change");
+
+            @*$('#RewardID').on('change', function(){
+                var rewardId = $(this).val();
+                if(rewardId === 0)
+                    return;
+
+                $('#reward-edit').prop('href', `@Html.Raw(Url.Action("Edit", "Reward", new { SiteID = ViewBag.SiteID, RedirectUrl = Html.Encode(Request.Url.AbsoluteUri)}))&ID=${rewardId}`);
+                $('#participant-list').prop('href', `@Url.Action("ParticipantList", "Reward", new { SiteID = ViewBag.SiteID, area = "Backend" })&ID=${rewardId}`);
+                $('#participant-analysis').prop('href', `@Url.Action("RewardInfo", "Reward", new { SiteID = ViewBag.SiteID })&ID=${rewardId}`);
+            }).trigger('change');*@
+
+            var rewardIdElm = $('#RewardID');
+            var rewardActionWrap = rewardIdElm.closest('div.input-field').next();
+            rewardIdElm.change(function () {
+                console.log($(this).val());
+                var v = $(this).val();
+                if (v)
+                    rewardActionWrap.slideDown();
+                else
+                    rewardActionWrap.slideUp();
+            }).triggerHandler('change');
+
+            rewardActionWrap.on('click', 'a', function (e) {
+                e.preventDefault();
+                var v = rewardIdElm.val();
+                if (v)
+                    Component.openRight(this.href + v, '1080');
+            });
+            @* neil 2018/04/18 集點活動新增 end *@
+
+            // 問卷表單下拉選單
+            $('#QuestionnaireMenuID').change(function () {
+                var wrapElm = $(this).closest('div.input-field');
+                var menuId = $(this).val();
+                if (menuId) {
+                    $.getJSON('@Url.Action("GetQuestionnaireItems")?menuId=' + menuId, function (items) {
+                        if (!items || items.length == 0) {
+                            wrapElm.next().fadeOut(function () {
+                                $(this).html('');
+                            });
+                        } else {
+                            var html = '';
+                            html += '<select id="QuestionnaireFormID" name="SignUp.QuestionnaireFormID">';
+                            html += '   <option value="">請選擇問卷</option>';
+                            for (var i = 0, len = items.length; i < len; ++i) {
+                                html += '<option value="' + items[i].Value + '"' + (items[i].Value == '@Model.SignUp.QuestionnaireFormID' ? 'selected' : '' ) + '>' + items[i].Text + '</option>';
+                            }
+                            html += '</select>';
+
+                            var questionnaireWrapElm = wrapElm.next().html(html);
+                            questionnaireWrapElm.find('select').material_select();
+                            questionnaireWrapElm.fadeIn();
+                        }
+                    });
+                } else {
+                    wrapElm.next().fadeOut(function () {
+                        $(this).html('');
+                    });
+                }
+            }).triggerHandler('change');
+
+            /*------------ 徴件類型 ---------------- */
+            $(document.getElementsByName('SignUp.SeekType')).click(function () {
+                var wrapElm = $(this).closest('li');
+                var targetWrapElm = wrapElm.next();
+                if (this.value == 'none') {
+                    targetWrapElm.slideUp();
+                } else {
+                    targetWrapElm.hide();
+                    targetWrapElm.children('div').hide().filter('.' + this.value).show();
+                    targetWrapElm.slideDown();
+                }
+            }).filter(':checked').triggerHandler('click');
+
+            var seekIdElm = $('#SeekID');
+            var seekActionWrap = seekIdElm.closest('div.input-field').next();
+            seekIdElm.change(function () {
+                var v = $(this).val();
+                if (v)
+                    seekActionWrap.slideDown();
+                else
+                    seekActionWrap.slideUp();
+            }).triggerHandler('change');
+
+            seekActionWrap.on('click', 'a', function (e) {
+                e.preventDefault();
+                var v = seekIdElm.val();
+                if (v) 
+                    Component.openRight(this.href + v, '1080');
+            });
+            /*------------ 徴件類型 END -------------- */
+
+            if ($("input[name='SignUp.Independent']").prop("checked")) {
+                $("#independentTypeBox").slideDown();
+            } else {
+                $("#independentTypeBox").slideUp();
+            }
+
+            $("input[name='SignUp.Independent']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "rbIndependentT":
+                        $("#independentTypeBox").slideDown();
+                        break;
+                    case "rbIndependentF":
+                        $("#independentTypeBox").slideUp();
+                        break;
+                }
+            }).filter(":checked").trigger("change");
+
+            $("input[name='SignUp.IndependentType']").on('change', function () {
+                var selection = $(this).attr('id');
+                switch (selection) {
+                    case "rbIndependentType1":
+                        $("#containerIndependentLogo").slideUp();
+                        break;
+                    case "rbIndependentType2":
+                        $("#containerIndependentLogo").slideUp();
+                        break;
+                    case "rbIndependentType3":
+                        $("#containerIndependentLogo").slideDown();
+                        break;
+                }
+            }).filter(":checked").trigger("change");
+
+            Component.singleImageUpload('#IndependentLogoFile', '@(Href("~/"))', '@uploadUrl');
+            Component.singleImageUpload('#IndependentLogoMFile', '@(Href("~/"))', '@uploadUrl');
+            Component.singleImageUpload('#IndependentImgFile', '@(Href("~/"))', '@uploadUrl');
+            Component.singleImageUpload('#IndependentImgMFile', '@(Href("~/"))', '@uploadUrl');
+        });
+    </script>
+
+    <script type="text/javascript">
+        function copyToClipboard(element) {
+            var $temp = $("<input>");
+            $("body").append($temp);
+            $temp.val($(element).text().trim()).select();
+            document.execCommand("copy");
+            $temp.remove();
+        }
+    </script>
+}
+
+<div class="groove groove-1" style="min-height:1000px;">
+    <form id="editForm" method="post" action="@Url.Action("Edit", siteQuery)" enctype="multipart/form-data">
+        <input type="hidden" name="ID" value="@Model.ID" />
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div id="divSwiperWrapper" class="swiper-wrapper">
+                <div id="divInfoTab" class="swiper-slide selected"><i class="cc cc-file-o cc-rotate-270"></i>活動編輯</div>
+                <div id="divSignUpTab" class="swiper-slide"><i class="cc cc-sliders-v"></i>報名設定</div>
+                <div id="divSignUpForm" class="swiper-slide"><i class="cc cc-checklist"></i>報名表</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div id="divInfoContent" class="swiper-slide p-T-10">
+                    <ul class="forms">
+                        <li data-area="title">
+                            <div class="col-1">
+                                <div class="title">主標題</div>
+                                <div class="input-field">
+                                    <input type="text" id="Title" name="Title" value="@Model.Title" class="validate[required]" />
+                                </div>
+                            </div>
+                        </li>
+                        <li data-area="categories">
+                            <div class="col-1">
+                                <div class="title">對應喜好</div>
+                                <div class="radio-box inline categoryGroup">
+                                    @for (int i = 0, len = categories.Count(); i < len; ++i)
+                                    {
+                                        CategoryModels item = categories.ElementAt(i);
+                                        <div>
+                                            <input type="checkbox" id="categories_@i" name="categories" value="@item.ID" @((eventCategories!= null && eventCategories.Contains(item.ID)) ? "checked=\"checked\"" : string.Empty) />
+                                            <label for="categories_@i">@item.Title</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </li>
+                        <li data-area="types">
+                            <div class="col-1">
+                                <div class="title">對應類別</div>
+                                <div class="radio-box inline typeGroup">
+                                    @{ IEnumerable<WorkV3.Models.EventTypesModels> eventTypes = Model.GetTypes() ?? new WorkV3.Models.EventTypesModels[] { }; }
+                                    @for (int i = 0, len = types.Count(); i < len; ++i) {
+                                        WorkV3.Models.EventTypesModels item = types.ElementAt(i);
+                                    <div>
+                                        <input type="checkbox" id="types_@i" name="types" value="@item.ID" @(eventTypes.FirstOrDefault(t => t.ID == item.ID) != null ? "checked=\"checked\"" : string.Empty) />
+                                        <label for="types_@i">@item.Name</label>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </li>
+                        <li data-area="pageDetail" class="detailSetting">
+                            <a class="btn-openDetail" href="javascript:" data-text="頁面細節"><i class="cc cc-close"></i>收合</a>
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">發文日期</div>
+                                        <div class="input-field inline">
+                                            <input type="text" id="IssueDate" name="IssueDate" class="datepicker validate[funcCall[checkDate]]" value="@Model.IssueDate.ToString("yyyy.MM.dd")" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title">宣告、備註文字<a class="tooltip m-h-2" title="宣告、備註文字會出現在全文下方，可宣告版權、感謝贊助、或備註次要資訊。"><i class="cc cc-attention"></i></a></div>
+                                        <div class="input-field">
+                                            <input type="text" id="RemarkText" name="RemarkText" value="@Model.RemarkText" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.CheckBoxFor(model => Model.CustomIcon)
+                                                <label for="CustomIcon">自行設定代表圖 與 社群分享圖</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="imgSetting-box" class="col-2" style="display: none;">
+                                        <div class="input-field m-T-none">
+                                            <input type="file" id="fIcon" name="fIcon" />
+                                            <input type="hidden" id="Icon" name="Icon" value='@Model.Icon' />
+                                            <input type="hidden" id="fIconBase64" name="fIconBase64" />
+                                            <input type="hidden" id="fIconBase64_Resize" name="fIconBase64_Resize" />
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul id="ulParagraphs" data-field="paragraphs" class="forms"></ul>
+                    <a class="btn-grey-darken-4-o transparent paragraph-add" href="javascript:" style="margin-top:-30px; margin-bottom:30px;"><i class="cc cc-plus"></i>增加段落</a>
+                    <input type="hidden" id="deletedParagraphs" name="deletedParagraphs" />
+                </div>
+                <div id="divSignUpContent" class="swiper-slide p-T-10">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title-admin-page bg-transparent">活動資訊</div>
+                                <div class="title inline">主辦單位</div>
+                                <div id="divOrganizer" class="chips inline">
+                                    @{ IEnumerable<WorkV3.Models.EventOrganizerModels> organizers = Model.GetOrganizers(); }
+                                    @if (organizers?.Count() > 0) {
+                                        foreach (WorkV3.Models.EventOrganizerModels item in organizers) {
+                                    <div class="chip" data-id="@item.ID">@item.Name</div>
+                                        }
+                                    }
+                                    <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" data-activates="choiceOrganizer" href="javascript:" title="選擇主辦單位"><i class="cc cc-plus"></i></a>
+                                    <ul id="choiceOrganizer" class="dropdown-content customContent large closeOnClick">
+                                        <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("OrganizerSelect", chipQuery))" frameborder="0"></iframe></li>
+                                    </ul>
+                                    <input type="hidden" id="Organizers" name="Organizers" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">聯絡人</div>
+                                <div id="divContact" class="chips inline">
+                                    @{ IEnumerable<WorkV3.Models.EventContactModels> contacts = Model.GetContacts(); }
+                                    @if (contacts?.Count() > 0)
+                                    {
+                                        foreach (WorkV3.Models.EventContactModels item in contacts)
+                                        {
+                                    <div class="chip" data-id="@item.ID">@item.Name</div>
+                                        }
+                                    }
+                                    <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" data-activates="choiceContact" href="javascript:" title="選擇聯絡人"><i class="cc cc-plus"></i></a>
+                                    <ul id="choiceContact" class="dropdown-content customContent large closeOnClick">
+                                        <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("ContactSelect", chipQuery))" frameborder="0"></iframe></li>
+                                    </ul>
+                                    <input type="hidden" id="Contacts" name="Contacts" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">活動地點</div>
+                                <div id="divPlace" class="chips inline">
+                                    @{ IEnumerable<WorkV3.Models.EventPlaceModels> places = Model.GetPlaces(); }
+                                    @if (places?.Count() > 0) {
+                                        foreach (WorkV3.Models.EventPlaceModels item in places) {
+                                    <div class="chip" data-id="@item.ID">@item.Name</div>
+                                        }
+                                    }
+                                    <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" data-activates="choicePlace" href="javascript:" title="選擇活動地點"><i class="cc cc-plus"></i></a>
+                                    <ul id="choicePlace" class="dropdown-content customContent large closeOnClick">
+                                        <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("PlaceSelect", chipQuery))" frameborder="0"></iframe></li>
+                                    </ul>
+                                    <input type="hidden" id="Places" name="Places" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">活動日期</div>
+                                <div class="input-field inline small">
+                                    <select name="DateKind" id="DateKind">
+                                        <option value="單日" @(Model.DateKind == "單日" ? "selected" : string.Empty)>單日</option>
+                                        <option value="多日" @(Model.DateKind == "多日" ? "selected" : string.Empty)>多日</option>
+                                    </select>
+                                </div>
+                                <div class="input-field inline">
+                                    <input type="text" placeholder="活動日期" id="DateStart" name="DateStart" class="datepicker validate[funcCall[checkRequiredDate]]" value="@Model.DateStart.ToString("yyyy.MM.dd")" />
+                                </div>
+                                <div class="input-field inline" style="display: none;">
+                                    <input type="text" placeholder="結束日期" id="DateEnd" name="DateEnd" class="datepicker validate[funcCall[checkEndDate]]" value="@Model.DateEnd.ToString("yyyy.MM.dd")" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">活動時間</div>
+                                <div class="input-field inline">
+                                    <input type="text" placeholder="開始時間" id="TimeStart" name="TimeStart" class="timepicker" value="@Model.TimeStart" />
+                                </div>
+                                <div class="input-field inline">
+                                    <input type="text" placeholder="結束時間" id="TimeEnd" name="TimeEnd" class="timepicker" value="@Model.TimeEnd" />
+                                </div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input type="checkbox" id="timeInfo" />
+                                        <label for="timeInfo">增加時間說明</label>
+                                    </div>
+                                </div>
+                                <div class="input-field inline full" style="display: none;">
+                                    <div class="input-field">
+                                        <input type="text" placeholder="請填寫時間說明" id="TimeDesc" name="TimeDesc" value="@Model.TimeDesc" maxlength="100" />
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="detailSetting">
+                            <a class="btn-openDetail" href="javascript:" data-text="活動細節"><i class="cc cc-close"></i>收合</a>
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">選擇貴賓</div>
+                                        <div id="divGuest" class="chips inline">
+                                            @{
+                                                IEnumerable<WorkV3.Models.EventGuestModels> guests = Model.GetGuests();
+                                                string[] guestKinds = { "講師", "貴賓", "主講人", "主持人", "座長", "表演者" };
+                                            }
+                                            @if (guests?.Count() > 0) {
+                                                foreach (WorkV3.Models.EventGuestModels item in guests) {
+                                                    ResourceImagesModels photo = null;
+                                                    if (!string.IsNullOrWhiteSpace(item.Photo)) {
+                                                        photo = Newtonsoft.Json.JsonConvert.DeserializeObject<ResourceImagesModels>(item.Photo);
+                                                    }
+                                            <div class="chip" data-id="@item.ID">
+                                                @if (!string.IsNullOrWhiteSpace(photo?.Img)) {
+                                                <img src="@(uploadUrl + "/" + photo.Img)" alt="" />
+                                                    }
+                                                @item.Name
+                                                <div class="input-field inline short m-T-none m-L-4">
+                                                    <select>
+                                                        @foreach (string kind in guestKinds) {
+                                                        <option @(kind == item.Kind ? "selected" : string.Empty)>@kind</option>
+                                                            }
+                                                        <option value="" @(guestKinds.Contains(item.Kind) ? string.Empty : "selected")>自行填寫</option>
+                                                    </select>
+                                                </div>
+                                                <div class="input-field inline short m-T-none" style="display: none;">
+                                                    <input type="text" value="@(guestKinds.Contains(item.Kind) ? string.Empty : item.Kind)" />
+                                                </div>
+                                            </div>
+                                                }
+                                            }
+                                            <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" data-activates="choiceGuest" href="javascript:" title="選擇貴賓"><i class="cc cc-plus"></i></a>
+                                            <ul id="choiceGuest" class="dropdown-content customContent large closeOnClick">
+                                                <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("GuestSelect", chipQuery))" frameborder="0"></iframe></li>
+                                            </ul>
+                                            <input type="hidden" id="Guests" name="Guests" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">適合對象</div>
+                                        <div id="divObject" class="chips inline">
+                                            @{ IEnumerable<WorkV3.Models.EventObjectModels> objects = Model.GetObjects(); }
+                                            @if (objects?.Count() > 0) {
+                                                foreach (WorkV3.Models.EventObjectModels item in objects) {
+                                            <div class="chip" data-id="@item.ID">@item.Name</div>
+                                                }
+                                            }
+                                            <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" data-activates="choiceObject" href="javascript:" title="選擇適合對象"><i class="cc cc-plus"></i></a>
+                                            <ul id="choiceObject" class="dropdown-content customContent large closeOnClick">
+                                                <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("ObjectSelect", chipQuery))" frameborder="0"></iframe></li>
+                                            </ul>
+                                            <input type="hidden" id="Objects" name="Objects" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">適合年齡</div>
+                                        <div id="divYear" class="chips inline">
+                                            @{ IEnumerable<WorkV3.Models.EventYearModels> years = Model.GetYears(); }
+                                            @if (years?.Count() > 0) {
+                                                foreach (WorkV3.Models.EventYearModels item in years) {
+                                            <div class="chip" data-id="@item.ID">@item.Name</div>
+                                                }
+                                            }
+                                            <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" data-activates="choiceYear" href="javascript:" title="選擇適合年齡"><i class="cc cc-plus"></i></a>
+                                            <ul id="choiceYear" class="dropdown-content customContent large closeOnClick">
+                                                <li><iframe class="dropdownIframe" src="@Html.Raw(Url.Action("YearSelect", chipQuery))" frameborder="0"></iframe></li>
+                                            </ul>
+                                            <input type="hidden" id="Years" name="Years" />
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            @Html.HiddenFor(x => x.SignUp.ID)
+                            @Html.HiddenFor(x => x.SignUp.Creator)
+                            @Html.HiddenFor(x => x.SignUp.CreateTime)
+                            @Html.HiddenFor(x => x.SignUp.Modifier)
+                            @Html.HiddenFor(x => x.SignUp.ModifyTime)
+                            <div class="col-1">
+                                <div class="title-admin-page bg-transparent m-T-8">報名設定</div>
+                                <div class="title inline">報名方式</div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        @Html.RadioButtonFor(x => x.SignUp.Type, 1, new { id="rbSignUpType1", @class = "with-gap" })
+                                        @Html.Label("rbSignUpType1", "單人報名")
+                                    </div>
+                                    <div>
+                                        @Html.RadioButtonFor(x => x.SignUp.Type, 2, new { id = "rbSignUpType2", @class = "with-gap" })
+                                        @Html.Label("rbSignUpType2", "外連其他報名系統")
+                                    </div>
+                                    <div>
+                                        @Html.RadioButtonFor(x => x.SignUp.Type, 3, new { id = "rbSignUpType3", @class = "with-gap" })
+                                        @Html.Label("rbSignUpType3", "無線上報名")
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li id="signUpInfo">
+                            <ul class="forms">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">按鈕文字</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.ButtonText, new { @placeholder = "按鈕文字" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">報名時間</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.SignUpStart, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "開始時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.SignUpEnd, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "結束時間", @class = "datetimepicker validate[funcCall[checkEndDate]]" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li id="signUpOutside" style="display: none;">
+                                    <div class="col-1">
+                                        <div class="title inline">外部連結</div>
+                                        <div class="input-field">
+                                            @Html.TextBoxFor(x => x.SignUp.SignUpLink, new { @placeholder = "http://", @class = "validate[funcCall[checkLink]]" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li id="signUpSingle">
+                                    <ul class="forms m-B-none">
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline">錄取方式</div>
+                                                <div class="radio-box inline">
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.AdmissionMethod, 1, new { id = "rbAdmissionMethod1", @class = "with-gap" })
+                                                        @Html.Label("rbAdmissionMethod1", "依報名順序")
+                                                    </div>
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.AdmissionMethod, 2, new { id = "rbAdmissionMethod2", @class = "with-gap" })
+                                                        @Html.Label("rbAdmissionMethod2", "亂數錄取")
+                                                    </div>
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.AdmissionMethod, 3, new { id = "rbAdmissionMethod3", @class = "with-gap" })
+                                                        @Html.Label("rbAdmissionMethod3", "須審核")
+                                                    </div>
+                                                </div>
+                                                <span class="alert transparent">
+                                                    <i class="cc cc-attention"></i>
+                                                    <div>
+                                                        開始有人報名後，即無法修改報名方式及錄取方式。
+                                                    </div>
+                                                </span>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline no-label d-inline-block float-none">錄取人數</div>
+
+                                                <div class="title inline d-inline-block float-none remainingText2">開放預約：</div>
+                                                <div class="input-field inline small m-R-8 remainingText2">
+                                                    @Html.TextBoxFor(x => x.SignUp.ReservationQuota, new { @class = "text-C" })
+                                                    <div class="d-inline-block font-xs">人</div>
+                                                </div>
+
+                                                <div class="d-inline-block font-xs">正取：</div>
+                                                <div class="input-field inline small m-R-8">
+                                                    @Html.TextBoxFor(x => x.SignUp.AdmissionQuota, new { @class= "text-C" })
+                                                    <div class="d-inline-block font-xs">人</div>
+                                                </div>
+                                                <div class="radio-box inline m-L-8">
+                                                    <div>
+                                                        @Html.CheckBoxFor(x => x.SignUp.IsWaitingQuota, new { @class = "" })@*20190108 yulin remove Class with-gap*@
+                                                        @Html.LabelFor(x => x.SignUp.IsWaitingQuota, "備取")
+                                                    </div>
+                                                    <div id="containerWaitingQuota" class="input-field inline small">
+                                                        @Html.TextBoxFor(x => x.SignUp.WaitingQuota)
+                                                        <div class="d-inline-block font-xs">人</div>
+                                                    </div>
+                                                </div>
+                                                <div class="radio-box inline">
+                                                    <div>
+                                                        @Html.CheckBoxFor(x => x.SignUp.IsReserveQuota, new { @class = "" })@*20190108 yulin remove Class with-gap*@
+                                                        @Html.LabelFor(x => x.SignUp.IsReserveQuota, "保留")
+                                                    </div>
+                                                    <div id="containerReserveQuota" class="input-field inline small">
+                                                        @Html.TextBoxFor(x => x.SignUp.ReserveQuota)
+                                                        <div class="d-inline-block font-xs">人</div>
+                                                    </div>
+                                                </div>
+                                                <div id="containerPublicRemainingQuota" class="radio-box inline">
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IsPublicRemainingQuota, true, new { id = "rbIsPublicRemainingQuotaTrue", @class = "with-gap" })
+                                                        @Html.Label("rbIsPublicRemainingQuotaTrue", "公開剩餘名額")
+                                                    </div>
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IsPublicRemainingQuota, false, new { id = "rbIsPublicRemainingQuotaFalse", @class = "with-gap" })
+                                                        @Html.Label("rbIsPublicRemainingQuotaFalse", "隱藏")
+                                                    </div>
+                                                    <div id="containerRemainingText" class="input-field inline">
+                                                        @Html.TextBoxFor(x => x.SignUp.RemainingText, new { placeholder = "請輸入顯示內文" })
+                                                    </div>
+                                                </div>
+                                                <span class="alert transparent remainingText1">
+                                                    <i class="cc cc-attention"></i>
+                                                    <div>
+                                                        前台顯示格式：尚餘 正取 XX 名。
+                                                    </div>
+                                                </span>
+                                                <span class="alert transparent remainingText2">
+                                                    <i class="cc cc-attention"></i>
+                                                    <div>
+                                                        前台顯示格式：開放 XX 人預約。
+                                                    </div>
+                                                </span>
+                                            </div>
+                                        </li>
+
+                                        <li class="detailSetting">
+                                            <a class="btn-openEventDetail" data-text="報名細節"><i class="cc cc-close"></i>收合</a>
+                                            <ul class="forms">
+                                                <li>
+                                                    <div class="col-1">
+                                                        <div class="title inline">報名限制</div>
+                                                        <div class="radio-box inline">
+                                                            <div>
+                                                                @Html.RadioButtonFor(x => x.SignUp.IsMemberOnly, false, new { id = "rbIsMemberOnlyFalse", @class = "with-gap" })
+                                                                @Html.Label("rbIsMemberOnlyFalse", "開放訪客報名")
+                                                            </div>
+                                                            <div>
+                                                                @Html.RadioButtonFor(x => x.SignUp.IsMemberOnly, true, new { id = "rbIsMemberOnlyTrue", @class = "with-gap" })
+                                                                @Html.Label("rbIsMemberOnlyTrue", "僅開放會員")
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                
+                                                <li>
+                                                    <div class="col-1">
+                                                        <div class="title inline">取消報名</div>
+                                                        <div class="radio-box inline">
+                                                            <div>
+                                                                @Html.RadioButtonFor(x => x.SignUp.IsClientCancel, true, new { id = "rbIsClientCancelTrue", @class = "with-gap" })
+                                                                @Html.Label("rbIsClientCancelTrue", "前台可取消")
+                                                            </div>
+                                                            <div>
+                                                                @Html.RadioButtonFor(x => x.SignUp.IsClientCancel, false, new { id = "rbIsClientCancelFalse", @class = "with-gap" })
+                                                                @Html.Label("rbIsClientCancelFalse", "僅後台可取消")
+                                                            </div>
+                                                        </div>
+                                                        @*20190108 yulin 取消排版修改*@
+                                                        @*<div class="d-inline-block font-xs containerIsClientCancel">活動開始前</div>*@
+                                                        <div class="d-inline-block">
+                                                            <div class="containerIsClientCancel">
+                                                                <span class="d-inline-block font-xs">活動開始前</span>
+                                                                <span class="input-field inline small">
+                                                                    @Html.TextBoxFor(x => x.SignUp.ClientCancelDay)
+                                                                </span>
+                                                                <span class="d-inline-block font-xs">天，前台可取消報名</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title-admin-page bg-transparent m-T-8">報到設定</div>
+                                                <div class="title inline">報到方式</div>
+                                                <div class="radio-box inline">
+                                                    <div>
+                                                        @Html.CheckBoxFor(x => x.SignUp.ReportQRCode, new { @class = "" })@*20190108 yulin remove Class with-gap*@
+                                                        @Html.LabelFor(x => x.SignUp.ReportQRCode, "現場 QRcode 報到")
+                                                        @if (page != null)
+                                                        {
+                                                        <a target="_blank" class="openEdit-c cboxElement" href="@Html.Raw(Url.Action("ReportQRCode", "Event", new { SiteSN = page.SiteSN, PageSN = page.PageSN, type = "CheckIn" }))">
+                                                            <i class="cc cc-qrcode"></i>
+                                                        </a>
+                                                        }
+                                                    </div>
+                                                    <div>
+                                                        @Html.CheckBoxFor(x => x.SignUp.ReportWeb, new { @class = "" })@*20190108 yulin remove Class with-gap*@
+                                                        @Html.LabelFor(x => x.SignUp.ReportWeb, "現場機台報到")
+                                                        @if (page != null)
+                                                        {
+                                                        <a target="_blank" href="@Html.Raw(Url.Action("Index", "SinglePage", new { SiteSN = page.SiteSN, PageSN = page.PageSN, type = "CheckIn", area = string.Empty }))">
+                                                            <i class="cc cc-qrcode"></i>
+                                                        </a>
+                                                        }
+                                                    </div>
+                                                    <div>
+                                                        @Html.CheckBoxFor(x => x.SignUp.SignUpLive, new { @class = "" })@*20190108 yulin remove Class with-gap*@
+                                                        @Html.LabelFor(x => x.SignUp.SignUpLive, "現場報名 ( 在報到時間內報名，即同時完成報到 )")
+                                                        @if (signUpPage != null)
+                                                        {
+                                                        <a target="_blank" href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = signUpPage.SiteSN, PageSN = signUpPage.PageSN, step = 1, area = string.Empty, c = "1" }))">
+                                                            <i class="cc cc-qrcode"></i>
+                                                        </a>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li id="signUpMode1Box">
+                                            <div class="col-1">
+                                                <div class="title inline">報到事項</div>                                                
+                                                <div class="radio-box inline full">
+                                                    <div>
+                                                        @Html.CheckBoxFor(x => x.SignUp.IsReportConsiderations, new { @class = "" })
+                                                        @Html.LabelFor(x => x.SignUp.IsReportConsiderations, "現場報到注意事項")
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li id="containerReportConsiderations" class="m-T-4">
+                                            <div class="col-1">
+                                                @Html.TextAreaFor(x => x.SignUp.ReportConsiderations, new { contenteditable = "true" })
+                                            </div>
+                                        </li>
+                                        <li id="signUpMode2Box">
+                                            <div class="col-1">
+                                                <div class="title inline">機台底圖</div>
+                                                <div class="col-2">
+                                                    <input type="file" id="ReportBackgroundFile" name="ReportBackgroundFile" />
+                                                    <input type="hidden" id="SignUp_ReportBackground" name="SignUp.ReportBackground" value='@Model.SignUp.ReportBackground' />
+                                                    <input type="hidden" id="ReportBackgroundFileBase64" name="ReportBackgroundFileBase64" />
+                                                    <input type="hidden" id="ReportBackgroundFileBase64_Resize" name="ReportBackgroundFileBase64_Resize" />
+                                                    <div class="alert transparent">
+                                                        <i class="cc cc-attention"></i>
+                                                        <div>
+                                                            此處上傳的圖片是用於 現場機台報到 的底圖。<br />建議尺寸：機台螢幕解析度，例如：1024 x 768 px<br />格式限制：.jpg .gif .png
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline">報到時間</div>
+                                                <div class="input-field inline">
+                                                    @Html.TextBoxFor(x => x.SignUp.ReportStart, new { placeholder = "開始時間", @class = "datetimepicker" })
+                                                </div>
+                                                -
+                                                <div class="input-field inline">
+                                                    @Html.TextBoxFor(x => x.SignUp.ReportEnd, new { placeholder = "結束時間", @class = "datetimepicker" })
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline">報到地點</div>
+                                                <div class="radio-box inline">
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IsReportPlace, true, new { id = "rbIsReportPlaceTrue", @class = "with-gap" })
+                                                        @Html.Label("rbIsReportPlaceTrue", "同活動地點")
+                                                    </div>
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IsReportPlace, false, new { id = "rbIsReportPlaceFalse", @class = "with-gap" })
+                                                        @Html.Label("rbIsReportPlaceFalse", "其他地點")
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li class="containerReportPlace">
+                                            <ul class="forms m-B-none">
+                                                <li>
+                                                    <div class="col-1">
+                                                        <div>
+                                                            <div class="title inline">地點名稱</div>
+                                                            <div class="input-field inline">
+                                                                @Html.TextBoxFor(x => x.SignUp.ReportPlaceName)
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="col-1">
+                                                        <div class="title inline">地址</div>
+                                                        <div class="input-field inline full">
+                                                            @Html.TextBoxFor(x => x.SignUp.ReportPlaceAddress)
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title-admin-page bg-transparent m-T-8">報名相關設定</div>
+                                                <ul class="forms m-B-none">
+                                                    <li>                                                        
+                                                        <div class="col-1">
+                                                            <div class="check-box inline full">
+                                                                <div class="outerElm">
+                                                                    @Html.CheckBox("Form.ForceStatement", form.ForceStatement)
+                                                                    <label for="Form_ForceStatement">活動報名條款</label>
+                                                                    <div class="alert inline transparent">
+                                                                        <i class="cc cc-attention"></i>
+                                                                        <div>若此項不勾選，使用者在前台填寫時，不用先同意活動報名條款。</div>
+                                                                    </div>
+                                                                </div>
+                                                                <textarea id="Form_Statement" name="Form.Statement" class="ckeditor">@(string.IsNullOrWhiteSpace(form.Statement) ? "請填入段落內文" : form.Statement)</textarea>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="col-1">
+                                                            <div class="check-box inline full">
+                                                                <div>
+                                                                    @Html.CheckBox("Form.HasCaptcha", form.HasCaptcha)
+                                                                    <label for="Form_HasCaptcha">使用驗證碼</label>
+                                                                    <div class="alert inline transparent">
+                                                                        <i class="cc cc-attention"></i>
+                                                                        <div>為了防範駭客機器人攻擊，填表時必須輸入正確驗證碼，才能提交本表單。</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="col-1">
+                                                            <div class="check-box inline full outerElm">
+                                                                <div>
+                                                                    @Html.CheckBox("Form.NotifyAdmin", form.NotifyAdmin)
+                                                                    <label for="Form_NotifyAdmin">通知管理員</label>
+                                                                    <div class="alert inline transparent">
+                                                                        <i class="cc cc-attention"></i>
+                                                                        <div>有人填寫此表單時，會自動通知以下管理員的Email信箱。</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="inline full">
+                                                                <div id="divAdmins" class="chips inline">
+                                                                    @{ IEnumerable<WorkV3.Models.FormAdmin> admins = form.GetAdmins(); }
+                                                                    @foreach (WorkV3.Models.FormAdmin item in admins) {
+                                                                        <div class="chip" data-val='@Newtonsoft.Json.JsonConvert.SerializeObject(item, ViewBag.Int64Convert)'>
+                                                                            @if (!string.IsNullOrWhiteSpace(item.Img)) {
+                                                                                <img src="@item.Img" alt="@item.Name" />
+                                                                            }
+                                                                            @item.Name @item.Email
+                                                                            <a class="tooltip" title="刪除">
+                                                                                <i class="cc cc-close"></i>
+                                                                            </a>
+                                                                        </div>
+                                                                    }
+                                                                    <a class="btn-grey-darken-4-o square transparent dropdown-button tooltip" href="javascript:" data-activates="choiceAdmins" title="選擇管理員"><i class="cc cc-plus"></i></a>
+                                                                    <ul id="choiceAdmins" class="dropdown-content customContent large closeOnClick">
+                                                                        <li>
+                                                                            <iframe class="dropdownIframe" src="@Html.Raw(Url.Action("AdminSelect", "Form", new { siteId = siteId, formId = form.ID }))" frameborder="0"></iframe>
+                                                                        </li>
+                                                                    </ul>
+                                                                    <input type="hidden" id="formAdmins" name="formAdmins" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>                                        
+                                    </ul>
+                                </li>                                
+                            </ul>
+                        </li>
+                        <li>
+                            <ul class="forms m-B-none">
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title-admin-page bg-transparent m-T-8">延伸服務設定</div>
+                                        <div class="title inline">問卷調查</div>
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.QuestionnairesType, 1, new { id = "rbQuestionnairesType1", @class = "with-gap" })
+                                                @Html.Label("rbQuestionnairesType1", "無關聯問卷")
+                                            </div>
+                                            @if (formAndQuestionnaireMenus?.Count() > 0) {
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.QuestionnairesType, 2, new { id = "rbQuestionnairesType2", @class = "with-gap" })
+                                                @Html.Label("rbQuestionnairesType2", "使用本站問卷功能")
+                                            </div>
+                                            }
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.QuestionnairesType, 3, new { id = "rbQuestionnairesType3", @class = "with-gap" })
+                                                @Html.Label("rbQuestionnairesType3", "外連其他問卷系統")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="containerQuestionnaires">
+                                    <div class="col-1">
+                                        <div class="title inline">按鈕文字</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.QuestionnairesButtonText, new { placeholder = "活動問卷調查" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="containerQuestionnaires">
+                                    <div class="col-1">
+                                        <div class="title inline">問卷顯示</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.QuestionnairesStart, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "開始時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                        -
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.QuestionnairesEnd, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "結束時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="containerQuestionnairesType2">
+                                    <div class="col-1">
+                                        <div class="title inline">問卷設定</div>
+                                        <div class="input-field inline">
+                                            <select id="QuestionnaireMenuID" name="SignUp.QuestionnaireMenuID">
+                                                <option value="">請選擇表單/問卷</option>
+                                                @foreach(WorkV3.Models.MenusModels item in formAndQuestionnaireMenus) {
+                                                    <option value="@item.Id" @(item.Id == Model.SignUp.QuestionnaireMenuID ? "selected" : string.Empty)>@item.Title</option>
+                                                }
+                                            </select>                                            
+                                        </div>
+                                        <div class="input-field inline"></div>
+                                        @*<a class="btn-grey-o m-L-6" href="javascript:"><i class="cc cc-link"></i>問卷編輯</a>
+                                          <a class="btn-grey-o m-L-6" href="javascript:"><i class="cc cc-link"></i>問卷統計</a>*@
+                                        </div>
+                                </li>
+                                <li class="containerQuestionnairesType3">
+                                    <div class="col-1">
+                                        <div class="title inline">外部連結</div>
+                                        <div class="input-field inline full">
+                                            @Html.TextBoxFor(x => x.SignUp.QuestionnairesUrl, new { placeholder = "http://", @class = "validate[funcCall[checkLink]]" })
+                                        </div>
+                                    </div>
+                                </li>
+                                @* neil 2018/04/18 集點活動新增 start *@
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">集點互動</div>
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.RewardType, 1, new { id = "rbRewardType1", @class = "with-gap" })
+                                                @Html.Label("rbRewardType1", "無關聯集點")
+                                            </div>
+                                            @if (rewards?.Count() > 0)
+                                            {
+                                                <div>
+                                                    @Html.RadioButtonFor(x => x.SignUp.RewardType, 2, new { id = "rbRewardType2", @class = "with-gap" })
+                                                    @Html.Label("rbRewardType2", "使用本站集點功能")
+                                                </div>
+                                            }
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.RewardType, 3, new { id = "rbRewardType3", @class = "with-gap" })
+                                                @Html.Label("rbRewardType3", "外連其他集點系統")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- 集點互動:使用本站集點功能 -->
+
+                                <li class="containerReward">
+                                    <div class="col-1">
+                                        <div class="title inline">按鈕文字</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.RewardButtonText, new { placeholder = "集點去!" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="containerReward">
+                                    <div class="col-1">
+                                        <div class="title inline">集點期間</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.RewardStart, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "開始時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                        -
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.RewardEnd, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "結束時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="containerRewardType2">
+                                    <div class="col-1">
+                                        <div class="title inline">集點設定</div>
+                                        <div class="input-field inline">
+                                            <select id="RewardID" name="SignUp.RewardID">
+                                                <option value="">請選擇集點</option>
+                                                @foreach (RewardModel item in rewards)
+                                                {
+                                                    <option value="@item.ID" @(item.ID == Model.SignUp.RewardID ? "selected" : string.Empty)>@item.Title</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-1" style="margin-left: 65px;">
+                                            <a id="reward-edit" class="btn-grey-o m-L-6" href="@Html.Raw(Url.Action("Edit", "Reward", new { SiteID = ViewBag.SiteID, RedirectUrl = Html.Encode(Request.Url.AbsoluteUri), iframe = 1}))&ID="><i class="cc cc-edit"></i>集點編輯</a>
+                                            <a id="participant-list" class="btn-grey-o m-L-6" href="@Url.Action("ParticipantList", "Reward", new { SiteID = ViewBag.SiteID, area = "Backend", iframe = 1 })&ID="><i class="cc cc-lg cc-user-o"></i>參與名單</a>
+                                            <a id="participant-analysis" class="btn-grey-o m-L-6" href="@Url.Action("RewardInfo", "Reward", new { SiteID = ViewBag.SiteID, iframe = 1 })&ID="><i class="cc cc-lg cc-bar-chart"></i>參與者分析</a>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="containerRewardType3">
+                                    <div class="col-1">
+                                        <div class="title inline">外部連結</div>
+                                        <div class="input-field inline full">
+                                            @Html.TextBoxFor(x => x.SignUp.RewardUrl, new { placeholder = "http://", @class = "validate[funcCall[checkLink]]" })
+                                        </div>
+                                    </div>
+                                </li>
+                                @* neil 2018/04/18 集點活動新增 end *@
+				                @* 征件互動 Start *@
+                                <li>
+                                    <div class="col-1">                                        
+                                        <div class="title inline">徴件互動</div>
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.SeekType, "none", new { id = "seekType1", @class = "with-gap", @checked = true })
+                                                @Html.Label("seekType1", "無關聯徴件")
+                                            </div>
+                                            @if (formAndQuestionnaireMenus?.Count() > 0) {
+                                                <div>
+                                                    @Html.RadioButtonFor(x => x.SignUp.SeekType, "inner", new { id = "seekType2", @class = "with-gap" })
+                                                    @Html.Label("seekType2", "使用本站徴件功能")
+                                                </div>
+                                            }
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.SeekType, "outer", new { id = "seekType3", @class = "with-gap" })
+                                                @Html.Label("seekType3", "外連其他徴件系統")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li style="margin-left:85px; display:none;">
+                                    <div class="col-1 inner outer">
+                                        <div class="title inline">按鈕文字</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.SeekButtonText, new { placeholder = "投稿去！" })
+                                        </div>
+                                    </div>
+                                    <div class="col-1 inner outer">
+                                        <div class="title inline">徵件期間</div>
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.SeekStart, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "開始時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                        -
+                                        <div class="input-field inline">
+                                            @Html.TextBoxFor(x => x.SignUp.SeekEnd, "{0:yyyy.MM.dd HH:mm}", new { @placeholder = "結束時間", @class = "datetimepicker validate[funcCall[checkDate]]" })
+                                        </div>
+                                    </div>
+                                    <div class="col-1 inner">
+                                        <div class="title inline">徵件設定</div>
+                                        <div class="input-field inline col-3">
+                                            <select id="SeekID" name="SignUp.SeekID">
+                                                <option value="">請選擇徴件</option>                                                
+                                                @foreach (IDValue item in ViewBag.Seeks) {
+                                                    <option value="@item.ID" @(item.ID == Model.SignUp.SeekID ? "selected" : string.Empty)>@item.Value</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <a class="btn-grey-o" href="@Url.Action("Edit", "Seek", new { siteId = siteId, iframe = 1 })&id="><i class="cc cc-edit"></i>徵件編輯</a>
+                                            <a class="btn-grey-o m-L-6" href="@Url.Action("SeekItemList", "Seek", new { siteId = siteId, iframe = 1 })&id="><i class="cc cc-lg cc-user-o"></i>參與名單</a>
+                                            <a class="btn-grey-o m-L-6" href="@Url.Action("Info", "Seek", new { siteId = siteId, iframe = 1 })&id="><i class="cc cc-lg cc-bar-chart"></i>參與者分析</a>
+                                        </div>                                        
+                                    </div>
+                                    <div class="col-1 outer">
+                                        <div class="title inline">外部連結</div>
+                                        <div class="input-field inline full">
+                                            @Html.TextBoxFor(x => x.SignUp.SeekUrl, new { placeholder = "http://", @class = "validate[funcCall[checkLink]]" })
+                                        </div>
+                                    </div>
+                                </li>                                
+                                @* 征件互動 End *@
+                                <li>
+                                    <div class="col-1">
+                                        <div class="title inline">獨立呈現</div>
+                                        <div class="radio-box inline">
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.Independent, false, new { id = "rbIndependentF", @class = "with-gap" })
+                                                @Html.Label("rbIndependentF", "無獨立活動頁")
+                                            </div>
+                                            <div>
+                                                @Html.RadioButtonFor(x => x.SignUp.Independent, true, new { id = "rbIndependentT", @class = "with-gap" })
+                                                @Html.Label("rbIndependentT", "新增獨立活動頁")
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li id="independentTypeBox">
+                                    <ul class="forms m-B-none">
+                                        @if (page != null) {
+                                            <li>
+                                                <div class="col-1">
+                                                    <div class="title inline">獨立網址</div>
+                                                    <div class="input-field inline">
+                                                        <a id="IndependentUrl" target="_blank" href="@Html.Raw(Url.Action("Index", "SinglePage", new { SiteSN = page.SiteSN, PageSN = page.PageSN, type = "Info", area = string.Empty }, Request.Url.Scheme))">
+                                                            @Html.Raw(Url.Action("Index", "SinglePage", new { SiteSN = page.SiteSN, PageSN = page.PageSN, type = "Info", area = string.Empty }, Request.Url.Scheme))
+                                                        </a>
+                                                    </div>
+                                                    <a onclick="copyToClipboard('#IndependentUrl')"><i class="cc cc-content-copy"></i></a>
+                                                    <a target="_blank" class="openEdit-c cboxElement" href="@Html.Raw(Url.Action("IndependentQRCode", "Event", new { SiteSN = page.SiteSN, PageSN = page.PageSN, type = "Info" }))">
+                                                        <i class="cc cc-stop"></i>
+                                                    </a>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline">樣式設定</div>
+                                                <div class="radio-box inline">
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IndependentType, 1, new { id = "rbIndependentType1", @class = "with-item" })
+                                                        <i class="cc cc-file-o"></i>
+                                                        @Html.Label("rbIndependentType1", "視差背景")
+                                                    </div>
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IndependentType, 2, new { id = "rbIndependentType2", @class = "with-item" })
+                                                        <i class="cc cc-link-variant"></i>
+                                                        @Html.Label("rbIndependentType2", "大視覺")
+                                                    </div>
+                                                    <div>
+                                                        @Html.RadioButtonFor(x => x.SignUp.IndependentType, 3, new { id = "rbIndependentType3", @class = "with-item" })
+                                                        <i class="cc cc-download"></i>
+                                                        @Html.Label("rbIndependentType3", "傳統留白")
+                                                    </div>
+                                                </div>
+                                                <span class="alert transparent">
+                                                    <i class="cc cc-attention"></i>
+                                                    <div>
+                                                        獨立頁的排版方式，可能與活動內頁不同。
+                                                    </div>
+                                                </span>
+                                            </div>
+                                        </li>
+                                        <li id="containerIndependentLogo">
+                                            <div class="col-1">
+                                                <div class="title inline">LOGO設定</div>
+                                                <div class="input-field inline full">
+                                                    <div class="col-2">
+                                                        <div class="title">電腦版 LOGO</div>
+                                                        <div class="input-field m-T-none">
+                                                            <input type="file" id="IndependentLogoFile" name="IndependentLogoFile" />
+                                                            <input type="hidden" id="SignUp_IndependentLogo" name="SignUp.IndependentLogo" value='@Model.SignUp.IndependentLogo' />
+                                                            <input type="hidden" id="IndependentLogoFileBase64" name="IndependentLogoFileBase64" />
+                                                            <input type="hidden" id="IndependentLogoFileBase64_Resize" name="IndependentLogoFileBase64_Resize" />
+                                                        </div>
+                                                        <span class="alert transparent d-block">
+                                                            <i class="cc cc-attention"></i>
+                                                            <div>
+                                                                請上傳適用於電腦或平板的LOGO。<Br />建議尺寸：250 x 100px 以內。<br />最佳尺寸：220 x 80px。
+                                                            </div>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <div class="title">手機版 LOGO</div>
+                                                        <div class="input-field m-T-none">
+                                                            <input type="file" id="IndependentLogoMFile" name="IndependentLogoMFile" />
+                                                            <input type="hidden" id="SignUp_IndependentLogoM" name="SignUp.IndependentLogoM" value='@Model.SignUp.IndependentLogoM' />
+                                                            <input type="hidden" id="IndependentLogoMFileBase64" name="IndependentLogoMFileBase64" />
+                                                            <input type="hidden" id="IndependentLogoMFileBase64_Resize" name="IndependentLogoMFileBase64_Resize" />
+                                                        </div>
+                                                        <span class="alert transparent d-block">
+                                                            <i class="cc cc-attention"></i>
+                                                            <div>
+                                                                請上傳適用於電腦或平板的LOGO。<Br />建議尺寸：250 x 100px 以內。<br />最佳尺寸：220 x 80px。
+                                                            </div>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="col-1">
+                                                <div class="title inline">視覺 / 背景</div>
+                                                <div class="input-field inline full">
+                                                    <div class="col-3-partner">
+                                                        <div class="title">電腦版</div>
+                                                        <div class="input-field m-T-none">
+                                                            <input type="file" id="IndependentImgFile" name="IndependentImgFile" />
+                                                            <input type="hidden" id="SignUp_IndependentImg" name="SignUp.IndependentImg" value='@Model.SignUp.IndependentImg' />
+                                                            <input type="hidden" id="IndependentImgFileBase64" name="IndependentImgFileBase64" />
+                                                            <input type="hidden" id="IndependentImgFileBase64_Resize" name="IndependentImgFileBase64_Resize" />
+                                                        </div>
+                                                        <span class="alert transparent d-block">
+                                                            <i class="cc cc-attention"></i>
+                                                            <div>
+                                                                建議尺寸：1920 x 600 px (滿版)
+                                                            </div>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <div class="title">手機版</div>
+                                                        <div class="input-field m-T-none">
+                                                            <input type="file" id="IndependentImgMFile" name="IndependentImgMFile" />
+                                                            <input type="hidden" id="SignUp_IndependentImgM" name="SignUp.IndependentImgM" value='@Model.SignUp.IndependentImgM' />
+                                                            <input type="hidden" id="IndependentImgMFileBase64" name="IndependentImgMFileBase64" />
+                                                            <input type="hidden" id="IndependentImgMFileBase64_Resize" name="IndependentImgMFileBase64_Resize" />
+                                                        </div>
+                                                        <span class="alert transparent d-block">
+                                                            <i class="cc cc-attention"></i>
+                                                            <div>
+                                                                建議尺寸：1920 x 600 px (滿版)
+                                                            </div>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div id="divSignUpFormContent" class="swiper-slide p-T-10">
+                    <ul class="forms">
+                        <li>
+                            <div class="card shadow-none">
+                                <div class="float-R">
+                                    @*<a class="btn-grey-darken-2-o openEdit-c" href="~/Views/Cards/Form/BackEnd/addTemplate.aspx">
+                                        <i class="cc cc-desktop-message"></i>套用範本
+                                    </a>*@
+                                </div>                                
+                                <ul class="forms">
+                                    <li>
+                                        <div class="col-1">
+                                            <div class="title">主標題</div>
+                                            <div class="input-field">
+                                                <input type="text" id="Form_Title" name="Form.Title" value="@form.Title" />
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="paragraph m-B-8">
+                                        <a id="btnShowDescription" class="btn-del square btn-large transparent" href="javascript:">
+                                            <i class="cc cc-eye"></i>
+                                            <input type="hidden" name="Form.ShowDescription" value="@form.ShowDescription.ToString()" />
+                                        </a>
+                                        <div class="col-3-partner m-T-6">
+                                            <textarea id="Form_Description" name="Form.Description">@(string.IsNullOrWhiteSpace(form.Description) ? "請填入段落內文" : form.Description)</textarea>
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="file" id="formImage" name="formImage" />
+                                            <input type="hidden" id="Form_Image" name="Form.Image" value='@form.Image' />
+                                        </div>
+                                    </li>
+                                    <li id="liCustomField">
+                                        @{ IEnumerable<WorkV3.Models.FieldModel> fields = form.GetFields(); }
+                                        @if (fields?.Count() > 0) {
+                                            Html.RenderPartial("~/Areas/Backend/Views/Form/FieldDesignView.cshtml", fields);
+                                        }
+                                    </li>
+                                </ul>
+                                <a id="Form_btnAdd" class="btn-with-item empty square" href="@Url.Action("AddField", "Form", new { formId = form.ID })" style="margin-top:-30px; margin-bottom:30px;">
+                                    <i class="cc cc-plus"></i>新增欄位
+                                </a> 
+                                <input type="hidden" name="Fields" />                                                            
+                            </div>
+                            <input type="hidden" name="form.ID" value="@form.ID" />
+                            <input type="hidden" name="formFields" />
+                        </li>
+                    </ul>
+                    <script type="text/javascript">
+                        $(function () {
+                            Component.editor("Form_Description");
+                            Component.singleImageUpload('#formImage', '@(Href("~/"))', '@uploadUrl', true);
+
+                            $('#btnShowDescription').each(function () {
+                                $(this).click(function () {
+                                    var iElm = $(this).find('i');
+                                    if (iElm.hasClass('cc-eye')) {
+                                        iElm.removeClass('cc-eye').addClass('cc-eye-off');
+                                        $(this).find('input').val('False');
+                                    } else {
+                                        iElm.removeClass('cc-eye-off').addClass('cc-eye');
+                                        $(this).find('input').val('True');
+                                    }
+                                });
+
+                                var val = $(this).find('input').val();
+                                if (val == 'False') {
+                                    $(this).click();
+                                }
+                            });
+
+                            (function () {
+                                var outerElm = $('#liCustomField');
+
+                                function initFields(container) {
+                                    container.find(':file').each(function () {
+                                        var $this = $(this);
+                                        if ($this.hasClass("fieldFile")) {
+                                            Component.singleFileUpload('#' + this.id, '@(Href("~/"))', '@uploadUrl', null, true);
+                                        } else if ($this.hasClass('fieldImage')) {
+                                            Component.singleImageUpload('#' + this.id, '@(Href("~/"))', '@uploadUrl', true);
+                                        }
+                                    });
+
+                                    container.find('input.fieldRegion').each(function () {
+                                        Component.worldRegion(this, '@Html.Raw(Url.Action("Regions", "Common"))', { fix: this.value ? $.parseJSON(this.value) : [] });
+                                    });
+
+                                    container.find('div.flag').prevAll('.actions-holder').find('a.fieldDel').remove();
+                                }
+
+                                function newFieldHandler(html) {
+                                    html = $(html);
+                                    html.find('select').material_select();
+                                    html.find('.tooltip').tooltipster({ maxWidth: 250 });
+                                    return html;
+                                }
+
+                                initFields(outerElm);
+
+                                $('#Form_btnAdd').click(function (e) {
+                                    e.preventDefault();
+                                    var mainWin = Component.openRight(this.href);
+                                    mainWin.setField = function (id, isFirst) {
+                                        $.post('@Url.Action("FieldDesignViewAsync", "Form")', { ids: ($.isArray(id) ? id.join() : id) }, function (html) {
+                                            html = newFieldHandler(html);
+                                            if (isFirst)
+                                                outerElm.prepend(html); 
+                                            else
+                                                outerElm.append(html);
+                                            initFields(html);
+                                        });
+                                    }
+                                });
+
+                                outerElm.on('click', 'a.fieldEdit', function (e) {
+                                    var $this = $(this);
+                                    e.preventDefault();
+                                    var mainWin = Component.openLeft(this.href, '50%', '25%');
+                                    mainWin.setField = function (id, isFirst) {
+                                        $.post('@Url.Action("FieldDesignViewAsync", "Form")', { ids: ($.isArray(id) ? id.join() : id) }, function (html) {
+                                            html = newFieldHandler(html);
+                                            $this.closest('div.field-outer').replaceWith(html);
+                                            initFields(html);
+                                            if (isFirst)
+                                                html.prependTo(outerElm);                                            
+                                        });
+                                    }
+                                });
+
+                                outerElm.on('click', 'a.fieldCopy', function () {
+                                    var item = $.parseJSON($(this).parent().find('input[type="hidden"]').val());
+                                    $.get('@Url.Action("FieldCopy", "Form")/' + item.ID, function (html) {
+                                        html = newFieldHandler(html);
+                                        outerElm.append(html);
+                                        initFields(html);
+                                    });
+                                });
+
+                                outerElm.on('click', 'a.fieldShow', function () {
+                                    var $this = $(this);
+                                    var valElm = $this.parent().find('input[type="hidden"]');
+                                    var item = $.parseJSON(valElm.val());
+                                    item.Enable = !item.Enable;
+                                    valElm.val(JSON.stringify(item));
+
+                                    if (item.Enable) {
+                                        Component.autoAlert('欄位已顯示', 2, function () {
+                                            $this.find('i').removeClass('cc-eye-off').addClass('cc-eye');
+                                        });
+                                    } else {
+                                        Component.autoAlert('欄位已隱藏', 2, function () {
+                                            $this.find('i').removeClass('cc-eye').addClass('cc-eye-off');
+                                        });
+                                    }
+                                });
+
+                                outerElm.on('click', 'a.fieldDel', function () {
+                                    var that = $(this);
+                                    var msg = that.closest('.field-outer').find('div.flagOption').length ? "刪除後，本欄位即無法顯示在報名清單上，確定刪除？" : "確定要刪除此欄位？";
+                                    Component.confirm(msg, function (isOK) {
+                                        if (isOK) {
+                                            that.closest('div.field-outer').remove();
+                                        }
+                                    });                                    
+                                });
+
+                                outerElm.sortable({ items: 'div.field-outer' });
+                            })();
+
+                            $('#Form_NotifyAdmin').each(function () {
+                                $(this).click(function () {
+                                    if (this.checked)
+                                        $(this).closest('div.outerElm').nextAll('div').slideDown();
+                                    else
+                                        $(this).closest('div.outerElm').nextAll('div').slideUp();
+                                }).triggerHandler('click');
+                            });
+
+                            $('#divAdmins').on('click', 'a', function () {
+                                $(this).parent().remove();
+                            });
+
+                            window.setAdmins = function (admins) {                                
+                                admins = admins || [];
+
+                                var divAdminsElm = $('#divAdmins');
+                                divAdminsElm.children('div.chip').each(function () {
+                                    var item = $.parseJSON($(this).attr('data-val'));
+                                    var index = 0, len = admins.length;
+                                    for (; index < len; ++index) {
+                                        if (admins[index].Email.toLowerCase() == item.Email.toLowerCase() && admins[index].MemberID == item.MemberID)
+                                            break;
+                                    }
+                                    if (index < len)
+                                        admins.splice(index, 1);
+                                });
+
+                                var html = '';
+                                for (var i = 0, len = admins.length; i < len; ++i) {
+                                    var item = admins[i];
+                                    html += '<div class="chip" data-val=\'' + JSON.stringify(item) + '\'>';
+                                    if (item.Img)
+                                        html += '<img src="' + item.Img + '" alt="' + item.Name + '" /> ';
+                                    html += (item.Name || '') + " " + item.Email;
+                                    html += '<a class="tooltip" title="刪除"><i class="cc cc-close"></i></a>';
+                                    html += '</div>';
+                                }
+
+                                divAdminsElm.children('a').before(html);
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+        <div id="divControlBar" class="control-bar">
+            <a class="btn-grey float-L" href="javascript:Component.openRight('@Url.Action("seoEdit", "Common", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = Model.ID })')"><i class="cc cc-search-text"></i>SEO設定</a>
+            <a style="display:none;" id="btnTemplate" class="btn-grey float-L @(templateId > 0 ? "openEdit" : string.Empty)" data-width="300" data-height="290" data-left="70" href="@Html.Raw(templateId > 0 ? Url.Action("Template", siteQuery) + "&templateId=" + templateId + "&sourceId=" + Model.ID : "javascript:")"><i class="cc cc-template"></i>存成範本</a>
+            <input type="hidden" name="SaveTemplate" value="false" />
+            <div class="bar-item float-L">
+                <div>
+                    <span>
+                        @Html.CheckBoxFor(model => Model.IsIssue)
+                        <label for="IsIssue">刊登</label>
+                    </span>
+                 
+                </div>
+            </div>
+            <div id="divIssueRange" class="bar-item float-L" style="display:none;">
+                <div class="input-field inline m-T-none">
+                    <input type="text" id="IssueStart" name="IssueStart" value="@Model.IssueStart.ToString("yyyy.MM.dd HH:mm")" class="input-cal datetimepicker validate[funcCall[checkDate]]" placeholder="開始時間" />
+                </div>
+                <div class="input-field inline m-T-none">
+                    <input type="text" id="IssueEnd" name="IssueEnd" value="@Model.IssueEnd.ToString("yyyy.MM.dd HH:mm")" class="input-cal datetimepicker validate[funcCall[checkEndDate]]" placeholder="結束時間" />
+                </div>
+            </div>
+            <div class="bar-item float-L">
+                <div>
+                    @Html.CheckBoxFor(model => Model.SignUpForceEnd)
+                    <label for="SignUpForceEnd">強迫截止報名</label>
+                </div>
+            </div>
+         
+            <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            @if (ViewBag.IsNew) {
+            <a id="btnPrev" class="btn-bulid" href="javascript:" style="display:none;"><i class="cc cc-arrow-left"></i>上一步</a>
+            <a id="btnNext" class="btn-bulid right" href="javascript:"><i class="cc cc-arrow-right"></i>下一步</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:" style="display:none;"><i class="cc cc-check"></i>儲存</a>
+            } else {
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            }
+        </div>
+    </form>
+</div>

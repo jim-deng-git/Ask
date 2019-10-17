@@ -1,0 +1,49 @@
+.erreoMsg {
+  text-align: center;
+  font-family: Arial, Helvetica, LiHei Pro Medium, "Heiti TC", "Microsoft JhengHei", sans-serif; }
+
+.errorImage {
+  width: 10rem;
+  height: 10rem;
+  margin: 5% auto 0 auto;
+  border: 10px solid #9FA0A0;
+  padding: 3.5rem;
+  border-radius: 50%; }
+  .errorImage .layer > img {
+    width: 100%; }
+  @media only screen and (max-width: 1179px) {
+    .errorImage {
+      width: 5rem;
+      height: 5rem;
+      margin: 20% auto 0 auto;
+      border: 6px solid #9FA0A0;
+      padding: 2.5rem; } }
+  @media only screen and (max-width: 420px) {
+    .errorImage {
+      width: 5rem;
+      height: 5rem;
+      border: 6px solid #9FA0A0;
+      padding: 2rem; } }
+
+.errorText {
+  padding: 20px;
+  color: #9FA0A0; }
+  .errorText .title {
+    color: #727272;
+    font-size: 1.6rem;
+    font-weight: bolder;
+    letter-spacing: 0; }
+    .errorText .title > span {
+      font-size: 4.5rem;
+      letter-spacing: 0.5rem;
+      color: #9FA0A0; }
+  .errorText .txt {
+    margin-top: 20px; }
+    .errorText .txt p {
+      margin: 0 0 5px 0;
+      padding: 0; }
+      .errorText .txt p a {
+        color: #777777;
+        font-weight: bolder;
+        text-decoration: none;
+        padding: 0 5px; }

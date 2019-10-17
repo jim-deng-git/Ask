@@ -1,0 +1,104 @@
+﻿@model WorkV3.Models.StorePlanContractModel
+@{
+    ViewBag.Title = "PlanContract";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string Lng = ViewBag.Lang == 2 ? "英文" : "中文";
+}
+
+<form id="editForm" method="post" enctype="multipart/form-data" action="@Html.Raw(Url.Action("PlanContract", new { parentId = ViewBag.ParentID, siteId = ViewBag.SiteID, lang = ViewBag.Lang}))">
+    <div class="groove groove-1">
+        <div class="card shadow-none">
+            <div class="fixTable border-B">
+                <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;">
+                    <i class="cc cc-arrow-left"></i>
+                </a>
+                免年費一般方案 預設@(Lng)合約編輯
+            </div>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title-admin-page bg-transparent">
+                            <a class="btn-grey-darken-4-o transparent goBack" href="javascript:" onclick="history.go(-1); return false;">
+                                <i class="cc cc-arrow-left"></i>
+                            </a>
+                            免年費一般方案 預設@(Lng)合約編輯
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="input-field inline full">
+                            <input type="text" id="Title" name="Title" placeholder="預設@(Lng)合約標題" value="@Model.Title">
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="col-1">
+                        <div class="input-field inline full">
+                            <div class="img-text-height">
+                                <textarea contenteditable="true" id="Content" name="Content">@Model.Content</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="control-bar">
+                <a class="btn-cancel" onclick="parent.$.colorbox.close();" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="ID" name="ID" value="@Model.ID" />
+    <input type="hidden" id="ParentID" name="ParentID" value="@Model.ParentID" />
+    <input type="hidden" id="Lang" name="Lang" value="@Model.Lang" />
+</form>
+
+@section FArea {
+    @BundleConfig.StickyTableHeaders()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        $(function () {
+            var editor = Component.editor('Content');
+            function openTheformBox(src, formBox) {
+                if (formBox.is(':visible'))
+                    formBox.hide();
+                var iframe = formBox.find('.iframe');
+                iframe.prop('src', src);
+                iframe.on('load', function () {
+                    window.parent.closeCenterEdit = function () {
+                        formBox.fadeOut(300).removeClass('active');
+                    };
+                    formBox.fadeIn(300).addClass('active');
+                });
+            }
+            $('.openLeftEdit').on('click', function (e) {
+                var formBox = window.parent.$("#leftEditBox");
+                e.preventDefault();
+                if (formBox.hasClass('active')) {
+                    formBox.fadeOut(300).removeClass('active');
+                } else {
+                    openTheformBox(this.href, formBox);
+                }
+            });
+
+            $('#btnSave').click(function () {
+                var form = $('#editForm');
+                if (form.validationEngine('validate')) {
+                    form.submit();
+                }
+            });
+        })
+
+        
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                    Component.alert('合約已儲存', function () {
+                        location.href = '@Html.Raw(Url.Action("List",new {siteId = ViewBag.SiteID, type = "plan" }))';
+                    });
+                    </text>
+            }
+    </script>
+}

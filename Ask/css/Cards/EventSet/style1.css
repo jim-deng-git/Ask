@@ -1,0 +1,805 @@
+.card-common .article-left .card-poster .posted a, .card-common .article-main .card-img .card-text-name > a, .card-common .article-set-title a, .card-common ul.download, .card-common ul.download > li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none; }
+
+.card-common .article-left, .card-common .article-main, .card-common .article-right, .card-common .comment .commentBtn, .card-common .comment .replyCommentBtn, .card-common .recommend .card-img-box .card-text-name, .card-common .hasVideo::after, .card-eventSet[data-style="1"] .swiper-body {
+  -webkit-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out; }
+
+.card-eventSet[data-style="1"] .swiper-button-prev, .card-eventSet[data-style="1"] .swiper-button-next, .card-eventSet[data-style="1"] .swiper-button-prev::after, .card-eventSet[data-style="1"] .swiper-button-next::after {
+  -webkit-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out; }
+
+.card-common .recommend .card-img-box a img {
+  -webkit-transition-duration: 1s;
+       -o-transition-duration: 1s;
+          transition-duration: 1s;
+  -webkit-transform: scale(1);
+      -ms-transform: scale(1);
+          transform: scale(1); }
+
+.card-common .recommend .card-img-box a:hover img {
+  -webkit-transition-duration: 1s;
+       -o-transition-duration: 1s;
+          transition-duration: 1s;
+  -webkit-transform: scale(1.05);
+      -ms-transform: scale(1.05);
+          transform: scale(1.05); }
+
+.card-eventSet[data-style="1"] .swiper-body-text-name {
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap; }
+
+.card-common {
+  margin: 2rem 0; }
+  .card-common .card-text-info {
+    color: #444444;
+    font-size: 16px; }
+  .card-common .article-left {
+    width: 200px;
+    float: left;
+    position: relative;
+    z-index: 3; }
+    @media only screen and (max-width: 420px) {
+      .card-common .article-left {
+        width: 100%; } }
+    .card-common .article-left .card-poster {
+      font-size: 14px; }
+      .card-common .article-left .card-poster .posted a {
+        display: inline-block;
+        color: #787878; }
+      .card-common .article-left .card-poster .posted ~ .posted {
+        margin-top: 10px; }
+  .card-common .article-main {
+    width: 100%;
+    margin: 0 auto; }
+    .card-common .article-main.hasLeft .article-center {
+      width: calc(100% - (200px + 60px)); }
+      @media only screen and (max-width: 420px) {
+        .card-common .article-main.hasLeft .article-center {
+          width: 100%; } }
+    .card-common .article-main.hasLeft.hasRight .article-center {
+      width: calc(100% - (200px + 300px + 60px)); }
+      @media only screen and (max-width: 420px) {
+        .card-common .article-main.hasLeft.hasRight .article-center {
+          width: 100%; } }
+    .card-common .article-main.hasRight .article-center {
+      width: calc(100% - (300px + 60px)); }
+      @media only screen and (max-width: 420px) {
+        .card-common .article-main.hasRight .article-center {
+          width: 100%; } }
+    .card-common .article-main .article-main-contnet {
+      padding-top: 10px;
+      clear: both; }
+      .card-common .article-main .article-main-contnet::before {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 4px;
+        margin: 10px 0 0; }
+    .card-common .article-main .card-text {
+      padding: 0px; }
+      .card-common .article-main .card-text.format {
+        width: calc(55% - 20px); }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card-text.format {
+            width: 100%; } }
+      .card-common .article-main .card-text ~ .card-img {
+        margin-top: 25px; }
+      .card-common .article-main .card-text ~ .card-file, .card-common .article-main .card-text ~ .card-link {
+        margin-top: 20px; }
+    .card-common .article-main .card-text-name {
+      font-size: 22px;
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+      color: #222222; }
+      .card-common .article-main .card-text-name ~ .card-text-info {
+        margin-top: 16px; }
+      .card-common .article-main .card-text-name ~ .card-img {
+        margin-top: 16px; }
+    .card-common .article-main .card-img {
+      padding-bottom: 0;
+      overflow: visible;
+      height: auto; }
+      .card-common .article-main .card-img img, .card-common .article-main .card-img a:not(.imgLink) {
+        position: relative;
+        height: auto;
+        display: inline-block;
+        width: 100%; }
+      .card-common .article-main .card-img > a {
+        height: 100%; }
+      .card-common .article-main .card-img .imgLink {
+        margin-top: -5px; }
+      .card-common .article-main .card-img .imgInfo a:not(.imgLink) {
+        display: inline-block;
+        width: inherit; }
+      .card-common .article-main .card-img .card-text-name {
+        font-size: 15px; }
+        .card-common .article-main .card-img .card-text-name > a {
+          padding-bottom: 0;
+          color: #555555;
+          background-color: transparent; }
+          .card-common .article-main .card-img .card-text-name > a:focus, .card-common .article-main .card-img .card-text-name > a:active, .card-common .article-main .card-img .card-text-name > a:hover {
+            color: #3e3e3e; }
+      .card-common .article-main .card-img:focus, .card-common .article-main .card-img:active, .card-common .article-main .card-img:hover {
+        color: #3e3e3e; }
+      .card-common .article-main .card-img ~ .card-text {
+        padding: 20px 0px 0px; }
+      .card-common .article-main .card-img .flex-control-paging li a {
+        height: 11px; }
+      .card-common .article-main .card-img .flex-direction-nav {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        margin-top: -20px;
+        width: 100%; }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card-img .flex-direction-nav {
+            position: static;
+            top: auto;
+            margin-top: 0; } }
+        .card-common .article-main .card-img .flex-direction-nav a {
+          position: absolute;
+          width: 40px;
+          height: 40px; }
+      .card-common .article-main .card-img.text-R {
+        margin-left: auto;
+        margin-right: 0;
+        float: right; }
+        .card-common .article-main .card-img.text-R ~ .card-text {
+          float: right;
+          width: 100%; }
+        .card-common .article-main .card-img.text-R .flexslider {
+          margin-left: auto;
+          margin-right: 0;
+          float: right; }
+          .card-common .article-main .card-img.text-R .flexslider .slides img {
+            margin: 0 0 0 auto; }
+      .card-common .article-main .card-img.text-C {
+        margin-left: auto;
+        margin-right: auto; }
+        .card-common .article-main .card-img.text-C .flexslider {
+          margin: 0 auto; }
+          .card-common .article-main .card-img.text-C .flexslider .slides img {
+            margin: 0 auto; }
+      .card-common .article-main .card-img.float-L, .card-common .article-main .card-img.float-R {
+        width: 45%; }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card-img.float-L, .card-common .article-main .card-img.float-R {
+            width: 100%; } }
+        .card-common .article-main .card-img.float-L ~ .card-text, .card-common .article-main .card-img.float-R ~ .card-text {
+          padding-top: 16px; }
+        .card-common .article-main .card-img.float-L .flexslider, .card-common .article-main .card-img.float-R .flexslider {
+          width: 100%; }
+      .card-common .article-main .card-img.float-L {
+        margin-right: 20px; }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card-img.float-L {
+            margin-right: 0; } }
+        .card-common .article-main .card-img.float-L ~ .card-text ul {
+          margin-left: calc(45% + 40px); }
+          @media only screen and (max-width: 420px) {
+            .card-common .article-main .card-img.float-L ~ .card-text ul {
+              margin-left: 20px; } }
+      .card-common .article-main .card-img.float-R {
+        margin-left: 20px; }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card-img.float-R {
+            margin-left: 0; } }
+        .card-common .article-main .card-img.float-R.text-R ~ .card-text {
+          float: none; }
+    .card-common .article-main .card, .card-common .article-main .card-box, .card-common .article-main .card-img {
+      position: static; }
+      .card-common .article-main .card.video, .card-common .article-main .card-box.video, .card-common .article-main .card-img.video {
+        position: relative; }
+        .card-common .article-main .card.video .card-box, .card-common .article-main .card.video .card-img, .card-common .article-main .card-box.video .card-box, .card-common .article-main .card-box.video .card-img, .card-common .article-main .card-img.video .card-box, .card-common .article-main .card-img.video .card-img {
+          position: relative; }
+        .card-common .article-main .card.video.imgWidth-small .card-img, .card-common .article-main .card-box.video.imgWidth-small .card-img, .card-common .article-main .card-img.video.imgWidth-small .card-img {
+          width: 60%; }
+          @media only screen and (max-width: 420px) {
+            .card-common .article-main .card.video.imgWidth-small .card-img, .card-common .article-main .card-box.video.imgWidth-small .card-img, .card-common .article-main .card-img.video.imgWidth-small .card-img {
+              width: 100%; } }
+    .card-common .article-main .card {
+      margin-bottom: 50px; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .flexslider a, .card-common .article-main .card:not([class*='imgWidth-']) .flexslider .imgInfo a {
+        width: initial; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .flexslider .flex-direction-nav a {
+        width: 40px; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .flexslider .slides img {
+        width: initial;
+        width: auto; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .card-img.text-C .imgInfo {
+        margin: 5px auto; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .card-img.text-C .flexslider {
+        left: 50%; }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card:not([class*='imgWidth-']) .card-img.text-C .flexslider {
+            left: 0;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            width: 100% !important; } }
+      .card-common .article-main .card:not([class*='imgWidth-']) .card-img.text-C .flex-direction-nav {
+        right: 0;
+        margin: -20px auto; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .card-img.text-R .imgInfo {
+        margin-right: 0;
+        margin-left: auto; }
+      .card-common .article-main .card:not([class*='imgWidth-']) .card-img.text-R .flex-direction-nav {
+        left: auto;
+        right: 0; }
+      .card-common .article-main .card.imgWidth-large .flexslider {
+        width: 100%;
+        margin-left: -200px;
+        right: -200px; }
+      .card-common .article-main .card.imgWidth-large .card-img.text-R .flexslider {
+        right: 0; }
+      .card-common .article-main .card.imgWidth-large .card-img.text-R .flex-direction-nav {
+        left: auto;
+        right: 0; }
+      .card-common .article-main .card.imgWidth-large .card-img.text-C .flexslider {
+        right: -20px; }
+      .card-common .article-main .card.imgWidth-large .card-img.text-C .flex-direction-nav {
+        right: 0;
+        margin: -20px auto; }
+      .card-common .article-main .card.imgWidth-large .card-img.text-C .videoIframe {
+        left: -200px; }
+      .card-common .article-main .card.imgWidth-large .card-img img {
+        width: 100%; }
+      .card-common .article-main .card.imgWidth-middle .flexslider {
+        width: 100%; }
+      .card-common .article-main .card.imgWidth-small .flexslider {
+        width: 60%; }
+        @media only screen and (max-width: 420px) {
+          .card-common .article-main .card.imgWidth-small .flexslider {
+            width: 100%; } }
+      .card-common .article-main .card.imgWidth-small .card-img.float-L .flexslider, .card-common .article-main .card.imgWidth-small .card-img.float-R .flexslider {
+        width: 100%; }
+      .card-common .article-main .card.imgSaying {
+        border: 2px solid #d2d2d2;
+        border-width: 2px 0;
+        padding: 48px 0 50px; }
+        .card-common .article-main .card.imgSaying .card-img ~ .card-text {
+          padding-top: 30px; }
+        .card-common .article-main .card.imgSaying .card-text {
+          text-align: center; }
+        .card-common .article-main .card.imgSaying .card-text-name {
+          font-size: 20px; }
+          .card-common .article-main .card.imgSaying .card-text-name ~ .card-text-info {
+            margin-top: 30px; }
+        .card-common .article-main .card.imgSaying .card-text-info {
+          font-size: 16px;
+          color: #4a4a4a;
+          font-weight: 300; }
+        .card-common .article-main .card.imgSaying .flex-direction-nav {
+          width: 100% !important;
+          margin-top: 0; }
+        .card-common .article-main .card.imgSaying.imgWidth-small .flexslider {
+          width: 250px;
+          margin: 0 auto; }
+          @media only screen and (max-width: 420px) {
+            .card-common .article-main .card.imgSaying.imgWidth-small .flexslider {
+              width: 100%; } }
+          .card-common .article-main .card.imgSaying.imgWidth-small .flexslider .slides > li {
+            text-align: center; }
+          .card-common .article-main .card.imgSaying.imgWidth-small .flexslider .slides a:not(.imgLink), .card-common .article-main .card.imgSaying.imgWidth-small .flexslider .slides img {
+            width: initial;
+            width: auto; }
+      .card-common .article-main .card.imgExperience {
+        border: 2px solid #d2d2d2;
+        border-width: 2px 0;
+        padding: 48px 35px 50px; }
+        .card-common .article-main .card.imgExperience .card-text {
+          width: calc(70% - 20px); }
+          @media only screen and (max-width: 420px) {
+            .card-common .article-main .card.imgExperience .card-text {
+              width: 100%; } }
+        .card-common .article-main .card.imgExperience .card-img.float-L, .card-common .article-main .card.imgExperience .card-img.float-R {
+          width: 30%; }
+          @media only screen and (max-width: 420px) {
+            .card-common .article-main .card.imgExperience .card-img.float-L, .card-common .article-main .card.imgExperience .card-img.float-R {
+              width: 100%; } }
+          .card-common .article-main .card.imgExperience .card-img.float-L ~ .card-text, .card-common .article-main .card.imgExperience .card-img.float-R ~ .card-text {
+            padding-top: 0; }
+        .card-common .article-main .card.imgExperience .flex-direction-nav {
+          width: 100% !important;
+          margin-top: 0; }
+  .card-common .article-center {
+    float: left;
+    position: relative;
+    z-index: 2;
+    width: 100%; }
+  .card-common .article-right {
+    margin-left: 60px;
+    width: 300px;
+    float: right; }
+    .card-common .article-right .card ~ .card {
+      margin: 0 0 35px; }
+  @media only screen and (max-width: 420px) {
+    .card-common .article-right, .card-common .article-left {
+      width: 100%;
+      margin-left: 0; } }
+  .card-common .article-right .card, .card-common .article-left .card {
+    -webkit-box-shadow: none;
+            box-shadow: none;
+    position: relative;
+    z-index: 2; }
+  .card-common .article-right .card-datetime .card-date, .card-common .article-left .card-datetime .card-date {
+    font-size: 24px;
+    letter-spacing: -1px;
+    line-height: 1; }
+    .card-common .article-right .card-datetime .card-date .year, .card-common .article-left .card-datetime .card-date .year {
+      line-height: 1;
+      font-size: 15px;
+      color: #9e9e9e;
+      margin-bottom: 3px; }
+    .card-common .article-right .card-datetime .card-date > span:not(.week), .card-common .article-left .card-datetime .card-date > span:not(.week) {
+      margin: 0 5px; }
+    .card-common .article-right .card-datetime .card-date > .week, .card-common .article-left .card-datetime .card-date > .week {
+      font-size: 12px;
+      letter-spacing: 0px;
+      margin-left: 3px;
+      line-height: 1;
+      vertical-align: middle;
+      color: #9e9e9e; }
+  .card-common .article-right .card-datetime .card-time, .card-common .article-left .card-datetime .card-time {
+    font-size: 16px;
+    margin-left: 1px;
+    letter-spacing: 0px;
+    margin-top: 2px; }
+  .card-common .article-right .card-datetime > div:not(.card-time), .card-common .article-right .card-datetime:not(.multiple) > div, .card-common .article-left .card-datetime > div:not(.card-time), .card-common .article-left .card-datetime:not(.multiple) > div {
+    display: inline-block; }
+    .card-common .article-right .card-datetime > div:not(.card-time) .card-time, .card-common .article-right .card-datetime:not(.multiple) > div .card-time, .card-common .article-left .card-datetime > div:not(.card-time) .card-time, .card-common .article-left .card-datetime:not(.multiple) > div .card-time {
+      margin-left: 5px;
+      vertical-align: bottom; }
+  .card-common .article-title {
+    width: 100%;
+    font-size: 34px;
+    color: #222222;
+    letter-spacing: 1px;
+    text-align: center; }
+    .card-common .article-title.page {
+      text-align: left;
+      float: left; }
+      .card-common .article-title.page ~ .article-sub-title {
+        float: left;
+        width: 100%;
+        margin-top: 5px; }
+  .card-common .article-sub-title {
+    font-size: 28px;
+    color: #3e3e3e; }
+  .card-common .article-set-title {
+    font-size: 16px; }
+    .card-common .article-set-title > span {
+      display: inline-block;
+      background-color: transparent; }
+      .card-common .article-set-title > span a {
+        color: #9e9e9e; }
+      .card-common .article-set-title > span::after {
+        content: "";
+        display: block;
+        width: 100%;
+        margin: 3px auto 0;
+        height: 2px;
+        background-color: #9e9e9e; }
+      .card-common .article-set-title > span[data-color] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color] a {
+          color: #9e9e9e; }
+        .card-common .article-set-title > span[data-color]::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #9e9e9e; }
+      .card-common .article-set-title > span[data-color='red'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='red'] a {
+          color: #FF1744; }
+        .card-common .article-set-title > span[data-color='red']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #FF1744; }
+      .card-common .article-set-title > span[data-color='orange'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='orange'] a {
+          color: #ef6c00; }
+        .card-common .article-set-title > span[data-color='orange']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #ef6c00; }
+      .card-common .article-set-title > span[data-color='yellow'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='yellow'] a {
+          color: #fdd835; }
+        .card-common .article-set-title > span[data-color='yellow']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #fdd835; }
+      .card-common .article-set-title > span[data-color='green'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='green'] a {
+          color: #43A047; }
+        .card-common .article-set-title > span[data-color='green']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #43A047; }
+      .card-common .article-set-title > span[data-color='light-green'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='light-green'] a {
+          color: #8bc34a; }
+        .card-common .article-set-title > span[data-color='light-green']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #8bc34a; }
+      .card-common .article-set-title > span[data-color='blue'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='blue'] a {
+          color: #2196F3; }
+        .card-common .article-set-title > span[data-color='blue']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #2196F3; }
+      .card-common .article-set-title > span[data-color='teal'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='teal'] a {
+          color: #009688; }
+        .card-common .article-set-title > span[data-color='teal']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #009688; }
+      .card-common .article-set-title > span[data-color='deep-purple'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='deep-purple'] a {
+          color: #673ab7; }
+        .card-common .article-set-title > span[data-color='deep-purple']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #673ab7; }
+      .card-common .article-set-title > span[data-color='gold'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='gold'] a {
+          color: #ac7224; }
+        .card-common .article-set-title > span[data-color='gold']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #ac7224; }
+      .card-common .article-set-title > span[data-color='light-grey'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='light-grey'] a {
+          color: #bdbdbd; }
+        .card-common .article-set-title > span[data-color='light-grey']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #bdbdbd; }
+      .card-common .article-set-title > span[data-color='grey'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='grey'] a {
+          color: #616161; }
+        .card-common .article-set-title > span[data-color='grey']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #616161; }
+      .card-common .article-set-title > span[data-color='black'] {
+        background-color: transparent; }
+        .card-common .article-set-title > span[data-color='black'] a {
+          color: #000000; }
+        .card-common .article-set-title > span[data-color='black']::after {
+          content: "";
+          display: block;
+          width: 100%;
+          margin: 3px auto 0;
+          height: 2px;
+          background-color: #000000; }
+      .card-common .article-set-title > span ~ span {
+        margin-left: 10px; }
+    .card-common .article-set-title a {
+      color: #3e3e3e; }
+    .card-common .article-set-title ~ .article-title {
+      margin-top: 8px; }
+  .card-common .card, .card-common .card-box, .card-common .copyright, .card-common .comment, .card-common .recommend {
+    float: left;
+    width: 100%; }
+  .card-common .type-img {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+    margin-right: 5px;
+    border-radius: 50px;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center; }
+  .card-common ul.download {
+    font-size: 15px; }
+    .card-common ul.download > li > a {
+      text-decoration: none; }
+    .card-common ul.download > li i {
+      vertical-align: text-bottom;
+      margin-right: 5px;
+      font-size: 18px; }
+  .card-common .copyright {
+    font-size: 13px;
+    margin-top: 60px;
+    padding: 30px 0px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center; }
+  .card-common .comment-title, .card-common .recommend-title {
+    color: #000000;
+    padding-bottom: 2px;
+    margin-bottom: 17px;
+    border-bottom: 1px solid #dddddd; }
+  .card-common .comment ul {
+    list-style: none;
+    margin: 0;
+    padding: 0; }
+  .card-common .comment li {
+    list-style: none;
+    margin: 0 0 30px;
+    padding: 0;
+    border-bottom: 1px solid #eeeeee;
+    padding-bottom: 25px; }
+  .card-common .comment .userImg {
+    width: 40px;
+    height: 40px;
+    border-radius: 100%;
+    overflow: hidden;
+    float: left;
+    background-color: #dddddd;
+    line-height: 40px; }
+    .card-common .comment .userImg > i {
+      font-size: 40px; }
+    .card-common .comment .userImg > img {
+      width: 100%;
+      height: 100%;
+      display: block; }
+  .card-common .comment .time {
+    color: #787878;
+    font-size: 12px;
+    float: right;
+    padding-top: 12px; }
+  .card-common .comment .userName {
+    color: #454545;
+    font-size: 13px;
+    margin-left: 50px;
+    padding-top: 12px; }
+  .card-common .comment .content {
+    margin-top: 5px;
+    margin-left: 50px; }
+  .card-common .comment .good {
+    margin-left: 50px;
+    margin-top: 5px;
+    font-size: 14px;
+    line-height: 14px;
+    vertical-align: middle; }
+    .card-common .comment .good > i {
+      font-size: 16px; }
+    .card-common .comment .good span {
+      margin-left: 2px; }
+  .card-common .comment .childreply {
+    position: relative;
+    top: 4px; }
+  .card-common .comment .commentBtn, .card-common .comment .replyCommentBtn {
+    display: block;
+    color: #999999;
+    text-align: center;
+    width: 64px;
+    height: 64px;
+    background-color: #f7f7f7;
+    border-radius: 100%;
+    overflow: hidden;
+    border: 1px solid #dedede;
+    margin: 20px auto 10px;
+    cursor: pointer; }
+    .card-common .comment .commentBtn > i, .card-common .comment .replyCommentBtn > i {
+      font-size: 20px;
+      padding: 5px; }
+    .card-common .comment .commentBtn > span, .card-common .comment .replyCommentBtn > span {
+      font-size: 13px;
+      display: block; }
+    .card-common .comment .commentBtn:hover, .card-common .comment .replyCommentBtn:hover {
+      color: #ffffff;
+      background-color: #454545;
+      border: 1px solid #666666; }
+  .card-common .comment .reply-comment {
+    margin-left: 4rem; }
+    .card-common .comment .reply-comment li {
+      border-bottom: none; }
+  .card-common .comment .comment-edit {
+    padding: 0px 20px 20px;
+    background-color: #f7f7f7;
+    margin-bottom: 30px;
+    border-bottom: none; }
+    .card-common .comment .comment-edit .comment-content {
+      margin-left: 0; }
+    .card-common .comment .comment-edit .userName {
+      margin-left: 0px;
+      padding-top: 0px; }
+    .card-common .comment .comment-edit .content {
+      margin-top: 0px;
+      margin-left: 0px; }
+  .card-common .comment textarea.materialize-textarea {
+    height: 10px; }
+  .card-common .recommend {
+    margin-top: 30px; }
+    .card-common .recommend .card-img-box a {
+      padding-bottom: 56.25%;
+      overflow: hidden; }
+      .card-common .recommend .card-img-box a img {
+        position: absolute;
+        top: 50%;
+        margin-top: -28.125%; }
+    .card-common .recommend .card-img-box:focus .card-text-name, .card-common .recommend .card-img-box:active .card-text-name, .card-common .recommend .card-img-box:hover .card-text-name {
+      color: #3e3e3e; }
+      .card-common .recommend .card-img-box:focus .card-text-name a, .card-common .recommend .card-img-box:active .card-text-name a, .card-common .recommend .card-img-box:hover .card-text-name a {
+        color: #3e3e3e; }
+  .card-common .visible_item {
+    display: none; }
+  .card-common #showMore {
+    margin-bottom: 40px; }
+  .card-common .hasVideo {
+    position: relative; }
+    .card-common .hasVideo::after {
+      content: "\ea38";
+      font-size: 32px;
+      color: #ffffff;
+      display: inline-block;
+      width: 38px;
+      height: 40px;
+      text-align: center;
+      line-height: 41px;
+      border-radius: 100%;
+      border: 2px solid #ffffff;
+      background-color: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      font-family: "FontCCwork";
+      padding-left: 2px;
+      left: 50%;
+      top: 50%;
+      margin-top: -20px;
+      margin-left: -19px;
+      opacity: 0.8; }
+  .card-common .instagram-media {
+    position: relative !important; }
+    @media only screen and (max-width: 420px) {
+      .card-common .instagram-media {
+        max-width: 100% !important; } }
+
+.card-eventSet[data-style="1"] .swiper-wrapper {
+  padding-bottom: 50px;
+  -webkit-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0); }
+
+.card-eventSet[data-style="1"] .swiper-slide {
+  max-width: 25%;
+  margin: 0 10px;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 25%;
+          flex: 0 0 25%; }
+  @media only screen and (max-width: 800px) {
+    .card-eventSet[data-style="1"] .swiper-slide {
+      min-width: 50%;
+      max-width: 50%; } }
+  @media only screen and (max-width: 420px) {
+    .card-eventSet[data-style="1"] .swiper-slide {
+      min-width: 90%;
+      max-width: 90%; } }
+
+.card-eventSet[data-style="1"] .article-title {
+  font-size: 22px;
+  color: #222222;
+  margin-bottom: 22px; }
+
+.card-eventSet[data-style="1"] .swiper-heading {
+  color: #000000;
+  border-bottom: 1px solid #000000;
+  padding-bottom: 5px; }
+  @media only screen and (max-width: 420px) {
+    .card-eventSet[data-style="1"] .swiper-heading {
+      text-align: center; } }
+  .card-eventSet[data-style="1"] .swiper-heading span {
+    font-size: 24px; }
+
+.card-eventSet[data-style="1"] .swiper-body {
+  padding: 10px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer; }
+  .card-eventSet[data-style="1"] .swiper-body:hover {
+    background-color: #f5f5f5; }
+  .card-eventSet[data-style="1"] .swiper-body img {
+    float: left;
+    width: 120px;
+    max-height: 120px; }
+  .card-eventSet[data-style="1"] .swiper-body .swiper-body-text {
+    margin-left: 135px; }
+    .card-eventSet[data-style="1"] .swiper-body .swiper-body-text > div {
+      float: left;
+      width: 100%; }
+
+.card-eventSet[data-style="1"] .swiper-body-text-name {
+  color: #000000;
+  font-size: 15px; }
+
+.card-eventSet[data-style="1"] .swiper-body-text-date, .card-eventSet[data-style="1"] .swiper-body-text-time {
+  font-size: 13px; }
+
+.card-eventSet[data-style="1"] .swiper-button-prev, .card-eventSet[data-style="1"] .swiper-button-next {
+  width: 50px;
+  height: 100%;
+  top: 0;
+  margin-top: 0;
+  opacity: 0;
+  background-color: rgba(255, 255, 255, 0.7); }
+  @media only screen and (max-width: 420px) {
+    .card-eventSet[data-style="1"] .swiper-button-prev, .card-eventSet[data-style="1"] .swiper-button-next {
+      width: 40px;
+      height: 40px;
+      opacity: 1;
+      background-color: transparent; } }
+  .card-eventSet[data-style="1"] .swiper-button-prev::after, .card-eventSet[data-style="1"] .swiper-button-next::after {
+    font-family: "FontCCWork";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    top: 50%;
+    margin-top: -25px;
+    font-size: 50px; }
+    @media only screen and (max-width: 420px) {
+      .card-eventSet[data-style="1"] .swiper-button-prev::after, .card-eventSet[data-style="1"] .swiper-button-next::after {
+        height: 100%;
+        line-height: 40px;
+        top: 0%;
+        margin-top: 0px;
+        font-size: 40px; } }
+
+.card-eventSet[data-style="1"] .swiper-button-prev::after {
+  content: "\ea06"; }
+
+.card-eventSet[data-style="1"] .swiper-button-next::after {
+  content: "\ea08"; }
+
+.card-eventSet[data-style="1"] .swiper-container:hover .swiper-button-prev, .card-eventSet[data-style="1"] .swiper-container:hover .swiper-button-next {
+  opacity: 1; }

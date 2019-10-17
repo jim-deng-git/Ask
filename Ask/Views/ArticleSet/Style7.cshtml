@@ -1,0 +1,230 @@
+﻿@model IEnumerable<ArticleModels>
+@{
+    ArticleSetModels setting = ViewBag.Setting;
+    Dictionary<long, SitePage> itemPages = ViewBag.ItemPages;
+    Dictionary<long, List<ArticleTypesModels>> itemTypes = ViewBag.ItemTypes;
+}
+
+<link href="~/css/card.css" rel="stylesheet" />
+<link href="~/css/vendor/swiper/swiper.css" rel="stylesheet" />
+<link href="~/css/Cards/ArticleSet/style7.css" rel="stylesheet" />
+
+<div id="card_@setting.CardNo" class="card-articleSet" data-style="7" data-aos="fade-up">
+    <div class="filters-bar">
+        <ol id="filter-bar">
+            @* 以年分類 第一個要加className:"active" *@
+            @{
+                List<string> AllYears = new List<string>();
+                foreach (var item in Model)
+                {
+                    if (item.IssueDate != null)
+                    {
+                        AllYears.Add(item.IssueDate.ToString("yyyy"));
+                    }
+                }
+
+                HashSet<string> Years = new HashSet<string>(AllYears);
+
+                int index = 1;
+                foreach (string Year in Years)
+                {
+                    if (index == 1)
+                    {
+                        <li class="active" data-tag="@Year"><span>@Year</span></li>
+                    }
+                    else
+                    {
+                        <li data-tag="@Year"><span>@Year</span></li>
+                    }
+                    index++;
+                }
+            }
+        </ol>
+    </div>
+    <div class="article-list">
+        @* 以年分類 第一個要加className:"active" *@
+        @{index = 1;}
+        @foreach (string Year in Years)
+        {
+            <div class="swiper-container @(index == 1 ? "active" : "")" data-tag="@Year">
+                <div class="swiper-wrapper">
+                    @{
+                        var Articles = Model.Where(x => x.IssueDate.ToString("yyyy") == Year).OrderByDescending(x => x.IssueDate);
+                    }
+                    @foreach (var item in Articles)
+                    {
+                        List<ArticleTypesModels> articleTypes = itemTypes.GetValue(item.ID);
+                        SitePage page = itemPages[item.CardNo];
+                        string img = item.GetFirstImg(setting);
+                        string imgUrl = "";
+                        if (!string.IsNullOrEmpty(img))
+                        {
+                            string absUploadUrl = WorkV3.Golbal.UpdFileInfo.GetUPathByMenuID(page.SiteID, page.MenuID);
+                            if (System.IO.File.Exists(string.Format("{0}\\R_{1}", absUploadUrl, img)))
+                            {
+                                img = string.Format("R_{0}", img);
+                            }
+                        }
+
+                        <div class="swiper-slide">
+                            <a href="@Html.Raw(Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN }))">
+                                <div class="card shadow-none">
+                                    <div class="card-box">
+                                        @if (!string.IsNullOrWhiteSpace(item.VideoImg))
+                                        {
+                                            imgUrl = item.VideoImgIsCustom ? page.GetUploadUrl() + Server.UrlPathEncode(img) : item.VideoImg;
+                                            <div class="card-img" style="background-image:url('@imgUrl')">
+                                                <div class="card-img-content" style="background-image:url('@imgUrl')"></div>
+                                                <span><i class="cc cc-play"></i></span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            if (!string.IsNullOrWhiteSpace(img))
+                                            {
+                                                imgUrl = page.GetUploadUrl() + Server.UrlPathEncode(img);
+                                                <div class="card-img" style="background-image:url('@imgUrl')">
+                                                    <div class="card-img-content" style="background-image:url('@imgUrl')"></div>
+                                                </div>
+                                            }
+                                        }
+                                        <div class="card-text">
+                                            <div class="card-text-name">@item.Title</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+                <div class="swiper-button swiper-button-prev"></div>
+                <div class="swiper-button swiper-button-next"></div>
+            </div>
+            index++;
+        }
+    </div>
+</div>
+
+<script type="text/javascript" src="~/Script/swiper/swiper.jquery.js"></script>
+<script>
+    $(document).ready(function(){
+        var swiperName = $('#card_@setting.CardNo .swiper-container');
+        var windowW = $(window).outerWidth();
+        var SwiperChangeSize = function(){
+            var next1 = swiperName.find('.swiper-slide-next').next('.swiper-slide'),
+                next2 = swiperName.find('.swiper-slide-next').next('.swiper-slide').next('.swiper-slide'),
+                prev1 = swiperName.find('.swiper-slide-prev').prev('.swiper-slide'),
+                prev2 = swiperName.find('.swiper-slide-prev').prev('.swiper-slide').prev('.swiper-slide');
+
+            // $('.swiper-slide').removeClass('next1 next2 prev1 prev2');
+            // next1.addClass('next1');
+            // next2.addClass('next2');
+            // prev1.addClass('prev1');
+            // prev2.addClass('prev2');
+            
+            swiperName.find('.swiper-slide-next').css({
+                'opacity' : '1'
+            }).children('a').css({
+                'transform': 'translate(10%,80%)'
+            });
+            next1.css({
+                'opacity' : '1'
+            }).children('a').css({
+                'transform': 'translate(-10%,50%)'
+            });
+            next2.css({
+                'opacity' : '1'
+            }).children('a').css({
+                'transform': 'translate(-40%,20%)'
+            });
+            next2.next('.swiper-slide').css({
+                'opacity' : '0'
+            });
+
+            swiperName.find('.swiper-slide-prev').css({
+                'opacity' : '1'
+            }).children('a').css({
+                'transform': 'translate(-40%,80%)'
+            });
+            prev1.css({
+                'opacity' : '1'
+            }).children('a').css({
+                'transform': 'translate(-20%,50%)'
+            });
+            prev2.css({
+                'opacity' : '1'
+            }).children('a').css({
+                'transform': 'translate(1%,20%)'
+            });
+            prev2.prev('.swiper-slide').css({
+                'opacity' : '0'
+            });
+        }
+
+        // var SwiperHeight = 0
+        
+        swiperName.each(function(){
+            var $this = $(this);
+            $this.swiper({
+                slidesPerView: 'auto',
+                centeredSlides: true,
+                paginationClickable: true,
+                nextButton: '.swiper-button-next',
+                prevButton: '.swiper-button-prev',
+                spaceBetween: 0,
+                // initialSlide: 3, //讓他默認第一個顯示
+                slideToClickedSlide: false,
+                mousewheelControl: false,
+                loop: true,
+                // loopAdditionalSlides : 7,
+                speed: 800,
+                simulateTouch: false,
+                freeMode: true,
+                onInit: function(swiper){
+                    SwiperChangeSize()
+                    var dom =  $('#card_@setting.CardNo').find('.swiper-container');
+                    dom.each(function(){
+                        if($(this).hasClass('active')){
+                            $(this).fadeIn();
+                        }else{
+                            $(this).fadeOut();
+                        }
+                    });
+                },
+                onSlideChangeStart: function(swiper){
+                    SwiperChangeSize()
+                },
+                onSlideChangeEnd: function(swiper){
+                    SwiperChangeSize()
+                },
+                onBeforeResize: function(swiper){
+                    SwiperChangeSize()
+                }
+            });
+        })
+
+        setTimeout(function(){
+            var outerElm = $('#card_@setting.CardNo .swiper-container');
+            outerElm.each(function () {
+                var $Height = $(this).outerHeight();
+                $(this).css('height', $Height + 50);
+            });
+        },500)
+           
+        var $filterList = $('#filter-bar').find('li');
+
+        $filterList.on('click', function(){
+            $filterList.removeClass('active');
+            $(this).addClass('active');
+            var filterTag =  $(this).data('tag');
+            $('.article-list').find('.swiper-container').each(function(){
+                var swiperTag = $(this).data('tag');
+                if(filterTag == swiperTag){
+                    $(this).addClass('active').fadeIn();
+                }else{
+                    $(this).removeClass('active').hide();
+                }
+            })
+        });
+    });
+</script>

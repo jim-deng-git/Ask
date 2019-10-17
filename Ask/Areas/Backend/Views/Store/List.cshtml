@@ -1,0 +1,688 @@
+﻿@using Newtonsoft.Json.Linq;
+@using WorkV3.Models
+@using WorkV3.Areas.Backend.ViewModels
+@using System.Linq;
+@model CommonListViewModel<StoreModels>
+@{
+    ViewBag.Title = "商店管理";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    JObject search = ViewBag.Search;
+    Pagination pagination = ViewBag.Pagination;
+    var siteQuery = new { SiteID = ViewBag.SiteID, MenuID = ViewBag.MenuID, CardNo = ViewBag.CardNo };
+    string uploadUrl = ViewBag.UploadUrl + "/";
+}
+@section Script {
+@BundleConfig.FileUploader()
+@BundleConfig.Component()
+
+    <script type="text/javascript">
+        Component.checkList('[data-checkGroup]');
+        $(".fixTable").stickyTableHeaders();
+
+        Component.searchBox('#searchBox', '#openSearch');
+
+        var listObj = Component.dataList('listTable');
+        listObj.sorted = function (sortItems) {
+            $.post("Sort", { "SiteID": "@ViewBag.SiteID", "items": sortItems }, function () {
+                location.replace(location.href);
+            });
+        }
+        listObj.deleted = function (delIds) {
+            Component.confirm('刪除後，資料無法復原，確定刪除？', function (check) {
+                if (check) {
+                    $.post("Delete", { 'ids': delIds }, function () {
+                        location.replace(location.href);
+                    });
+                }
+            });
+        }
+        listObj.statusChange = function (id) {
+            $.get("ToggleIssue/" + id);
+        }
+        listObj.canceled = function (action) {
+            if (action == "del") {
+                $('#listTable').find('span.info').html('');
+            }
+        }
+        listObj.opened = function (mainWin, action) {
+            mainWin.refreshList = function () {
+                location.replace(location.href);
+            }
+        }
+        //複製
+          listObj.selected = function (action, selectIds) {
+            if (!selectIds || selectIds.length == 0) {
+                Component.alert('請至少選擇一筆資料');
+                return;
+            }
+
+            if (action == 'copy' && selectIds.length) {
+                Component.confirm('確定複製選中的資料？', function (isOK) {
+                    if (isOK) {
+                        $.post('Copy?siteId=@ViewBag.SiteID', { ids: selectIds },function () {
+                            location.replace(location.href);
+                        }); 
+                    }                                
+                });
+            }
+        }
+
+        $('#listTable').on('click', 'tbody :checkbox', function () {
+            var tbodyElm = $(this).closest('tbody');
+            var selectedNum = tbodyElm.find(':checked').length;
+            tbodyElm.parent().find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+        });
+
+
+
+        $('#btnSearch').click(function () {
+            var form = $('#searchForm');
+            form.submit();
+        });
+        $(window).parent.ToEditPage = function(url)
+        {
+            location = url;
+        }
+    </script>
+}
+<div class="groove groove-1">
+    <div class="card shadow-none">
+        <div id="SearchBox" class="search-box pushup" style="display:none">
+            <form id="searchForm" method="post" action="@Url.Action("List", siteQuery)">
+                <input style="display:none" name="SiteID" value="@ViewBag.SiteID">
+    <a id="closeSerach" class="btn-grey-darken-4-o transparent square btn-large btn-close" href="javascript:"><i class="cc cc-close"></i></a>
+    <ul class="forms">
+        <li>
+            <div class="col-2">
+                <div class="title inline">商品編號</div>
+                <div class="input-field inline full">
+                    <input id="" type="text" placeholder="請輸入商品編號">
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="title inline">關鍵字</div>
+                <div class="input-field inline full">
+                    <input id="" type="text" placeholder="請輸入店名、電話、地址、精神標語、品牌簡介、備註等關鍵字">
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">商店類型</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input type="checkbox" id="storeTypeMode1">
+                        <label for="storeTypeMode1">全選</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="storeTypeMode2">
+                        <label for="storeTypeMode2">類型A</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="storeTypeMode3">
+                        <label for="storeTypeMode3">類型B</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="storeTypeMode4">
+                        <label for="storeTypeMode4">類型C</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="storeTypeMode5">
+                        <label for="storeTypeMode5">類型D</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">目前商店方案</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="contractMode" type="checkbox" id="contractMode1">
+                        <label for="contractMode1">全選</label>
+                    </div>
+                    <div>
+                        <input name="contractMode" type="checkbox" id="contractMode2">
+                        <label for="contractMode2">免年費一般方案</label>
+                    </div>
+                    <div>
+                        <input name="contractMode" type="checkbox" id="contractMode3">
+                        <label for="contractMode3">免年費推廣方案</label>
+                    </div>
+                    <div>
+                        <input name="contractMode" type="checkbox" id="contractMode4">
+                        <label for="contractMode4">進階推廣方案</label>
+                    </div>
+                    <div>
+                        <input name="contractMode" type="checkbox" id="contractMode5">
+                        <label for="contractMode5">獨家進駐方案</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">方案期間</div>
+                <div class="input-field inline full ">
+                    <div class="input-field inline">
+                        <input type='text' class="input-cal datepicker">
+                    </div> -
+                    <div class="input-field inline">
+                        <input type='text' class="input-cal datepicker">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">合約現況</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="expiredMode" type="checkbox" id="expiredMode1">
+                        <label for="expiredMode1">合約進行中</label>
+                    </div>
+                    <div>
+                        <input name="expiredMode" type="checkbox" id="expiredMode2">
+                        <label for="expiredMode2">兩個月內逾期</label>
+                    </div>
+                    <div>
+                        <input name="expiredMode" type="checkbox" id="expiredMode3">
+                        <label for="expiredMode3">一個月內逾期</label>
+                    </div>
+                    <div>
+                        <input name="expiredMode" type="checkbox" id="expiredMode4">
+                        <label for="expiredMode4">無合約或已逾期</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">預設販售類別</div>
+                <div class="input-field inline full">
+                    <div class="input-field inline">
+                        <select name="">
+                            <option value="">全部大分類</option>
+                            <option value="">請選擇類別</option>
+                        </select>
+                    </div>
+                    <div class="input-field inline">
+                        <select name="">
+                            <option value="">全部中分類</option>
+                            <option value="">請選擇類別</option>
+                        </select>
+                    </div>
+                    <div class="input-field inline">
+                        <select name="">
+                            <option value="">全部小分類</option>
+                            <option value="">請選擇類別</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">舉辦優惠活動</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode1">
+                        <label for="saleMode1">全選</label>
+                    </div>
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode2">
+                        <label for="saleMode2">優惠活動，商品折扣降</label>
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div> ~
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div>%
+                    </div>
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode3">
+                        <label for="saleMode3">指定優惠價</label>
+                    </div>
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode4">
+                        <label for="saleMode4">預購價</label>
+                    </div>
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode5">
+                        <label for="saleMode5">早鳥價</label>
+                    </div>
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode6">
+                        <label for="saleMode6">滿額折扣</label>
+                        <div class="input-field inline mini">
+                            <select name="" id="">
+                                <option value="NT">NT$</option>
+                                <option value="US">US$</option>
+                            </select>
+                        </div>
+                        <div class="input-field inline small">
+                            <input type="text">
+                        </div> ~
+                        <div class="input-field inline small">
+                            <input id="" type="text">
+                        </div>
+                    </div>
+                    <div>
+                        <input name="saleMode" type="checkbox" id="saleMode7">
+                        <label for="saleMode7">滿額免運</label>
+                        <div class="input-field inline mini">
+                            <select name="" id="">
+                                <option value="NT">NT$</option>
+                                <option value="US">US$</option>
+                            </select>
+                        </div>
+                        <div class="input-field inline small">
+                            <input type="text">
+                        </div> ~
+                        <div class="input-field inline small">
+                            <input id="" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-2">
+                <div class="title inline">販售商品種類</div>
+                <div class="input-field inline full">
+                    <div class="input-field inline short">
+                        <input id="" type="text">
+                    </div> ~
+                    <div class="input-field inline short">
+                        <input id="" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="title inline">庫存量低警示</div>
+                <div class="input-field inline full">
+                    <div class="input-field inline short">
+                        <input id="" type="text">
+                    </div> ~
+                    <div class="input-field inline short">
+                        <input id="" type="text">
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-2">
+                <div class="title inline">全店商品評價</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="rateMode" type="checkbox" id="rateMode1">
+                        <label for="rateMode1">無人評價</label>
+                    </div>
+                    <div>
+                        <input name="rateMode" type="checkbox" id="rateMode2">
+                        <label for="rateMode2">平均分數：</label>
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div> ~
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="title inline">商店被收藏數</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="rate" type="checkbox" id="rate1">
+                        <label for="rate1">無人收藏</label>
+                    </div>
+                    <div>
+                        <input name="rate" type="checkbox" id="rate2">
+                        <label for="rate2">收藏人數：</label>
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div> ~
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-2">
+                <div class="title inline">評價回應比例</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="commentMode" type="checkbox" id="commentMode1">
+                        <label for="commentMode1">從未回應</label>
+                    </div>
+                    <div>
+                        <input name="commentMode" type="checkbox" id="commentMode2">
+                        <label for="commentMode2">已處理：</label>
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div> ~
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div>%
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="title inline">留言回應比例</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="replyMode" type="checkbox" id="replyMode1">
+                        <label for="replyMode1">無人留言</label>
+                    </div>
+                    <div>
+                        <input name="replyMode" type="checkbox" id="replyMode2">
+                        <label for="replyMode2">從未回應</label>
+                    </div>
+                    <div>
+                        <input name="replyMode" type="checkbox" id="replyMode3">
+                        <label for="replyMode3">已處理：</label>
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div> ~
+                        <div class="input-field inline mini">
+                            <input id="" type="text">
+                        </div>%
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-1">
+                <div class="title inline">開發票方式</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="sheetMode" type="checkbox" id="sheetMode1">
+                        <label for="sheetMode1">免開發票</label>
+                    </div>
+                    <div>
+                        <input name="sheetMode" type="checkbox" id="sheetMode2">
+                        <label for="sheetMode2">自開發票</label>
+                    </div>
+                    <div>
+                        <input name="sheetMode" type="checkbox" id="sheetMode3">
+                        <label for="sheetMode3">商城統一代開發票(商店可對開月結發票)</label>
+                    </div>
+                    <div>
+                        <input name="sheetMode" type="checkbox" id="sheetMode4">
+                        <label for="sheetMode4">商城統一代開發票(商城不提供任何發票)</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <div class="col-2">
+                <div class="title inline">是否推薦</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="recommendMode" type="checkbox" id="recommendMode1">
+                        <label for="recommendMode1">推薦商店</label>
+                    </div>
+                    <div>
+                        <input name="recommendMode" type="checkbox" id="recommendMode2">
+                        <label for="recommendMode2">非推薦商店</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="title inline">是否停權</div>
+                <div class="radio-box inline full">
+                    <div>
+                        <input name="suspendMode" type="checkbox" id="suspendMode1">
+                        <label for="suspendMode1">正常</label>
+                    </div>
+                    <div>
+                        <input name="suspendMode" type="checkbox" id="suspendMode2">
+                        <label for="suspendMode2">強制停權</label>
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="float-R"><a class="btn-grey-darken-4-o btn-large" href="javascript:"><i class="cc cc-search"></i>搜尋</a></div>
+                </form>
+</div>
+        <div > <!-- class="wide-table-wrap" 要做大版面的, 要套這個 2018-11-26 charlie_shan-->
+            <table>
+                <caption>
+                    商店列表 @*未實作先註解 20181225 NINA
+                    <span class="info"></span>
+                    <div class="input-field inline m-T-none">
+                        <select id="showMode" name="showMode">
+                            <option value="list1">顯示基本資料</option>
+                            <option value="list2">顯示營收數據</option>
+                            <option value="list3">顯示商店管理</option>
+                            <option value="list4">顯示參數管理</option>
+                        </select>
+                    </div>*@
+                    <div class="float-R">
+                        @*<a class="btn-grey-o square tooltip-info" href="javascript:" title="複製"><i class="cc cc-content-copy"></i></a>
+
+                        <a class="btn-grey-o square tooltip-info" href="javascript:" title="排序"><i class="cc cc-sort"></i></a>
+
+                        <a class="btn-grey-o square tooltip-info tooltipstered" title="匯出" href="javascript:"><i class="cc cc-playlist-play"></i></a>*@
+
+                        <a class="btn-grey-darken-4-o square" href="@Url.Action("Edit", new { SiteID = Model.SiteID })" title="新增"><i class="cc cc-plus"></i></a>
+
+                        <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                        <span data-for="del" style="display:none;">
+                            <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                            <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                        </span>
+
+                        <a id="openSearch" class="btn-grey-o square tooltip-info" href="javascript:" title="篩選" style="display:none"><i class="cc cc-search"></i></a>
+                    </div>
+                </caption>
+            </table>
+            <table id="listTable" class="fixTable data">
+                <thead>
+                    <tr>
+                        <th>序</th>
+                        <th>商店logo</th>
+                        <th class="nowrap">中英文店名/<br />編碼/類型</th>
+                        @*<th class="nowrap">方案/期間/現況</th>*@
+                        @*<th>商品</th>*@
+                        @*<th class="nowrap">優惠活動</th> 未實作先註解 20181225 NINA
+                        <th>訂單</th>*@
+                        @*<th class="nowrap">上季營收<br><span class="font-xxs">2018/04-06</span></th>
+                        <th class="nowrap">本季營收<br><span class="font-xxs">2018/07-09</span></th>
+                        <th class="nowrap">去年上月同期<br><span class="font-xxs">2017/07</span></th>
+                        <th class="nowrap">上月同期<br><span class="font-xxs">2018/07</span></th>
+                        <th class="nowrap">本月同期<br><span class="font-xxs">2018/08</span></th>
+                        <th class="nowrap">全店評價</th>
+                        <th class="nowrap">客服留言</th>*@
+                        @*<th class="nowrap">商店被收藏數</th> 未實作先註解 20181225 NINA
+                        <th class="nowrap">最後登入時間</th>*@
+                        <th>推薦</th>
+                        <th>預覽</th>
+                        <th>編輯</th>
+                        @*<th class="nowrap">申請查詢</th>
+                        <th class="nowrap">商店管理員</th>*@
+                        <th class="nowrap">服務紀錄</th>
+                        @*<th class="nowrap">門市資訊</th>
+                        <th class="nowrap">販售類別</th>
+                        <th class="nowrap">設計師</th>*@
+                    </tr>
+                </thead>
+                <tbody class="font-sm">
+                        @{
+                            int idx = 1;
+                        }
+                        @foreach (var item in Model.Items)
+                        {
+                            string image = string.Empty;
+                            WorkV3.Areas.Backend.Models.ResourceImagesModels img = null;
+                            if (!string.IsNullOrWhiteSpace(item.SquareLogoComputer))
+                            {
+                                img = Newtonsoft.Json.JsonConvert.DeserializeObject<WorkV3.Areas.Backend.Models.ResourceImagesModels>(item.SquareLogoComputer);
+                                image = img.Img;
+                            }
+                            string issueStatus = item.IsIssue ? "cc-eye" : "cc-eye-off font-red";
+                            <tr data-id="@item.ID">
+                                <td class="sort">@idx</td>
+                                <td class=""><img src="@(uploadUrl + image)" alt=""></td>
+                                <td class="text-L">
+                                    @item.Name<br>@item.NameEn<br>
+                                    <span class="font-grey">@item.SN</span><br>
+                                    類型A
+                                </td>
+                                @*<td class="text-L font-xs">
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeProgram.aspx" class="font-black">免年費一般方案</a><br />
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeProgram.aspx" class="font-grey">2018/01/01-<br />2018/12/31</a><br>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeProgram.aspx" class="font-green">合約進行中</a><br>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeProgram.aspx" class="font-grey">...更多(4)</a>
+                                </td>*@
+                                @*<td>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List.aspx">56</a><br>
+                                    <span class="font-xs font-red nowrap">低庫存3</span>
+                                </td>*@
+                                @*<td> 未實作先註解 20181225 NINA
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-sale.aspx">3</a>
+                                </td>
+                                <td>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-order.aspx" class="font-red">1</a>/<a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-order.aspx">24</a><br>
+                                    <span class="font-xs nowrap">出貨96%</span>
+                                </td>*@
+                                @*<td class="font-xs">NT$<br />78,340</td>
+                                <td class="font-xs">NT$<br />57,670</td>
+                                <td class="font-xs">NT$<br />18,980</td>
+                                <td class="font-xs">
+                                    NT$<br />19,560 <br>
+                                    <span class="font-red"><i class="cc cc-arrow-up"></i>3.1%</span>
+                                </td>
+                                <td class="font-xs">NT$<br />8,150</td>
+                                <td>
+                                    4.5<br>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-comment.aspx" class="font-red">1</a>/<a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-comment.aspx">56</a><br>
+                                    <span class="font-xxs font-grey nowrap">回應96%</span>
+                                </td>
+                                <td>
+                                    <a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-message.aspx" class="font-red">1</a>/<a href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-message.aspx">320</a><br>
+                                    <span class="font-xxs font-grey nowrap">回應99%</span>
+                                </td>*@
+                                @*<td class="font-xs">1201</td> 未實作先註解 20181225 NINA
+                                <td class="font-xs">
+                                    2017/04/26 <br>
+                                    16:30
+                                </td>*@
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square p-h-none" href="javascript:;" target="_blank"><i class="@(item.IsRecommand ? "cc cc-check" : "")"></i></a></td>
+                                <td class="icon"><a class="btn-grey-darken-4-o transparent square p-h-none" href="#" target="_blank"><i class="cc cc-cellphone-link"></i></a></td>
+                                <td class="icon">
+                                    <a class="btn-grey-darken-4-o transparent square p-h-none" href="@Url.Action("Edit", new { ID = item.ID, SiteID = Model.SiteID })"><i class="cc cc-edit-o"></i></a>
+                                </td>
+
+                                @*<td class="icon">
+                                    <a class="btn-grey-darken-4-o transparent square btn-message" href="" target="_blank">
+                                        <i class="cc cc-comment-o"></i>
+                                        <div class="message">1</div>
+                                    </a>
+                                </td>
+                                <td>
+                                    <div><a class="btn-grey-darken-4-o transparent p-h-none" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeManager.aspx"><i class="cc cc-user-o font-lg align-v-bottom"></i><span class="font-xxs">4</span></a></div>
+                                </td>*@
+                                <td>
+                                    <div>
+                                        <a class="btn-grey-darken-4-o transparent p-h-none" href="@Html.Raw(Url.Action("ProgramList", new { siteId = Model.SiteID, storeId = item.ID, storeName = item.Name}))">
+                                            <i class="cc cc-list font-lg align-v-bottom"></i><br>
+                                            @*<span class="font-xxs">0/15</span>*@
+                                        </a>
+                                    </div>
+                                </td>
+                                @*<td>
+                                    <div><a class="btn-grey-darken-4-o transparent p-h-none" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeInfo.aspx"><i class="cc cc-shop font-lg align-v-bottom"></i><span class="font-xxs">2</span></a></div>
+                                </td>
+                                <td>
+                                    <div><a class="btn-grey-darken-4-o transparent p-h-none" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeCatagory.aspx"><i class="cc cc-tag cc-rotate-270 font-lg align-v-bottom"></i></a></div>
+                                </td>
+                                <td class="font-xxs">
+                                    <div><a class="btn-grey-darken-4-o transparent p-h-none nowrap" href="http://demo.kidtech.com.tw/demo/CCWorkV3/Views/Cards/Mall/BackEnd/List-storeDesigner.aspx"><i class="cc cc-user-o font-lg align-v-bottom"></i><span class="font-xxs">3</span></a></div>
+                                </td>*@
+                            </tr>
+                        }
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination text-L">
+            @Html.Action("Pager", "Common", Model.Pager)
+        </div>
+    </div>
+</div>
+
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $(".fixTable").stickyTableHeaders();
+
+            $('.dropdown-button').dropdown({
+                constrainWidth: false,
+                stopPropagation: true
+            });
+            $('.dropdown-content.closeOnClick').on('click', function (e) {
+                e.stopPropagation();
+            });
+        });
+
+        //$(function () {
+        //    $('.paragraph-copy').on('click', function () {
+        //        parent.window.swal({
+        //            text: '確定複製一筆？',
+        //            type: 'success',
+        //            showCancelButton: true,
+        //            confirmButtonText: '確定',
+        //            cancelButtonText: '取消',
+        //            animation: false,
+        //            customClass: 'animated fadeIn'
+        //        });
+        //    });
+        //});
+
+        $(window).on('load', function () {
+            if ($('#SearchBox').length) {
+                //var $SearchBoxH = $('#SearchBox').outerHeight();
+                //if ($('#SearchBox').hasClass('pushup')) {
+                //    $('.fixTable, .pagination').css({
+                //        top: $SearchBoxH
+                //    });
+
+                //    $('#closeSerach').on('click', function () {
+                //        $('#SearchBox').removeClass('pushup');
+                //        $('.fixTable, .pagination').css({
+                //            top: 0
+                //        });
+                //    });
+                //} else {
+                //    $('.fixTable, .pagination').css({
+                //        top: 0
+                //    });
+                //}
+
+                $('#openSearch').on('click', function () {
+                    $('#SearchBox').toggleClass('pushup');
+                    if ($('#SearchBox').hasClass('pushup')) {
+                        $('.fixTable, .pagination').css({
+                            top: $SearchBoxH
+                        });
+                    } else {
+                        $('.fixTable, .pagination').css({
+                            top: 0
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+
+
+
+

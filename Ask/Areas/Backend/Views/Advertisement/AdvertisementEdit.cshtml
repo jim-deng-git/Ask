@@ -1,0 +1,327 @@
+﻿@model AdvertisementModel
+@{
+
+    ViewBag.Title = "廣告區管理編輯";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    long siteId = ViewBag.SiteID;
+    long menuId = ViewBag.MenuID;
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID };
+
+}
+@section FArea {
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.Component()
+    @BundleConfig.Validate()
+    <script type="text/javascript">
+        $(function ($) {
+
+            //custom and third-party
+            $("input[name='Type']").change(function () {
+                if ($("input[name='Type']:checked").val() == '@AdvertisementType.third_party') {
+                    $('.third-party').slideDown();
+                    $('.input-field.phone .ad_height').attr("value", 250);
+                } else {
+                    $('.third-party').stop().hide();
+                }
+            });
+            $('.third-party').hide();
+
+
+            // cc 20180611
+            $("input[name='IsUseForComputer']").change(function () {
+                var $this = $(this);
+                if (this.checked) {
+                    if ($('#ad_size').css('display') == 'none') {
+                        $('#ad_size').removeAttr('style').slideDown();
+                        $('#showDesktopAdSize').slideDown();
+                    } else {
+                        $('#showDesktopAdSize').removeAttr('style').slideDown();
+                    }
+                } else if ($('#showMobileAdSize').css('display') == 'none') {
+                    $('#ad_size').slideUp();
+                    $('#showDesktopAdSize').slideUp();
+                } else {
+                    $('#showDesktopAdSize').slideUp();
+                }
+            }).triggerHandler('change');
+            $("input[name='IsUseForPhone']").change(function () {
+                var $this = $(this);
+                if (this.checked) {
+                    if ($('#ad_size').css('display') == 'none') {
+                        $('#ad_size').removeAttr('style').slideDown();
+                        $('#showMobileAdSize').slideDown();
+                    } else {
+                        $('#showMobileAdSize').removeAttr('style').slideDown();
+                    }
+                } else if ($('#showDesktopAdSize').css('display') == 'none') {
+                    $('#ad_size').slideUp();
+                    $('#showMobileAdSize').slideUp();
+                } else {
+                    $('#showMobileAdSize').slideUp();
+                }
+            }).triggerHandler('change');
+
+            @if(!string.IsNullOrEmpty(Model.Type))
+            {
+                if(Model.Type == AdvertisementType.third_party)
+                {
+                    <text>
+            $("#advertising-type-third-party")[0].click();
+            </text>
+                }else if(Model.Type == AdvertisementType.custom)
+                {
+                    <text>
+            @*$("#advertising-type-custom")[0].click();*@
+            </text>
+                }
+            }
+            @if(Model.IsUseForComputer)
+            {
+                <text>
+            $('.ad_size .laptop').fadeIn();
+            </text>
+            }
+            @if(Model.IsUseForPhone)
+            {
+                <text>
+            $('.ad_size .phone').fadeIn();
+            </text>
+            }
+        });
+        $('#btnCancel').click(function () {
+            // history.go(-1);
+            //Component.closeLeft();
+            Component.closeCenter();
+        });
+        $('#btnSave').click(function () {
+
+            var form = $('#editForm');
+            if (form.validationEngine('validate')) {
+
+                if (!CheckDevice()) {
+                    Component.showElementError('#DeviceSelect', '* 未選擇顯示裝置');
+                    return false;
+                }
+                if (!CheckEmbedCode()) {
+                    Component.showElementError('#DeviceSelect', '* 未輸入第三方嵌入碼');
+                    return false;
+                }
+                form.submit();
+            }
+            @*
+            if (!CheckAdType()) {
+                alert('未選擇廣告類型');
+                return false;
+            }
+            *@
+        });
+        function CheckAdType() {
+            if ($("input[name='Type']:checked").length != 0) {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        function CheckDevice() {
+            if ($("#DeviceSelect input[type='checkbox']:checked").length != 0) {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        function CheckEmbedCode() {
+            if ($("input[name='Type']:checked").val() == '@AdvertisementType.third_party') {
+                if ($("#advertising-phone").is(":checked")) {
+                    if ($("#custom_ad_mobile").val().length == 0) {
+                        return false;
+                    }
+                }
+                if ($("#advertising-laptop").is(":checked")) {
+                    if ($("#custom_ad_pc").val().length == 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        @if ((ViewBag.Exit as bool?) == true)
+        {
+        <text>
+        Component.alert('廣告區已儲存', function () {
+            //history.go(-1);
+            //window.parent.refresh();
+            Component.closeCenter();
+            parent.mainWebContent.location.href = '@Url.Action("Index",new { siteId = siteId, menuId = menuId })';
+        });
+        </text>
+        }
+    </script>
+
+}
+<form id="editForm" action="@Url.Action("AdvertisementEdit")" method="post" enctype="application/x-www-form-urlencoded">
+    <input type="hidden" value="@AdvertisementType.custom" name="Type" /> @*廣告區類型目前只有一個，所以先用 hidden 固定，選項暫時隱藏*@
+    <div class="groove groove-1">
+        <div class="card shadow-none">
+            <div class="lightbox-top-bar">
+                <div class="lightbox-top-bar-title">廣告區編輯</div>
+            </div>
+            <ul class="forms">
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">廣告區名稱<span class="required">*</span></div>
+                        <div class="input-field inline">
+                            @Html.TextBoxFor(m => m.AreaName, new { @class = "validate[required]" })
+                            @*<input id="advertising-block" name="advertising-block" type="text" value="">*@
+                            <div class="alert transparent">
+                                <i class="cc cc-attention"></i>
+                                <div>
+                                    請為這個廣告空間取一個您方便識別的名稱，前台不會顯示。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                @*暫時隱藏廣告區類型*@
+
+                @*
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">廣告區類型<span class="required">*</span></div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input class="with-item" id="advertising-type-custom" name="Type" type="radio" value="@AdvertisementType.custom" />
+                                        <i class="cc cc-photos-o"></i>
+                                        <label for="advertising-type-custom">自訂廣告</label>
+                                    </div>
+                                    /*<div>
+                                        <input class="with-item" id="advertising-type-third-party" name="Type" type="radio" value="@AdvertisementType.third_party" />
+                                        <i class="cc cc-file-o cc-rotate-270"></i>
+                                        <label for="advertising-type-third-party">第三方廣告</label>
+                                    </div>*/
+                                <div class="alert transparent d-block">
+                                    <i class="cc cc-attention"></i>
+                                    <div>
+                                        你可以使用「圖片」和「影片」服務，自行管理廣告，也能使用 第三方廣告代管服務。
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    </li>
+                *@
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">顯示裝置<span class="required">*</span></div>
+                        <div id="DeviceSelect" class="radio-box inline">
+                            <div>
+                                @Html.CheckBoxFor(m => m.IsUseForComputer, new { @Id = "advertising-laptop", @Class = "with-item" })
+                                @*<input class="with-item" id="advertising-laptop" name="device-type" type="checkbox" />*@
+                                <i class="cc cc-laptop"></i>
+                                <label for="advertising-laptop" class="row-flex-direction">電腦</label>
+                            </div>
+                            <div>
+                                @Html.CheckBoxFor(m => m.IsUseForPhone, new { @Id = "advertising-phone", @Class = "with-item" })
+                                @*<input class="with-item" id="advertising-phone" name="device-type" type="checkbox" />*@
+                                <i class="cc cc-mobile"></i>
+                                <label for="advertising-phone" class="row-flex-direction">手機</label>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li id="ad_size" style="display: none;">
+                    <div class="col-1">
+                        <div class="title inline">廣告區尺寸<span class="required">*</span></div>
+                        <div id="showDesktopAdSize" class="input-field inline mini" style="display: none;">
+                            <span class="info"><i class="cc cc-laptop"></i> 電腦 </span>
+                            <span class="info">寬</span>
+                            @Html.TextBoxFor(m => m.ComputerWidth, new { @Class = "text-C" })
+                            @*<input class="text-C" id="" type="text" value="300">*@
+                            <span class="info">px</span>
+                            <span class="info">高</span>
+                            @Html.TextBoxFor(m => m.ComputerHeight, new { @Class = "text-C" })
+                            @*<input class="text-C" id="" type="text" value="300">*@
+                            <span class="info">px</span>
+                        </div>
+                        <div id="showMobileAdSize" class="input-field inline mini" style="display: none;">
+                            <span class="info"><i class="cc cc-laptop"></i> 手機 </span>
+                            <span class="info">寬</span>
+                            @Html.TextBoxFor(m => m.PhoneWidth, new { @Class = "text-C" })
+                            @*<input class="text-C ad_width" class="" type="text" value="300">*@
+                            <span class="info">px</span>
+                            <span class="info">高</span>
+                            @Html.TextBoxFor(m => m.PhoneHeight, new { @Class = "text-C" })
+                            @*<input class="text-C ad_height" id="" type="text" value="300">*@
+                            <span class="info">px</span>
+                        </div>
+                        <div class="input-field inline full alert transparent m-T-none">
+                            <i class="cc cc-attention"></i>
+                            <div>
+                                廣告區尺寸決定廣告顯示範圍，建議等於 頁面上的「刊登位置」大小。<br />如果廣告區比「刊登位置」 大，廣告會自動縮至「刊登位置」 大小。<br />
+                                各區域刊登位置如下：<br />
+                                1. 橫幅寬度：1920px<br />
+                                2. 文章內頁右欄寬度：300px<br />
+                                3. 蓋台廣告尺寸：1200px x 675px
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                @*20180319因第三方未進入開發階段故暫時註解  --開始*@
+
+                @*<li class="third-party ad_size">
+                        <div class="col-1">
+                            <div class="title inline">
+                                第三方廣告
+                                <br>嵌入碼<span class="required">*</span>
+                            </div>
+                            <div class="input-field inline full laptop">
+                                <label for="custom_ad_pc">
+                                    <i class="cc cc-laptop"></i>電腦
+                                </label>
+                                @Html.TextAreaFor(m=>m.ComputerThirdPartyEmbedCode,new { @Class= "materialize-textarea height-lg", @Id= "custom_ad_pc" })
+                            </div>
+                            <div class="input-field inline full phone">
+                                <label for="custom_ad_mobile">
+                                    <i class="cc cc-laptop"></i>手機
+                                </label>
+                                @Html.TextAreaFor(m => m.PhoneThirdPartyEmbedCode, new { @Class = "materialize-textarea height-lg", @Id = "custom_ad_mobile" })
+                            </div>
+                        </div>
+                    </li>*@
+
+                @*<li class="third-party">
+                        <div class="col-1">
+                            <div class="title inline">
+                                第三方廣告
+                                <br>連結
+                            </div>
+                            <div class="input-field inline full">
+                                @Html.TextBoxFor(m=>m.ThirdPartyLink)
+                            </div>
+                        </div>
+                    </li>*@
+                @*20180319因第三方未進入開發階段故暫時註解  --結束*@
+
+                <li>
+                    <div class="col-1">
+                        <div class="title inline">
+                            備註
+                        </div>
+                        <div class="input-field inline full">
+                            @Html.TextBoxFor(m => m.Remark)
+                            @*<input id="advertising-notice" name="advertising" type="text" value="">*@
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="control-bar">
+            <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            @Html.HiddenFor(m => m.ID)
+            @Html.HiddenFor(m => m.Advertisers_ID)
+            @Html.HiddenFor(m => m.SiteID, new { @Value = siteId })
+            @Html.HiddenFor(m => m.MenuID, new { @Value = menuId })
+        </div>
+    </div>
+</form>

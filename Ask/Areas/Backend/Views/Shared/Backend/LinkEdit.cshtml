@@ -1,0 +1,228 @@
+﻿@{
+    ViewBag.Title = "Link_Edit";
+    Layout = null;
+    ResourceLinksModels NewLink = ViewBag.LinkInfo;
+    string DefaultSite = (ViewBag.DefaultSiteID != null) ? ViewBag.DefaultSiteID.ToString():"";
+    List<long> DefaultMenus = (List<long>)ViewBag.DefaultMenus;
+    string DefaultPageTitle = ViewBag.DefaultPageTitle;
+}
+
+<div id="outsideLink-box" class="input-field inline full">
+    @Html.TextBox("LinkInfo", @NewLink.LinkInfo, new { @class = "validate[required]" , @placeholder= "http://" })
+</div>
+<div class="radio-box inline full">
+    <div>
+        @Html.CheckBox("OpenNewWin", @NewLink.ClickType == 2 ? true : false)
+        <label for="OpenNewWin">另開</label>
+    </div>
+    <div>
+        @Html.CheckBox("inLink", @NewLink.LinkType == "inLink" ? true : false)
+        <label for="inLink">站內連結</label>
+    </div>
+</div>
+<div id="insideLink-box" class="inline-follow" style="display: none;">
+    <div class="input-field inline col-4">
+        <select id="Sites" name="Sites" >
+            <option value="" disabled selected>網站</option>
+        </select>
+    </div>
+    <div id="Menus-box">
+
+    </div>
+
+    <div class="input-field inline col-4" id="divPageName" style="display: none;">
+        <input type='text' placeholder='單筆' class='flexdatalist' id='PageDetail'  name='PageDetail' value="@DefaultPageTitle">
+        <input type='hidden' id='PageDetailID' name='PageDetailID' value="@NewLink.Detail">
+    </div>
+</div>
+
+<script type="text/JavaScript">
+    var menus = [];
+    @if (DefaultMenus != null && DefaultMenus.Count > 0)
+    {
+        for (int i = 0; i < DefaultMenus.Count; i++)
+        {
+        <text>
+        menus.push("@DefaultMenus[i]");
+        </text>
+        }
+    }
+    $(function () {
+        //$('.flexdatalist').flexdatalist({
+        //        minLength: 0,
+        //    valueProperty: '*',
+        //    selectionRequired: true,
+        //    visibleProperties: ["name", "capital", "continent"],
+        //    searchIn: 'name'
+        //    //,data: '/script/forms/countries.json'
+        //});
+        $('input[id=inLink]').on('click', function () {
+                setLinkBoxDisplay(this.checked);
+            });
+
+        $('.treeview').on('click', function () {
+            $(this).children('.treelist').toggleClass('active').slideToggle();
+            });
+            LoadSites();
+            setLinkBoxDisplay($("#inLink").prop("checked"));
+        });
+        function setLinkBoxDisplay(isInLink) {
+
+            if (isInLink) {
+            $('#insideLink-box').slideDown();
+            $('#outsideLink-box').slideUp();
+            } else {
+            $('#insideLink-box').slideUp();
+            $('#outsideLink-box').slideDown();
+            }
+        }
+        function LoadSites() {
+            var url = "@Url.Action("GetSites", "Common")";
+            $.post(url, '', function (data) {
+                var sel = $("#Sites");
+                $(sel).html("");
+                $(sel).append("<option value='' disabled selected>網站</option>");
+                for (var i = 0; i < data.length; i++) {
+                    $(sel).append("<option value='" + data[i].Id + "'>" + data[i].Title + "</option>");
+                }
+                var defaultValue = "@DefaultSite";
+                if (defaultValue != "") {
+                    $(sel).val(defaultValue);
+                }
+
+                $(sel).change(function () {
+                    var v = $(this).val();
+                    if (v && v != "") {
+                        LoadChildMenu(v, "0", 0, true);
+                    }
+                }).material_select();
+                if (defaultValue != "") {
+                    LoadChildMenu(defaultValue, "0", 0, false);
+                }
+            });
+        }
+    function LoadChildMenu(siteID, parentID, lev, isClearDefault) {
+        //console.log(lev);
+        $.post("@Url.Action("SelectMenus", "Statistic")", { SiteId: siteID, parentID: parentID }, function (data) {
+        var container = $("#Menus-box");
+        for (var k = lev; k < $(container).children("div").length; k++) {
+                $(container).children("div").eq((k)).remove();
+        }
+            @*if (parentID != "") {
+                var chekIsMenuUrl = "@Url.Action("CheckIsMenu", "Common")";
+                $.post(chekIsMenuUrl, { menuID: parentID }, function (data) {
+                    //console.log(data);
+                    if (data == "true") {
+                        $("#divPageName").show();
+                        BindAutoComplete(parentID);
+                    }
+                    else {
+                        $("#divPageName").hide();
+                    }
+                });
+            }*@
+            if (data.length > 0) {
+                var defaultValue = "";
+                if (lev <= menus.length)
+                {
+                    defaultValue = menus[lev];
+                }
+                var IsMenuItem = false;
+                var divContent2 = $("<div class=\"input-field inline col-4\"></div>");
+                var sel = $('<select id="ChildRoot_' + parentID + '"  name="Pages" data-level="' + (lev + 1) + '"></select>');
+                $(sel).append("<option value=''>次選單</option>");
+                for (var i = 0; i < data.length; i++) {
+                    if (escapeID != null && escapeID.indexOf(data[i].ID) >= 0)
+                    {
+                        //console.log(data[i].ID);
+                        continue;
+                    }
+                    $(sel).append("<option value='" + data[i].ID + "'>" + data[i].Title + "</option>");
+                    //console.log(data[i].Type);
+                    if (data[i].Type == "@((int)WorkV3.Areas.Backend.ViewModels.StructureType.Menu)")
+                    { IsMenuItem = true; }
+                }
+                $(divContent2).append($(sel));
+                $(container).append($(divContent2));
+                if (defaultValue != "") {
+                    $(sel).val(defaultValue);
+                }
+                $(sel).material_select();
+                var index = $(container).children("div").length;
+                $(sel).change(function () {
+                    var v = $(this).val();
+                    if ($(container).children("div").length > 1) {
+                        for (var k = 2; k < $(container).children("div").length; k++) {
+                            $(container).children("div").eq((k)).remove();
+                        }
+                    }
+                    if (v && v != "") {
+                        LoadChildMenu(siteID, v, index, true);
+                    }
+
+                }).material_select();
+                if (defaultValue != "") {
+                    //$(sel).trigger("change");
+                    var v = $(sel).val();
+                    if ($(container).children("div").length > 1) {
+                        for (var k = 2; k < $(container).children("div").length; k++) {
+                            $(container).children("div").eq((k)).remove();
+                        }
+                    }
+                    if (v && v != "") {
+                        LoadChildMenu(siteID, v, index, false);
+                    }
+                }
+                if (!IsMenuItem) {
+                    $("#divPageName").show();
+                    BindAutoComplete(parentID);
+                    $(divContent2).hide();
+                    if (isClearDefault) {
+                        $("#PageDetailID").val("");
+                        //console.log("clear default");
+                    }
+                }
+                else {
+                    $("#divPageName").hide();
+                    if (isClearDefault) {
+                        $("#PageDetailID").val("");
+                        //console.log("clear default");
+                    }
+                }
+                //if (index && isSetDefault && defaultValue != "")
+                //{
+                //    LoadChildMenu(defaultValue, index);
+                //}
+            }
+            else {
+                $("#divPageName").hide();
+                if (isClearDefault) {
+                    $("#PageDetailID").val("");
+                    //console.log("clear default");
+                }
+                //$("#divPageName").show();
+                //BindAutoComplete(parentID);
+            }
+        });
+    }
+    function BindAutoComplete(menuID) {
+        var siteID = $("#Sites").val();
+        var menuUrl = "@Url.Action("SelectMenus", "Statistic")";
+        var obj =   $('#PageDetail').flexdatalist({
+            selectionRequired: true,
+            minLength: 1,
+            valueProperty: ["ID"],
+            visibleProperties: ["Title"],
+            searchIn: 'Title',
+            focusFirstResult: true,
+            requestContentType: 'json',
+            url: menuUrl,
+            disabled: true,
+            params: { SiteID: siteID, parentID: menuID }
+        });
+        $(obj).on('select:flexdatalist', function (event, item, options) {
+            $("#PageDetailID").val(item.ID);
+        });
+    }
+</script>
+

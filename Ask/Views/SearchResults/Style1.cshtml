@@ -1,0 +1,198 @@
+﻿@model IEnumerable<SearchResultModel>
+@{ 
+    CardsModels card = ViewBag.Card;
+    IEnumerable<SearchMenuModel> menus = ViewBag.Menus;
+    Dictionary<long, SitePage> itemPages = ViewBag.SitePages;
+
+    Dictionary<string, List<SearchResultModel>> singlePageResults = ViewBag.SinglePageResults;
+    IEnumerable<SearchMenuModel> listMenus = menus.Where(m => m.Module.ToLower() != "articleintro");
+    IEnumerable<SearchMenuResultModel> menuResults = ViewBag.MenuResults;
+    WorkV3.Areas.Backend.Models.ArticlePosterModels poster = ViewBag.PosterModel;
+
+}
+
+<link href="~/css/forms.css" rel="stylesheet" />
+<link href="~/css/Cards/SearchResults/style1.css" rel="stylesheet" />
+
+<div id="card-@card.No" class="card-common card-SearchResults" data-style="1">
+    @if ((Model == null || Model.Count() == 0) && menuResults.Count() == 0) {
+        <div>關鍵字<span class="red">@ViewBag.Key</span>找不到搜尋結果</div>
+    } else {
+        <div class="filters-bar">
+            <ol id="filter-bar">
+                @foreach (SearchMenuModel menu in listMenus) {
+                    int count = Model.Where(r => r.MenuID == menu.ID).Count();
+                    <li data-id="@menu.ID">@menu.Title<span>(@count)</span></li>
+                }
+                @foreach (KeyValuePair<string, List<SearchResultModel>> item in singlePageResults) {
+                    <li data-id="@item.Key">@item.Key<span>(@item.Value.Count)</span></li>
+                }
+                @if (menuResults.Count() > 0) {
+                    <li data-id="menu_選單">選單<span>(@menuResults.Count())</span></li>
+                }
+            </ol>
+        </div>
+        if (poster != null)
+        {
+            Html.RenderPartial("~/Views/Article/AuthorView.cshtml",poster);
+
+        }
+        foreach (SearchMenuModel menu in listMenus) {
+            IEnumerable<SearchResultModel> items = Model.Where(r => r.MenuID == menu.ID);
+        <div data-menu="@menu.ID" class="article-list">
+            <div class="article-title">@menu.Title</div>
+            <ul>
+                @foreach (SearchResultModel item in items) {
+                    SitePage page = itemPages.GetValue(item.CardNo);
+                    string img = string.IsNullOrWhiteSpace(item.Image) ? menu.Icon : item.Image;
+                    if (!string.IsNullOrWhiteSpace(img)) {
+                        img = menu.UploadUrl + img;
+                    }
+                    img = (img ?? string.Empty).Trim();
+
+                    string info = (item.Summary ?? string.Empty).TrimTags().Trim().Truncate(200);
+                    string title = (item.Title ?? string.Empty).Trim();
+                    if (page != null && (img != string.Empty || title != string.Empty || info != string.Empty)) {
+                <li>
+                    <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+                        @if (img != string.Empty) {
+                        <div class="article-img" style="background-image: url('@img');"></div>
+                        }
+                        @if (title != string.Empty) {
+                        <div class="article-list-title">@item.Title</div>
+                        }
+                        @if (info != string.Empty) {
+                        <div class="article-list-info">@item.Summary.TrimTags().Trim().Truncate(200)</div>
+                        }
+                    </a>
+                </li>
+                    }
+                }
+            </ul>
+        </div>
+        }
+        foreach (KeyValuePair<string, List<SearchResultModel>> item in singlePageResults) {
+        <div data-menu="@item.Key" class="article-list">
+            <div class="article-title">@item.Key</div>
+            <ul>
+                @foreach (SearchResultModel result in item.Value) {
+                    SitePage page = itemPages.GetValue(result.CardNo);
+                    SearchMenuModel menu = menus.First(m => m.ID == result.MenuID);
+                    string img = string.IsNullOrWhiteSpace(result.Image) ? menu.Icon : result.Image;
+                    if (!string.IsNullOrWhiteSpace(img)) {
+                        img = menu.UploadUrl + img;
+                    }
+                    img = (img ?? string.Empty).Trim();
+
+                    string info = (result.Summary ?? string.Empty).TrimTags().Trim().Truncate(200);
+                    if (page != null && (img != string.Empty || result.Title != string.Empty || info != string.Empty)) {
+                        <li>
+                            <a href="@Url.Action("Index", "Home", new { SiteSN = page.SiteSN, PageSN = page.PageSN })">
+                                @if (img != string.Empty) {
+                                    <div class="article-img" style="background-image: url('@Server.UrlPathEncode(img)');"></div>
+                                }
+                                @if (result.Title != string.Empty) {
+                                <div class="article-list-title">@result.Title</div>
+                                }
+                                @if (info != string.Empty) {
+                                <div class="article-list-info">@result.Summary.TrimTags().Trim().Truncate(200)</div>
+                                }
+                            </a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+        }
+        if (menuResults.Count() > 0) {
+        <div data-menu="menu_選單" class="article-list">
+            <div class="article-title">選單</div>
+            <ul>
+                @foreach (SearchMenuResultModel result in menuResults) {
+                <li>
+                    <a href="@result.Url">
+                        @if (!string.IsNullOrWhiteSpace(result.Image)) {
+                            <div class="article-img" style="background-image: url('@Server.UrlPathEncode(result.Image)');"></div>
+                        }
+                        @if (result.Title != string.Empty) {
+                            <div class="article-list-title">@result.Title</div>
+                        }                        
+                    </a>
+                </li>                    
+                }
+            </ul>
+        </div>
+        }
+    }
+</div>
+
+<script type="text/javascript" src="~/Script/waypoints/jquery.waypoints.js"></script>
+<script type="text/javascript">
+    (function () {
+        var outerElm = $('#card-@card.No');
+        outerElm.find('div[data-menu]').waypoint({
+            handler: function (direction) {
+                var curMenuDiv = $(this.element);
+                if (direction == 'up') {
+                    var previous = this.previous();
+                    if (previous)
+                        curMenuDiv = $(previous.element);
+                }
+
+                if (curMenuDiv.length) {
+                    var menuId = curMenuDiv.attr('data-menu');
+                    outerElm.find('#filter-bar > li').each(function () {
+                        var $this = $(this);
+                        var id = $this.attr('data-id');
+                        if (id == menuId) {
+                            if (!$this.hasClass('active'))
+                                $this.addClass('active');
+                        } else {
+                            if ($this.hasClass('active'))
+                                $this.removeClass('active');
+                        }
+                    });
+                }
+            }
+        });
+
+        $(window).scrollTop(outerElm.offset().top);
+
+        outerElm.find('#filter-bar > li').click(function () {
+            var $this = $(this);
+            var id = $this.attr('data-id');
+            var top = outerElm.find('div[data-menu="' + id + '"]').offset().top;
+            $('html,body').animate({ scrollTop: top }, 800);            
+        });
+
+        if ($('#posterIntro').length) {
+            var slideHeight = 250; // px
+            var defHeight = $('#posterIntro').outerHeight();
+            if(defHeight >= slideHeight){
+                $('#posterIntro').css('height' , slideHeight + 'px');
+                $('#openPosterIntro').show();
+                $('#openPosterIntro').on('click', function(){
+                    var curHeight = $('#posterIntro').outerHeight();
+                    if(curHeight == slideHeight){
+                        $('#posterIntro').animate({
+                          height: defHeight
+                        }, "normal");
+                        $('#openPosterIntro').addClass('open');
+                        // $('#gradient').fadeOut();
+                    }else{
+                        $('#posterIntro').animate({
+                          height: slideHeight
+                        }, "normal");
+                        $('#openPosterIntro').removeClass('open');
+                        // $('#gradient').fadeIn();
+                    }
+                    return false;
+                });     
+            } else {
+                $('#openPosterIntro').hide();
+            }
+        }
+        
+    })();
+</script>
+    

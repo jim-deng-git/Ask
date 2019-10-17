@@ -1,0 +1,59 @@
+﻿@model List<BreadCrumbsModels>
+    @{ 
+        long siteID = ViewBag.SiteID;
+        SitesModels siteModel = WorkV3.Models.DataAccess.SitesDAO.GetInfo(siteID);
+    }
+    @if(siteModel.IsPathBread)
+    { 
+<div class="card-breadcrumb" data-style="1">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index">首頁</a></li>
+        @if (Model != null)
+        {
+            List<BreadCrumbsModels> bc = Model.ToList();
+
+            if (bc.Count > 0)
+            {
+                try
+                {
+                    string lastTitle = bc[0].PagesTitle;
+                    string[] DEP_PATH = bc[0].DEP_PATH.Split(',');
+                    string[] DEP_SN = bc[0].DEP_SN.Split(',');
+                    for (int i = 0; i < DEP_PATH.Length; i++)
+                    {
+                        if (DEP_PATH[i] != bc[0].PagesTitle)
+                        {
+                            string Url = "";
+                            if (@DEP_SN[i] == string.Empty)
+                            {
+                                Url = "javascript:;";
+                            }
+                            else
+                            {
+                                Url = @DEP_SN[i];
+                            }
+
+                            <li class="breadcrumb-item"><a href="@Url">@DEP_PATH[i]</a></li>
+                        }
+                        else
+                        {
+                            lastTitle = @DEP_PATH[i];
+                        }
+
+                    }
+
+                    <li class="breadcrumb-item active"> @lastTitle </li>
+                }
+                catch (Exception)
+                {
+                   
+                }
+
+
+            }
+        }
+    </ol>
+</div>
+
+<link href="~/css/Cards/Breadcrumb/style1.css" rel="stylesheet" />
+    }

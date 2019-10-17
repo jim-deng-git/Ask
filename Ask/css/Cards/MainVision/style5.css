@@ -1,0 +1,158 @@
+.card-mainVision[data-style="5"] .imgList .diamondBox, .card-mainVision[data-style="5"] .imgList .diamondBox.openVideo > i.cc.cc-play {
+  -webkit-transition: all 0.4s ease-in-out;
+  -o-transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in-out; }
+
+.card-mainVision[data-style="5"] {
+  background-position: center;
+  background-size: cover;
+  position: relative; }
+  .card-mainVision[data-style="5"]::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    opacity: 0.8;
+    z-index: 1; }
+  .card-mainVision[data-style="5"] * {
+    position: relative;
+    z-index: 2; }
+  .card-mainVision[data-style="5"] .mainLogo {
+    text-align: center;
+    padding-top: 10vh;
+    width: 100%; }
+    .card-mainVision[data-style="5"] .mainLogo img {
+      max-width: 270px;
+      width: 100%; }
+      @media only screen and (max-width: 800px) {
+        .card-mainVision[data-style="5"] .mainLogo img {
+          width: 40%; } }
+  .card-mainVision[data-style="5"] .imgList {
+    width: 100%;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    margin: auto;
+    padding-top: 120px;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center; }
+    @media only screen and (max-width: 580px) {
+      .card-mainVision[data-style="5"] .imgList {
+        padding-top: 15vh; } }
+    @media only screen and (max-width: 420px) {
+      .card-mainVision[data-style="5"] .imgList {
+        padding-top: 10vh; } }
+    .card-mainVision[data-style="5"] .imgList .diamondBox {
+      width: 108px;
+      height: 108px;
+      border-radius: 15px;
+      margin: 20px;
+      -webkit-box-flex: 0;
+          -ms-flex: 0 0 auto;
+              flex: 0 0 auto;
+      overflow: hidden;
+      -webkit-transform: rotate(45deg);
+          -ms-transform: rotate(45deg);
+              transform: rotate(45deg); }
+      @media only screen and (max-width: 1179px) {
+        .card-mainVision[data-style="5"] .imgList .diamondBox {
+          display: none; }
+          .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(-n+10) {
+            display: block; } }
+      @media only screen and (max-width: 1024px) {
+        .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(-n+7) {
+          display: block; } }
+      @media only screen and (max-width: 800px) {
+        .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(-n+4) {
+          display: block; } }
+      @media only screen and (max-width: 580px) {
+        .card-mainVision[data-style="5"] .imgList .diamondBox {
+          width: 60px;
+          height: 60px; } }
+      .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(3n+2) {
+        margin-left: -41px;
+        margin-top: -64px; }
+        @media only screen and (max-width: 580px) {
+          .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(3n+2) {
+            margin-top: -36px; } }
+      .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(3n+3) {
+        margin-left: -128px;
+        margin-top: 102px; }
+        @media only screen and (max-width: 580px) {
+          .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(3n+3) {
+            margin-left: -80px;
+            margin-top: 77px; } }
+      .card-mainVision[data-style="5"] .imgList .diamondBox:nth-of-type(3n+4) {
+        margin-left: -41px; }
+      .card-mainVision[data-style="5"] .imgList .diamondBox:hover {
+        -webkit-transform: rotate(45deg) translate(-5%, -5%) scale(1.5);
+            -ms-transform: rotate(45deg) translate(-5%, -5%) scale(1.5);
+                transform: rotate(45deg) translate(-5%, -5%) scale(1.5);
+        -webkit-box-shadow: 5px 5px 15px -4px #333;
+                box-shadow: 5px 5px 15px -4px #333;
+        z-index: 99999; }
+      .card-mainVision[data-style="5"] .imgList .diamondBox.openLink {
+        cursor: pointer; }
+      .card-mainVision[data-style="5"] .imgList .diamondBox.openVideo:hover > i.cc.cc-play {
+        opacity: 1; }
+      .card-mainVision[data-style="5"] .imgList .diamondBox.openVideo > i.cc.cc-play {
+        opacity: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+        color: #fff;
+        z-index: 99;
+        font-size: 24px;
+        text-shadow: 1px 1px 4px #333;
+        -webkit-transform-origin: center;
+            -ms-transform-origin: center;
+                transform-origin: center;
+        -webkit-transform: rotate(-45deg) translateY(-60%);
+            -ms-transform: rotate(-45deg) translateY(-60%);
+                transform: rotate(-45deg) translateY(-60%); }
+      .card-mainVision[data-style="5"] .imgList .diamondBox > div {
+        display: block;
+        height: 150%;
+        width: 150%;
+        background-position: center;
+        background-size: cover;
+        position: relative;
+        -webkit-transform-origin: center;
+            -ms-transform-origin: center;
+                transform-origin: center;
+        -webkit-transform: rotate(-45deg) translateY(-25%);
+            -ms-transform: rotate(-45deg) translateY(-25%);
+                transform: rotate(-45deg) translateY(-25%); }
+  .card-mainVision[data-style="5"] .GeometryColor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    font-size: 0; }
+    .card-mainVision[data-style="5"] .GeometryColor .svg-container {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      padding: 0; }
+      .card-mainVision[data-style="5"] .GeometryColor .svg-container svg {
+        position: absolute;
+        height: auto;
+        height: initial;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        -webkit-transform: translateY(50%);
+            -ms-transform: translateY(50%);
+                transform: translateY(50%); }
+    .card-mainVision[data-style="5"] .GeometryColor .upBox {
+      fill: #fafafa; }
+    .card-mainVision[data-style="5"] .GeometryColor .lowBox {
+      fill: #f4f4f4; }

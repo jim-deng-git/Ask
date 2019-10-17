@@ -1,0 +1,150 @@
+﻿@model List<WorkV3.Models.SitesModels>
+@{
+    ViewBag.Title = "My Sites";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+}
+
+@*<a href="@Url.Action("index",new {SiteSN="huashan1914"})">華山1914</a>*@
+
+@if (Model != null)
+{
+    foreach (WorkV3.Models.SitesModels item in Model)
+    {
+
+        string langText = "";
+        switch (item.Lang.ToLower())
+        {
+            case "zh-hant":
+                langText = "中文版";
+                break;
+            case "en-us":
+                langText = "英文版";
+                break;
+            case "ja-jp":
+                langText = "日文版";
+                break;
+            case "zh-cn":
+                langText = "簡中版";
+                break;
+        }
+
+            <div class="col-3 p-10">
+                <div class="card">
+                    <div class="card-box">
+                        <div class="card-img">
+                            @{
+                                string WebUrl = WorkLib.GetItem.appSet("WebUrl").ToString();
+                                string defaultImage = "../../images/temp/websiteCover.jpg";
+                                if (!string.IsNullOrEmpty(item.DefaultImage))
+                                {
+                                    defaultImage = item.DefaultImage;
+                                }
+                            }
+                            <img src="@defaultImage" />
+                            <a class="sitelinks" data-href="@Url.Action("index", new { SiteSN = item.SN })" title="@item.Title" style="background-image:url('@defaultImage')">
+                                <div class="card-img-content" style="background-image:url('@defaultImage')"></div>
+                            </a>
+                        </div>
+                        <div class="card-text">
+                            <div class="card-text-name">@item.Title (@langText)</div>
+                            <div class="card-text-info">
+                                http://cc-work.com/@item.SN
+                                @if (!string.IsNullOrEmpty(item.Domin))
+                                {
+                                    List<WorkV3.Areas.Backend.ViewModels.SiteDomain> domains = Newtonsoft.Json.JsonConvert.DeserializeObject<List<WorkV3.Areas.Backend.ViewModels.SiteDomain>>(item.Domin);
+                                    if (domains != null && domains.Count > 0)
+                                    {
+                                        foreach (WorkV3.Areas.Backend.ViewModels.SiteDomain domain in domains)
+                                        {
+                            <text>
+                                <br />
+                                @domain.Domain
+                            </text>
+                                        }
+                                    }
+                                }
+                                @if (item.ParentID.HasValue)
+                                {
+                                    WorkV3.Models.SitesModels parentSiteItem = WorkV3.Models.DataAccess.SitesDAO.GetInfo(item.Id);
+                                    if (parentSiteItem != null)
+                                    {
+
+                                        string parentLangText = "";
+                                        switch (parentSiteItem.Lang.ToLower())
+                                        {
+                                            case "zh-hant":
+                                                parentLangText = "中文版";
+                                                break;
+                                            case "en-us":
+                                                parentLangText = "英文版";
+                                                break;
+                                            case "ja-jp":
+                                                parentLangText = "日文版";
+                                                break;
+                                            case "zh-cn":
+                                                parentLangText = "簡中版";
+                                                break;
+                                        }
+                                        <text>
+                                <br />
+                                            主網站：@parentSiteItem.Title (@parentLangText)
+                                        </text>
+                                    }
+                                }
+                            </div>
+                            <div class="card-text-btn">
+                                <a class="btn-grey-o transparent circle tooltip-info openEdit-m" href="@Url.Action("Edit", "Sites", new { ID = item.Id })" title="網站管理"><i class="cc cc-edit"></i></a>
+                                <a data-width="600" data-height="600" class="btn-grey-o transparent circle tooltip-info openEdit-c tooltipstered" href="@Url.Action("Copy", "Sites", new { SourceID = item.Id })" title="複製網站"><i class="cc cc-content-copy"></i></a>
+                                <a data-height="200" class="btn-grey-o transparent circle tooltip-info openEdit-c"  href="@Url.Action("ChangeStatus", "Sites", new { ID = item.Id })" title="上線/隱藏">
+                                    @{ 
+                                        string IssueClass = "cc-eye";
+                                        if (!item.Issue)
+                                        {
+                                            IssueClass = "cc-eye-off";
+                                        }
+                                    }
+                                    <i class="cc @IssueClass"></i>
+                                </a>
+                                <a class="btn-grey-o transparent circle tooltip-info tooltipstered" href="~/w/@item.SN/index?Preview=1" target="_blank" title="預覽"><i class="cc cc-cellphone-link" ></i></a>
+                                <a class="btn-grey-o transparent circle tooltip-info btn-del data-del float-R" href="#" title="網站刪除" data-id="@item.Id"><i class="cc cc-trash-o"></i></a>
+                                @*<a class="btn-grey-o transparent circle tooltip-info sitelinks" data-href="@Url.Action("index",new {SiteSN= item.SN})" title="網站管理"><i class="cc cc-edit"></i></a>*@
+                                @*<a class="btn-grey-o transparent circle tooltip-info" href="@Url.Action("index",new {SiteSN= item.SN})" title="對外版本"><i class="cc cc-desktop-message"></i></a>*@
+                                @*<a class="btn-grey-o transparent circle tooltip-info" href="#" title="協作設定"><i class="cc cc-business-users"></i></a>
+                                    <a class="btn-grey-o transparent circle tooltip-info btn-del" href="#" title="網站刪除"><i class="cc cc-trash-o"></i></a>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    }
+}
+
+@BundleConfig.Component()
+<script>
+    $(function () {
+        $(".sitelinks").click(function () {
+            var url = $(this).attr("data-href");
+            parent.top.location = url;
+        });
+        $(".btn-del").click(function () {
+            var ID = $(this).attr("data-id");
+            Component.confirm("刪除後，資料無法復原，確定刪除？", function (isConfirm) {
+
+                if (!isConfirm)
+                    return;
+                var url = "@Url.Action("Delete", "Sites")";
+                $.post(url, { 'id': ID }, function (data) {
+                    Component.alert('刪除成功。', function () {
+                        parent.location = parent.location.href; 
+                    });
+                });
+
+            });
+        });
+    });
+    function refreshList()
+    {
+        location = location.href;
+    }
+</script>
+@Styles.Render("~/Css/Card")

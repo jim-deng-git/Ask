@@ -1,0 +1,73 @@
+﻿@model IEnumerable<AdvertisersModel>
+@{
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    List<long> advertiserIds = ViewBag.AdvertiserIds?? new List<long>();
+}@section FArea {
+    <script type="text/javascript">
+            $(function () {
+                $('.toggleBox').each(function() {
+                    var $this = $(this),
+                        $toggleContent = $(this).siblings('.dd-list');
+
+                    $this.on('click', function(){
+                        if ($toggleContent.hasClass('show')) {
+                            $toggleContent.slideUp('normal', function() {
+                                $(this).removeClass('show');
+                                $this.removeClass('active');
+                            });
+                        } else {
+                            $toggleContent.slideDown('normal', function() {
+                                $(this).addClass('show');
+                                $this.addClass('active');
+                            });
+                        }
+                    });
+                });
+
+                $('#btnCancel').on('click', function () {
+                    parent.$('#advertiser-list').slideUp();
+                });
+
+                $('#btnSave').on('click', function () {
+                    var retAdvertisers = [];
+
+                    $('input.advertiser:checked').each(function (item) {
+                        retAdvertisers.push($(this).attr('data-id'));
+                    });
+
+                    parent.setAdvertisersAndSubmit(retAdvertisers);
+                    //parent.getLinesThenDrawChart();
+                    //parent.$('#advertiser-list').slideUp();
+                });
+            });
+    </script>  
+}
+
+<div class="groove groove-1">
+    <ul class="forms">
+        <li>
+            <!-- <div class="title">哪個是你想前往的列表？</div> -->
+            <ol class="dd-list checkStyle">
+                <li class="dd-item" data-id="1">
+                    <input type="checkbox" id="kind" />
+                    <label for="kind">全部廣告主</label>
+                    <ol class="dd-list show">
+                        <li class="dd-item" data-id="2">
+                            @foreach (var advertiser in Model)
+                            {
+                                <div class="dd-handle">
+                                    <input class="with-gap advertiser" type="checkbox" id="adversiter-@advertiser.ID" data-id="@advertiser.ID" @(advertiserIds.Contains(advertiser.ID)? "checked": "") />
+                                    <label class="m-B-none" for="adversiter-@advertiser.ID">@advertiser.CompanyName</label>
+                                </div>
+                            }
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+    </ul>
+    <div class="control-bar flex">
+        <a id="btnCancel" class="btn-cancel" href="javascript:"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+﻿@model List<WorkV3.Areas.Backend.Models.SocialRelationModels>
+@{
+    if (Model != null && Model.Count() > 0 && Model.First() != null)
+    {
+        var openList = Model.Where(p => p.IsOpen);
+        if (openList != null && openList.Count() > 0)
+        {
+            <ul class="nav-social">
+                @foreach (WorkV3.Areas.Backend.Models.SocialRelationModels item in openList)
+                {
+                    string iconClassName = WorkV3.Areas.Backend.Models.DataAccess.SocialSettingDAO.GetSocialTypeStyle(item.SocialType);
+                    <li><a href="@item.LinkUrl" target="_blank"><i class="cc @iconClassName"></i></a></li>
+                }
+            </ul>
+        }
+    }
+}

@@ -1,0 +1,123 @@
+﻿@model ResourceLightBoxModels
+@{
+    ViewBag.Title = "搭配燈箱";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+
+    var siteQuery = new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo };
+}
+
+<form id="lightboxEditForm" method="post" action="@Html.Raw(Url.Action("LightBoxEdit", new { siteId = ViewBag.SiteID, menuId = ViewBag.MenuID, sourceNo = ViewBag.SourceNo }))">
+    <div class="groove groove-1">
+        <!-- swiper1 -->
+        <div class="swiper-container swiper-tab-bar">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide selected">設定燈箱</div>
+            </div>
+        </div>
+        <!-- swiper2 -->
+        <div class="swiper-container swiper-tab-content">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <ul class="forms">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">按鈕名稱</div>
+                                <div class="input-field inline full">
+                                    <input type="text" name="BtnName" id="BtnName" value="@Model.BtnName" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">按鈕顏色</div>
+                                <div class="radio-box inline full" data-radioGroup="Color">
+                                    @{ string[] colors = { "red", "orange", "yellow", "green", "light-green", "blue", "teal", "deep-purple", "gold", "light-grey", "grey", "black" }; }
+                                    @foreach (string color in colors)
+                                    {
+                                        <div>
+                                            <input type="radio" class="with-gap" value="@color" />
+                                            <label data-color="@color"></label>
+                                        </div>
+                                    }
+                                    <input type="hidden" id="BtnColor" name="BtnColor" value="@Model.BtnColor" />
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">燈箱標題</div>
+                                <div class="input-field inline full">
+                                    <input type="text" name="Title" id="Title" value="@Model.Title">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">燈箱圖片</div>
+                                <div class="input-field inline full">
+                                    <input type="file" id="imgUpload" name="imgUpload" data-field="imgs" />
+                                    <!--#include file="imgUpload-multiple.aspx"-->
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">燈箱內容</div>
+                                <div class="input-field inline full">
+                                    <textarea contenteditable="true" id="Spec" name="Spec">
+                                        @Model.Spec
+                                    </textarea>
+                                    @*<textarea class="ckeditor editor-txt" contenteditable="true" id="Spec" name="Spec" placeholder="">@Model.Spec</textarea>*@
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="control-bar flex">
+            <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();parent.$.colorbox.close();"><i class="cc cc-close"></i>取消</a>
+            <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+            <input type="hidden" name="ID" value="@Model.ID" />
+        </div>
+    </div>
+</form>
+
+@section FArea {
+    @BundleConfig.SlidePips()
+    @BundleConfig.FileUploader()
+    @BundleConfig.Validate()
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+
+        (function () {
+            Component.multiImageUpload('#imgUpload', '@(Href("~/"))', '@Html.Raw(Url.Action("FileUpload", siteQuery))', '@ViewBag.UploadUrl', @Html.Raw(@ViewBag.Imgs), '@ViewBag.SiteID', '@ViewBag.MenuID');
+            Component.radioList('[data-radioGroup]');
+            var editor = Component.editor('Spec');
+
+            $('#btnSave').click(function () {
+                if (Component.multiImageUpload.uploading) {
+                    Component.alert('檔案上傳中，請稍候再儲存。');
+                } else {
+                    $('#btnMainArea').click();
+                    var form = $('#lightboxEditForm');
+                    if (form.validationEngine('validate')) {
+                        form.submit();
+                    }
+                }
+            });
+
+            @if ((ViewBag.Exit as bool?) == true) {
+                <text>
+                if (parent.refreshResourceImageSetting)
+                    parent.refreshResourceImageSetting($("#SizeType").val(), $("#IsOriginalSize").prop("checked"));
+                if (parent.refreshResourceItems)
+                    parent.refreshResourceItems();
+                Component.closeLeft();
+                parent.$.colorbox.close();
+                </text>
+            }
+        })();
+    </script>
+}

@@ -1,0 +1,132 @@
+﻿@model WorkV3.Models.SeekItemModel
+@{
+    ViewBag.Title = "檢視投稿內容";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+
+    string uploadUrl = ViewBag.UploadUrl;
+    long siteId = ViewBag.SiteID;
+    WorkV3.Models.SeekModel seek = ViewBag.Seek;
+
+    string listUrl = Url.Action("SeekItemList", new { siteId = siteId, id = Model.SeekID, page = Request.QueryString["seekPage"], index = Request.QueryString["page"] });
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")    
+}
+
+@section FArea {
+    @BundleConfig.Component()    
+    @BundleConfig.JWPlayer()
+    <script type="text/javascript">
+        $('div.video-mp4').each(function () {
+            var id = this.id;
+            jwplayer(id).setup({
+                width: "100%",
+                height: "100%",                
+                file: $(this).attr('data-video'),
+                autostart: true,
+                skin: {
+                    name: "default",//選擇主題
+                    active: "#2e2e2e",//選擇主色
+                    inactive: "#ffffff",
+                    background: "rgba(255,255,255,0)"//選擇背景
+                },
+                showdownload: false,
+                aspectratio: "16:9"//影片比例
+            });
+        });
+
+        function save() {
+            $.post('@Url.Action("ProcessInView", new { id = Model.ID })', { isProcess: $('#IsProcess').prop('checked'), isWinner: $('#IsWinner').prop('checked'), remark: $.trim($('#Remark').val()) }, function () {
+                location.href = '@listUrl';
+            });
+        }         
+    </script>
+}
+
+<div class="groove groove-1">
+    <h1 class="title-admin-page"><a href="@listUrl" class="btn-grey-darken-4-o transparent goBack"><i class="cc cc-arrow-left"></i></a>檢視投稿內容</h1>
+    <div class="col-2 border-T border-R rw-detail">
+        <ul class="forms">
+            @{ List<WorkV3.Models.SeekField> fields = seek.GetFields(); }
+            @foreach (WorkV3.Models.SeekField field in fields) {
+                if (field.IsShow) {
+                    string val = string.Empty;
+                    if(field.Name == "姓名") {
+                        val = Model.Name;
+                    } else if (field.Name == "身份證字號") {
+                        val = Model.IDCard;
+                    } else if (field.Name == "出生年月日") {
+                        val = Model.Birthday.ToString("yyyy/MM/dd");
+                    } else if (field.Name == "手機") {
+                        val = Model.Mobile;
+                    } else if (field.Name == "電話") {
+                        val = Model.Phone;
+                    } else if (field.Name == "Email") {
+                        val = Model.Email;
+                    } else if (field.Name == "其他說明") {
+                        val = Model.Remark;
+                    } else if(field.Name == "地址") {
+                        if(!string.IsNullOrWhiteSpace(Model.District) || !string.IsNullOrWhiteSpace(Model.Address)) {
+                            WorkV3.Models.FieldAddress address = new WorkV3.Models.FieldAddress { Address = Model.Address };
+                            if(!string.IsNullOrWhiteSpace(Model.District)) {
+                                address.Regions = Newtonsoft.Json.JsonConvert.DeserializeObject<int[]>(Model.District);
+                            }
+                            val = address.GetAddress();
+                        }
+                    }
+            <li>
+                <div class="title">@field.Name</div>
+                <div class="font-blue">@val</div>
+            </li>
+                }
+            }            
+        </ul>
+    </div>
+    <div class="col-2 border-T ">
+        <ul class="forms m-B-5">
+            <li><div class="title">投稿內容：</div></li>
+            <li>
+                <div class="inline full text-C">
+                    <div class="text-L m-5 font-xs">@Model.Description</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Files)) {
+                        if (seek.Mode == "照片") {
+                            List<string> imgs = null;
+                            if (Model.Files[0] == '[') {
+                                imgs = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(Model.Files);
+                            } else {
+                                imgs = new List<string>();
+                                imgs.Add(Model.Files);
+                            }
+                            foreach (string img in imgs) {                                
+                        <img src="@(uploadUrl + Server.UrlPathEncode(img))" />
+                            }
+                        } else if (seek.Mode == "影片" && !string.IsNullOrWhiteSpace(Model.Files)) {
+                        <div id="v_@(Model.ID)" data-video="@(uploadUrl + Server.UrlPathEncode(Model.Files))" class="video-mp4"></div>
+                        }
+                    }
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="control-bar">
+        <div class="bar-item float-L">
+            <div>
+                @Html.CheckBoxFor(m => m.IsProcess)                
+                <label for="IsProcess">已處理</label>
+            </div>
+        </div>
+        <div class="bar-item float-L">
+            <div>
+                @Html.CheckBoxFor(m => m.IsWinner)                
+                <label for="IsWinner">標示中獎</label>
+            </div>
+        </div>
+        <div class="float-L input-field m-1">
+            <input type="text" id="Remark" class="m-none" placeholder="請填入備註" value="@Model.ProcessRemark" />
+        </div>
+        <a class="btn-cancel" href="@listUrl"><i class="cc cc-close"></i>取消</a>
+        <a class="btn-bulid" href="javascript:save();"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>

@@ -1,0 +1,9 @@
+﻿@model CardsModels
+@{
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+
+    var controller = Model.CardsType;
+    var action = ViewBag.Type as string;
+
+    Html.RenderAction(action, controller, Model);
+}

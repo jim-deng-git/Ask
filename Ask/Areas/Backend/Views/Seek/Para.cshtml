@@ -1,0 +1,171 @@
+﻿@{
+    ViewBag.Title = "參數設定";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminPageLayout.cshtml";
+    long siteId = ViewBag.SiteID;
+        
+    IEnumerable<WorkV3.Models.SeekTypeModels> typeItems = ViewBag.Types;
+    WorkV3.Models.SeekSettingModels setting = ViewBag.Setting;
+}
+
+@section HArea {
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Css/Card")
+    @BundleConfig.StickyTableHeaders()
+}
+
+@section Script {
+    @BundleConfig.Component()
+    <script type="text/javascript" src="~/Script/base/admin-slideTabs.js"></script>
+    <script type="text/javascript">
+        $(".fixTable").stickyTableHeaders();
+
+        var curSlide = $('div.swiper-slide.selected');
+        if (curSlide.attr('data-type') == 'term') {
+            setTimeout(function () {
+                curSlide.click();
+            }, 10);
+        }
+
+        $('textarea.editor').each(function () {
+            var termEditor = Component.editor(this.id);
+            var that = $(this);
+            termEditor.on('blur', function () {
+                var term = termEditor.getData();                
+                $.post(that.data('url'), { term: term });
+            });
+        });
+
+
+        function initArea(type) {
+            var tableElm = $('#' + type + "Table");
+
+            var listObj = Component.dataList(type + 'Table');
+            listObj.sorted = function (sortItems) {
+                $.post(type + 'Sort?siteId=@siteId', { 'items': sortItems }, function () {
+                    location.replace('@Html.Raw(Url.Action("Para", new { siteId = siteId }))&type=' + type);
+                });
+            }
+            listObj.deleted = function (delIds) {
+                $.post(type + 'Del?siteId=@siteId', { 'ids': delIds }, function () {
+                    location.replace('@Html.Raw(Url.Action("Para", new { siteId = siteId }))&type=' + type);
+                });
+            }
+            listObj.canceled = function (action) {
+                if (action == "del") {
+                    tableElm.find('span.info').html('');
+                }
+            }
+            listObj.opened = function (mainWin, action) {
+                mainWin.refreshList = function () {
+                    location.replace('@Html.Raw(Url.Action("Para", new { siteId = siteId }))&type=' + type);
+                }
+            }
+            listObj.statusChange = function (id) {
+                $.get(type + 'ToggleIssue/' + id + '?siteId=@siteId');
+            }
+
+            tableElm.on('click', 'tbody :checkbox', function () {
+                var tbodyElm = $(this).closest('tbody');
+                var selectedNum = tbodyElm.find(':checked').length;
+                tableElm.find('span.info').html('共選了<span>' + selectedNum + '</span>筆');
+            });
+        }
+
+        initArea('type');
+    </script>
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide @(ViewBag.Type == "type" ? "selected" : string.Empty)" data-type="type"><i class="cc cc-tag cc-rotate-270"></i>類別</div>            
+            <div class="swiper-slide @(ViewBag.Type == "frontTerm" ? "selected" : string.Empty)"><i class="cc cc-tutorial-o"></i>預設條款</div>
+            <div class="swiper-slide @(ViewBag.Type == "rearTerm" ? "selected" : string.Empty)"><i class="cc cc-tutorial-o"></i>投稿後預設文案</div>
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide p-T-10">
+                <table id="typeTable" class="fixTable">
+                    <caption>
+                        類別
+                        <span class="info"></span>
+                        <div class="float-R">
+                            <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                            <a class="btn-grey-darken-4-o square tooltip-info" data-action="add" href="@Html.Raw(Url.Action("typeEdit", new { siteId = siteId }))" title="新增"><i class="cc cc-plus"></i></a>
+                            <a class="btn-grey-o square tooltip-info btn-del" data-action="del" href="javascript:" title="刪除"><i class="cc cc-trash-o"></i></a>
+                            <span data-for="sort" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>
+                            <span data-for="del" style="display:none;">
+                                <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                            </span>                            
+                        </div>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th>序</th>
+                            <th>名稱</th>
+                            <th>色調</th>
+                            <th>刊登</th>
+                            <th>編輯</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(int i = 0, len = typeItems.Count(); i < len; ++i) {
+                            WorkV3.Models.SeekTypeModels item = typeItems.ElementAt(i);
+                        <tr data-id="@item.ID">
+                            <td class="sort">@(i + 1)</td>
+                            <td class="text-L">@item.Name</td>
+                            <td><i class="btn-default btn-tiny circle" data-color="@item.Color"></i></td>
+                            <td class="icon"><a class="btn-grey-darken-4-o transparent square showStatus" href="javascript:"><i class="cc @(item.IsIssue ? "cc-eye" : "cc-eye-off font-red")"></i></a></td>
+                            <td class="icon edit"><a class="btn-grey-darken-4-o transparent square openRight" href="@Html.Raw(Url.Action("typeEdit", new { id = item.ID, siteId = ViewBag.SiteID }))"><i class="cc cc-edit-o"></i></a></td>
+                        </tr>
+                        }                        
+                    </tbody>
+                </table>
+            </div>
+            <div class="swiper-slide p-T-10">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="input-field">
+                                <textarea id="FrontTerm" name="FrontTerm" class="editor" data-url="@Url.Action("SetFrontTerm", new { siteId = siteId })">@(string.IsNullOrWhiteSpace(setting.FrontTerm) ? "請填入段落內文" : setting.FrontTerm)</textarea>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="swiper-slide p-T-10">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div class="input-field">
+                                <textarea id="RearTerm" name="RearTerm" class="editor" data-url="@Url.Action("SetRearTerm", new { siteId = siteId })">
+                                    @if(string.IsNullOrWhiteSpace(setting.RearTerm)) {
+                                        <p><span style="font-size: 22px ">恭喜，完成投稿囉！ </span></p>
+                                        <p>感謝參與，您將有機會獲得精美好禮。</p>
+                                        @*<p>也將本活動分享至 <span style="color: blue;">[Facebook]</span>，讓更多朋友參加吧！</p>*@
+                                    } else {
+                                        @:@Html.Raw(setting.RearTerm)
+                                    }                                    
+                                </textarea>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="m-T-4">
+                    <span class="alert inline transparent">
+                        <i class="cc cc-attention"></i>
+                        @*<div>參數如下：[Facebook] 代表點擊可將此徵件活動分享至 Facebook。</div>*@
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

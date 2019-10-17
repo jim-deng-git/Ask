@@ -1,0 +1,662 @@
+﻿@model WorkV3.Models.SitesModels
+@{
+    ViewBag.Title = "網站設定";
+    ViewBag.BodyClass = "body-admin-main";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";
+    string uploadUrl = ViewBag.UploadUrl;
+    uploadUrl = uploadUrl.Trim('/');
+    List<WorkV3.Models.SitesModels> siteList = new List<WorkV3.Models.SitesModels>();
+    if (ViewBag.Sites != null)
+    {
+        siteList = (List<WorkV3.Models.SitesModels>)ViewBag.Sites;
+    }
+    List<WorkV3.Models.SiteLangMenuModel> langList = new List<WorkV3.Models.SiteLangMenuModel>();
+    if (ViewBag.Langs != null)
+    {
+        langList = (List<WorkV3.Models.SiteLangMenuModel>)ViewBag.Langs;
+    }
+
+    WorkV3.Models.SiteMailSettingModel mailSetting = ViewBag.MailSetting;
+}
+@BundleConfig.FileUploader()
+@BundleConfig.Component()
+@BundleConfig.Validate()
+<script src="~/script/workV3/check.js" type="text/javascript"></script>
+<div class="zone zone-base p-8">
+    <div class="wrapper">
+        <form id="editForm" method="post" action="@Url.Action("Setting", new { SiteID = Model.Id })" enctype="multipart/form-data" style="width:100%">
+            <div class="groove groove-1">
+                <h1 class="title-admin-page">網站設定</h1>
+                <div class="card shadow-none">
+                    <ul class="forms m-h-none">
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">網站名稱<span class="required">*</span></div>
+                                <div class="input-field inline">
+                                    <input placeholder="" id="Title" name="Title" type="text" value="@Model.Title" class="validate[required]">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">網站代碼</div>
+                                <div class="text-value inline">
+                                    @Model.SN
+                                </div>
+                            </div>
+                        </li>
+                        @*客製 YuMing 20190722 隱藏 免費網址 網域名稱 網站屬性*@
+                        @*<li>
+                                <div class="col-1">
+                                    <div class="title inline">免費網址</div>
+                                    <div class="text-value inline">
+                                        http://cc-work.com/<span class="font-blue">@Model.SN</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="col-1">
+                                    <div class="title inline">網域名稱</div>
+                                    <div id="divDomains">
+
+                                    </div>
+                                    <a class="btn-grey-darken-4-o transparent btn-small p-h-none" id="btnAddDomain" href="javascript:">
+                                        <i class="cc cc-plus"></i>
+                                        增加域名
+                                    </a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="col-1">
+                                    <div class="title inline">網站屬性</div>
+                                    <div class="radio-box inline full">
+                                        <div>
+                                            <input name="webType" value="Indep" type="radio" id="webType-1" class="with-gap" @(Model == null ? "checked" : (Model.ParentID.HasValue ? "" : "checked")) />
+                                            <label for="webType-1">獨立網站</label>
+                                        </div>
+                                        <div>
+                                            <input name="webType" value="Child" type="radio" id="webType-2" class="with-gap" @(Model == null ? "" : (Model.ParentID.HasValue ? "checked" : "")) />
+                                            <label for="webType-2">從屬網站</label>
+                                        </div>
+                                    </div>
+                                    <div id="webType-box">
+                                        <span class="font-grey">主網站</span>
+                                        <div class="input-field inline">
+                                            <select id="ParentID" name="ParentID">
+                                                @if (siteList != null && siteList.Count > 0)
+                                                {
+                                                    foreach (var siteItem in siteList)
+                                                    {
+                                                        string langText = "";
+                                                        switch (siteItem.Lang.ToLower())
+                                                        {
+                                                            case "zh-hant":
+                                                                langText = "中文版";
+                                                                break;
+                                                            case "en-us":
+                                                                langText = "英文版";
+                                                                break;
+                                                            case "ja-jp":
+                                                                langText = "日文版";
+                                                                break;
+                                                            case "zh-cn":
+                                                                langText = "簡中版";
+                                                                break;
+                                                        }
+                                                        <option value="@siteItem.Id" @(Model != null ? (Model.ParentID.HasValue ? (Model.ParentID.Value == siteItem.Id ? "selected" : "") : "") : "")>@siteItem.Title (@langText)</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="alert transparent m-T-4 m-B-8">
+                                        <i class="cc cc-attention"></i>
+                                        <div>
+                                            從屬網站，將繼承主網站之會員，無法自行管理會員。
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>*@
+                        <li>
+                            <div class="col-1 multiple">
+                                <div class="title inline">LOGO<span class="required">*</span></div>
+                                <div class="constant">
+                                    <div>
+                                        <div class="font-grey">
+                                            <i class="cc cc-laptop"></i>電腦版 – 原色LOGO
+                                        </div>
+                                        <div class="input-field">
+                                            <input type="file" name="fLogo" id="fLogo">
+                                            @{
+                                                string LogoStr = "";
+                                                if (!string.IsNullOrEmpty(Model.Logo))
+                                                {
+                                                    WorkV3.Models.ImageModel logoImgModel = new WorkV3.Models.ImageModel();
+                                                    logoImgModel.ID = 1;
+                                                    logoImgModel.Img = Model.Logo;
+                                                    LogoStr = Newtonsoft.Json.JsonConvert.SerializeObject(logoImgModel);
+                                                }
+                                            }
+                                            <input type="hidden" id="Logo" name="Logo" value='@LogoStr' />
+                                            <input type="hidden" id="fLogoBase64" name="fLogoBase64" />
+                                            <input type="hidden" id="fLogoBase64_Resize" name="fLogoBase64_Resize" />
+                                        </div>
+                                        <div class="alert transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>
+                                                請上傳適用於淺底色背景的LOGO。<br>
+                                                建議尺寸：250 x 100px 以內。<br>
+                                                最佳尺寸：220 x 80px。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-grey">
+                                            <i class="cc cc-laptop"></i>電腦版 – 對比色LOGO
+                                        </div>
+                                        <div class="input-field">
+                                            <input type="file" name="fLogoshrink" id="fLogoshrink">
+
+                                            @{
+                                                string LogoshrinkStr = "";
+                                                if (!string.IsNullOrEmpty(Model.Logoshrink))
+                                                {
+                                                    WorkV3.Models.ImageModel LogoshrinkImgModel = new WorkV3.Models.ImageModel();
+                                                    LogoshrinkImgModel.ID = 1;
+                                                    LogoshrinkImgModel.Img = Model.Logoshrink;
+                                                    LogoshrinkStr = Newtonsoft.Json.JsonConvert.SerializeObject(LogoshrinkImgModel);
+                                                }
+                                            }
+                                            <input type="hidden" id="Logoshrink" name="Logoshrink" value='@LogoshrinkStr' />
+                                            <input type="hidden" id="fLogoshrinkBase64" name="fLogoshrinkBase64" />
+                                            <input type="hidden" id="fLogoshrinkBase64_Resize" name="fLogoshrinkBase64_Resize" />
+                                        </div>
+                                        <div class="alert transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>
+                                                請上傳適用於深底色背景。<br>
+                                                建議尺寸：250 x 100px 以內。<br>
+                                                最佳尺寸：220 x 80px。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-grey">
+                                            <i class="cc cc-mobile"></i>手機版 – LOGO
+                                        </div>
+                                        <div class="input-field">
+
+                                            <input type="file" name="fLogoMobile" id="fLogoMobile">
+
+                                            @{
+                                                string LogoMobileStr = "";
+                                                if (!string.IsNullOrEmpty(Model.LogoMobile))
+                                                {
+                                                    WorkV3.Models.ImageModel LogoMobileImgModel = new WorkV3.Models.ImageModel();
+                                                    LogoMobileImgModel.ID = 1;
+                                                    LogoMobileImgModel.Img = Model.LogoMobile;
+                                                    LogoMobileStr = Newtonsoft.Json.JsonConvert.SerializeObject(LogoMobileImgModel);
+                                                }
+                                            }
+                                            <input type="hidden" id="LogoMobile" name="LogoMobile" value='@LogoMobileStr' />
+                                            <input type="hidden" id="fLogoMobileBase64" name="fLogoMobileBase64" />
+                                            <input type="hidden" id="fLogoMobileBase64_Resize" name="fLogoMobileBase64_Resize" />
+                                        </div>
+                                        <div class="alert transparent">
+                                            <i class="cc cc-attention"></i>
+                                            <div>
+                                                請上傳適用於手機版的LOGO。<br>
+                                                建議尺寸：250 x 100px 以內。<br>
+                                                最佳尺寸：220 x 80px。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        @*客製 YuMing 20190722 隱藏 語系切換*@
+                        @*<li>
+                                <div class="col-1">
+                                    <div class="title inline">語系切換</div>
+                                    <div class="radio-box inline full">
+                                        <div>
+                                            <input type="checkbox" name="IsLang" id="IsLang" @(Model != null ? (Model.IsLang ? "checked" : "") : "") value="True"/>
+                                            <label for="IsLang">開放</label>
+                                        </div>
+                                    </div>
+                                    <div id="lan-box" class="input-field inline full">
+                                        <table class="fixTable shareTd float-L" id="listTable">
+                                            <caption>
+                                                <div class="float-R">
+                                                    <a class="btn-grey-o square tooltip-info" href="javascript:" data-action="sort" title="排序"><i class="cc cc-sort"></i></a>
+                                                    <a class="btn-grey-darken-4-o square tooltip-info openEdit-m" href="@Url.Action("EditLang", new { SiteID=Model.Id})" title="新增"><i class="cc cc-plus"></i></a>
+                                                    <a class="btn-grey-o square tooltip-info btn-del" href="javascript:" data-action="del" title="刪除"><i class="cc cc-trash-o"></i></a>
+                                                     <span data-for="del" style="display:none;">
+                                                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                                    </span>
+                                                    <span data-for="sort" style="display:none;">
+                                                        <a class="btn-grey-o no" href="javascript:"><i class="cc cc-close"></i>取消</a>
+                                                        <a class="btn-grey-darken-4-o yes" href="javascript:"><i class="cc cc-check"></i>確定</a>
+                                                    </span>
+                                                </div>
+                                            </caption>
+                                            <tbody class="border-T" id="containerLangs">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </li>*@
+                        <li>
+                            <div class="col-1 multiple">
+                                <div class="title inline">Favicon</div>
+                                <div class="constant">
+                                    <div>
+                                        <div class="input-field">
+                                            <input type="file" name="fFavicon" id="fFavicon">
+                                            @{
+                                                string IconStr = "";
+                                                if (!string.IsNullOrEmpty(Model.Favicon))
+                                                {
+                                                    WorkV3.Models.ImageModel iconImgModel = new WorkV3.Models.ImageModel();
+                                                    iconImgModel.ID = 1;
+                                                    iconImgModel.Img = Model.Favicon;
+                                                    IconStr = Newtonsoft.Json.JsonConvert.SerializeObject(iconImgModel);
+                                                }
+                                            }
+                                            <input type="hidden" id="Favicon" name="Favicon" value='@IconStr' />
+                                            <input type="hidden" id="fFaviconBase64" name="fFaviconBase64" />
+                                            <input type="hidden" id="fFaviconBase64_Resize" name="fFaviconBase64_Resize" />
+                                        </div>
+                                    </div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-2">
+                                <div class="title inline">郵件發送</div>
+                                <div class="constant">
+                                    顯示名稱 <input type="text" name="Sender" value="@(mailSetting?.Sender)" />
+                                    SMTP 伺服器 <input type="text" name="SmtpServer" value="@(mailSetting?.SmtpServer)" />
+                                    Email 帳號 <input type="text" name="Account" value="@(mailSetting?.Account)" />
+                                    密碼 <input type="password" name="Password" value="@(mailSetting?.Password)" />
+                                    Port <input type="text" name="Port" value="@(mailSetting?.Port)" />
+                                    SSL 驗證
+                                    <div class="radio-box inline no-label">
+                                        <div>
+                                            <input type="radio" name="UseSsl" value="true" id="useSslYes" @(mailSetting?.UseSsl ?? true ? "checked" : "") /><label for="useSslYes">是</label>
+                                        </div>
+                                        <div>
+                                            <input type="radio" name="UseSsl" value="false" id="useSslNo" @(mailSetting?.UseSsl ?? true ? "" : "checked") /><label for="useSslNo">否</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">全站搜尋</div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input type="checkbox" name="IsSearchEnabled" id="IsSearchEnabled" @(Model != null ? (Model.IsSearchEnabled ? "checked" : "") : "") value="True" />
+                                        <label for="IsSearchEnabled">開放</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">麵包屑</div>
+                                <div class="radio-box inline">
+                                    <div>
+                                        <input type="checkbox" name="IsPathBread" id="IsPathBread" @(Model != null ? (Model.IsPathBread ? "checked" : "") : "") value="True" />
+                                        <label for="IsPathBread">開放</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        @*客製 YuMing 20190722 隱藏 首頁 首尾*@
+                        @*<li>
+                                <div class="col-1">
+                                    <div class="title inline">首頁 (Header)</div>
+                                    <div class="radio-box inline full">
+                                        <div>
+                                            <input type="checkbox" name="HeaderCustomized" id="HeaderCustomized" @(Model.HeaderCustomized?"checked":"") value="True"/>
+                                            <label for="HeaderCustomized">增加客製化內容</label>
+                                        </div>
+                                    </div>
+                                    <div class="header-Box m-T-5" style="display: none">
+                                        <textarea class="ckeditor editor-txt " name="HeaderCont" id="HeaderCont">@Model.HeaderCont</textarea>
+                                    </div>
+                                </div>
+                            </li>*@
+                        <li>
+                            <div class="col-1">
+                                <div class="title inline">首尾 (Footer)</div>
+                                <div class="radio-box inline full">
+                                    <div>
+                                        <input type="checkbox" name="FooterCustomized" id="FooterCustomized" @(Model.FooterCustomized ? "checked" : "") value="True" />
+                                        <label for="FooterCustomized">增加客製化內容</label>
+                                    </div>
+                                </div>
+                                <div class="footer-Box m-T-5" style="display: none">
+                                    <textarea class="ckeditor editor-txt " name="FooterCont" id="FooterCont">@Model.FooterCont</textarea>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+
+                </div>
+                <div class="control-bar">
+                    <div class="bar-item float-L">
+                        <div class="radio-box inline no-label">
+                            <div>
+                                <input name="Issue" type="radio" id="Issue_1" class="with-gap" @(Model != null ? (Model.Issue ? "checked" : "") : "") value="True" />
+                                <label for="Issue_1">網站開放上線</label>
+                            </div>
+                            <div>
+                                <input name="Issue" type="radio" id="Issue_0" class="with-gap" @(Model != null ? (!Model.Issue ? "checked" : "") : "checked") value="False" />
+                                <label for="Issue_0">隱藏</label>
+                            </div>
+                        </div>
+                    </div>
+                    @*<a class="btn-cancel" href="javascript:" id="btnCancel"><i class="cc cc-close"></i>取消</a>*@
+                    <a class="btn-bulid" href="javascript:" id="btnSave"><i class="cc cc-check"></i>儲存</a>
+
+                    <input type="hidden" id="SiteID" name="SiteID" value="@(Model != null ? Model.Id: 0)" />
+                    <input type="hidden" id="ID" name="ID" value="@(Model != null ? Model.Id: 0)" />
+                    <input type="hidden" id="Domin" name="Domin" value="@(Model != null ? Model.Domin: "")" />
+                    <input type="hidden" id="SourceID" name="SourceID" value="@ViewBag.SourceID" />
+                    <input type="hidden" id="Lang" name="Lang" value="@Model.Lang" />
+                    <input type="hidden" id="SN" name="SN" value="@Model.SN" />
+                    <input type="hidden" id="OriginalIssue" value="@(Model != null ? (Model.Issue ? "1" : "0") : "0")" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+        var domainIndex = 0;
+        $(function () {
+
+            @if (ViewBag.Exit != null && (bool)ViewBag.Exit)
+            {
+                <text>
+
+            Component.alert('儲存成功。', function () {
+                location = "@Url.Action("Setting", new { SiteID=Model.Id})";
+            });
+                </text>
+            }
+        else
+        {
+                if (ViewBag.Message != null)
+            {
+
+                <text>
+
+                Component.alert('@ViewBag.Message ');
+                </text>
+            }
+        }
+            Component.singleImageUpload('#fLogo', '@(Href("~/"))', '@uploadUrl', false);
+            Component.singleImageUpload('#fLogoshrink', '@(Href("~/"))', '@uploadUrl', false);
+            Component.singleImageUpload('#fLogoMobile', '@(Href("~/"))', '@uploadUrl', false);
+
+            Component.singleImageUpload('#fFavicon', '@(Href("~/"))', '@uploadUrl', false);
+
+            var listObj = Component.dataList('listTable');
+            listObj.deleted = function (delIds) {
+                Component.confirm('刪除後，資料無法復原，確定刪除？', function (isConfirm) {
+                    if (isConfirm) {
+                        var action = "del";
+                        $.post('LangDelete', { 'ids': delIds }, function () {
+                            refreshList();
+                        });
+                    }
+                }, 'warning');
+            }
+            listObj.sorted = function (sortItems) {
+                $.post('LangSort', { 'siteID':'@Model.Id', 'items': sortItems }, function () {
+                    refreshList();
+                    $("span[data-for=sort]").hide();
+                    $("span[data-for=sort]").siblings("a").fadeIn();
+                });
+            }
+
+            listObj.canceled = function (action) {
+                if (action == "del" || $('a[data-action="' + action + '"]').attr('data-select') == 'true') {
+                        $('#listTable').find('span.info').html('');
+                }
+            }
+            $('#btnAddDomain').click(function () {
+                AppendDomains();
+            });
+            if ($("#Domin").val() == "")
+                AppendDomains();
+            else {
+                var domains = JSON.parse($("#Domin").val());
+                for (var i = 0; i < domains.length; i++) {
+                    AppendDomains();
+                    $("#domains_" + (i + 1).toString()).val(domains[i].Domain);
+                }
+            }
+            $("input[name='IsLang']").on('change', function () {
+                var target = $("#lan-box");
+                if (!this.checked)
+                    target.fadeOut();
+                else
+                    target.fadeIn() ;
+
+                // var target = $("#lan-boxTop");
+                // if (!this.checked)
+                //     target.fadeOut(100);
+                // else
+                //     target.fadeIn() ;
+            }).change();
+            $("input[name='IsLang']").change();
+
+
+            $("input[name='webType']").on('change', function () {
+                var $this = $(this);
+
+                if (this.checked) {
+
+                    if ($this.attr('id') != 'webType-2') {
+                        $('#webType-box').slideUp();
+                    } else {
+                        $('#webType-box').slideDown();
+                    }
+
+                }
+            }).change();
+
+            $("input[name='HeaderCustomized']").on('change', function () {
+                var target = $(".header-Box");
+                if (!this.checked)
+                    target.slideUp();
+                else
+                    target.slideDown() ;
+            });
+            $("input[name='HeaderCustomized']").change();
+            $("input[name='FooterCustomized']").on('change', function () {
+                var target = $(".footer-Box");
+                if (!this.checked)
+                    target.slideUp();
+                else
+                    target.slideDown() ;
+            });
+            $("input[name='FooterCustomized']").change();
+
+            $('.on-warning').on('click', function() {
+                parent.window.swal({
+                    text: '確定網站上線？',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '取消',
+                    cancelButtonText: '上線',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                });
+            });
+
+             $('.off-warning').on('click', function() {
+                parent.window.swal({
+                    text: '確定網站暫時關閉？',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '取消',
+                    cancelButtonText: '關閉',
+                    animation: false,
+                    customClass: 'animated fadeIn'
+                });
+            });
+
+            //  $(".openEdit-m").colorbox({
+            //     width: "450",
+            //     height: "80%",
+            //     iframe: true,
+            //     transition: false,
+            //     speed: 0,
+            //     fadeOut: 100
+            // });
+             var webType = $("input[name='webType']:checked").val();
+             if (webType != 'webType-2') {
+                 $('#webType-box').slideUp();
+             } else {
+                 $('#webType-box').slideDown();
+             }
+
+             $('#btnSave').click(function () {
+                 var originalIssue = $("#OriginalIssue").val();
+                 var issue = $("input[name='Issue']:checked").val() == "True"? "1": "0";
+                 console.log(issue, originalIssue);
+                 var submit = function () {
+                     var form = $('#editForm');
+                     if (form.validationEngine('validate', { promptPosition: 'topRight' })) {
+                         form.submit();
+                     }
+                 };
+
+                 if (originalIssue != issue) {
+                     var message = "";
+                     if (issue == 1){
+                         message = "確定網站上線";
+                     } else {
+                         message = "確定網站暫時關閉？";
+                     }
+
+                     Component.confirm(message, function (ok) {
+                         if (!ok)
+                             return;
+
+                         submit();
+                     });
+                 } else {
+                     submit();
+                 }
+
+             });
+
+             $('#btnCancel').click(function () {
+                 Component.closeRight();
+                 parent.$.colorbox.close();
+             });
+             refreshList();
+        });
+
+        function AppendDomains() {
+            domainIndex++;
+            $("#divDomains").append("<div class=\"input-field inline full no-label has-tip\" id=\"divDomain_{index}\"><input id=\"domains_{index}\" name=\"domains\" type=\"text\" /><a class=\"tooltip tooltipstered\" href=\"javascript:\" onclick=\"Remove('{index}')\"><i class=\"cc cc-close\"></i></div>".replace(/{index}/g, domainIndex.toString()));
+
+        }
+        function Remove(index) {
+            var objID = "#divDomain_" + index;
+            if ($("#divDomains").find(objID).length > 0) {
+                $("#divDomains").children("div").remove("#divDomain_" + index);
+            }
+        }
+        function ChangeStatus(ID, Status) {
+            $.post("@Url.Action("ChangeStatus")", { "ID": ID, "Status": Status }, function (data) {
+                refreshList();
+            });
+        }
+        function Edit(ID) {
+            var url = "@Url.Action("EditLang")?SiteID=@ViewBag.SiteID&id=" + ID;
+            window.parent.$.colorbox({
+                href: url,
+                width: "600",
+                height: "95%",
+                right: "20",
+                iframe: true,
+                transition: false,
+                speed: 0,
+                fadeOut: 100,
+                onClosed: function() {
+                    var formBox = window.parent.$("#leftEditBox");
+
+                    if (formBox.length) {
+                        if (formBox.hasClass('active')) {
+                            formBox.fadeOut(300).removeClass('active');
+                        }
+                    }
+                }
+            });
+        }
+        function refreshList() {
+            $.getJSON("@Url.Action("GetLangList", new { SiteID = Model.Id })", function (data) {
+                $("#containerLangs").html("");
+                if(data.length > 0)
+                {
+                    for(var i=0;i<data.length;i++)
+                    {
+                        var langText = "", langImage = "";
+                        switch (data[i].LangCode) {
+
+                            case "zh-hant":
+                                langText = "中文版";
+                                langImage = "../../images/temp/flag_TW.png";
+                                break;
+                            case "en-us":
+                                langText = "英文版";
+                                langImage = "../../images/temp/flag_US.png";
+                                break;
+                            case "ja-jp":
+                                langText = "日文版";
+                                langImage = "../../images/temp/flag_JP.png";
+                                break;
+                            case "zh-cn":
+                                langText = "簡中版";
+                                langImage = "../../images/temp/flag_CN.png";
+                                break;
+                            case "ko-kr":
+                                langText = "韓文版";
+                                langImage = "../../images/temp/flag_KR.png";
+                                break;
+                        }
+                        var eyeCss = "cc-eye";
+                        var isShow = true;
+                        if (!data[i].IsShow) {
+                            eyeCss = "cc-eye-off font-red";
+                            isShow = false;
+                        }
+                        var rowHtml = "<tr data-id=\"" + data[i].IDStr + "\">" +
+                                       "<td class=\"sort\">"+(i+1)+"</td>" +
+                                       "<td class=\"text-L font-xs\">"+
+                                       "<img src=\"" + langImage + "\" alt=\"\">" +
+                                       "<span class=\"m-L-2\">" + langText + "</span></td>" +
+                                       "<td class=\"text-L font-xs\"><i class=\"cc cc-laptop\"></i>"+data[i].Title+"</td>"+
+                                       "<td class=\"icon\"><a class=\"btn-grey-darken-4-o transparent square\" href=\"javascriipt:\" onclick=\"ChangeStatus('" + data[i].IDStr + "', " + !isShow + ")\"><i class=\"cc " + eyeCss + "\"></i></a></td>" +
+                                       "<td class=\"icon edit\"><a class=\"btn-grey-darken-4-o transparent square\" href=\"javascriipt:\" onclick=\"Edit('" + data[i].IDStr + "')\" title=\"編輯\"><i class=\"cc cc-edit\"></i></a></td>" +
+                                        "</tr>";
+                        $("#containerLangs").append(rowHtml);
+                    }
+                }
+            });
+        }
+
+</script>
+

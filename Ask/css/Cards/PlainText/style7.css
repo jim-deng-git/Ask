@@ -1,0 +1,34 @@
+.card-plainText[data-style="7"] > * {
+  display: inline-block;
+  display: block; }
+
+.card-plainText[data-style="7"] .title-main {
+  font-size: 36px;
+  color: #000000; }
+  @media only screen and (max-width: 800px) {
+    .card-plainText[data-style="7"] .title-main {
+      font-size: 30px; } }
+
+.card-plainText[data-style="7"] .title-sub {
+  font-size: 20px;
+  color: #979797;
+  margin-left: 20px; }
+  @media only screen and (max-width: 800px) {
+    .card-plainText[data-style="7"] .title-sub {
+      margin-left: 0;
+      font-size: 18px; } }
+
+.card-plainText[data-style="7"] {
+  padding-bottom: 10px;
+  position: relative; }
+  .card-plainText[data-style="7"]::before {
+    content: '';
+    width: 2px;
+    height: 100%;
+    background-color: #000;
+    position: absolute;
+    left: -30px;
+    top: 0; }
+    @media only screen and (max-width: 580px) {
+      .card-plainText[data-style="7"]::before {
+        left: -10px; } }

@@ -1,0 +1,126 @@
+﻿@{
+    ViewBag.Title = "定位";
+    Layout = "~/Areas/Backend/Views/Shared/_MasterAdminiframeLayout.cshtml";    
+}
+
+<div class="groove groove-1">
+    <!-- swiper1 -->
+    <div class="swiper-container swiper-tab-bar">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide selected">定位</div>            
+        </div>
+    </div>
+    <!-- swiper2 -->
+    <div class="swiper-container swiper-tab-content">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <ul class="forms">
+                    <li>
+                        <div class="col-1">
+                            <div id="map" style="width:540px; height:500px"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>            
+        </div>
+    </div>
+    <div class="control-bar flex">            
+        <a class="btn-cancel" href="javascript:" onclick="Component.closeLeft();"><i class="cc cc-close"></i>取消</a>
+        <a id="btnSave" class="btn-bulid" href="javascript:"><i class="cc cc-check"></i>儲存</a>
+    </div>
+</div>
+
+@section FArea {
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=@(WorkLib.GetItem.appSet("GoogleMapKey"))&callback=initMap"></script>
+    @BundleConfig.Component()
+    <script type="text/javascript">
+        // parent.getLatLng()、parent.setLatLng()、parent.getAddress()
+        var map = null, marker = null;
+        function initMap() {
+            var latLng = null;
+            if (parent.getLatLng) {
+                //20190705 Nina 暫時註解 編輯時點選定位不會直接顯示定位
+                //latLng = parent.getLatLng();
+                //if (latLng) {
+                //    createMap(latLng, true);
+                //    return;
+                //}
+            }
+
+            if (parent.getAddress) {
+                var address = parent.getAddress();
+                if (address) {
+                    var geo = new google.maps.Geocoder();
+                    geo.geocode({ address: address }, function (results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {                            
+                            createMap(results[0].geometry.location, true);
+                        } else {
+                            createMap();
+                        }
+                    });
+
+                    return;
+                }
+            }
+
+            createMap();
+        }
+
+        function createMap(latLng, hasMark) {
+            latLng = latLng || { lat: 25.042141, lng: 121.519872 };
+            hasMark = hasMark || false;
+
+            var myOptions = {
+                zoom: 19,
+                center: latLng,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("map"), myOptions);
+
+            if (hasMark) {
+                marker = new google.maps.Marker({
+                    position: latLng,
+                    draggable: true
+                });
+                marker.setMap(map);
+            } else {
+                google.maps.event.addListener(map, 'click', function (event) {
+                    if (!marker) {
+                        marker = new google.maps.Marker({
+                            position: event.latLng,
+                            map: map,
+                            draggable: true
+                        });
+                    }
+                });
+            }
+        }
+
+        $('#btnSave').click(function () {
+            if (!marker) {
+                Component.alert('請選擇地址');
+                return;
+            }
+
+            var position = marker.getPosition();
+            var bit = 1000000;
+            var latLng = {
+                lat: Math.round(position.lat() * bit) / bit,
+                lng: Math.round(position.lng() * bit) / bit
+            };
+
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'location': latLng }, function (results, status) {
+                if (status == google.maps.GeocoderStatus.OK && results.length > 0) {
+                    var address = results[0].formatted_address;
+                    address = address.replace(/\d+台灣/, '');
+                    parent.setLatLng(latLng, address);
+                    Component.closeLeft();
+                } else {
+                    parent.setLatLng(latLng, null);
+                    Component.closeLeft();
+                }
+            });
+        });
+    </script>
+}

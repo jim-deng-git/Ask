@@ -1,0 +1,73 @@
+.chip
+    display: inline-block
+    height: 32px
+    font-size: $label-font-size
+    color: rgba(0, 0, 0, 0.6)
+    line-height: 32px
+    padding: 0px 12px
+    border-radius: 16px
+    margin: 0px 5px 7px 0px
+    position: relative
+
+    > img
+        float: left
+        margin: 0px 8px 0px -12px
+        height: 32px
+        width: 32px
+        border-radius: 50%
+        overflow: hidden
+
+    .close
+        cursor: pointer
+        float: right
+        font-size: $input-font-size
+        line-height: 32px
+        padding-left: 8px
+
+    .chip-name
+        position: relative
+        z-index: 2
+
+    .chip-count
+        padding: 0px 10px
+        position: absolute
+        right: 0
+        top: 0
+        z-index: -1
+        opacity: 0
+
+    input
+        margin-bottom: 1px !important
+
+    &.active
+        .chip-count
+            opacity: 1
+            z-index: 1
+
+.chips
+    outline: none
+
+    @extend %transition-btn
+
+    .chip.selected
+        background-color: $secondary-color
+        color: #ffffff
+
+    &.inline
+        margin-top: 1.5rem
+
+    &.keywords
+        display: block
+        float: left
+        width: 100%
+        margin: 20px 0 0
+
+// Form prefix
+.prefix ~ .chips
+    margin-left: 3rem
+    width: 92%
+    width: calc(100% - 3rem)
+
+.chips:empty ~ label
+    font-size: 0.8rem
+    transform: translateY(-140%)
